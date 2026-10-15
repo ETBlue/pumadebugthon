@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="zh-Hant">
+    <head>
+                    <!-- Google tag (gtag.js) -->
+            <script async src="https://www.googletagmanager.com/gtag/js?id=G-55HDR9CSS2"></script>
+            <script>
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', 'G-55HDR9CSS2');
+            </script>
+                <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <meta name="robots" content="index, follow, max-image-preview:large">
+                <meta name="theme-color" content="#db6a41">
+        <link rel="icon" href="/favicon.ico" sizes="any">
+                    <link rel="canonical" href="https://puma.taipei/hackathon">
+                            <meta name="description" content="市政 debug松：把「市長，你給我聽好了」蒐集的市民聲音交給資訊人動手解。10/23 線上松前小聚、10/24 黑客松與座談。">
+                        <meta property="og:type" content="website">
+                    <meta property="og:url" content="https://puma.taipei/hackathon">
+                <meta property="og:locale" content="zh_TW">
+        <meta property="og:site_name" content="沈伯洋台北市長競選官方網站">
+        <meta property="og:title" content="市政 debug松">
+                    <meta property="og:description" content="市政 debug松：把「市長，你給我聽好了」蒐集的市民聲音交給資訊人動手解。10/23 線上松前小聚、10/24 黑客松與座談。">
+                <meta property="og:image" content="https://puma.taipei/images/og-default-20261013.webp">
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="市政 debug松">
+                    <meta name="twitter:description" content="市政 debug松：把「市長，你給我聽好了」蒐集的市民聲音交給資訊人動手解。10/23 線上松前小聚、10/24 黑客松與座談。">
+                <meta name="twitter:image" content="https://puma.taipei/images/og-default-20261013.webp">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+            rel="stylesheet"
+        >
+        <title>市政 debug松</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+        <link rel="preload" as="style" href="https://puma.taipei/build/assets/app-Cib5z-ZP.css" /><link rel="preload" as="style" href="https://puma.taipei/build/assets/puma-BpmfTsi2.css" /><link rel="preload" as="style" href="https://puma.taipei/build/assets/puma-CSvobdiw.css" /><link rel="preload" as="style" href="https://puma.taipei/build/assets/hackathon-BcSNuem0.css" /><link rel="modulepreload" as="script" href="https://puma.taipei/build/assets/puma-sK2aHVIQ.js" /><link rel="modulepreload" as="script" href="https://puma.taipei/build/assets/preload-helper-BgbkXLIy.js" /><link rel="modulepreload" as="script" href="https://puma.taipei/build/assets/gsap-D_956-p2.js" /><link rel="modulepreload" as="script" href="https://puma.taipei/build/assets/photoswipe.esm-S6UVvKwj.js" /><link rel="modulepreload" as="script" href="https://puma.taipei/build/assets/run-hug-mode-Dv_YP_OO.js" /><link rel="modulepreload" as="script" href="https://puma.taipei/build/assets/hackathon-BJ9T-lYt.js" /><link rel="stylesheet" href="https://puma.taipei/build/assets/app-Cib5z-ZP.css" data-navigate-track="reload" /><link rel="stylesheet" href="https://puma.taipei/build/assets/puma-BpmfTsi2.css" data-navigate-track="reload" /><link rel="stylesheet" href="https://puma.taipei/build/assets/puma-CSvobdiw.css" data-navigate-track="reload" /><link rel="stylesheet" href="https://puma.taipei/build/assets/hackathon-BcSNuem0.css" data-navigate-track="reload" /><script type="module" src="https://puma.taipei/build/assets/puma-sK2aHVIQ.js" data-navigate-track="reload"></script><script type="module" src="https://puma.taipei/build/assets/hackathon-BJ9T-lYt.js" data-navigate-track="reload"></script>    </head>
+    <body>
+        
+                    <header
+		class="site-header"
+		data-site-menu-variant="mega"
+		x-data="siteHeaderMenu"
+		x-on:mouseenter="cancelClose()"
+		x-on:mouseleave="armClose()"
+		x-on:focusout="closeGroupsOnFocusOut($event)"
+		x-on:keydown.escape.window="closeGroupsOnEscape()"
+		x-on:resize.window="closeMenuOnWiden()"
+	>
+		<nav
+			class="site-nav site-shell"
+			x-bind:class="{ 'site-nav-open': menuOpen, 'site-nav-visible': menuVisible, 'site-nav-closing': menuClosing }"
+			aria-label="主要選單"
+			x-on:mouseover="closeGroupsForPointer($event)"
+		>
+			<a class="site-brand" href="/" aria-label="回到沈伯洋台北市長競選官方網站首頁" >
+				<img src="/images/brand/candidate-lockup.webp" alt="你的市長 沈伯洋" width="1400" height="215" />
+			</a>
+			<button
+				class="site-menu-toggle"
+				type="button"
+				aria-expanded="false"
+				x-bind:aria-expanded="menuOpen ? 'true' : 'false'"
+				aria-controls="site-menu"
+				aria-label="切換主選單"
+				x-on:click="toggleMenu()"
+			>
+				<span></span><span></span><span></span>
+			</button>
+			<div class="site-menu" id="site-menu" x-bind:inert="!isDropdown() && !menuVisible" x-on:click="closeMenuOnLink($event)">
+				<details class="site-menu-group" data-site-menu-group="about"
+					x-on:mouseenter="openGroupFromPointer($el)"
+					x-on:toggle="syncGroupExclusivity($el)"
+					x-on:click.outside="closeGroup($el)"
+				>
+					<summary x-on:click="activateGroup($el.parentElement, $event)"  aria-controls="site-menu-panel-about">關於伯洋</summary>
+					<div class="site-menu-panel" id="site-menu-panel-about">
+						<section class="site-menu-category" aria-labelledby="site-menu-about-profile">
+							<h2 id="site-menu-about-profile">個人經歷</h2>
+							<a href="/declaration" >參選聲明</a>
+							<a href="/experience" >學經歷與國際交流</a>
+						</section>
+						<section class="site-menu-category" aria-labelledby="site-menu-about-media">
+							<h2 id="site-menu-about-media">伯洋足跡</h2>
+							<a href="/schedule" >最新行程</a>
+							
+															<a href="https://gotcha.puma.taipei" target="_blank" rel="noopener noreferrer" aria-label="前往「捕捉野生沈伯洋」，另開新分頁">捕捉野生沈伯洋</a>
+													</section>
+					</div>
+				</details>
+				<details class="site-menu-group" data-site-menu-group="policy"
+					x-on:mouseenter="openGroupFromPointer($el)"
+					x-on:toggle="syncGroupExclusivity($el)"
+					x-on:click.outside="closeGroup($el)"
+				>
+					<summary x-on:click="activateGroup($el.parentElement, $event)"  aria-controls="site-menu-panel-policy">政策願景</summary>
+					<div class="site-menu-panel" id="site-menu-panel-policy">
+						<section class="site-menu-category" aria-labelledby="site-menu-policy-future">
+							<h2 id="site-menu-policy-future">前瞻規劃</h2>
+							<a href="/heart" >HEART 政策生態系</a>
+							<a href="/heart/quiz/1" >伯洋分類帽</a>
+							<a href="/policies" >政策專區</a>
+						</section>
+						<section class="site-menu-category" aria-labelledby="site-menu-policy-civic">
+							<h2 id="site-menu-policy-civic">市民意見</h2>
+							<a href="/taipeispeaksup" >市長，你給我聽好了</a>
+															<a href="/observatory" >台北民意觀察室</a>
+													</section>
+					</div>
+				</details>
+				<details class="site-menu-group" data-site-menu-group="currents"
+					x-on:mouseenter="openGroupFromPointer($el)"
+					x-on:toggle="syncGroupExclusivity($el)"
+					x-on:click.outside="closeGroup($el)"
+				>
+					<summary x-on:click="activateGroup($el.parentElement, $event)"  aria-controls="site-menu-panel-currents">洋流來襲</summary>
+					<div class="site-menu-panel" id="site-menu-panel-currents">
+						<section class="site-menu-category" aria-labelledby="site-menu-currents-activities">
+							<h2 id="site-menu-currents-activities">洋流活動</h2>
+							<div class="site-menu-link-grid site-menu-link-grid--two-columns">
+																	<a href="/songs" >競選歌曲</a>
+																<a href="https://storemap.puma.taipei/" target="_blank" rel="noopener noreferrer" aria-label="洋流好店，另開新分頁">洋流好店</a>
+								<a href="/taipei-current" >台北大洋流</a>
+																	<a href="/hackathon" >市政 debug松</a>
+															</div>
+						</section>
+						<section class="site-menu-category" aria-labelledby="site-menu-currents-fundraising">
+							<h2 id="site-menu-currents-fundraising">募款專區</h2>
+							<a href="/merch" data-site-run-hug-pat-trigger >洋流小物</a>
+						</section>
+						<section class="site-menu-category" aria-labelledby="site-menu-currents-downloads">
+							<h2 id="site-menu-currents-downloads">下載專區</h2>
+							<a href="/documents" >文宣下載</a>
+														<a href="/soon-daily" >順報</a>
+						</section>
+					</div>
+				</details>
+				<details class="site-menu-group" data-site-menu-group="fact-checks"
+					x-on:mouseenter="openGroupFromPointer($el)"
+					x-on:toggle="syncGroupExclusivity($el)"
+					x-on:click.outside="closeGroup($el)"
+				>
+					<summary x-on:click="activateGroup($el.parentElement, $event)"  aria-controls="site-menu-panel-fact-checks">闢謠專區</summary>
+					<div class="site-menu-panel" id="site-menu-panel-fact-checks">
+						<section class="site-menu-category" aria-labelledby="site-menu-fact-checks-video">
+							<h2 id="site-menu-fact-checks-video">影音專區</h2>
+							<a href="/videos" >每日受訪</a>
+						</section>
+						<section class="site-menu-category" aria-labelledby="site-menu-fact-checks-text">
+							<h2 id="site-menu-fact-checks-text">文字專區</h2>
+							<a href="/fact-checks" >闢謠專區</a>
+						</section>
+					</div>
+				</details>
+			</div>
+		</nav>
+	</header>
+                        <main class="page-shell"><div class="hackathon-page">
+        <nav class="nav" aria-label="活動選單">
+    <div class="wrap">
+        <a class="brand" href="https://puma.taipei/hackathon#top"  aria-current="page" >市政 <span>debug</span>松</a>
+        <div class="nav-links">
+            <a href="https://puma.taipei/hackathon#schedule">流程</a>
+            <a href="https://puma.taipei/hackathon#issues">市政痛點</a>
+            <a href="https://puma.taipei/hackathon#rules">規則</a>
+            <a href="https://puma.taipei/hackathon/my-team" >確定報名資料</a>
+            <a href="https://puma.taipei/hackathon/vote" >票選</a>
+        </div>
+            </div>
+</nav>
+        <header class="hero" id="top">
+    <div class="wrap hero-grid">
+        <div>
+            <h1 class="hackathon-title"><span class="tag">$ git checkout taipei</span>市政 debug松</h1>
+            <p class="lede">「市長，你給我聽好了」收到了上千則市民的抱怨與建議。我們把它整理成 7 個市政痛點，邀請工程師、設計師、資訊人用一天時間，做出最小可行性方案（MVP），並做為未來市政推動的方針。</p>
+            <div class="facts">
+                <div class="fact"><div class="k">DAY 1 · 線上</div><div class="v">10/23（五）19:00–22:00<small>松前小聚・提案 · Discord</small></div></div>
+                <div class="fact"><div class="k">DAY 2 · 現場</div><div class="v">10/24（六）09:30–18:00<small>黑客松＋Demo＋座談</small></div></div>
+                <div class="fact"><div class="k">地點</div><div class="v">沈伯洋競選總部<small>地址於報名成功後通知</small></div></div>
+                <div class="fact"><div class="k">名額</div><div class="v">80 人 · 免費<small>Day 2 提供午餐與茶點</small></div></div>
+            </div>
+            <div class="hero-actions">
+                                <a class="btn ghost" href="#issues">看題目</a>
+                <span class="status">
+                                            <b class="closed">● 報名已截止</b>
+                                    </span>
+            </div>
+        </div>
+
+        <aside class="panel" aria-label="本次題目">
+            <div class="panel-head"><span class="open"><span class="dot" aria-hidden="true"></span>7 Open issues</span><span class="mono">taipei/city</span></div>
+            <ul class="issue-list">
+                <li><a href="#issue-1"><span class="num">#1</span><span class="t">把三千棵樹種回來</span><span class="lbls"><span class="lbl">環境</span><span class="lbl">樹蔭公平</span></span></a></li>
+                <li><a href="#issue-2"><span class="num">#2</span><span class="t">找回消失的垃圾桶</span><span class="lbls"><span class="lbl">市容</span><span class="lbl">IoT</span></span></a></li>
+                <li><a href="#issue-3"><span class="num">#3</span><span class="t">鼠患四處跑，衛生安全怎麼辦</span><span class="lbls"><span class="lbl">衛生</span><span class="lbl">GIS</span></span></a></li>
+                <li><a href="#issue-4"><span class="num">#4</span><span class="t">內湖尖峰車流好比停車場</span><span class="lbls"><span class="lbl">交通</span><span class="lbl">即時資料</span></span></a></li>
+                <li><a href="#issue-5"><span class="num">#5</span><span class="t">公車路網如何即時反應需求</span><span class="lbls"><span class="lbl">交通</span><span class="lbl">最佳化</span></span></a></li>
+                <li><a href="#issue-6"><span class="num">#6</span><span class="t">危老耐震如何查，風險評級怎麼找</span><span class="lbls"><span class="lbl">居住安全</span><span class="lbl">模型</span></span></a></li>
+                <li><a href="#issue-7"><span class="num">#7</span><span class="t">自由題：你看見的市政 bug</span><span class="lbls"><span class="lbl">自選</span></span></a></li>
+            </ul>
+        </aside>
+    </div>
+    <figure class="street">
+        <img src="/images/hackathon/street.webp" alt="「市長，你給我聽好了」的動物市民們在台北街頭排隊，背景是信義、文山、中正、萬華等行政區天際線" width="2634" height="563">
+        <figcaption>市長，你給我聽好了 · 上千則市民聲音</figcaption>
+    </figure>
+</header>
+
+    <div class="hackathon-main">
+        <section class="block" id="schedule">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Schedule</span>
+      <h2>活動流程</h2>
+      <p>Day 1 在 Discord 線上提案，Day 2 現場動手做，同組至少一人到場。10/24 16:30 起 YouTube Live 直播 Demo 與座談。</p>
+    </div>
+    <div class="days">
+      <div class="day">
+        <h3>Day 1 松前小聚 <span class="mono">10/23 FRI · Discord</span></h3>
+        <ol class="tl">
+          <li><time>19:00–19:20</time><div class="what"><b>開場</b><span>活動規則、題目說明、資料導覽</span></div></li>
+          <li><time>19:20–22:00</time><div class="what"><b>提案</b><span>個人或團隊提出想解的市政痛點與做法，互相交流</span></div></li>
+        </ol>
+      </div>
+      <div class="day">
+        <h3>Day 2 黑客松 <span class="mono">10/24 SAT · 競選總部</span></h3>
+        <ol class="tl">
+          <li><time>09:30–10:00</time><div class="what"><b>報到</b><span>依議題分桌或分區入座</span></div></li>
+          <li><time>10:00–10:30</time><div class="what"><b>開場</b><span>當日流程與規則說明</span></div></li>
+          <li><time>10:30–16:30</time><div class="what"><b>動手做</b><span>含午餐與茶歇。12:00 公布 Demo 名單與順序，16:00 作品提交截止</span></div></li>
+          <li class="live"><time>16:30–17:00</time><div class="what"><b>成果 Demo<span class="live-tag">LIVE</span></b><span>現場 Demo 開放 10 組（視情況增至 15 組），每組約 2 分鐘，沈伯洋到場；網站開放票選</span></div></li>
+          <li class="live"><time>17:00–17:55</time><div class="what"><b>松後座談<span class="live-tag">LIVE</span></b><span>AI 寫得出程式，寫不出城市：資訊人如何改變城市</span></div></li>
+          <li class="live"><time>17:55–18:00</time><div class="what"><b>總結</b><span>沈伯洋總結；宣布成立工程師後援會，座談後開放自由報名</span></div></li>
+          <li><time>18:00</time><div class="what"><b>交流合影</b><span>直播結束</span></div></li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="talk">
+      <span class="eyebrow">松後座談 · 10/24 17:00</span>
+      <h3>AI 寫得出程式，寫不出城市：資訊人如何改變城市</h3>
+    </div>
+    <div class="panelists">
+      <div class="person"><div class="role">主持</div><div class="n">黑貘</div><p>資訊顧問，統籌工程師後援會成立。</p></div>
+      <div class="person"><div class="role">與談</div><div class="n">沈伯洋</div><p>頭髮有點捲，解決問題不繞圈。談如何和大家一起 debug 台北。</p></div>
+      <div class="person"><div class="role">與談</div><div class="n">蕭上農</div><p>愛料理、INSIDE 共同創辦人。談 AI 時代工程師的價值。</p></div>
+      <div class="person"><div class="role">與談</div><div class="n">杜奕瑾</div><p>PTT 創辦人、台灣人工智慧實驗室創辦人。談台灣自己的 AI。</p></div>
+      <div class="person"><div class="role">與談</div><div class="n">侯宜秀</div><p>前人工智慧學校基金會秘書長。談政府如何接住 AI 與公民科技。</p></div>
+    </div>
+  </div>
+</section>
+        <section class="block alt" id="issues">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Issues · 市長，你給我聽好了</span>
+      <h2>7 個市政痛點</h2>
+      <p>以下是市政痛點，不是市政解答。題目來自「市長，你給我聽好了」蒐集的市民意見，由政策組整理。每隊選一題，也可跨題整合。每題附上可用的開放資料，作為起手參考。</p>
+      <p>
+                  「市長，你給我聽好了」資料（已去識別化）即將於此釋出。
+              </p>
+    </div>
+
+    <div class="callout">
+      <span class="mono">// 可以用模擬的資料</span>
+      <p>作品重點是解法和可操作的介面，不必真的串接 API。資料不存在、沒開放或太難取得，就自己產生模擬資料，在 README 和 Demo 時說明哪些是真實資料、哪些是模擬的資料。不得使用任何真實個資。</p>
+    </div>
+
+    <div class="issues">
+      <article class="issue" id="issue-1">
+        <div class="issue-top"><span class="dot" aria-hidden="true"></span><h3><span class="num">#1</span>把三千棵樹種回來</h3></div>
+        <div class="issue-body">
+          <div class="lbls"><span class="lbl">環境</span><span class="lbl">樹蔭公平 Shade Equity</span><span class="lbl">GIS</span></div>
+          <p>2025 年台北有 3,164 棵樹被移除。市府說明多為病蟲害或自然死亡，但東門市場附近一棵約 40 年、原本計畫移植保留的茄苳樹，卻遭到「誤砍」。台北一年移除三千棵樹，我們要如何找出城市空間把樹種回來，達到樹蔭公平？可參考新加坡「見縫插樹」。</p>
+          <div class="ds">
+            <div class="ds-head"><span>開放資料</span><span>點擊開啟資料集頁面</span></div>
+            <ul>
+              <li><a href="https://data.gov.tw/dataset/128274" target="_blank" rel="noopener">臺北市行道樹及公園樹木分布圖</a><span class="src">data.gov.tw · CSV/JSON</span></li>
+              <li><a href="https://data.gov.tw/dataset/134908" target="_blank" rel="noopener">臺北市人行道固定設施物＿樹穴</a><span class="src">data.gov.tw</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=715d3a83-8445-4496-b6bf-b0900538b7e7" target="_blank" rel="noopener">臺北市人行道範圍圖</a><span class="src">data.taipei · JSON</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=ea732fb5-4bec-4be7-93f2-8ab91e74a6c6" target="_blank" rel="noopener">臺北市公園基本資料</a><span class="src">data.taipei · JSON</span></li>
+              <li><a href="https://geopkl.gov.taipei/" target="_blank" rel="noopener">臺北市行道樹路燈資訊網（含移樹履歷查詢）</a><span class="src">公園處</span></li>
+              <li class="mock"><span class="t">逐年移除紀錄與原因未完整開放</span><span class="src">→ 可用模擬資料</span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="issue" id="issue-2">
+        <div class="issue-top"><span class="dot" aria-hidden="true"></span><h3><span class="num">#2</span>找回消失的垃圾桶</h3></div>
+        <div class="issue-body">
+          <div class="lbls"><span class="lbl">市容</span><span class="lbl">IoT</span><span class="lbl">佈建最佳化</span></div>
+          <p>台北行人專用垃圾桶從全盛時期近 3,000 組，縮減到約 800 組。環保局依家戶垃圾違規棄置量評估裁撤或復設，但我們能不能結合行人流量、商圈分佈與民眾通報熱點，打造動態清理和智慧化的垃圾桶佈建建議？</p>
+          <p class="quote"><b>沈伯洋說：</b>垃圾桶很容易滿，可以設偵測系統。有些國家偵測到垃圾桶滿了才派人去收，不用一直定時巡邏；也有智慧垃圾桶，滿的時候裡面的機器會往下壓。 <a href="https://tw.news.yahoo.com/share/82b4237f-1c4e-3d4f-9540-bf9c81c16b4e" target="_blank" rel="noopener">新聞</a></p>
+          <div class="ds">
+            <div class="ds-head"><span>開放資料</span><span>點擊開啟資料集頁面</span></div>
+            <ul>
+              <li><a href="https://data.gov.tw/dataset/121355" target="_blank" rel="noopener">臺北市行人專用清潔箱（位置）</a><span class="src">data.gov.tw</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=63f31c7e-7fc3-418b-bd82-b95158755b4d" target="_blank" rel="noopener">臺北捷運各站分時進出量（行人流量參考）</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf" target="_blank" rel="noopener">臺北市陳情系統類別資料</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=48aa5bca-2a4f-4fb7-a658-43cba51d5d56" target="_blank" rel="noopener">臺北市公車站牌位置圖</a><span class="src">data.taipei · SHP</span></li>
+              <li class="mock"><span class="t">垃圾桶滿溢偵測資料不存在</span><span class="src">→ 可用模擬資料</span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="issue" id="issue-3">
+        <div class="issue-top"><span class="dot" aria-hidden="true"></span><h3><span class="num">#3</span>鼠患四處跑，衛生安全怎麼辦</h3></div>
+        <div class="issue-body">
+          <div class="lbls"><span class="lbl">衛生</span><span class="lbl">GIS</span><span class="lbl">風險模型</span></div>
+          <p>傳統市場、夜市與餐飲聚落周邊的鼠患長年困擾市民，現行做法多停留在投藥與被動稽查。我們要如何整合餐飲登記密度、下水道管網分布、清潔隊清運排程與歷史通報，畫出「鼠患風險傳播地圖」，讓源頭治理精準到位？</p>
+          <p class="quote"><b>沈伯洋說：</b>老鼠要有食物和管道才能持續，錯過繁殖期就要等下一次才能處理。要做好垃圾與廚餘焚燒前的密封管理、確認垃圾車是否足夠、翻修管道與地下水道，並在繁殖期投放藥物，把前端預防做好。 <a href="https://www.cna.com.tw/news/aloc/202605010231.aspx" target="_blank" rel="noopener">新聞</a></p>
+          <div class="ds">
+            <div class="ds-head"><span>開放資料</span><span>點擊開啟資料集頁面</span></div>
+            <ul>
+              <li><a href="https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf" target="_blank" rel="noopener">臺北市陳情系統類別資料（含病媒通報）</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=af1e6e42-5ffc-4be0-983f-51c03d5d1b17" target="_blank" rel="noopener">臺北市污水下水道管線</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=3e62c860-0753-4c79-8fe1-bcb3e0243534" target="_blank" rel="noopener">臺北市雨水下水道人孔資料</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=9431f450-57d6-4c23-aca6-0ff50de49f0d" target="_blank" rel="noopener">臺北市食品業者登錄數（分區）</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://foodtracer.taipei.gov.tw/Front/Nightmarket" target="_blank" rel="noopener">臺北市食材登錄平台：夜市專區</a><span class="src">衛生局</span></li>
+              <li><a href="https://ratdar.taipei/reports" target="_blank" rel="noopener">見鼠地圖 Rat Radar：民眾通報（可匯出 CSV）</a><span class="src">民間</span></li>
+              <li class="mock"><span class="t">逐筆餐飲業者位置、清運排程未完整開放</span><span class="src">→ 可用模擬資料</span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="issue" id="issue-4">
+        <div class="issue-top"><span class="dot" aria-hidden="true"></span><h3><span class="num">#4</span>內湖尖峰車流好比停車場</h3></div>
+        <div class="issue-body">
+          <div class="lbls"><span class="lbl">交通</span><span class="lbl">即時資料</span><span class="lbl">儀表板</span></div>
+          <p>平日 07:00–09:30，數萬輛汽機車擠進成美橋、民權大橋與堤頂大道。如果把每 15 分鐘湧入內湖的車流熱點攤在陽光下，就能替企業算出「分批上班、彈性工時」對通勤與營運的好處。我們要如何整合高快速道路、聯外橋樑的 VD 流量與即時路況，做出「平日晨尖峰內科車流熱力儀表板」，作為市府與企業協商彈性工時的數據後盾？</p>
+          <div class="ds">
+            <div class="ds-head"><span>開放資料</span><span>點擊開啟資料集頁面</span></div>
+            <ul>
+              <li><a href="https://data.taipei/dataset/detail?id=47cb9090-e1c9-4b1d-b299-b11c375c5ee2" target="_blank" rel="noopener">臺北市車輛偵測器（VD）靜態資料</a><span class="src">data.taipei</span></li>
+              <li><a href="https://data.gov.tw/dataset/166031" target="_blank" rel="noopener">縣市即時路況（VD 每 5 分鐘統計）</a><span class="src">data.gov.tw · API</span></li>
+              <li><a href="https://tdx.transportdata.tw/" target="_blank" rel="noopener">TDX 運輸資料流通服務平臺（需申請金鑰）</a><span class="src">交通部</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=63f31c7e-7fc3-418b-bd82-b95158755b4d" target="_blank" rel="noopener">臺北捷運各站分時進出量（文湖線）</a><span class="src">data.taipei · CSV</span></li>
+              <li class="mock"><span class="t">歷史 15 分鐘 VD 序列需自行累積</span><span class="src">→ 可用模擬資料</span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="issue" id="issue-5">
+        <div class="issue-top"><span class="dot" aria-hidden="true"></span><h3><span class="num">#5</span>公車路網如何即時反應需求</h3></div>
+        <div class="issue-body">
+          <div class="lbls"><span class="lbl">交通</span><span class="lbl">最佳化</span><span class="lbl">勞動條件</span></div>
+          <p>台北公車路線長年疊床架屋，許多幹道路線與捷運高度重疊、互相競逐。我們要如何用站點上下車刷卡資料，算出各站真實的搭乘熱區與冷區，重劃捷運接駁與離峰低運量區塊，設計適合導入 DRTS 或小型巴士的動態路網？加分方向：把駕駛長過勞納入考量，例如盤點折返點的休息與大車暫停空間，把休息時間排進班表。</p>
+          <div class="ds">
+            <div class="ds-head"><span>開放資料</span><span>點擊開啟資料集頁面</span></div>
+            <ul>
+              <li><a href="https://data.taipei/dataset/detail?id=efad90af-4bbe-4c6a-ac60-06f3e52d8a97" target="_blank" rel="noopener">臺北市公車路線軌跡</a><span class="src">data.taipei · JSON</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=48aa5bca-2a4f-4fb7-a658-43cba51d5d56" target="_blank" rel="noopener">臺北市公車站牌位置圖</a><span class="src">data.taipei · SHP</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=f11a5af0-7b37-48ef-98cc-f6f102ed43c6" target="_blank" rel="noopener">臺北市預估到站時間（公車）</a><span class="src">data.taipei · JSON</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=90dd063e-2aca-49aa-a7fb-73130610313c" target="_blank" rel="noopener">臺北市聯營公共汽車客運業務統計</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://tdx.transportdata.tw/" target="_blank" rel="noopener">TDX 運輸資料流通服務平臺</a><span class="src">交通部</span></li>
+              <li class="mock"><span class="t">各站上下車刷卡人次未開放</span><span class="src">→ 可用模擬資料</span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="issue" id="issue-6">
+        <div class="issue-top"><span class="dot" aria-hidden="true"></span><h3><span class="num">#6</span>危老耐震如何查，風險評級怎麼找</h3></div>
+        <div class="issue-body">
+          <div class="lbls"><span class="lbl">居住安全</span><span class="lbl">加權模型</span><span class="lbl">都更</span></div>
+          <p>台北面臨「人老＋屋老」的雙老困境。50 年以上老屋在 2025 年突破 20%，2035 年將破 50%，2045 年超過 65%，代表多數房屋是在 921 地震修正耐震法規之前興建。我們要如何整合屋齡、建築結構、高齡人口、土壤液化潛勢與狹小巷弄消防搶救困難圖資，建立「危老耐震風險加權評級模型」，讓市府科學化排出老屋健檢與公辦都更的優先順序？</p>
+          <div class="ds">
+            <div class="ds-head"><span>開放資料</span><span>點擊開啟資料集頁面</span></div>
+            <ul>
+              <li><a href="https://data.taipei/dataset/detail?id=ec40e067-930f-4058-b7dc-71399d5f3147" target="_blank" rel="noopener">臺北市土壤液化潛勢圖</a><span class="src">data.taipei · GeoJSON</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=a6394e3f-3514-4542-87bd-de4310a40db3" target="_blank" rel="noopener">臺北市各里人口數按年齡分</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=7889e8a0-a71e-44e0-95c7-2213a7db1474" target="_blank" rel="noopener">臺北市現有營造建築物棟數（含屋齡別）</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=7a800e92-eb22-461f-b29d-8def2127a1bc" target="_blank" rel="noopener">臺北市消防通道清冊（搶救困難地區）</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://soil.taipei/" target="_blank" rel="noopener">臺北市政府土壤液化潛勢查詢系統</a><span class="src">工務局</span></li>
+              <li class="mock"><span class="t">逐棟屋齡、結構類型未開放</span><span class="src">→ 可用模擬資料</span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="issue" id="issue-7">
+        <div class="issue-top"><span class="dot" aria-hidden="true"></span><h3><span class="num">#7</span>自由題：你看見的市政 bug</h3></div>
+        <div class="issue-body">
+          <div class="lbls"><span class="lbl">自選</span></div>
+          <p>你也可以自己找題目。以下是政策組的備選方向和起手資料：</p>
+          <div class="ds">
+            <div class="ds-head"><span>備選方向</span><span>開放資料</span></div>
+            <ul>
+              <li><a href="https://data.taipei/dataset/detail?id=6f03a0b8-7b98-4eea-8bb9-ba6bfcdc2b8b" target="_blank" rel="noopener">颱風、豪雨、淹水預警：雨量站即時資料</a><span class="src">data.taipei · API</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=b3648c5d-15c8-416a-a603-fda7a9ac1b0d" target="_blank" rel="noopener">淹水預警：雨水下水道水位監測站</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://data.taipei/dataset/detail?id=63f31c7e-7fc3-418b-bd82-b95158755b4d" target="_blank" rel="noopener">捷運總體檢：各站分時進出量</a><span class="src">data.taipei · CSV</span></li>
+              <li><a href="https://www.doe.gov.taipei/News_Link.aspx?n=9E714C7EB1702778&amp;sms=10FAB7D5E5149055" target="_blank" rel="noopener">幼兒園不適任人員查核透明化：教育局專區</a><span class="src">教育局</span></li>
+              <li><a href="https://data.taipei" target="_blank" rel="noopener">臺北市資料大平臺（全部資料集）</a><span class="src">data.taipei</span></li>
+            </ul>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+        <section class="block" id="rules">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Rules</span>
+      <h2>黑客松規則</h2>
+      <p>報名即表示同意以下規則。違反行為準則者，主辦單位得請其離場並取消作品資格。</p>
+    </div>
+    <div class="rules">
+      <div class="rule">
+        <h3>報名</h3>
+        <ol>
+          <li>報名已提前於 10/14（三）14:00 截止，名額 80 人。入選後將公布名單與 email 通知，沒入選則不另行通知。</li>
+          <li>可以單人組隊，每隊至少一名隊員，重複報名者將取消參與資格。</li>
+          <li>Day 1 在 Discord 提案，不另外媒合隊友，志同道合的隊伍可自行整合。</li>
+          <li>Day 2 現場依議題分桌或分區。同組至少一人到場，其他成員可遠端協作。</li>
+          <li>報名資料只用於本活動聯繫。</li>
+        </ol>
+      </div>
+      <div class="rule">
+        <h3>資料使用</h3>
+        <ol>
+          <li>可以用模擬的資料，不必真的串接 API。</li>
+          <li>README 須註明哪些是真實開放資料、哪些是模擬資料，Demo 時口頭說明。</li>
+          <li>「市長，你給我聽好了」資料已去識別化，不得嘗試反推陳情人身分，也不得使用真實個資。「市長，你給我聽好了」資料僅限於此黑客松活動使用。</li>
+          <li>開放資料依各資料集授權使用，多數為<a href="https://data.gov.tw/license" target="_blank" rel="noopener">政府資料開放授權條款</a>。</li>
+        </ol>
+      </div>
+      <div class="rule">
+        <h3>作品規範</h3>
+        <ol>
+          <li>形式不限：App、網站、儀表板、系統原型、聊天機器人皆可，以可快速驗證的 MVP 為目標。</li>
+          <li>Demo 時現場操作，只有簡報或設計稿不算。</li>
+          <li>Day 1 起可開始討論與寫程式；可用開源套件與 AI 工具，須於 README 註明。</li>
+          <li>建議在 README 寫「如果市府上任 100 天內要落地，需要做什麼」：哪個局處、哪些資料、多少成本。</li>
+          <li>10/24 16:00 前透過主辦單位提供的隊伍專屬連結送出，填寫作品名稱與作品網址，可另附 GitHub 或 GitLab 程式碼網址；成員依報名資料。</li>
+        </ol>
+      </div>
+      <div class="rule">
+        <h3>Demo 與票選</h3>
+        <ol>
+          <li>不設評審、不排名次，以線上票選選出前三名。</li>
+          <li>現場 Demo 開放 10 組（視情況增至 15 組），10/24 16:30–17:00 直播，每組約 2 分鐘，現場填單抽順序。</li>
+          <li>票選 10/24 16:30 開放，10/31（六）18:00 截止，在本頁投票。</li>
+          <li>投票須以 Google 或 LINE 登入本站，每個帳號限投一次，最多選 3 件作品；灌票或自動化投票不予計入，同票並列。</li>
+          <li>前三名經團隊同意，於票選截止後 7 日內刊登於沈伯洋競選官網。無獎金。</li>
+        </ol>
+      </div>
+      <div class="rule">
+        <h3>著作權與開源</h3>
+        <ul>
+          <li>著作權歸團隊所有。</li>
+          <li>經團隊同意，作品以開源授權（建議 MIT 或 CC BY 4.0）收錄於ㄅ級分持續迭代；不同意不影響參加與票選。</li>
+        </ul>
+      </div>
+      <div class="rule">
+        <h3>行為準則</h3>
+        <ul>
+          <li>互相尊重，不分背景、性別、年齡與政治立場，禁止騷擾、歧視與人身攻擊。</li>
+          <li>不得對市府或任何第三方系統做未經授權的掃描、壓測或入侵測試。</li>
+          <li>16:30 起直播，現場會拍照錄影。不想入鏡請在報到時領取識別貼紙。</li>
+          <li>本活動由沈伯洋競選辦公室主辦。參加黑客松不等於加入後援會；後援會於座談後開放自由報名。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+        <section class="block alt" id="join">
+    <div class="wrap">
+        <div class="sec-head">
+            <span class="eyebrow">Register</span>
+            <h2>報名</h2>
+            <p>
+                報名已提前於 10/14（三）14:00 截止，名額 80 人。先填隊伍名稱，再一次加入一位以上隊員；每位隊員各占一個名額。
+                                    報名已截止。
+                            </p>
+        </div>
+        <a class="btn" href="https://puma.taipei/hackathon/register">查看報名資訊</a>
+        <a class="btn ghost" href="https://puma.taipei/hackathon/my-team">查看報名資料</a>
+    </div>
+</section>
+        <section class="block alt" id="vote">
+    <div class="wrap">
+        <div class="sec-head">
+            <span class="eyebrow">Vote</span>
+            <h2>線上票選</h2>
+            <p>10/24（六）16:30 開放，10/31（六）18:00 截止。每個帳號限投一次，最多選 3 件作品。票選尚未開放，10/24（六）16:30 開放。</p>
+        </div>
+        <a class="btn" href="https://puma.taipei/hackathon/vote">前往票選</a>
+    </div>
+</section>
+    </div>
+        <section class="hackathon-event-info" aria-label="市政 debug松活動資訊">
+    <div class="wrap">
+        <p>主辦：沈伯洋競選辦公室　統籌：資訊顧問 黑貘</p>
+                    </div>
+</section>
+    </div></main>
+        <div
+            class="site-run-hug"
+            data-site-run-hug
+                        aria-hidden="true"
+            role="presentation"
+        >
+            <div class="site-run-hug__sprite">
+                <img
+                    class="site-run-hug__image site-run-hug__image--run"
+                    src="/images/run-hug/sprite-run.png"
+                    alt=""
+                    aria-hidden="true"
+                    width="1774"
+                    height="887"
+                />
+                <img
+                    class="site-run-hug__image site-run-hug__image--pat"
+                    src="/images/run-hug/sprite-head-pat.webp"
+                    alt=""
+                    aria-hidden="true"
+                    width="2172"
+                    height="724"
+                />
+            </div>
+        </div>
+        <a href="https://puma.oen.tw/" target="_blank" rel="noopener noreferrer" class="donation-button" data-site-run-hug-pat-trigger aria-label="贊助我們">
+    贊助我們
+</a>
+        <a
+    href="https://join.puma.taipei/line/UkfBBgZ2"
+    target="_blank"
+    rel="noopener noreferrer"
+    class="line-button"
+    aria-label="加入官方 LINE"
+>
+    <svg class="line-button__icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+        <path d="M12 3C6.48 3 2 6.69 2 11.23c0 4.07 3.55 7.48 8.35 8.12.33.07.77.22.88.5.1.26.07.66.03.92l-.14.86c-.04.26-.2 1.01.88.55 1.09-.46 5.86-3.45 8-5.91 1.48-1.62 2-3.27 2-5.04C22 6.69 17.52 3 12 3ZM8.13 13.62H6.14a.53.53 0 0 1-.53-.53V9.11a.53.53 0 0 1 1.05 0v3.45h1.47a.53.53 0 0 1 0 1.06Zm2.07-.53a.53.53 0 0 1-1.06 0V9.11a.53.53 0 0 1 1.06 0v3.98Zm4.79 0a.53.53 0 0 1-.36.5.55.55 0 0 1-.17.03.52.52 0 0 1-.43-.21l-2.04-2.78v2.46a.53.53 0 0 1-1.05 0V9.11a.53.53 0 0 1 .36-.5.52.52 0 0 1 .6.18l2.04 2.78V9.11a.53.53 0 0 1 1.05 0v3.98Zm3.2-2.52a.53.53 0 0 1 0 1.06h-1.47v.94h1.47a.53.53 0 0 1 0 1.05h-1.99a.53.53 0 0 1-.53-.53V9.11a.53.53 0 0 1 .53-.53h1.99a.53.53 0 0 1 0 1.06h-1.47v.93h1.47Z"/>
+    </svg>
+    <span>加入 LINE</span>
+</a>
+                    <footer class="site-footer" aria-label="網站頁尾">
+	<div class="site-footer-inner site-shell">
+		<div class="footer-primary">
+			<a class="footer-brand" href="/" aria-label="回到沈伯洋台北市長競選官方網站首頁">
+				<img src="/images/brand/future-soon-lockup.webp" alt="FUTURE SOON 台北順起來" width="1000" height="283" />
+			</a>
+			<div class="footer-follow">
+				<p>追蹤沈伯洋</p>
+				<nav class="social-links footer-social-links" aria-label="社群平台">
+	<a href="https://facebook.com/1087764201093899" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+		<svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z" />
+		</svg>
+		<span class="sr-only">Facebook</span>
+	</a>
+	<a href="https://www.threads.com/@pumashen" target="_blank" rel="noopener noreferrer" aria-label="Threads">
+		<svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142c-.126-.742-.375-1.332-.75-1.757-.513-.586-1.308-.883-2.359-.89h-.029c-.844 0-1.992.232-2.721 1.32L7.734 7.847c.98-1.454 2.568-2.256 4.478-2.256h.044c3.194.02 5.097 1.975 5.287 5.388.108.046.216.094.321.142 1.49.7 2.58 1.761 3.154 3.07.797 1.82.871 4.79-1.548 7.158-1.85 1.81-4.094 2.628-7.277 2.65Zm1.003-11.69c-.242 0-.487.007-.739.021-1.836.103-2.98.946-2.916 2.143.067 1.256 1.452 1.839 2.784 1.767 1.224-.065 2.818-.543 3.086-3.71a10.5 10.5 0 0 0-2.215-.221z" />
+		</svg>
+		<span class="sr-only">Threads</span>
+	</a>
+	<a href="https://www.youtube.com/@PumaShen" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+		<svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+		</svg>
+		<span class="sr-only">YouTube</span>
+	</a>
+	<a href="https://www.instagram.com/pumashen/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+		<svg class="social-icon" viewBox="0 0 24 24" aria-hidden="true">
+			<path d="M7.0301.084c-1.2768.0602-2.1487.264-2.911.5634-.7888.3075-1.4575.72-2.1228 1.3877-.6652.6677-1.075 1.3368-1.3802 2.127-.2954.7638-.4956 1.6365-.552 2.914-.0564 1.2775-.0689 1.6882-.0626 4.947.0062 3.2586.0206 3.6671.0825 4.9473.061 1.2765.264 2.1482.5635 2.9107.308.7889.72 1.4573 1.388 2.1228.6679.6655 1.3365 1.0743 2.1285 1.38.7632.295 1.6361.4961 2.9134.552 1.2773.056 1.6884.069 4.9462.0627 3.2578-.0062 3.668-.0207 4.9478-.0814 1.28-.0607 2.147-.2652 2.9098-.5633.7889-.3086 1.4578-.72 2.1228-1.3881.665-.6682 1.0745-1.3378 1.3795-2.1284.2957-.7632.4966-1.636.552-2.9124.056-1.2809.0692-1.6898.063-4.948-.0063-3.2583-.021-3.6668-.0817-4.9465-.0607-1.2797-.264-2.1487-.5633-2.9117-.3084-.7889-.72-1.4568-1.3876-2.1228C21.2982 1.33 20.628.9208 19.8378.6165 19.074.321 18.2017.1197 16.9244.0645 15.6471.0093 15.236-.005 11.977.0014 8.718.0076 8.31.0215 7.0301.0839m.1402 21.6932c-1.17-.0509-1.8053-.2453-2.2287-.408-.5606-.216-.96-.4771-1.3819-.895-.422-.4178-.6811-.8186-.9-1.378-.1644-.4234-.3624-1.058-.4171-2.228-.0595-1.2645-.072-1.6442-.079-4.848-.007-3.2037.0053-3.583.0607-4.848.05-1.169.2456-1.805.408-2.2282.216-.5613.4762-.96.895-1.3816.4188-.4217.8184-.6814 1.3783-.9003.423-.1651 1.0575-.3614 2.227-.4171 1.2655-.06 1.6447-.072 4.848-.079 3.2033-.007 3.5835.005 4.8495.0608 1.169.0508 1.8053.2445 2.228.408.5608.216.96.4754 1.3816.895.4217.4194.6816.8176.9005 1.3787.1653.4217.3617 1.056.4169 2.2263.0602 1.2655.0739 1.645.0796 4.848.0058 3.203-.0055 3.5834-.061 4.848-.051 1.17-.245 1.8055-.408 2.2294-.216.5604-.4763.96-.8954 1.3814-.419.4215-.8181.6811-1.3783.9-.4224.1649-1.0577.3617-2.2262.4174-1.2656.0595-1.6448.072-4.8493.079-3.2045.007-3.5825-.006-4.848-.0608M16.953 5.5864A1.44 1.44 0 1 0 18.39 4.144a1.44 1.44 0 0 0-1.437 1.4424M5.8385 12.012c.0067 3.4032 2.7706 6.1557 6.173 6.1493 3.4026-.0065 6.157-2.7701 6.1506-6.1733-.0065-3.4032-2.771-6.1565-6.174-6.1498-3.403.0067-6.156 2.771-6.1496 6.1738M8 12.0077a4 4 0 1 1 4.008 3.9921A3.9996 3.9996 0 0 1 8 12.0077" />
+		</svg>
+		<span class="sr-only">Instagram</span>
+	</a>
+</nav>
+				<address class="footer-contact" aria-label="競選總部聯絡資訊">
+					<p class="footer-contact__name">沈伯洋台北市長競選總部</p>
+					<p>週一至週日 10:00 - 20:00</p>
+					<p class="footer-contact__address"><a
+						class="footer-contact__address-link"
+						href="https://www.google.com/maps/search/?api=1&amp;query=%E8%87%BA%E5%8C%97%E5%B8%82%E4%B8%AD%E6%AD%A3%E5%8D%80%E5%8C%97%E5%B9%B3%E6%9D%B1%E8%B7%AF30-1%E8%99%9F1%E6%A8%93"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="在新分頁開啟 Google 地圖：臺北市中正區北平東路30-1號1樓"
+					>
+						<svg class="footer-contact__address-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+							<path d="M20 10c0 5-8 12-8 12s-8-7-8-12a8 8 0 1 1 16 0Z" />
+							<circle cx="12" cy="10" r="2.5" />
+						</svg>
+						臺北市中正區北平東路30-1號1樓
+					</a></p>
+				</address>
+			</div>
+		</div>
+
+		<nav class="footer-navigation" aria-label="頁尾主要導覽">
+			<section class="footer-navigation__group" aria-labelledby="footer-navigation-about">
+				<h2 id="footer-navigation-about">關於伯洋</h2>
+				<section class="footer-navigation__category" aria-labelledby="footer-navigation-about-profile">
+					<h3 id="footer-navigation-about-profile">個人經歷</h3>
+					<ul>
+						<li><a href="/declaration">參選聲明</a></li>
+						<li><a href="/experience">學經歷與國際交流</a></li>
+					</ul>
+				</section>
+				<section class="footer-navigation__category" aria-labelledby="footer-navigation-about-media">
+					<h3 id="footer-navigation-about-media">影音行程</h3>
+					<ul>
+						<li><a href="/videos">每日受訪</a></li>
+						<li><a href="/schedule">最新行程</a></li>
+													<li><a href="https://gotcha.puma.taipei" target="_blank" rel="noopener noreferrer" aria-label="前往「捕捉野生沈伯洋」，另開新分頁">捕捉野生沈伯洋</a></li>
+											</ul>
+				</section>
+			</section>
+
+			<section class="footer-navigation__group" aria-labelledby="footer-navigation-policy">
+				<h2 id="footer-navigation-policy">政策願景</h2>
+				<section class="footer-navigation__category" aria-labelledby="footer-navigation-policy-planning">
+					<h3 id="footer-navigation-policy-planning">前瞻規劃</h3>
+					<ul>
+						<li><a href="/heart">HEART 政策生態系</a></li>
+						<li><a href="/heart/quiz/1">伯洋分類帽</a></li>
+						<li><a href="/policies">政策專區</a></li>
+					</ul>
+				</section>
+				<section class="footer-navigation__category" aria-labelledby="footer-navigation-policy-civic">
+					<h3 id="footer-navigation-policy-civic">市民意見</h3>
+					<ul>
+						<li><a href="/taipeispeaksup">市長，你給我聽好了</a></li>
+													<li><a href="/observatory">台北民意觀察室</a></li>
+											</ul>
+				</section>
+			</section>
+
+			<section class="footer-navigation__group" aria-labelledby="footer-navigation-currents">
+				<h2 id="footer-navigation-currents">洋流來襲</h2>
+				<section class="footer-navigation__category" aria-labelledby="footer-navigation-currents-activities">
+					<h3 id="footer-navigation-currents-activities">洋流活動</h3>
+					<ul>
+													<li><a href="/songs">競選歌曲</a></li>
+												<li><a href="https://storemap.puma.taipei/" target="_blank" rel="noopener noreferrer" aria-label="洋流好店，另開新分頁">洋流好店</a></li>
+						<li><a href="/taipei-current">台北大洋流</a></li>
+													<li><a href="/hackathon">市政 debug松</a></li>
+											</ul>
+				</section>
+				<section class="footer-navigation__category" aria-labelledby="footer-navigation-currents-fundraising">
+					<h3 id="footer-navigation-currents-fundraising">募款專區</h3>
+					<ul>
+						<li><a href="/merch">洋流小物</a></li>
+					</ul>
+				</section>
+			</section>
+
+			<section class="footer-navigation__group footer-navigation__group--fact-checks" aria-labelledby="footer-navigation-downloads footer-navigation-fact-checks">
+				<section class="footer-navigation__category footer-navigation__category--downloads" aria-labelledby="footer-navigation-downloads">
+					<h3 id="footer-navigation-downloads">下載專區</h3>
+					<ul>
+						<li><a href="/documents">文宣下載</a></li>
+												<li><a href="/soon-daily">順報</a></li>
+					</ul>
+				</section>
+				<h2 id="footer-navigation-fact-checks"><a href="/fact-checks">闢謠專區</a></h2>
+			</section>
+		</nav>
+	</div>
+</footer>
+            </body>
+</html>

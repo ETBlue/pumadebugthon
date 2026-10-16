@@ -3,6 +3,7 @@
 Author: Claude (AI agent), reviewed by ETBlue
 Date: 2026-10-16
 Reviews: [2026-10-15-issue-framing.md](2026-10-15-issue-framing.md)
+Note: the source tags were renamed from `[evidence]` / `[simulated]` to `[實證]` / `[AI模擬]` on 2026-10-16.
 
 These are the open points from the last review round. ETBlue accepted all six. Two points changed after the discussion (see notes in #1 and #5).
 
@@ -12,7 +13,7 @@ These are the open points from the last review round. ETBlue accepted all six. T
 |---|---|---|---|
 | 1 | 14 | Template and landing page | Template goes in `analysis/7-misc/`. Add `analysis/README.md`. |
 | 2 | 18 | Markdown → Google Docs / Sheets | Export each user story table as CSV too. |
-| 3 | 18, 20 | Simulated stories in public | Notice at the top of every file. `[simulated]` tag on every row. |
+| 3 | 18, 20 | Simulated stories in public | Notice at the top of every file. `[AI模擬]` tag on every row. |
 | 4 | 6 | Rule on the citizen data | Cite counts or summaries only. No raw messages in the repo. |
 | 5 | 20 | Working demo | The policy-process tool is now ETBlue's main hackathon submission. |
 | 6 | — | Timeline | Pilot 10/17, other issues 10/18, blog post 10/19. |
@@ -33,11 +34,11 @@ These are the open points from the last review round. ETBlue accepted all six. T
 
 ## 3. Simulated stories in public
 
-**Gap:** The repo is public and the blog post will be shared on social media. Someone may screenshot a `[simulated]` story and present it as a real citizen's words. This is more likely around an election campaign.
+**Gap:** The repo is public and the blog post will be shared on social media. Someone may screenshot a `[AI模擬]` story and present it as a real citizen's words. This is more likely around an election campaign.
 
 **Decision:**
-- Every file starts with a notice: the content is a simulation made with AI help, and stories marked `[simulated]` are not real interviews.
-- Every table row keeps its `[evidence]` or `[simulated]` tag, so a screenshot of one row still shows it.
+- Every file starts with a notice: the content is a simulation made with AI help, and stories marked `[AI模擬]` are not real interviews.
+- Every table row keeps its `[實證]` or `[AI模擬]` tag, so a screenshot of one row still shows it.
 - The blog post says the suggestion is personal and not linked to the host.
 
 ## 4. Rule on the citizen data
@@ -55,7 +56,7 @@ These are the open points from the last review round. ETBlue accepted all six. T
 Starting idea for the tool (to be designed later):
 - A web page where people browse stakeholders and user stories for an issue.
 - People can vote on priorities, for example with dot voting.
-- Each story shows its source tag (`[evidence]` / `[simulated]`).
+- Each story shows its source tag (`[實證]` / `[AI模擬]`).
 - The #2 pilot can be the demo data.
 
 Rules that apply to the submission (from [docs/event-info.md](../docs/event-info.md)):

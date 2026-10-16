@@ -63,11 +63,11 @@ for r in step4:
 raw = open(csv_path, "rb").read()
 if not raw.startswith(b"\xef\xbb\xbf"): err("CSV has no BOM")
 rows = list(csv.reader(open(csv_path, encoding="utf-8-sig", newline="")))
-hdr = ["編號", "利害關係人編號", "身為…", "我想要…", "相同訴求", "以便…", "來源標記", "來源說明", "優先順序"]
+hdr = ["故事編號", "利害關係人編號", "身為…", "我想要…", "相同訴求編號", "以便…", "來源", "來源標記", "優先順序", "優先順序標記"]
 if rows[0] != hdr: err(f"CSV header wrong: {rows[0]}")
 for r in rows[1:]:
-    if len(r) != 9: err(f"CSV row {r[0]} has {len(r)} fields")
-exp = [[c[0], c[0][:3], c[1], c[2], c[3], c[4], c[5].split(" ", 1)[0], (c[5].split(" ", 1) + [""])[1], c[6]] for c in step4]
+    if len(r) != 10: err(f"CSV row {r[0]} has {len(r)} fields")
+exp = [[c[0], c[0][:3], c[1], c[2], c[3], c[4], (c[5].split(" ", 1) + [""])[1], c[5].split(" ", 1)[0], c[6].split(" ")[1], c[6].split(" ")[0]] for c in step4]
 if rows[1:] != exp:
     err("CSV does not match step 4 table")
     for a, b in zip(rows[1:], exp):
@@ -97,13 +97,13 @@ tags = Counter(r[5].split(" ", 1)[0] for r in step4)
 
 # 7. MoSCoW
 sec5 = text.split("### 5.2", 1)[1].split("### 5.3", 1)[0]
-# priority column must use the new tag
+# priority column is a tag, then the MoSCoW letter
 for r in step4:
-    if not re.fullmatch(r"[MSCW] \[AI模擬\]", r[6]): err(f"{r[0]} bad priority value {r[6]}")
+    if not re.fullmatch(r"\[(?:實證|AI模擬)\] [MSCW]", r[6]): err(f"{r[0]} bad priority value {r[6]}")
     if r[5].split(" ", 1)[0] not in ("[實證]", "[AI模擬]"): err(f"{r[0]} bad source tag {r[5]}")
 # Must count claimed in 6.2 summary
 mm = re.search(r"全部 (\d+) 則 Must", text)
-nm = sum(1 for r in step4 if r[6].startswith("M "))
+nm = sum(1 for r in step4 if r[6].endswith(" M"))
 if not mm or int(mm.group(1)) != nm: err(f"6.2 Must summary count wrong: {mm and mm.group(1)} vs {nm}")
 names = {"Must": "M", "Should": "S", "Could": "C", "Won't": "W"}
 mos = {}
@@ -114,13 +114,13 @@ for line in sec5.splitlines():
         if int(m.group(2)) != len(l): err(f"MoSCoW {m.group(1)} count {m.group(2)} != {len(l)}")
         for i in l: mos[i] = names[m.group(1)]
 for r in step4:
-    p = r[6].split(" ")[0]
+    p = r[6].split(" ")[-1]
     if mos.get(r[0]) != p: err(f"MoSCoW mismatch {r[0]}: table {mos.get(r[0])} step4 {p}")
 
 # 8. Must covered by a solution; solution columns in correct priority
 sec62 = text.split("### 6.2", 1)[1].split("### 6.3", 1)[0]
 covered = set()
-prio = {r[0]: r[6].split(" ")[0] for r in step4}
+prio = {r[0]: r[6].split(" ")[-1] for r in step4}
 for line in sec62.splitlines():
     if re.match(r"^\| [A-D] ", line):
         c = [x.strip() for x in line.strip().strip("|").split(" | ")]

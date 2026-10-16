@@ -15,9 +15,12 @@ for line in sec.splitlines():
         # The source cell is a tag, optionally followed by a note.
         m = re.match(r"^(\[實證\]|\[AI模擬\])(?: (.*))?$", src)
         assert m, f"{sid}: bad source cell {src!r}"
-        rows.append([sid, sid.split("-")[0], who, want, w, so, m.group(1), m.group(2) or "", pri])
+        # The priority cell is a tag followed by the MoSCoW letter.
+        p = re.match(r"^(\[實證\]|\[AI模擬\]) ([MSCW])$", pri)
+        assert p, f"{sid}: bad priority cell {pri!r}"
+        rows.append([sid, sid.split("-")[0], who, want, w, so, m.group(2) or "", m.group(1), p.group(2), p.group(1)])
 with open(out, "w", encoding="utf-8-sig", newline="") as f:
     wr = csv.writer(f, lineterminator="\n")
-    wr.writerow(["編號", "利害關係人編號", "身為…", "我想要…", "相同訴求", "以便…", "來源標記", "來源說明", "優先順序"])
+    wr.writerow(["故事編號", "利害關係人編號", "身為…", "我想要…", "相同訴求編號", "以便…", "來源", "來源標記", "優先順序", "優先順序標記"])
     wr.writerows(rows)
 print(len(rows), "rows")

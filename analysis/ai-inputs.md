@@ -101,3 +101,4 @@ All changes so far happened on 2026-10-16.
 | 2026-10-16 | Renamed `framing.md` to `issue-analysis.md`, and `check_framing.py` to `check_analysis.py`. | Done. |
 | 2026-10-16 | Renamed the plan and review files. Turned this file into a current summary with a changelog. | `human-inputs.md`, `ai-inputs.md`. |
 | 2026-10-16 | ETBlue asked to remove the 「利害關係人」 CSV column, because it always held the same text as 「身為…」. | Done. CSV now has 9 columns. `build_csv.py` and `check_analysis.py` updated. |
+| 2026-10-16 | ETBlue renamed CSV columns (故事編號, 相同訴求編號, 來源), put 來源 before 來源標記, and split 優先順序 into 優先順序 and 優先順序標記, so Sheets users can sort by tag. Claude suggested 「相同訴求編號」 over 「訴求編號」. In the Markdown, the step 4 priority cell changed from `S [AI模擬]` to `[AI模擬] S`. Story tables use 故事編號 and 相同訴求編號; stakeholder tables use 利害關係人編號. | Done. CSV now has 10 columns. Note: Sheets sorts 優先順序 A–Z as C, M, S, W, not MoSCoW order. |

@@ -24,8 +24,9 @@ Claude updates this file after each review round.
 | Prioritization | MoSCoW per row, based only on that stakeholder's need. Shared groups are considered in words. No scores, weights, ranks or formulas. Numeric methods (MCDA, RICE) are listed only as options for quantitative data. | `human-inputs.md` step 5, pilot 5.1–5.3 |
 | Solutions | Each solution lists the stories it covers and its success measures, with a baseline and a data source. | `human-inputs.md` step 6 |
 | Cost and risk | Per solution: data / API / resources, laws, privacy, other concerns, owner department. | `human-inputs.md` step 7 |
-| CSV export | Next to each `framing.md`, a `user-stories.csv` (UTF-8 with BOM) for Google Sheets. | pilot |
-| Format model | The #2 pilot (`2-trashcans/`) is the model for the other issues. Check each issue with `check_framing.py`. | `human-inputs.md` line 14 |
+| CSV export | Next to each `issue-analysis.md`, a `user-stories.csv` (UTF-8 with BOM) for Google Sheets. | pilot |
+| Format model | The #2 pilot (`2-trashcans/`) is the model for the other issues. Check each issue with `check_analysis.py`. | `human-inputs.md` line 14 |
+| Writing style | Tags go inside each table cell, so one row in a screenshot still shows its tag. Step 3 uses bold labels (**真正的需求**, **新故事**, **新利害關係人**). Say "the issue text is an input source" only once, in step 1 rules, not in every section. Modest wording for AI content (「可能的…」, 「由 AI 整理，可以作為討論的起點」). | pilot (ETBlue's edits) |
 | Template and README | `7-misc/` holds the template (`.md` and `.csv`). `analysis/README.md` is a quick intro for the host. | `human-inputs.md` line 14 (not made yet) |
 | Citizen data rule | The rules say 「市長，你給我聽好了」資料僅限於此黑客松活動使用. If the data is released, the repo cites only counts or summaries, never raw messages, and never tries to identify senders. | this file |
 | Blog post | Say the suggestion is personal and not linked to the host. | this file |
@@ -59,7 +60,7 @@ Rules that apply (from [docs/event-info.md](../docs/event-info.md)):
 
 ### Open questions
 
-From the #2 pilot (`2-trashcans/framing.md`). A person should decide:
+From the #2 pilot (`2-trashcans/issue-analysis.md`). A person should decide:
 1. W06, W09 and W10 group stories whose 「我想要」 are similar but not the same. Keep or split?
 2. Possible groups not made yet: O04-US01 with W01, and I09-US03 with O10-US01.
 3. I09 (nearby resident) wants placement suggestions (I09-US04) but no bin at their door (I09-US01). Do these fit together?
@@ -90,4 +91,6 @@ All changes so far happened on 2026-10-16.
 | 2026-10-16 | Suggested clearer wording for "avoid using numbers". | ETBlue updated step 5. Numeric methods in pilot 5.1 labelled 〔僅限量化資料〕. |
 | 2026-10-16 | Moved the check script into the repo. | `analysis/check_framing.py`. |
 | 2026-10-16 | Fixed weekdays in the timeline. The earlier version had 10/17 as Friday and 10/19 as Sunday. They are Saturday and Monday. | Done. |
+| 2026-10-16 | ETBlue edited the pilot: less repetition, tags inside cells, bold labels in step 3, modest wording, 「缺口分數」 → 「缺口指標」. | Added as writing style rules for the other issues. |
+| 2026-10-16 | Renamed `framing.md` to `issue-analysis.md`, and `check_framing.py` to `check_analysis.py`. | Done. |
 | 2026-10-16 | Renamed the plan and review files. Turned this file into a current summary with a changelog. | `human-inputs.md`, `ai-inputs.md`. |

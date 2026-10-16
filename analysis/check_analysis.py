@@ -1,4 +1,4 @@
-"""Check that an issue framing.md and its user-stories.csv match. Usage: python3 -I analysis/check_framing.py analysis/2-trashcans/framing.md analysis/2-trashcans/user-stories.csv"""
+"""Check that an issue-analysis.md and its user-stories.csv match. Usage: python3 -I analysis/check_analysis.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv"""
 import csv, re, sys, unicodedata
 from collections import Counter, defaultdict
 
@@ -15,6 +15,10 @@ for name, body in ((md_path, text), (csv_path, csv_text)):
     for t_ in set(re.findall(r"\[[^\[\]]{1,12}\]", body)):
         if t_.isascii() and t_.lower().strip("[]") in ("evidence", "simulated"): err(f"{name}: old tag variant {t_}")
 
+# 0b. in Markdown, every tag is wrapped in backticks (the CSV keeps plain tags)
+bare = re.findall(r"(?<!`)\[(?:實證|AI模擬)\](?!`)", text)
+if bare: err(f"{md_path}: {len(bare)} tag(s) without backticks")
+
 # 1. no old S\d\d IDs
 old = re.findall(r"(?<![A-Za-z0-9])S\d\d(?:-US\d\d)?", text)
 csv_raw = open(csv_path, encoding="utf-8").read()
@@ -26,7 +30,8 @@ sec4 = text.split("## 步驟 4：使用者故事總表", 1)[1].split("### 相同
 step4 = []
 for line in sec4.splitlines():
     if re.match(r"^\| [OI]\d\d-US\d\d \|", line):
-        c = [x.strip() for x in line.strip().strip("|").split(" | ")]
+        # Markdown cells may wrap tags in backticks; the CSV has plain tags.
+        c = [x.strip().replace("`", "") for x in line.strip().strip("|").split(" | ")]
         if len(c) != 7: err(f"step4 row has {len(c)} cells: {line[:40]}")
         step4.append(c)
 ids4 = [r[0] for r in step4]

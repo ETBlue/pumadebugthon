@@ -63,11 +63,15 @@ for r in step4:
 raw = open(csv_path, "rb").read()
 if not raw.startswith(b"\xef\xbb\xbf"): err("CSV has no BOM")
 rows = list(csv.reader(open(csv_path, encoding="utf-8-sig", newline="")))
-hdr = ["故事編號", "利害關係人編號", "身為…", "我想要…", "相同訴求編號", "以便…", "來源", "來源標記", "優先順序", "優先順序標記"]
+hdr = ["故事編號", "利害關係人編號", "身為…", "我想要…", "我想要標記", "相同訴求編號", "以便…", "以便標記", "來源", "優先順序", "優先順序標記"]
 if rows[0] != hdr: err(f"CSV header wrong: {rows[0]}")
 for r in rows[1:]:
-    if len(r) != 10: err(f"CSV row {r[0]} has {len(r)} fields")
-exp = [[c[0], c[0][:3], c[1], c[2], c[3], c[4], (c[5].split(" ", 1) + [""])[1], c[5].split(" ", 1)[0], c[6].split(" ")[1], c[6].split(" ")[0]] for c in step4]
+    if len(r) != 11: err(f"CSV row {r[0]} has {len(r)} fields")
+# 我想要… and 以便… start with a tag; a 【待補】 cell has no tag.
+def split_tag(cell):
+    m = re.match(r"^(\[實證\]|\[AI模擬\]) (.+)$", cell)
+    return (m.group(2), m.group(1)) if m else (cell, "")
+exp = [[c[0], c[0][:3], c[1], *split_tag(c[2]), c[3], *split_tag(c[4]), c[5], c[6].split(" ")[1], c[6].split(" ")[0]] for c in step4]
 if rows[1:] != exp:
     err("CSV does not match step 4 table")
     for a, b in zip(rows[1:], exp):
@@ -84,7 +88,7 @@ for w, l in wmap.items():
     if len({x[:3] for x in l}) != len(l): err(f"{w} has two rows of the same stakeholder")
 secw = text.split("### 相同訴求群組", 1)[1].split("\n---", 1)[0]
 for line in secw.splitlines():
-    m = re.match(r"^\| (W\d\d) \| [^|]+ \| ([^|]+) \| ([^|]+) \|", line)
+    m = re.match(r"^\| `\[AI模擬\]` (W\d\d) \| [^|]+ \| ([^|]+) \| ([^|]+) \|", line)
     if m:
         l = re.findall(r"[OI]\d\d-US\d\d", m.group(2))
         if sorted(l) != sorted(wmap.get(m.group(1), [])): err(f"group table {m.group(1)} mismatch: {l} vs {wmap.get(m.group(1))}")
@@ -93,14 +97,17 @@ for line in secw.splitlines():
 if wmap: err(f"W groups missing from group table: {list(wmap)}")
 
 # tags
-tags = Counter(r[5].split(" ", 1)[0] for r in step4)
+want_tags = Counter(split_tag(r[2])[1] or "【待補】" for r in step4)
+so_tags = Counter(split_tag(r[4])[1] or "【待補】" for r in step4)
 
 # 7. MoSCoW
 sec5 = text.split("### 5.2", 1)[1].split("### 5.3", 1)[0]
 # priority column is a tag, then the MoSCoW letter
 for r in step4:
     if not re.fullmatch(r"\[(?:實證|AI模擬)\] [MSCW]", r[6]): err(f"{r[0]} bad priority value {r[6]}")
-    if r[5].split(" ", 1)[0] not in ("[實證]", "[AI模擬]"): err(f"{r[0]} bad source tag {r[5]}")
+    for name, cell in (("我想要", r[2]), ("以便", r[4])):
+        if not split_tag(cell)[1] and not cell.startswith("【待補"): err(f"{r[0]} {name} cell has no tag: {cell}")
+    if re.match(r"^\[(?:實證|AI模擬)\]", r[5]): err(f"{r[0]} 來源 cell should not have a tag: {r[5]}")
 # Must count claimed in 6.2 summary
 mm = re.search(r"全部 (\d+) 則 Must", text)
 nm = sum(1 for r in step4 if r[6].endswith(" M"))
@@ -108,7 +115,7 @@ if not mm or int(mm.group(1)) != nm: err(f"6.2 Must summary count wrong: {mm and
 names = {"Must": "M", "Should": "S", "Could": "C", "Won't": "W"}
 mos = {}
 for line in sec5.splitlines():
-    m = re.match(r"^\| (Must|Should|Could|Won't)[^|]* \| (\d+) \| ([^|]+) \|", line)
+    m = re.match(r"^\| `\[AI模擬\]` (Must|Should|Could|Won't)[^|]* \| (\d+) \| ([^|]+) \|", line)
     if m:
         l = re.findall(r"[OI]\d\d-US\d\d", m.group(3))
         if int(m.group(2)) != len(l): err(f"MoSCoW {m.group(1)} count {m.group(2)} != {len(l)}")
@@ -154,7 +161,7 @@ for a in re.findall(r"\]\(#([^)]+)\)", text):
     if a not in heads: err(f"broken anchor #{a}")
 
 print(f"stakeholders: {len(stake)} (O {sum(k[0]=='O' for k in stake)}, I {sum(k[0]=='I' for k in stake)})")
-print(f"stories: {len(step4)}; tags: {dict(tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}")
+print(f"stories: {len(step4)}; 我想要 tags: {dict(want_tags)}; 以便 tags: {dict(so_tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}")
 anchors = sorted(set(re.findall(r"\]\(#([^)]+)\)", text))); print("anchors checked:", anchors)
 if errors:
     print("FAIL"); [print(" -", e) for e in errors]; sys.exit(1)

@@ -13,7 +13,7 @@
 > - 真實的市政決策需要諮詢專業人士（環境工程、法務、審議民主實務者等）。
 
 - 題目來源：[市政 debug松 題目 #2](https://puma.taipei/hackathon#issues)（2026-10-15 存檔）
-- 方法：依 [議題拆解計畫](../2026-10-15-issue-framing.md) 的 7 個步驟
+- 方法：依 [議題拆解計畫](../human-inputs.md) 的 7 個步驟
 - 使用者故事表（可匯入 Google Sheets）：[user-stories.csv](user-stories.csv)
 - 製作日期：2026-10-16
 

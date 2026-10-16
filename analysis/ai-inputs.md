@@ -27,7 +27,9 @@ Claude updates this file after each review round.
 | CSV export | Next to each `issue-analysis.md`, a `user-stories.csv` (UTF-8 with BOM) for Google Sheets. | pilot |
 | Format model | The #2 pilot (`2-trashcans/`) is the model for the other issues. Check each issue with `check_analysis.py`. | `human-inputs.md` line 14 |
 | Writing style | Tags go inside each table cell, so one row in a screenshot still shows its tag. Step 3 uses bold labels (**真正的需求**, **新故事**, **新利害關係人**). Say "the issue text is an input source" only once, in step 1 rules, not in every section. Modest wording for AI content (「可能的…」, 「由 AI 整理，可以作為討論的起點」). | pilot (ETBlue's edits) |
-| Template and README | `7-misc/` holds the template (`.md` and `.csv`). `analysis/README.md` is a quick intro for the host. | `human-inputs.md` line 14 (not made yet) |
+| Template and README | `7-misc/` holds the template (`.md` and `.csv`). `analysis/README.md` is a quick intro for the host, in zh-TW. | `human-inputs.md` line 14. README done; template not made yet. |
+| Notice in Google Sheets | The CSV has no notice. The README gives the host a short notice to put in the sheet title or first row. | `analysis/README.md` |
+| CSV builder | After editing the step 4 table, rebuild the CSV with `build_csv.py`, then run `check_analysis.py`. | `analysis/build_csv.py`, README |
 | Citizen data rule | The rules say 「市長，你給我聽好了」資料僅限於此黑客松活動使用. If the data is released, the repo cites only counts or summaries, never raw messages, and never tries to identify senders. | this file |
 | Blog post | Say the suggestion is personal and not linked to the host. | this file |
 
@@ -92,5 +94,9 @@ All changes so far happened on 2026-10-16.
 | 2026-10-16 | Moved the check script into the repo. | `analysis/check_framing.py`. |
 | 2026-10-16 | Fixed weekdays in the timeline. The earlier version had 10/17 as Friday and 10/19 as Sunday. They are Saturday and Monday. | Done. |
 | 2026-10-16 | ETBlue edited the pilot: less repetition, tags inside cells, bold labels in step 3, modest wording, 「缺口分數」 → 「缺口指標」. | Added as writing style rules for the other issues. |
+| 2026-10-16 | ETBlue removed the repeated 「AI 模擬，非真實訪談」 from the step 4 source column. | CSV rebuilt. Added `build_csv.py`. Check script accepts a tag-only cell. |
+| 2026-10-16 | Suggested a notice for the CSV in Google Sheets, given in the README. | Accepted. |
+| 2026-10-16 | Wrote `analysis/README.md` (zh-TW). | Draft for ETBlue's review. |
+| 2026-10-16 | ETBlue edited the README: new 為什麼要做這個 section, softer Day 1 wording, read-only story docs for participants. Suggested putting back a short notice and softening the 為什麼 text. | Accepted. README done. |
 | 2026-10-16 | Renamed `framing.md` to `issue-analysis.md`, and `check_framing.py` to `check_analysis.py`. | Done. |
 | 2026-10-16 | Renamed the plan and review files. Turned this file into a current summary with a changelog. | `human-inputs.md`, `ai-inputs.md`. |

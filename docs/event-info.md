@@ -1,4 +1,4 @@
-# 市政 debug松 — Event Info, Schedule, Rules
+# 市政 debug 松 — Event Info, Schedule, Rules
 
 Source: https://puma.taipei/hackathon
 Saved: 2026-10-15. Text is copied from the website (Traditional Chinese). English notes are mine.

@@ -1,4 +1,4 @@
-# 市政 debug松 — 7 Issues
+# 市政 debug 松 — 7 Issues
 
 Source: https://puma.taipei/hackathon#issues
 Saved: 2026-10-15. Text is copied as-is from the website (Traditional Chinese).

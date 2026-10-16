@@ -63,11 +63,11 @@ for r in step4:
 raw = open(csv_path, "rb").read()
 if not raw.startswith(b"\xef\xbb\xbf"): err("CSV has no BOM")
 rows = list(csv.reader(open(csv_path, encoding="utf-8-sig", newline="")))
-hdr = ["編號", "利害關係人編號", "利害關係人", "身為…", "我想要…", "相同訴求", "以便…", "來源標記", "來源說明", "優先順序"]
+hdr = ["編號", "利害關係人編號", "身為…", "我想要…", "相同訴求", "以便…", "來源標記", "來源說明", "優先順序"]
 if rows[0] != hdr: err(f"CSV header wrong: {rows[0]}")
 for r in rows[1:]:
-    if len(r) != 10: err(f"CSV row {r[0]} has {len(r)} fields")
-exp = [[c[0], c[0][:3], c[1], c[1], c[2], c[3], c[4], c[5].split(" ", 1)[0], (c[5].split(" ", 1) + [""])[1], c[6]] for c in step4]
+    if len(r) != 9: err(f"CSV row {r[0]} has {len(r)} fields")
+exp = [[c[0], c[0][:3], c[1], c[2], c[3], c[4], c[5].split(" ", 1)[0], (c[5].split(" ", 1) + [""])[1], c[6]] for c in step4]
 if rows[1:] != exp:
     err("CSV does not match step 4 table")
     for a, b in zip(rows[1:], exp):

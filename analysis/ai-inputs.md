@@ -100,3 +100,4 @@ All changes so far happened on 2026-10-16.
 | 2026-10-16 | ETBlue edited the README: new 為什麼要做這個 section, softer Day 1 wording, read-only story docs for participants. Suggested putting back a short notice and softening the 為什麼 text. | Accepted. README done. |
 | 2026-10-16 | Renamed `framing.md` to `issue-analysis.md`, and `check_framing.py` to `check_analysis.py`. | Done. |
 | 2026-10-16 | Renamed the plan and review files. Turned this file into a current summary with a changelog. | `human-inputs.md`, `ai-inputs.md`. |
+| 2026-10-16 | ETBlue asked to remove the 「利害關係人」 CSV column, because it always held the same text as 「身為…」. | Done. CSV now has 9 columns. `build_csv.py` and `check_analysis.py` updated. |

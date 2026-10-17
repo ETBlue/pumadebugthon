@@ -9,4 +9,11 @@ export const t = {
     loading: '資料載入中…',
     loadError: '資料載入失敗，請重新整理頁面再試一次。',
   },
+  /** MoSCoW labels (design 3.4). */
+  priority: {
+    M: '必須有',
+    S: '應該有',
+    C: '可以有',
+    W: '這次不做',
+  },
 } as const

@@ -1,11 +1,41 @@
 """Check that an issue-analysis.md and its user-stories.csv match. Usage: python3 -I analysis/check_analysis.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv"""
-import csv, re, sys, unicodedata
+import csv, glob, os, re, sys, unicodedata
 from collections import Counter, defaultdict
 
 md_path, csv_path = sys.argv[1], sys.argv[2]
 text = open(md_path, encoding="utf-8").read()
 errors = []
 def err(m): errors.append(m)
+
+# Shared files sit next to the issue folders.
+analysis_dir = os.path.dirname(os.path.dirname(os.path.abspath(md_path)))
+def read_csv(name):
+    with open(os.path.join(analysis_dir, name), encoding="utf-8-sig", newline="") as f:
+        return list(csv.DictReader(f))
+
+# The 編號異動紀錄 section lists old IDs on purpose. Old IDs that appear only
+# there must not fail the "referenced IDs exist" checks, so those checks use
+# the text without this section.
+CHANGE_LOG = "## 編號異動紀錄"
+def without_change_log(t):
+    if CHANGE_LOG not in t: return t
+    head, tail = t.split(CHANGE_LOG, 1)
+    m = re.search(r"^## ", tail, re.M)
+    return head + (tail[m.start():] if m else "")
+text_refs = without_change_log(text)
+
+STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
+def cells(line):
+    return [x.strip() for x in line.strip().strip("|").split(" | ")]
+def step1_rows(t):
+    """Return the step 1 (1.1) table rows and header lines of an issue file."""
+    sec = t.split("## 步驟 1", 1)[1].split("### 1.2", 1)[0] if "## 步驟 1" in t else ""
+    rows = [cells(l) for l in sec.splitlines() if re.match(r"^\| [OI]\d\d \|", l)]
+    headers = [cells(l) for l in sec.splitlines() if l.startswith("| 利害關係人編號 ")]
+    return rows, headers
+def split_focus(v):
+    v = v.strip()
+    return [] if v in ("", "—") else [x.strip() for x in v.split("、")]
 
 # 0. old English tags must be gone; only new tags allowed
 csv_text = open(csv_path, encoding="utf-8").read()
@@ -38,19 +68,91 @@ ids4 = [r[0] for r in step4]
 if len(ids4) != len(set(ids4)): err("duplicate story IDs in step 4")
 
 # step 1 stakeholders
-sec1 = text.split("## 步驟 1", 1)[1].split("### 1.2", 1)[0]
+s1rows, s1headers = step1_rows(text)
+if not s1headers: err("step 1: no stakeholder table found")
+for h in s1headers:
+    if h != STEP1_HEADER: err(f"step 1 table header wrong: {' | '.join(h)} (expected {' | '.join(STEP1_HEADER)})")
 stake = {}
-for line in sec1.splitlines():
-    m = re.match(r"^\| ([OI]\d\d) \| ([^|]+?) \|", line)
-    if m: stake[m.group(1)] = m.group(2)
+for c in s1rows:
+    if len(c) != len(STEP1_HEADER): err(f"step 1 row {c[0]} has {len(c)} cells, expected {len(STEP1_HEADER)}"); continue
+    if c[0] in stake: err(f"step 1: {c[0]} listed twice")
+    stake[c[0]] = c[1]
+
+# 10. step 1 matches stakeholders.csv
+shared = read_csv("stakeholders.csv")
+by_id = {r["利害關係人編號"]: r for r in shared}
+for c in s1rows:
+    if len(c) != len(STEP1_HEADER): continue
+    sid, name, path, focus = c[0], c[1], c[2], c[3]
+    r = by_id.get(sid)
+    if r is None: err(f"step 1: {sid} is not in stakeholders.csv"); continue
+    if r["備註"].strip(): err(f"step 1: {sid} is not active in stakeholders.csv (備註: {r['備註']})"); continue
+    if name != r["利害關係人"]: err(f"step 1: {sid} name {name} != stakeholders.csv {r['利害關係人']}")
+    pm = re.fullmatch(r"`([^`]+)`", path)
+    if not pm: err(f"step 1: {sid} 分類路徑 must be one code in backticks: {path}")
+    elif pm.group(1) != r["分類路徑"]: err(f"step 1: {sid} 分類路徑 {pm.group(1)} != stakeholders.csv {r['分類路徑']}")
+    if split_focus(focus) != split_focus(r["特別關注"]): err(f"step 1: {sid} 特別關注 {focus} != stakeholders.csv {r['特別關注'] or '—'}")
+
+# 11. every prefix of every active path has a label
+labels = {r["分類路徑"] for r in read_csv("path-labels.csv")}
+for r in shared:
+    if r["備註"].strip(): continue
+    sid, path = r["利害關係人編號"], r["分類路徑"].strip()
+    if not path: err(f"stakeholders.csv: active {sid} has no 分類路徑"); continue
+    parts = path.split("-")
+    for i in range(1, len(parts) + 1):
+        prefix = "-".join(parts[:i])
+        if prefix not in labels: err(f"path prefix {prefix} (used by {sid}) has no row in path-labels.csv")
+
+# 12. the 議題 column matches the issue files that list each ID in step 1
+folder_num = {r["資料夾"]: int(r["編號"]) for r in read_csv("issues.csv")}
+listed = defaultdict(set)
+for f in glob.glob(os.path.join(analysis_dir, "*", "issue-analysis.md")):
+    folder = os.path.basename(os.path.dirname(f))
+    if folder not in folder_num: continue  # for example a template folder
+    for c in step1_rows(open(f, encoding="utf-8").read())[0]:
+        listed[c[0]].add(folder_num[folder])
+for r in shared:
+    sid = r["利害關係人編號"]
+    want = "" if r["備註"].strip() else " ".join(str(n) for n in sorted(listed[sid]))
+    if r["議題"].strip() != want: err(f"stakeholders.csv: {sid} 議題 is {r['議題']!r}, expected {want!r}")
+
+# 13. the 空間類型 line right under the title
+space_codes = {r["代碼"] for r in read_csv("space-types.csv")}
+lines = text.splitlines()
+issue_spaces = []
+if len(lines) > 2 and lines[0].startswith("# ") and lines[1] == "" and lines[2].startswith("空間類型："):
+    body = lines[2][len("空間類型："):]
+    issue_spaces = re.findall(r"`([^`]+)`", body)
+    if not issue_spaces or "、".join(f"`{c}`" for c in issue_spaces) != body.strip():
+        err(f"空間類型 line must be codes in backticks separated by 、: {lines[2]}")
+    for code in issue_spaces:
+        if code not in space_codes: err(f"空間類型 line: unknown space code {code} (not in space-types.csv)")
+else:
+    err("no 「空間類型：」 line right under the title (title, blank line, then the line)")
+
+# 14. 6.1 has a 空間類型 column; each code is known and in the issue's list
+sec61 = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0] if "### 6.1" in text else ""
+hdr61 = next((cells(l) for l in sec61.splitlines() if l.startswith("| 代號 ")), None)
+if not hdr61 or "空間類型" not in hdr61: err("6.1: no 空間類型 column")
+else:
+    col = hdr61.index("空間類型")
+    for line in sec61.splitlines():
+        if not re.match(r"^\| [A-Z] \|", line): continue
+        c = cells(line); sol = c[0]
+        codes = re.findall(r"`([^`]+)`", c[col]) if len(c) > col else []
+        if not codes: err(f"6.1 solution {sol}: no space type")
+        for code in codes:
+            if code not in space_codes: err(f"6.1 solution {sol}: unknown space code {code}")
+            elif code not in issue_spaces: err(f"6.1 solution {sol}: space {code} is not in the issue's 空間類型 line")
 
 # 2. every story ID referenced exists
-refs = set(re.findall(r"[OI]\d\d-US\d\d", text))
+refs = set(re.findall(r"[OI]\d\d-US\d\d", text_refs))
 missing = refs - set(ids4)
 if missing: err(f"story IDs referenced but not in step 4: {sorted(missing)}")
 
 # 3. stakeholder IDs referenced exist
-srefs = set(re.findall(r"(?<![A-Za-z0-9])([OI]\d\d)(?![0-9])", text))
+srefs = set(re.findall(r"(?<![A-Za-z0-9])([OI]\d\d)(?![0-9])", text_refs))
 if srefs - set(stake): err(f"stakeholder IDs not in step 1: {sorted(srefs - set(stake))}")
 
 # 4. every stakeholder has a story; story stakeholder names match

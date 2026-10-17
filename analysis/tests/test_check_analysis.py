@@ -43,13 +43,17 @@ class CheckAnalysisTest(unittest.TestCase):
         with open(path, "w", encoding=enc, newline="") as f:
             f.write(text.replace(old, new))
 
-    def run_check(self):
-        p = subprocess.run([sys.executable, "-I", SCRIPT, self.md, self.csv],
+    def run_check(self, folder=None):
+        md, csv_ = self.md, self.csv
+        if folder:
+            md = os.path.join(self.dir, folder, "issue-analysis.md")
+            csv_ = os.path.join(self.dir, folder, "user-stories.csv")
+        p = subprocess.run([sys.executable, "-I", SCRIPT, md, csv_],
                            capture_output=True, text=True)
         return p.returncode, p.stdout + p.stderr
 
-    def assertFails(self, *needles):
-        code, out = self.run_check()
+    def assertFails(self, *needles, folder=None):
+        code, out = self.run_check(folder)
         self.assertEqual(code, 1, out)
         for n in needles:
             self.assertIn(n, out)
@@ -170,6 +174,53 @@ class CheckAnalysisTest(unittest.TestCase):
                   "| 商圈發展協會、便利商店門市 | `[AI模擬]` O01、I12 |",
                   "| 商圈發展協會、便利商店門市 | `[AI模擬]` O01、O02 |")
         self.assertFails("O02")
+
+    # Cross-issue references: 「#2 O01-US01」 written in another issue file.
+    # The C4 模擬結果 cell of #1 is free text, so the tests add references there.
+    C4_RESULT = "（O01-US02），可以從這點開始談"
+
+    def add_to_issue_1(self, ref):
+        self.edit("1-trees/issue-analysis.md", self.C4_RESULT, f"（O01-US02），可以從這點開始談（{ref}）")
+
+    def test_issue_1_passes(self):
+        code, out = self.run_check("1-trees")
+        self.assertEqual(code, 0, out)
+
+    def test_cross_issue_story_reference_passes(self):
+        self.add_to_issue_1("見 #2 O01-US01")
+        code, out = self.run_check("1-trees")
+        self.assertEqual(code, 0, out)
+
+    def test_cross_issue_stakeholder_reference_passes(self):
+        self.add_to_issue_1("見 #2 O03")
+        code, out = self.run_check("1-trees")
+        self.assertEqual(code, 0, out)
+
+    def test_cross_issue_story_not_in_that_issue(self):
+        self.add_to_issue_1("見 #2 O99-US01")
+        self.assertFails("#2 O99-US01", folder="1-trees")
+
+    def test_cross_issue_stakeholder_not_in_that_issue(self):
+        self.add_to_issue_1("見 #2 O99")
+        self.assertFails("#2 O99", folder="1-trees")
+
+    def test_cross_issue_unknown_issue_number(self):
+        self.add_to_issue_1("見 #9 O01-US01")
+        self.assertFails("#9 O01-US01", "issues.csv", folder="1-trees")
+
+    def test_cross_issue_reference_to_own_issue(self):
+        self.add_to_issue_1("見 #1 O01-US01")
+        self.assertFails("#1 O01-US01", "local ID", folder="1-trees")
+
+    def test_cross_issue_reference_in_conflict_stories_cell(self):
+        self.edit("1-trees/issue-analysis.md", "`[AI模擬]` O01-US01 vs I01-US01、I16-US01",
+                  "`[AI模擬]` O01-US01、#2 O01-US01 vs I01-US01、I16-US01")
+        self.assertFails("5.4", "#2 O01-US01", folder="1-trees")
+
+    def test_cross_issue_reference_in_6_2_cell(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 | `[AI模擬]` O04-US01",
+                  "| D | 參與式選址流程 | `[AI模擬]` #1 O01-US01、O04-US01")
+        self.assertFails("6.2", "#1 O01-US01")
 
 
 if __name__ == "__main__":

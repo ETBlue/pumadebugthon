@@ -20,6 +20,10 @@ columns. There must be exactly one such table (step 1: exactly two, 組織 and
 個人, found with analysis_common.step1_tables). Columns are found by their
 header names.
 
+Lists of IDs (1.2, 相同訴求群組, 5.4 相關故事, 6.2) hold IDs of this issue only.
+A reference to another issue there, like 「#2 O01-US01」, stops the script.
+In other text it stays as written; check_analysis.py checks that it exists.
+
 Markdown inside cells (for example **bold** and [links](...)) stays as written
 in the Cell text and in other text fields. The app renders it.
 """
@@ -168,6 +172,16 @@ def cell(s, section_name, where):
         raise ReadError(section_name, f"{where}: {e}")
 
 
+def local_ids(pattern, value, section_name, where):
+    """The IDs in a cell that lists stories or stakeholders of this issue only
+    (1.2, 相同訴求群組, 5.4, 6.2). A reference to another issue
+    (「#2 O01-US01」, see analysis_common.CROSS_REF) is an error here."""
+    m = common.CROSS_REF.search(value)
+    if m:
+        raise ReadError(section_name, f"{where}: 「{m.group(0)}」 refers to another issue, but this list holds IDs of this issue only")
+    return pattern.findall(value)
+
+
 def no_duplicates(ids, section_name, kind):
     seen = set()
     for i in ids:
@@ -211,7 +225,7 @@ def parse_issue(text, space_codes):
         fit = r["適合的利害關係人"]
         input_sources.append({
             "source": r["輸入來源"],
-            "stakeholders": unique(STAKEHOLDER_ID.findall(fit)),
+            "stakeholders": unique(local_ids(STAKEHOLDER_ID, fit, "1.2", r["輸入來源"])),
             "fit": cell(fit, "1.2", r["輸入來源"]),
             "note": dash_to_none(r["注意事項"]),
         })
@@ -244,7 +258,7 @@ def parse_issue(text, space_codes):
         if not re.fullmatch(r"W\d\d", c["text"]):
             raise ReadError("相同訴求群組", f"bad group ID 「{r['群組']}」")
         groups.append({"id": c["text"], "summary": r["我想要（摘要）"], "tag": c["tag"],
-                       "stories": STORY_ID.findall(r["故事編號"])})
+                       "stories": local_ids(STORY_ID, r["故事編號"], "相同訴求群組", c["text"])})
 
     # cross-references: stories and groups
     story_ids = [s["id"] for s in stories]
@@ -267,7 +281,7 @@ def parse_issue(text, space_codes):
         sides = r["相關故事"].split(" vs ")
         if len(sides) != 2:
             raise ReadError("5.4", f"{cid}: 相關故事 must have exactly one 「 vs 」, found {len(sides) - 1}")
-        a, b = (STORY_ID.findall(s) for s in sides)
+        a, b = (local_ids(STORY_ID, s, "5.4", cid) for s in sides)
         if not a or not b:
             raise ReadError("5.4", f"{cid}: one side of 「 vs 」 has no story ID")
         for sid in a + b:
@@ -302,7 +316,8 @@ def parse_issue(text, space_codes):
         if sol not in by_sol:
             raise ReadError("6.2", f"solution 「{sol}」 is not in 6.1")
         in_62.append(sol)
-        ids = STORY_ID.findall(r["涵蓋的 Must"]) + STORY_ID.findall(r["涵蓋的 Should / Could"])
+        ids = (local_ids(STORY_ID, r["涵蓋的 Must"], "6.2", f"solution {sol}")
+               + local_ids(STORY_ID, r["涵蓋的 Should / Could"], "6.2", f"solution {sol}"))
         for sid in ids:
             if sid not in known:
                 raise ReadError("6.2", f"solution {sol}: story {sid} is not in step 4")

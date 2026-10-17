@@ -311,6 +311,19 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertIn("C7", out)
         self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
 
+    def test_cross_issue_reference_in_conflict(self):
+        # 5.4 相關故事 holds stories of this issue only.
+        self.edit("`[AI模擬]` I11-US01 vs I09-US01", "`[AI模擬]` I11-US01 vs I09-US01、#1 I06-US02")
+        self.assertFails("2-trashcans: 5.4", "C7", "#1 I06-US02")
+
+    def test_cross_issue_reference_in_group(self):
+        self.edit("| O12-US01、I06-US01、I07-US02 |", "| O12-US01、I06-US01、I07-US02、#1 I06-US02 |")
+        self.assertFails("2-trashcans: 相同訴求群組", "#1 I06-US02")
+
+    def test_cross_issue_reference_in_6_2(self):
+        self.edit("| D | 參與式選址流程 | `[AI模擬]` O04-US01", "| D | 參與式選址流程 | `[AI模擬]` #1 O01-US01、O04-US01")
+        self.assertFails("2-trashcans: 6.2", "#1 O01-US01")
+
     def test_missing_section(self):
         self.edit("### 6.2 解法與故事對照", "### 解法與故事對照")
         code, out = run_build(self.dir, self.out)

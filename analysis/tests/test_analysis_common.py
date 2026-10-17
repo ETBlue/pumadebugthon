@@ -26,6 +26,16 @@ class AnalysisCommonTest(unittest.TestCase):
     def setUp(self):
         self.common = load("analysis_common")
 
+    def test_cross_refs(self):
+        text = "見 #2 O01-US01、#12 I05 與 O03-US01；#3 不是編號；#2 的 O01-US01 不算"
+        self.assertEqual(self.common.cross_refs(text), [(2, "O01-US01"), (12, "I05")])
+        self.assertEqual(self.common.without_cross_refs(text).count("O01-US01"), 1)
+
+    def test_step4_ids(self):
+        ids = self.common.step4_ids(read("2-trashcans"))
+        self.assertEqual(len(ids), 45)
+        self.assertIn("O01-US01", ids)
+
     def test_split_cells(self):
         self.assertEqual(self.common.split_cells("| A | `[AI模擬]` 文字 | — |"), ["A", "`[AI模擬]` 文字", "—"])
 

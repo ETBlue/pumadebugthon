@@ -4,7 +4,8 @@ from collections import Counter, defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from analysis_common import SEPARATOR, section, split_cells as cells, step1_tables, tables
+from analysis_common import (CROSS_REF, SEPARATOR, cross_refs, section, split_cells as cells, step1_ids,
+                             step1_tables, step4_ids, tables, without_cross_refs)
 
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
 
@@ -37,7 +38,14 @@ def main(md_path, csv_path):
         head, tail = t.split(CHANGE_LOG, 1)
         m = re.search(r"^## ", tail, re.M)
         return head + (tail[m.start():] if m else "")
-    text_refs = without_change_log(text)
+    # A reference to another issue (「#2 O01-US01」) is checked in step 17,
+    # so the local ID checks do not see it.
+    text_refs = without_cross_refs(without_change_log(text))
+
+    def local_only(where, value):
+        """Lists such as W groups, 5.2, 5.4 and 6.2 hold local IDs only."""
+        for m in CROSS_REF.finditer(value):
+            err(f"{where}: {m.group(0)} refers to another issue, but this list holds stories of this issue only")
 
     def split_focus(v):
         v = v.strip()
@@ -141,6 +149,7 @@ def main(md_path, csv_path):
     for line in secw.splitlines():
         m = re.match(r"^\| `\[AI模擬\]` (W\d\d) \| [^|]+ \| ([^|]+) \| ([^|]+) \|", line)
         if m:
+            local_only(f"group table {m.group(1)}", m.group(2) + " " + m.group(3))
             l = re.findall(r"[OI]\d\d-US\d\d", m.group(2))
             if sorted(l) != sorted(wmap.get(m.group(1), [])): err(f"group table {m.group(1)} mismatch: {l} vs {wmap.get(m.group(1))}")
             if sorted(re.findall(r"[OI]\d\d", m.group(3))) != sorted(x[:3] for x in l): err(f"group table {m.group(1)} stakeholder list wrong")
@@ -168,6 +177,7 @@ def main(md_path, csv_path):
     for line in sec5.splitlines():
         m = re.match(r"^\| `\[AI模擬\]` (Must|Should|Could|Won't)[^|]* \| (\d+) \| ([^|]+) \|", line)
         if m:
+            local_only(f"5.2 MoSCoW {m.group(1)}", m.group(3))
             l = re.findall(r"[OI]\d\d-US\d\d", m.group(3))
             if int(m.group(2)) != len(l): err(f"MoSCoW {m.group(1)} count {m.group(2)} != {len(l)}")
             for i in l: mos[i] = names[m.group(1)]
@@ -197,6 +207,7 @@ def main(md_path, csv_path):
         if sol not in codes61: err(f"6.2: solution {sol} is not in 6.1")
         if sol in codes62: err(f"6.2: solution {sol} is listed twice")
         codes62.append(sol)
+        local_only(f"6.2 {sol}", " ".join(c[2:]))
         must = re.findall(r"[OI]\d\d-US\d\d", col["涵蓋的 Must"]); sc = re.findall(r"[OI]\d\d-US\d\d", col["涵蓋的 Should / Could"])
         for i in must:
             if prio.get(i) != "M": err(f"6.2 {sol}: {i} in Must column but is {prio.get(i)}")
@@ -335,6 +346,34 @@ def main(md_path, csv_path):
             for code in codes:
                 if code not in space_codes: err(f"6.1 solution {sol}: unknown space code {code}")
                 elif code not in issue_spaces: err(f"6.1 solution {sol}: space {code} is not in the issue's 空間類型 line")
+
+    # 17. 5.4 相關故事 holds local stories only
+    for h, rows in tables(section(text, "### 5.4") or []):
+        if "相關故事" in h:
+            for c in rows:
+                if len(c) == len(h): local_only(f"5.4 {c[0]}", c[h.index("相關故事")])
+
+    # 18. every reference to another issue (「#2 O01-US01」, 「#2 O03」) points to
+    # an issue in issues.csv that has an analysis file, and the ID is in its
+    # step 4 (story) or step 1 (stakeholder).
+    own_folder = os.path.basename(os.path.dirname(os.path.abspath(md_path)))
+    own_num = folder_num.get(own_folder)
+    num_folder = {n: f for f, n in folder_num.items()}
+    other_ids = {}
+    for num, rid in sorted(set(cross_refs(without_change_log(text)))):
+        ref = f"#{num} {rid}"
+        if num == own_num: err(f"{ref}: this is issue #{num} itself; write the local ID {rid}"); continue
+        if num not in num_folder: err(f"{ref}: issue #{num} is not in issues.csv"); continue
+        other_md = os.path.join(analysis_dir, num_folder[num], "issue-analysis.md")
+        if not os.path.exists(other_md): err(f"{ref}: issue #{num} has no analysis file {other_md}"); continue
+        if num not in other_ids:
+            with open(other_md, encoding="utf-8") as f:
+                t = f.read()
+            other_ids[num] = (set(step4_ids(t)), set(step1_ids(t)))
+        stories, stakeholders = other_ids[num]
+        if "-US" in rid:
+            if rid not in stories: err(f"{ref}: story {rid} is not in step 4 of issue #{num} ({num_folder[num]})")
+        elif rid not in stakeholders: err(f"{ref}: stakeholder {rid} is not in step 1 of issue #{num} ({num_folder[num]})")
 
     print(f"stakeholders: {len(stake)} (O {sum(k[0]=='O' for k in stake)}, I {sum(k[0]=='I' for k in stake)})")
     print(f"stories: {len(step4)}; 我想要 tags: {dict(want_tags)}; 以便 tags: {dict(so_tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}")

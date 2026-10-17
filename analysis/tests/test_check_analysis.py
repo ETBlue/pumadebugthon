@@ -84,6 +84,32 @@ class CheckAnalysisTest(unittest.TestCase):
                   "**個人**\n\n| 利害關係人編號 | 利害關係人 | 類別 | 特別關注 | 與本題的關係 |")
         self.assertFails("step 1 table header")
 
+    def test_step1_first_header_cell_renamed(self):
+        self.edit(f"{ISSUE}/issue-analysis.md",
+                  "**組織**\n\n| 利害關係人編號 | 利害關係人 | 分類路徑 |",
+                  "**組織**\n\n| 編號 | 利害關係人 | 分類路徑 |")
+        self.assertFails("step 1 table header wrong", "編號 | 利害關係人")
+
+    def test_step37_wrong_path(self):
+        self.edit(f"{ISSUE}/issue-analysis.md",
+                  "| I11 | `[AI模擬]` 資源回收個體業者（含高齡回收者） | `wrk` |",
+                  "| I11 | `[AI模擬]` 資源回收個體業者（含高齡回收者） | `res` |")
+        self.assertFails("3.7: I11 分類路徑 res")
+
+    def test_repeated_space_code_in_issue_line(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`park`\n")
+        self.assertFails("space code park is listed twice")
+
+    def test_repeated_space_code_in_solution(self):
+        self.edit(f"{ISSUE}/issue-analysis.md",
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |",
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`sidewalk` |")
+        self.assertFails("solution D: space code sidewalk is listed twice")
+
+    def test_change_log_new_id_must_exist(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| O02-US01 | I12-US01 |", "| O02-US01 | I12-US09 |")
+        self.assertFails("I12-US09")
+
     def test_id_in_change_log_only_is_allowed_but_not_elsewhere(self):
         # O02 is in the 編號異動紀錄 section only. Using it elsewhere must fail.
         self.edit(f"{ISSUE}/issue-analysis.md",

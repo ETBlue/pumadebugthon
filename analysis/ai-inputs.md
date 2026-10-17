@@ -27,15 +27,15 @@ Claude updates this file after each review round.
 | CSV export | Next to each `issue-analysis.md`, a `user-stories.csv` (UTF-8 with BOM) for Google Sheets. | pilot |
 | Format model | The #2 pilot (`2-trashcans/`) is the model for the other issues. Check each issue with `check_analysis.py`. | `human-inputs.md` line 14 |
 | Writing style | Tags go inside each table cell, so one row in a screenshot still shows its tag. No separate 標記 column and no tag in a heading: the tag starts the main content cell, and a source note goes after it in （）. A cell that is only 【待補】 has no tag. Step 3 uses bold labels (**真正的需求**, **新故事**, **新利害關係人**). Say "the issue text is an input source" only once, in step 1 rules, not in every section. Modest wording for AI content (「可能的…」, 「由 AI 整理，可以作為討論的起點」). | pilot (ETBlue's edits) |
-| Template and README | `7-misc/` holds the template (`.md` and `.csv`). `analysis/README.md` is a quick intro for the host, in zh-TW. | `human-inputs.md` line 14. README done; template not made yet. |
-| Notice in Google Sheets | The CSV has no notice. The README gives the host a short notice to put in the sheet title or first row. | `analysis/README.md` |
+| Template and README | `7-misc/` holds the template (`.md` and `.csv`). `analysis/README.md` is a quick intro for other participants, in zh-TW. | `human-inputs.md` line 14. README done; template not made yet. |
+| Notice in Google Sheets | The CSV has no notice. The README gives readers a short notice to put in the sheet title or first row. | `analysis/README.md` |
 | CSV builder | After editing the step 4 table, rebuild the CSV with `build_csv.py`, then run `check_analysis.py`. | `analysis/build_csv.py`, README |
 | Citizen data rule | The rules say 「市長，你給我聽好了」資料僅限於此黑客松活動使用. If the data is released, the repo cites only counts or summaries, never raw messages, and never tries to identify senders. | this file |
-| Blog post | Say the suggestion is personal and not linked to the host. | this file |
+| Sharing | ETBlue shares each issue analysis in its issue channel on the hackathon Discord (owned by the host), as a participant. No requests to the host. Every file says it is personal work, not linked to the host. | `human-inputs.md` line 16 |
 
 ### Hackathon submission
 
-The policy-process tool is ETBlue's main submission. It is separate from the suggestion to the host.
+The policy-process tool is ETBlue's main submission (confirmed 2026-10-17). It is separate from the issue analysis.
 
 Starting idea (to be designed later):
 - A web page where people browse stakeholders and user stories for an issue.
@@ -54,9 +54,9 @@ Rules that apply (from [docs/event-info.md](../docs/event-info.md)):
 | Date | Work | Status |
 |---|---|---|
 | 10/16 (Fri) | #2 pilot | Done (planned for 10/17) |
-| 10/17–10/18 | #1, #3, #4, #5, #6. Template and README. | Not started |
-| 10/19 (Mon) | Blog post and Google Slides flow chart | Not started |
-| 10/19–10/22 | Host has about 4 days to decide. Design and build the submission tool. | Not started |
+| 10/17 (Sat) | #2 posted on the hackathon Discord | Done |
+| 10/17–10/18 | #1, #3, #4, #5, #6, each posted on Discord when done. Template and README. | Not started |
+| 10/19–10/22 | Design and build the submission tool | Not started |
 | 10/23 (Fri) | Day 1 on Discord | |
 | 10/24 (Sat) | Day 2. Submission deadline 16:00. | |
 
@@ -74,7 +74,6 @@ From the #2 pilot (`2-trashcans/issue-analysis.md`). A person should decide:
 
 ## Changelog
 
-All changes so far happened on 2026-10-16.
 
 | Date | Change | Result |
 |---|---|---|
@@ -104,3 +103,4 @@ All changes so far happened on 2026-10-16.
 | 2026-10-16 | ETBlue renamed CSV columns (故事編號, 相同訴求編號, 來源), put 來源 before 來源標記, and split 優先順序 into 優先順序 and 優先順序標記, so Sheets users can sort by tag. Claude suggested 「相同訴求編號」 over 「訴求編號」. In the Markdown, the step 4 priority cell changed from `S [AI模擬]` to `[AI模擬] S`. Story tables use 故事編號 and 相同訴求編號; stakeholder tables use 利害關係人編號. | Done. CSV now has 10 columns. Note: Sheets sorts 優先順序 A–Z as C, M, S, W, not MoSCoW order. |
 | 2026-10-16 | ETBlue asked to move tags into table cells: merge the 標記 column into the content cell (1.1, step 2, 3.7, 6.3) and move heading tags into each row (5.2, 5.3). Claude suggested the same for 題目原文重點, 6.3 捷運 table, 步驟 7 總覽 and 附錄 主要數字, and no tag for 【待補】 cells. | Accepted. Done in the pilot. `check_analysis.py` reads the new 5.2 rows. |
 | 2026-10-16 | ETBlue asked to tag 我想要… and 以便… separately in step 4, tag the 群組 cell in the W table, and move the 構想 table tag into the rows. Claude suggested the same per-cell tags in step 2, and `[實證]` for the 構想 cell with `[AI模擬]` for the other two cells. | Accepted. O01-US03, O04-US05 and I09-US04 now show `[實證]` 我想要 with `[AI模擬]` 以便. 來源 holds only the note (「—」 if none). CSV now has 11 columns (我想要標記, 以便標記 replace 來源標記). |
+| 2026-10-17 | ETBlue changed the goal: no suggestion to the host and no blog post. ETBlue analyzes all issues as a participant and shares them on the hackathon Discord. #2 was posted. ETBlue removed the Day 1 section from the README. | Claude put back a short 資料使用說明 in the README, changed the pilot notice about 「市長，你給我聽好了」 so it does not address the host, fixed typos in `human-inputs.md`, and updated this file. The submission tool plan stays. |

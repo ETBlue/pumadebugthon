@@ -152,7 +152,7 @@ Unavailable issues: `available: false`, `counts: null`, `spaces: []`, `updated: 
   "groups": [{"id": "W01", "summary": "…", "tag": "AI模擬", "stories": ["O01-US03"]}],
   "conflicts": [{"id": "C1", "text": Cell, "sideA": ["I01-US01"], "sideB": ["I09-US01"], "method": Cell, "result": Cell}],
   "solutions": [{"id": "A", "name": Cell, "summary": "…", "spaces": ["sidewalk"], "stories": ["…"]}],
-  "pending": [{"section": "6.3 成效衡量", "text": "【待補：環保局稽查資料】"}]
+  "pending": [{"section": "6.3 成效衡量", "text": "【待補：環保局稽查資料】", "context": "家用垃圾違規棄置件數（試點區）"}]
 }
 ```
 - `updated`: `git log -1 --format=%cs -- <folder>`. `null` if git fails.

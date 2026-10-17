@@ -1,33 +1,28 @@
 """Tests for analysis/build_json.py.
 
 The tests copy issue #2 and the shared files into a temp dir and run the
-script there as a subprocess. stakeholders.csv and path-labels.csv come from
-git (HEAD), so edits that are not committed yet do not change the results.
+script there as a subprocess. Every copied file comes from the last commit
+(git archive HEAD), not from the working tree. Another agent may edit the
+shared CSV files or the issue files at the same time; their edits that are
+not committed yet must not change the results of these tests.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import importlib.util, json, os, re, shutil, subprocess, sys, tempfile, unittest
+import importlib.util, json, os, re, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ANALYSIS)
 SCRIPT = os.path.join(ANALYSIS, "build_json.py")
-FROM_DISK = ("issues.csv", "space-types.csv")
-FROM_GIT = ("stakeholders.csv", "path-labels.csv")
+SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv")
 ISSUE = "2-trashcans"
 
 
 def make_copy(root):
-    """Copy issue #2 and the shared files into root/analysis. Return that dir."""
-    d = os.path.join(root, "analysis")
-    os.makedirs(d)
-    for name in FROM_DISK:
-        shutil.copy(os.path.join(ANALYSIS, name), d)
-    for name in FROM_GIT:
-        data = subprocess.run(["git", "show", f"HEAD:analysis/{name}"], cwd=REPO,
-                              capture_output=True, check=True).stdout
-        with open(os.path.join(d, name), "wb") as f:
-            f.write(data)
-    shutil.copytree(os.path.join(ANALYSIS, ISSUE), os.path.join(d, ISSUE))
-    return d
+    """Copy issue #2 and the shared files from HEAD into root/analysis. Return that dir."""
+    paths = [f"analysis/{n}" for n in SHARED] + [f"analysis/{ISSUE}"]
+    tar = subprocess.run(["git", "archive", "HEAD", "--", *paths], cwd=REPO,
+                         capture_output=True, check=True).stdout
+    subprocess.run(["tar", "-x", "-C", root], input=tar, check=True)
+    return os.path.join(root, "analysis")
 
 
 def run_build(analysis_dir, out_dir):
@@ -107,6 +102,23 @@ class BuildJsonOutputTest(unittest.TestCase):
                             for p in self.issue["pending"]), self.issue["pending"])
         for p in self.issue["pending"]:
             self.assertRegex(p["text"], r"^【待補[^】]*】$")
+
+    def test_pending_context(self):
+        def ctx(text, section=None):
+            items = [p for p in self.issue["pending"] if p["text"] == text
+                     and (section is None or p["section"] == section)]
+            self.assertTrue(items, text)
+            return items[0]["context"]
+        self.assertEqual(ctx("【待補：環保局稽查資料】"), "家用垃圾違規棄置件數（試點區）")
+        self.assertEqual(ctx("【待補：法務確認】", "解法 A：清潔箱佈建建議地圖"), "相關法規")
+        self.assertEqual(ctx("【待補：政策組安排】"), "訪談清潔隊與環保局")
+        self.assertIsNone(ctx("【待補：環保局確認目前實際數量與兩份表的關係】"))
+        for p in self.issue["pending"]:
+            self.assertEqual(list(p), ["section", "text", "context"])
+
+    def test_input_source_note_dash_is_null(self):
+        self.assertIsNone(self.issue["inputSources"][-1]["note"])
+        self.assertEqual(self.issue["inputSources"][0]["note"], "題目原文整理自市民意見，不是單一利害關係人的話")
 
     def test_index_issue_list(self):
         issues = self.index["issues"]
@@ -199,13 +211,80 @@ class BuildJsonErrorTest(unittest.TestCase):
     def tearDown(self):
         self._tmp.cleanup()
 
-    def edit(self, old, new):
-        path = os.path.join(self.dir, ISSUE, "issue-analysis.md")
-        with open(path, encoding="utf-8") as f:
+    def edit(self, old, new, rel=None):
+        """Replace one exact piece of text in a copied file (default: the issue file)."""
+        path = os.path.join(self.dir, rel or os.path.join(ISSUE, "issue-analysis.md"))
+        enc = "utf-8-sig" if path.endswith(".csv") else "utf-8"
+        with open(path, encoding=enc) as f:
             text = f.read()
         self.assertEqual(text.count(old), 1, f"{old!r} must occur once")
-        with open(path, "w", encoding="utf-8") as f:
+        with open(path, "w", encoding=enc, newline="") as f:
             f.write(text.replace(old, new))
+
+    def assertFails(self, *needles):
+        code, out = run_build(self.dir, self.out)
+        self.assertEqual(code, 1, out)
+        self.assertNotIn("Traceback", out)
+        for n in needles:
+            self.assertIn(n, out)
+        self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
+
+    def test_moved_id_without_space(self):
+        self.edit("已改為 I12", "已改為I 12", "stakeholders.csv")
+        self.assertFails("stakeholders.csv: O02:")
+
+    def test_unknown_story_in_group(self):
+        self.edit("| O12-US01、I06-US01、I07-US02 |", "| O12-US09、I06-US01、I07-US02 |")
+        self.assertFails("2-trashcans: 相同訴求群組:", "O12-US09")
+
+    def test_story_group_without_group_row(self):
+        self.edit("| W08 | `[AI模擬]` 安全通行，不會撞到 |", "| W99 | `[AI模擬]` 安全通行，不會撞到 |")
+        self.assertFails("2-trashcans: 步驟 4:", "W99")
+
+    def test_duplicate_story_id(self):
+        self.edit("| I13-US02 | 清潔隊員 |", "| I13-US01 | 清潔隊員 |")
+        self.assertFails("2-trashcans: 步驟 4:", "I13-US01", "twice")
+
+    def test_missing_6_2_row(self):
+        path = os.path.join(self.dir, ISSUE, "issue-analysis.md")
+        with open(path, encoding="utf-8") as f:
+            lines = f.read().split("\n")
+        kept = [l for l in lines if not l.startswith("| D 參與式選址流程 |")]
+        self.assertEqual(len(kept), len(lines) - 1)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(kept))
+        self.assertFails("2-trashcans: 6.2:", "D")
+
+    def test_unknown_space_code_in_title_line(self):
+        self.edit("`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`moon`\n")
+        self.assertFails("2-trashcans: 空間類型:", "moon")
+
+    def test_unknown_space_code_in_solution(self):
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |",
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`moon` |")
+        self.assertFails("2-trashcans: 6.1:", "moon")
+
+    def test_two_tables_with_step_4_header(self):
+        self.edit("\n### 相同訴求群組\n",
+                  "\n| 故事編號 | 身為… | 我想要… | 相同訴求編號 | 以便… | 來源 | 優先順序 |\n"
+                  "|---|---|---|---|---|---|---|\n\n### 相同訴求群組\n")
+        self.assertFails("2-trashcans: 步驟 4:", "2 tables")
+
+    def test_cell_with_two_tags(self):
+        self.edit("| `[AI模擬]` 安全通行，不會撞到 |", "| `[AI模擬]` `[實證]` 安全通行，不會撞到 |")
+        self.assertFails("2-trashcans: 步驟 4:", "I06-US01")
+
+    def test_heading_prefix_needs_space(self):
+        self.edit("### 6.1 候選解法", "### 6.10 候選解法")
+        self.assertFails("2-trashcans: 6.1:")
+
+    def test_bad_issue_value_in_csv(self):
+        self.edit("I05,高齡者,res,高齡,2,", "I05,高齡者,res,高齡,2、3,", "stakeholders.csv")
+        self.assertFails("stakeholders.csv: I05:")
+
+    def test_missing_csv_file(self):
+        os.remove(os.path.join(self.dir, "space-types.csv"))
+        self.assertFails("space-types.csv")
 
     def test_broken_conflict_row(self):
         self.edit("`[AI模擬]` I11-US01 vs I09-US01", "`[AI模擬]` I11-US01、I09-US01")

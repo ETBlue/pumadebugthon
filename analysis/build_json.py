@@ -12,8 +12,14 @@ A section that cannot be read stops the script with exit code 1 and the line
 
 Sections are found the same way as in check_analysis.py: by their heading
 text ("## 步驟 1", "### 1.2", "## 步驟 4", "### 相同訴求群組", "### 5.4",
-"### 6.1", "### 6.2"). Inside a section, the script reads the first Markdown
-table (step 1: every table) and finds columns by their header names.
+"### 6.1", "### 6.2"). A heading matches when the prefix is followed by a
+space, 「：」 or the end of the line, so "### 6.1" does not match "### 6.10".
+Inside a section, the script uses the tables whose header has all the wanted
+columns. There must be exactly one such table (step 1: exactly two, 組織 and
+個人). Columns are found by their header names.
+
+Markdown inside cells (for example **bold** and [links](...)) stays as written
+in the Cell text and in other text fields. The app renders it.
 """
 import csv, glob, json, os, re, subprocess, sys
 
@@ -38,6 +44,8 @@ def parse_cell(s):
     """A table cell with an optional tag -> {"text", "tag", "pending"}."""
     s = s.strip()
     tags = TAG.findall(s)
+    if len(tags) > 1:
+        raise ValueError(f"cell has {len(tags)} tags, expected at most 1: 「{s}」")
     text = TAG.sub("", s).strip()
     text = re.sub(r"  +", " ", text)
     tag = tags[0] if tags else None
@@ -62,9 +70,25 @@ def cells(line):
     return [x.strip() for x in line.strip().strip("|").split(" | ")]
 
 
-def read_csv(analysis_dir, name):
-    with open(os.path.join(analysis_dir, name), encoding="utf-8-sig", newline="") as f:
-        return list(csv.DictReader(f))
+def read_csv(analysis_dir, name, columns):
+    """Rows of a shared CSV file. A missing file or column is a ReadError."""
+    path = os.path.join(analysis_dir, name)
+    try:
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+            header = reader.fieldnames or []
+    except OSError as e:
+        raise ReadError(name, f"cannot read the file ({e.strerror})")
+    except (UnicodeDecodeError, csv.Error) as e:
+        raise ReadError(name, f"cannot read the file ({e})")
+    missing = [c for c in columns if c not in header]
+    if missing:
+        raise ReadError(name, f"header: no column {'、'.join(missing)}")
+    for i, r in enumerate(rows, start=2):
+        if None in r or any(r[c] is None for c in columns):
+            raise ReadError(name, f"row {i}: wrong number of cells")
+    return rows
 
 
 def git_updated(folder):
@@ -83,7 +107,7 @@ def git_updated(folder):
 def section(lines, prefix, name):
     """Lines after the heading that starts with prefix, up to the next ## or ### heading."""
     for i, line in enumerate(lines):
-        if line.startswith(prefix):
+        if line == prefix or line.startswith(prefix + " ") or line.startswith(prefix + "："):
             body = []
             for l in lines[i + 1:]:
                 if HEADING.match(l):
@@ -107,16 +131,14 @@ def tables(body):
     return out
 
 
-def table_rows(body, name, columns, all_tables=False):
-    """Rows of the first table (or every table) as dicts keyed by the wanted column names."""
-    found = tables(body)
-    if not found:
-        raise ReadError(name, "no table")
+def table_rows(body, name, columns, expected=1):
+    """Rows of the tables whose header has every wanted column, as dicts keyed by
+    the column names. There must be exactly `expected` such tables."""
+    found = [(h, rows) for h, rows in tables(body) if all(c in h for c in columns)]
+    if len(found) != expected:
+        raise ReadError(name, f"found {len(found)} tables with the columns {' | '.join(columns)}, expected {expected}")
     out = []
-    for header, rows in (found if all_tables else found[:1]):
-        missing = [c for c in columns if c not in header]
-        if missing:
-            raise ReadError(name, f"table has no column {'、'.join(missing)} (header: {' | '.join(header)})")
+    for header, rows in found:
         for r in rows:
             if len(r) != len(header):
                 raise ReadError(name, f"row 「{r[0]}」 has {len(r)} cells, expected {len(header)}")
@@ -135,9 +157,45 @@ def headings_before(lines):
     return out
 
 
+SOLUTION_CODES = re.compile(r"[A-Z](?:\s*[,、，]\s*[A-Z])*")
+
+
+def pending_context(line, item_start):
+    """The context of a 【待補】 item in a table row: the first cell of the row
+    that is not the cell holding the item, not empty, not 「—」 and not only
+    solution codes (like 「A」 or 「A, D」 in 6.3). Tags and backticks are
+    removed. None when the line is not a table row or no cell fits."""
+    if not line.startswith("|"):
+        return None
+    parts = line.strip().strip("|").split(" | ")
+    # The cell that holds the item: count the cell separators before it.
+    holder = line[:item_start].count(" | ")
+    for i, part in enumerate(parts):
+        c = re.sub(r"\s+", " ", TAG.sub("", part).replace("`", "")).strip()
+        if i == holder or c in ("", "—") or SOLUTION_CODES.fullmatch(c):
+            continue
+        return c
+    return None
+
+
+def cell(s, section_name, where):
+    try:
+        return parse_cell(s)
+    except ValueError as e:
+        raise ReadError(section_name, f"{where}: {e}")
+
+
+def no_duplicates(ids, section_name, kind):
+    seen = set()
+    for i in ids:
+        if i in seen:
+            raise ReadError(section_name, f"{kind} {i} is listed twice")
+        seen.add(i)
+
+
 # ---------- one issue ----------
 
-def parse_issue(text):
+def parse_issue(text, space_codes):
     lines = text.splitlines()
 
     if not lines or not lines[0].startswith("# "):
@@ -147,16 +205,20 @@ def parse_issue(text):
     spaces = re.findall(r"`([^`]+)`", lines[2])
     if not spaces:
         raise ReadError("空間類型", "no space codes in backticks")
+    for code in spaces:
+        if code not in space_codes:
+            raise ReadError("空間類型", f"unknown space code {code} (not in space-types.csv)")
 
     # step 1 (1.1): the 組織 and 個人 tables
     s1 = table_rows(section(lines, "### 1.1", "步驟 1"), "步驟 1",
-                    ["利害關係人編號", "與本題的關係"], all_tables=True)
+                    ["利害關係人編號", "與本題的關係"], expected=2)
     stakeholders = []
     for r in s1:
         sid = r["利害關係人編號"]
         if not re.fullmatch(r"[OI]\d\d", sid):
             raise ReadError("步驟 1", f"bad stakeholder ID 「{sid}」")
-        stakeholders.append({"id": sid, "relation": parse_cell(r["與本題的關係"])})
+        stakeholders.append({"id": sid, "relation": cell(r["與本題的關係"], "步驟 1", sid)})
+    no_duplicates([s["id"] for s in stakeholders], "步驟 1", "stakeholder")
 
     # 1.2 input sources
     input_sources = []
@@ -165,8 +227,8 @@ def parse_issue(text):
         input_sources.append({
             "source": r["輸入來源"],
             "stakeholders": unique(STAKEHOLDER_ID.findall(fit)),
-            "fit": parse_cell(fit),
-            "note": r["注意事項"],
+            "fit": cell(fit, "1.2", r["輸入來源"]),
+            "note": dash_to_none(r["注意事項"]),
         })
 
     # step 4 stories
@@ -184,8 +246,8 @@ def parse_issue(text):
             raise ReadError("步驟 4", f"{sid}: bad 相同訴求編號 「{group}」")
         stories.append({
             "id": sid, "stakeholder": sid.split("-")[0],
-            "want": parse_cell(r["我想要…"]), "group": group,
-            "soThat": parse_cell(r["以便…"]), "source": dash_to_none(r["來源"]),
+            "want": cell(r["我想要…"], "步驟 4", sid), "group": group,
+            "soThat": cell(r["以便…"], "步驟 4", sid), "source": dash_to_none(r["來源"]),
             "priority": p.group(2), "priorityTag": p.group(1),
         })
 
@@ -193,11 +255,25 @@ def parse_issue(text):
     groups = []
     for r in table_rows(section(lines, "### 相同訴求群組", "相同訴求群組"), "相同訴求群組",
                         ["群組", "我想要（摘要）", "故事編號"]):
-        c = parse_cell(r["群組"])
+        c = cell(r["群組"], "相同訴求群組", r["群組"])
         if not re.fullmatch(r"W\d\d", c["text"]):
             raise ReadError("相同訴求群組", f"bad group ID 「{r['群組']}」")
         groups.append({"id": c["text"], "summary": r["我想要（摘要）"], "tag": c["tag"],
                        "stories": STORY_ID.findall(r["故事編號"])})
+
+    # cross-references: stories and groups
+    story_ids = [s["id"] for s in stories]
+    no_duplicates(story_ids, "步驟 4", "story")
+    known = set(story_ids)
+    group_ids = [g["id"] for g in groups]
+    no_duplicates(group_ids, "相同訴求群組", "group")
+    for g in groups:
+        for sid in g["stories"]:
+            if sid not in known:
+                raise ReadError("相同訴求群組", f"{g['id']}: story {sid} is not in step 4")
+    for s in stories:
+        if s["group"] is not None and s["group"] not in group_ids:
+            raise ReadError("步驟 4", f"{s['id']}: group {s['group']} has no row in 相同訴求群組")
 
     # 5.4 conflicts
     conflicts = []
@@ -209,30 +285,55 @@ def parse_issue(text):
         a, b = (STORY_ID.findall(s) for s in sides)
         if not a or not b:
             raise ReadError("5.4", f"{cid}: one side of 「 vs 」 has no story ID")
-        conflicts.append({"id": cid, "text": parse_cell(r["衝突"]), "sideA": a, "sideB": b,
-                          "method": parse_cell(r["可能的審議方法"]), "result": parse_cell(r["模擬結果"])})
+        for sid in a + b:
+            if sid not in known:
+                raise ReadError("5.4", f"{cid}: story {sid} is not in step 4")
+        conflicts.append({"id": cid, "text": cell(r["衝突"], "5.4", cid), "sideA": a, "sideB": b,
+                          "method": cell(r["可能的審議方法"], "5.4", cid), "result": cell(r["模擬結果"], "5.4", cid)})
+    no_duplicates([c["id"] for c in conflicts], "5.4", "conflict")
 
     # 6.1 solutions
     solutions = []
     for r in table_rows(section(lines, "### 6.1", "6.1"), "6.1", ["代號", "解法", "空間類型", "一句話說明"]):
-        solutions.append({"id": r["代號"], "name": parse_cell(r["解法"]), "summary": r["一句話說明"],
-                          "spaces": re.findall(r"`([^`]+)`", r["空間類型"]), "stories": []})
+        sol, codes = r["代號"], re.findall(r"`([^`]+)`", r["空間類型"])
+        if not codes:
+            raise ReadError("6.1", f"solution {sol}: no space code")
+        for code in codes:
+            if code not in space_codes:
+                raise ReadError("6.1", f"solution {sol}: unknown space code {code} (not in space-types.csv)")
+            if code not in spaces:
+                raise ReadError("6.1", f"solution {sol}: space code {code} is not in the issue's 空間類型 line")
+        solutions.append({"id": sol, "name": cell(r["解法"], "6.1", sol), "summary": r["一句話說明"],
+                          "spaces": codes, "stories": []})
+    no_duplicates([s["id"] for s in solutions], "6.1", "solution")
     by_sol = {s["id"]: s for s in solutions}
+    in_62 = []
 
     # 6.2 stories per solution
     for r in table_rows(section(lines, "### 6.2", "6.2"), "6.2", ["解法", "涵蓋的 Must", "涵蓋的 Should / Could"]):
         sol = r["解法"].split(" ", 1)[0]
         if sol not in by_sol:
             raise ReadError("6.2", f"solution 「{sol}」 is not in 6.1")
-        by_sol[sol]["stories"] = unique(STORY_ID.findall(r["涵蓋的 Must"]) + STORY_ID.findall(r["涵蓋的 Should / Could"]))
+        in_62.append(sol)
+        ids = STORY_ID.findall(r["涵蓋的 Must"]) + STORY_ID.findall(r["涵蓋的 Should / Could"])
+        for sid in ids:
+            if sid not in known:
+                raise ReadError("6.2", f"solution {sol}: story {sid} is not in step 4")
+        by_sol[sol]["stories"] = unique(ids)
+    no_duplicates(in_62, "6.2", "solution")
+    for s in solutions:
+        if s["id"] not in in_62:
+            raise ReadError("6.2", f"solution {s['id']} from 6.1 has no row in 6.2")
 
     # every 【待補…】 item with the nearest heading. Items in backticks are
     # examples of the format (for example in the notice), not open items.
     pending = []
     for line, head in zip(lines, headings_before(lines)):
-        plain = re.sub(r"`[^`]*`", "", line)
+        # Blank out code spans (same length) so positions still match the line.
+        plain = re.sub(r"`[^`]*`", lambda m: " " * len(m.group(0)), line)
         for m in PENDING.finditer(plain):
-            pending.append({"section": head, "text": m.group(0)})
+            pending.append({"section": head, "text": m.group(0),
+                            "context": pending_context(line, m.start())})
 
     return {"spaces": spaces, "stakeholders": stakeholders, "inputSources": input_sources,
             "stories": stories, "groups": groups, "conflicts": conflicts,
@@ -242,9 +343,16 @@ def parse_issue(text):
 # ---------- whole build ----------
 
 def build(analysis_dir):
-    issues_csv = read_csv(analysis_dir, "issues.csv")
+    issues_csv = read_csv(analysis_dir, "issues.csv", ["編號", "資料夾", "題目"])
+    space_rows = read_csv(analysis_dir, "space-types.csv", ["代碼", "名稱", "分組", "說明"])
+    space_codes = {r["代碼"] for r in space_rows}
+    label_rows = read_csv(analysis_dir, "path-labels.csv", ["分類路徑", "名稱"])
+    stake_rows = read_csv(analysis_dir, "stakeholders.csv",
+                          ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "議題", "備註"])
     index_issues, issue_files = [], {}
-    for row in issues_csv:
+    for i, row in enumerate(issues_csv, start=2):
+        if not re.fullmatch(r"\d+", row["編號"].strip()):
+            raise ReadError("issues.csv", f"row {i}: 編號 「{row['編號']}」 is not a number")
         num, folder, title = int(row["編號"]), row["資料夾"], row["題目"]
         md = os.path.join(analysis_dir, folder, "issue-analysis.md")
         if not os.path.exists(md):
@@ -254,7 +362,7 @@ def build(analysis_dir):
         with open(md, encoding="utf-8") as f:
             text = f.read()
         try:
-            data = parse_issue(text)
+            data = parse_issue(text, space_codes)
         except ReadError as e:
             raise ReadError(f"{folder}: {e.section}", e.reason)
         updated = git_updated(os.path.join(analysis_dir, folder))
@@ -273,23 +381,33 @@ def build(analysis_dir):
                                "spaces": data["spaces"], "updated": updated, **{k: v for k, v in data.items() if k != "spaces"}}
 
     stakeholders = []
-    for r in read_csv(analysis_dir, "stakeholders.csv"):
-        note = r["備註"].strip()
-        moved = re.match(rf"{MOVED}\s*([OI]\d\d)", note)
+    for r in stake_rows:
+        sid, note = r["利害關係人編號"], r["備註"].strip()
+        # Same rule as check_analysis.py and sync_stakeholders.py: a row is
+        # moved when 備註 starts with 已改為. The new ID must follow.
+        moved_to = None
+        if note.startswith(MOVED):
+            m = re.match(rf"{MOVED} ?([OI]\d\d)(?![0-9])", note)
+            if not m:
+                raise ReadError("stakeholders.csv", f"{sid}: 備註 「{note}」 starts with {MOVED} but no ID like I12 follows")
+            moved_to = m.group(1)
+        issues = r["議題"].split()
+        if not all(re.fullmatch(r"\d+", x) for x in issues):
+            raise ReadError("stakeholders.csv", f"{sid}: 議題 「{r['議題']}」 must be issue numbers separated by spaces")
         focus = r["特別關注"].strip()
         stakeholders.append({
-            "id": r["利害關係人編號"], "name": r["利害關係人"], "path": r["分類路徑"].strip() or None,
+            "id": sid, "name": r["利害關係人"], "path": r["分類路徑"].strip() or None,
             "focus": [x.strip() for x in focus.split("、")] if focus else [],
-            "issues": [] if moved else [int(x) for x in r["議題"].split()],
-            "movedTo": moved.group(1) if moved else None,
+            "issues": [] if moved_to else [int(x) for x in issues],
+            "movedTo": moved_to,
         })
 
     index = {
         "issues": index_issues,
         "stakeholders": stakeholders,
-        "pathLabels": {r["分類路徑"]: r["名稱"] for r in read_csv(analysis_dir, "path-labels.csv")},
+        "pathLabels": {r["分類路徑"]: r["名稱"] for r in label_rows},
         "spaceTypes": [{"code": r["代碼"], "name": r["名稱"], "group": r["分組"], "description": r["說明"]}
-                       for r in read_csv(analysis_dir, "space-types.csv")],
+                       for r in space_rows],
     }
     return index, issue_files
 

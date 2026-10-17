@@ -8,7 +8,7 @@ import os, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "check_analysis.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv")
+SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "method.md")
 ISSUE = "2-trashcans"
 
 
@@ -133,9 +133,25 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_bare_pending_with_text_outside(self):
         self.edit(f"{ISSUE}/issue-analysis.md",
-                  "【待補：滿溢比例；題目說滿溢偵測資料不存在】",
+                  "【待補：題目說滿溢偵測資料不存在】",
                   "【待補】題目說滿溢偵測資料不存在")
-        self.assertFails("bare 【待補】", "題目說滿溢偵測資料不存在")
+        self.assertFails("bad 待補 item '【待補】'", "題目說滿溢偵測資料不存在")
+
+    def test_wrong_pending_forms(self):
+        for wrong in ("【待補：】", "【待補:新工處】", "【待補新工處】", "【待補 】"):
+            with self.subTest(wrong=wrong):
+                self.tearDown(); self.setUp()
+                self.edit(f"{ISSUE}/issue-analysis.md", "人行道寬度【待補：新工處】", f"人行道寬度{wrong}")
+                self.assertFails(f"bad 待補 item {wrong!r}")
+
+    def test_correct_pending_item_passes(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "人行道寬度【待補：新工處】", "人行道寬度【待補：新工處的人行道寬度資料】")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_broken_method_link(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "(../method.md#排序方法)", "(../method.md#沒有這一節)")
+        self.assertFails("broken method link ../method.md#沒有這一節")
 
     def test_pending_in_backticks_is_allowed(self):
         # The step 4 summary names the format in backticks: 「`【待補】` 1 則」.

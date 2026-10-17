@@ -55,13 +55,15 @@ def main(md_path, csv_path):
     bare = re.findall(r"(?<!`)\[(?:實證|AI模擬)\](?!`)", text)
     if bare: err(f"{md_path}: {len(bare)} tag(s) without backticks")
 
-    # 0c. every open item says what is missing inside the brackets: 【待補：…】.
-    # A bare 【待補】 outside backticks (for example 「【待補】題目說…」) is an error.
-    # Text in backticks only names the format, so it is skipped.
+    # 0c. every open item says what is missing inside the brackets: 【待補：…】,
+    # with a full-width colon and some text. Wrong forms such as 【待補】,
+    # 【待補：】, 【待補:…】 or 【待補…】 are errors. Text in backticks only
+    # names the format, so it is skipped.
     for n, line in enumerate(text.splitlines(), 1):
         plain = re.sub(r"`[^`]*`", "", line)
-        for m in re.finditer(r"【待補】", plain):
-            err(f"line {n}: bare 【待補】; write 【待補：…】 with the explanation inside the brackets: {plain[m.start():m.start() + 30]!r}")
+        for m in re.finditer(r"【待補[^】]*】", plain):
+            if not re.fullmatch(r"【待補：[^】]+】", m.group(0)):
+                err(f"line {n}: bad 待補 item {m.group(0)!r}; write 【待補：…】 with the explanation inside the brackets: {plain[m.start():m.start() + 30]!r}")
 
     # 1. no old S\d\d IDs
     old = re.findall(r"(?<![A-Za-z0-9])S\d\d(?:-US\d\d)?", text)
@@ -223,6 +225,17 @@ def main(md_path, csv_path):
     heads = {slug(m) for m in re.findall(r"^#{1,6} (.+)$", text, re.M)}
     for a in re.findall(r"\]\(#([^)]+)\)", text):
         if a not in heads: err(f"broken anchor #{a}")
+    # links to the shared reading guide: ../method.md#anchor
+    method_links = re.findall(r"\]\(\.\./method\.md(?:#([^)]*))?\)", text)
+    if method_links:
+        method_path = os.path.join(analysis_dir, "method.md")
+        if not os.path.exists(method_path):
+            err(f"links to ../method.md, but {method_path} does not exist")
+        else:
+            with open(method_path, encoding="utf-8") as f:
+                mheads = {slug(m) for m in re.findall(r"^#{1,6} (.+)$", f.read(), re.M)}
+            for a in method_links:
+                if a and a not in mheads: err(f"broken method link ../method.md#{a}")
 
     # 10. step 1 matches stakeholders.csv
     shared = read_csv("stakeholders.csv")

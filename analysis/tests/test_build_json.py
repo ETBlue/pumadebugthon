@@ -105,8 +105,8 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_pending_has_6_3_and_step_7(self):
         sections = [p["section"] for p in self.issue["pending"]]
         self.assertIn("6.3 成效衡量", sections)
-        step7 = {"解法 A：清潔箱佈建建議地圖", "解法 B：滿溢回報與動態清運",
-                 "解法 C：找桶指引與開放資料更新", "解法 D：參與式選址流程"}
+        step7 = {"7.1 解法 A：清潔箱佈建建議地圖", "7.2 解法 B：滿溢回報與動態清運",
+                 "7.3 解法 C：找桶指引與開放資料更新", "7.4 解法 D：參與式選址流程"}
         self.assertTrue(any(p["section"] in step7 and p["text"] == "【待補：法務確認】"
                             for p in self.issue["pending"]), self.issue["pending"])
         for p in self.issue["pending"]:
@@ -119,7 +119,7 @@ class BuildJsonOutputTest(unittest.TestCase):
             self.assertTrue(items, text)
             return items[0]["context"]
         self.assertEqual(ctx("【待補：環保局稽查資料】"), "家用垃圾違規棄置件數（試點區）")
-        self.assertEqual(ctx("【待補：法務確認】", "解法 A：清潔箱佈建建議地圖"), "相關法規")
+        self.assertEqual(ctx("【待補：法務確認】", "7.1 解法 A：清潔箱佈建建議地圖"), "相關法規")
         self.assertEqual(ctx("【待補：政策組安排】"), "訪談清潔隊與環保局")
         self.assertIsNone(ctx("【待補：環保局確認目前實際數量與兩份表的關係】"))
         for p in self.issue["pending"]:
@@ -258,11 +258,19 @@ class BuildJsonErrorTest(unittest.TestCase):
         path = os.path.join(self.dir, ISSUE, "issue-analysis.md")
         with open(path, encoding="utf-8") as f:
             lines = f.read().split("\n")
-        kept = [l for l in lines if not l.startswith("| D 參與式選址流程 |")]
+        kept = [l for l in lines if not l.startswith("| D | 參與式選址流程 |")]
         self.assertEqual(len(kept), len(lines) - 1)
         with open(path, "w", encoding="utf-8") as f:
             f.write("\n".join(kept))
         self.assertFails("2-trashcans: 6.2:", "D")
+
+    def test_6_2_code_not_in_6_1(self):
+        self.edit("| D | 參與式選址流程 |", "| E | 參與式選址流程 |")
+        self.assertFails("2-trashcans: 6.2:", "「E」 is not in 6.1")
+
+    def test_6_2_code_must_be_one_letter(self):
+        self.edit("| D | 參與式選址流程 |", "| D 參與式選址流程 | 參與式選址流程 |")
+        self.assertFails("2-trashcans: 6.2:", "bad solution code")
 
     def test_unknown_space_code_in_title_line(self):
         self.edit("`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`moon`\n")

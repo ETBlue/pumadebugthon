@@ -10,25 +10,30 @@ for folders that no longer have an analysis.
 A section that cannot be read stops the script with exit code 1 and the line
 "<folder>: <section>: <reason>". Nothing is written in that case.
 
-Sections are found the same way as in check_analysis.py: by their heading
-text ("## 步驟 1", "### 1.2", "## 步驟 4", "### 相同訴求群組", "### 5.4",
+Sections and tables are found with the shared rules in analysis_common.py,
+the same as in check_analysis.py and sync_stakeholders.py: by their heading
+text ("### 1.1", "### 1.2", "## 步驟 4", "### 相同訴求群組", "### 5.4",
 "### 6.1", "### 6.2"). A heading matches when the prefix is followed by a
 space, 「：」 or the end of the line, so "### 6.1" does not match "### 6.10".
 Inside a section, the script uses the tables whose header has all the wanted
 columns. There must be exactly one such table (step 1: exactly two, 組織 and
-個人). Columns are found by their header names.
+個人, found with analysis_common.step1_tables). Columns are found by their
+header names.
 
 Markdown inside cells (for example **bold** and [links](...)) stays as written
 in the Cell text and in other text fields. The app renders it.
 """
 import csv, glob, json, os, re, subprocess, sys
 
+# python3 -I does not put the script folder on sys.path, so add it for analysis_common.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import analysis_common as common
+
 TAG = re.compile(r"`?\[(實證|AI模擬)\]`?")
 PENDING = re.compile(r"【待補[^】]*】")
 STORY_ID = re.compile(r"[OI]\d\d-US\d\d")
 STAKEHOLDER_ID = re.compile(r"(?<![A-Za-z0-9])([OI]\d\d)(?![0-9])")
-SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
-HEADING = re.compile(r"^(#{2,3}) (.+)$")
+HEADING = common.HEADING
 MOVED = "已改為"
 
 
@@ -66,10 +71,6 @@ def unique(items):
     return out
 
 
-def cells(line):
-    return [x.strip() for x in line.strip().strip("|").split(" | ")]
-
-
 def read_csv(analysis_dir, name, columns):
     """Rows of a shared CSV file. A missing file or column is a ReadError."""
     path = os.path.join(analysis_dir, name)
@@ -104,37 +105,19 @@ def git_updated(folder):
 
 # ---------- Markdown structure ----------
 
-def section(lines, prefix, name):
+def section(text, prefix, name):
     """Lines after the heading that starts with prefix, up to the next ## or ### heading."""
-    for i, line in enumerate(lines):
-        if line == prefix or line.startswith(prefix + " ") or line.startswith(prefix + "："):
-            body = []
-            for l in lines[i + 1:]:
-                if HEADING.match(l):
-                    break
-                body.append(l)
-            return body
-    raise ReadError(name, f"no heading that starts with 「{prefix}」")
+    body = common.section(text, prefix)
+    if body is None:
+        raise ReadError(name, f"no heading that starts with 「{prefix}」")
+    return body
 
 
-def tables(body):
-    """Every Markdown table in the lines: a list of (header, rows)."""
-    out = []
-    for i in range(1, len(body)):
-        if SEPARATOR.match(body[i]) and body[i - 1].startswith("|"):
-            rows = []
-            for l in body[i + 1:]:
-                if not l.startswith("|"):
-                    break
-                rows.append(cells(l))
-            out.append((cells(body[i - 1]), rows))
-    return out
-
-
-def table_rows(body, name, columns, expected=1):
-    """Rows of the tables whose header has every wanted column, as dicts keyed by
-    the column names. There must be exactly `expected` such tables."""
-    found = [(h, rows) for h, rows in tables(body) if all(c in h for c in columns)]
+def table_rows(found, name, columns, expected=1):
+    """Rows of the tables (a list of (header, rows)) whose header has every
+    wanted column, as dicts keyed by the column names. There must be exactly
+    `expected` such tables."""
+    found = [(h, rows) for h, rows in found if all(c in h for c in columns)]
     if len(found) != expected:
         raise ReadError(name, f"found {len(found)} tables with the columns {' | '.join(columns)}, expected {expected}")
     out = []
@@ -210,7 +193,9 @@ def parse_issue(text, space_codes):
             raise ReadError("空間類型", f"unknown space code {code} (not in space-types.csv)")
 
     # step 1 (1.1): the 組織 and 個人 tables
-    s1 = table_rows(section(lines, "### 1.1", "步驟 1"), "步驟 1",
+    if common.section(text, "### 1.1") is None:
+        raise ReadError("步驟 1", "no heading that starts with 「### 1.1」")
+    s1 = table_rows(common.step1_tables(text), "步驟 1",
                     ["利害關係人編號", "與本題的關係"], expected=2)
     stakeholders = []
     for r in s1:
@@ -222,7 +207,7 @@ def parse_issue(text, space_codes):
 
     # 1.2 input sources
     input_sources = []
-    for r in table_rows(section(lines, "### 1.2", "1.2"), "1.2", ["輸入來源", "適合的利害關係人", "注意事項"]):
+    for r in table_rows(common.tables(section(text, "### 1.2", "1.2")), "1.2", ["輸入來源", "適合的利害關係人", "注意事項"]):
         fit = r["適合的利害關係人"]
         input_sources.append({
             "source": r["輸入來源"],
@@ -234,7 +219,7 @@ def parse_issue(text, space_codes):
     # step 4 stories
     stories = []
     cols4 = ["故事編號", "我想要…", "相同訴求編號", "以便…", "來源", "優先順序"]
-    for r in table_rows(section(lines, "## 步驟 4", "步驟 4"), "步驟 4", cols4):
+    for r in table_rows(common.tables(section(text, "## 步驟 4", "步驟 4")), "步驟 4", cols4):
         sid = r["故事編號"]
         if not re.fullmatch(STORY_ID, sid):
             raise ReadError("步驟 4", f"bad story ID 「{sid}」")
@@ -253,7 +238,7 @@ def parse_issue(text, space_codes):
 
     # 相同訴求群組
     groups = []
-    for r in table_rows(section(lines, "### 相同訴求群組", "相同訴求群組"), "相同訴求群組",
+    for r in table_rows(common.tables(section(text, "### 相同訴求群組", "相同訴求群組")), "相同訴求群組",
                         ["群組", "我想要（摘要）", "故事編號"]):
         c = cell(r["群組"], "相同訴求群組", r["群組"])
         if not re.fullmatch(r"W\d\d", c["text"]):
@@ -277,7 +262,7 @@ def parse_issue(text, space_codes):
 
     # 5.4 conflicts
     conflicts = []
-    for r in table_rows(section(lines, "### 5.4", "5.4"), "5.4", ["#", "衝突", "相關故事", "可能的審議方法", "模擬結果"]):
+    for r in table_rows(common.tables(section(text, "### 5.4", "5.4")), "5.4", ["#", "衝突", "相關故事", "可能的審議方法", "模擬結果"]):
         cid = r["#"]
         sides = r["相關故事"].split(" vs ")
         if len(sides) != 2:
@@ -294,7 +279,7 @@ def parse_issue(text, space_codes):
 
     # 6.1 solutions
     solutions = []
-    for r in table_rows(section(lines, "### 6.1", "6.1"), "6.1", ["代號", "解法", "空間類型", "一句話說明"]):
+    for r in table_rows(common.tables(section(text, "### 6.1", "6.1")), "6.1", ["代號", "解法", "空間類型", "一句話說明"]):
         sol, codes = r["代號"], re.findall(r"`([^`]+)`", r["空間類型"])
         if not codes:
             raise ReadError("6.1", f"solution {sol}: no space code")
@@ -310,8 +295,10 @@ def parse_issue(text, space_codes):
     in_62 = []
 
     # 6.2 stories per solution
-    for r in table_rows(section(lines, "### 6.2", "6.2"), "6.2", ["解法", "涵蓋的 Must", "涵蓋的 Should / Could"]):
-        sol = r["解法"].split(" ", 1)[0]
+    for r in table_rows(common.tables(section(text, "### 6.2", "6.2")), "6.2", ["代號", "解法", "涵蓋的 Must", "涵蓋的 Should / Could"]):
+        sol = r["代號"]
+        if not re.fullmatch(r"[A-Z]", sol):
+            raise ReadError("6.2", f"bad solution code 「{sol}」 (expected one capital letter)")
         if sol not in by_sol:
             raise ReadError("6.2", f"solution 「{sol}」 is not in 6.1")
         in_62.append(sol)

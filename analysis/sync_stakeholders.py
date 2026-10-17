@@ -3,27 +3,24 @@
 Usage: python3 -I analysis/sync_stakeholders.py analysis
 
 For each issue folder in issues.csv, the script reads <folder>/issue-analysis.md
-and takes the stakeholder IDs from the step 1 tables (rows that start with
-"| O.." or "| I.."). It then sets 議題 of each row to the sorted issue numbers,
+and takes the stakeholder IDs from the step 1 tables (the first cell of each
+row of the tables under "### 1.1", up to the next heading). It then sets 議題 of each row to the sorted issue numbers,
 separated by one space. A moved row (備註 starts with 已改為) gets an empty 議題.
 Only the 議題 column changes. The BOM, the header, the row order, the line
-endings and all other cells stay as they are. The step 1 rules are the same as
-in check_analysis.py, so the two scripts agree.
+endings and all other cells stay as they are. The step 1 rule is in
+analysis_common.py and is the same in check_analysis.py and build_json.py.
 """
-import csv, io, os, re, sys
+import csv, io, os, sys
 from collections import defaultdict
+
+# python3 -I does not put the script folder on sys.path, so add it for analysis_common.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from analysis_common import step1_ids
 
 ISSUE_COL = "議題"
 ID_COL = "利害關係人編號"
 NOTE_COL = "備註"
 MOVED = "已改為"
-
-
-def step1_ids(text):
-    """Return the stakeholder IDs in the step 1 (1.1) tables. Same rule as check_analysis.py."""
-    sec = text.split("## 步驟 1", 1)[1].split("### 1.2", 1)[0] if "## 步驟 1" in text else ""
-    return [l.strip().strip("|").split(" | ")[0].strip()
-            for l in sec.splitlines() if re.match(r"^\| [OI]\d\d \|", l)]
 
 
 def to_csv_text(rows):

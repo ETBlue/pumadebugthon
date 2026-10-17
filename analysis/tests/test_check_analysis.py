@@ -113,6 +113,37 @@ class CheckAnalysisTest(unittest.TestCase):
                   "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`sidewalk` |")
         self.assertFails("solution D: space code sidewalk is listed twice")
 
+    def test_6_2_code_not_in_6_1(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 |", "| E | 參與式選址流程 |")
+        self.assertFails("6.2: solution E is not in 6.1", "6.2: solution D from 6.1 has no row")
+
+    def test_6_2_old_layout_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md",
+                  "| 代號 | 解法 | 涵蓋的 Must | 涵蓋的 Should / Could | 涵蓋的相同訴求群組 |\n|---|---|---|---|---|",
+                  "| 解法 | 涵蓋的 Must | 涵蓋的 Should / Could | 涵蓋的相同訴求群組 |\n|---|---|---|---|")
+        self.assertFails("6.2: expected one table with the header")
+
+    def test_6_2_any_capital_letter_code(self):
+        # A code like E or K is fine when 6.1 has it too.
+        md = f"{ISSUE}/issue-analysis.md"
+        self.edit(md, "| D | `[AI模擬]` 參與式選址流程 |", "| K | `[AI模擬]` 參與式選址流程 |")
+        self.edit(md, "| D | 參與式選址流程 |", "| K | 參與式選址流程 |")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_bare_pending_with_text_outside(self):
+        self.edit(f"{ISSUE}/issue-analysis.md",
+                  "【待補：滿溢比例；題目說滿溢偵測資料不存在】",
+                  "【待補】題目說滿溢偵測資料不存在")
+        self.assertFails("bare 【待補】", "題目說滿溢偵測資料不存在")
+
+    def test_pending_in_backticks_is_allowed(self):
+        # The step 4 summary names the format in backticks: 「`【待補】` 1 則」.
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+        with open(self.md, encoding="utf-8") as f:
+            self.assertIn("`【待補】` 1 則", f.read())
+
     def test_change_log_new_id_must_exist(self):
         self.edit(f"{ISSUE}/issue-analysis.md", "| O02-US01 | I12-US01 |", "| O02-US01 | I12-US09 |")
         self.assertFails("I12-US09")

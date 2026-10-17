@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "data": "../analysis/build_all.sh public/data",
+    "fixtures": "node scripts/fixtures.mjs"
   },
   "dependencies": {
     "class-variance-authority": "0.7.1",

@@ -1,0 +1,638 @@
+{
+  "issues": [
+    {
+      "number": 1,
+      "folder": "1-trees",
+      "title": "把三千棵樹種回來",
+      "available": true,
+      "spaces": [
+        "sidewalk",
+        "park",
+        "utility",
+        "bike-lane"
+      ],
+      "updated": "2026-10-18",
+      "counts": {
+        "stakeholdersO": 14,
+        "stakeholdersI": 12,
+        "stories": 55,
+        "conflicts": 7,
+        "solutions": 5,
+        "wantsEvidence": 7
+      }
+    },
+    {
+      "number": 2,
+      "folder": "2-trashcans",
+      "title": "找回消失的垃圾桶",
+      "available": true,
+      "spaces": [
+        "sidewalk",
+        "arcade",
+        "park",
+        "mrt-exit"
+      ],
+      "updated": "2026-10-18",
+      "counts": {
+        "stakeholdersO": 12,
+        "stakeholdersI": 13,
+        "stories": 45,
+        "conflicts": 7,
+        "solutions": 4,
+        "wantsEvidence": 6
+      }
+    },
+    {
+      "number": 3,
+      "folder": "3-mice",
+      "title": "鼠患四處跑，衛生安全怎麼辦",
+      "available": false,
+      "spaces": [],
+      "updated": null,
+      "counts": null
+    },
+    {
+      "number": 4,
+      "folder": "4-neihutraffic",
+      "title": "內湖尖峰車流好比停車場",
+      "available": false,
+      "spaces": [],
+      "updated": null,
+      "counts": null
+    },
+    {
+      "number": 5,
+      "folder": "5-busroutes",
+      "title": "公車路網如何即時反應需求",
+      "available": false,
+      "spaces": [],
+      "updated": null,
+      "counts": null
+    },
+    {
+      "number": 6,
+      "folder": "6-oldbuildings",
+      "title": "危老耐震如何查，風險評級怎麼找",
+      "available": false,
+      "spaces": [],
+      "updated": null,
+      "counts": null
+    }
+  ],
+  "stakeholders": [
+    {
+      "id": "O01",
+      "name": "商圈店家與攤商",
+      "path": "ind-retail",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O02",
+      "name": "便利商店店員",
+      "path": null,
+      "focus": [],
+      "issues": [],
+      "movedTo": "I12"
+    },
+    {
+      "id": "O03",
+      "name": "環保局清潔隊",
+      "path": "gov-local-taipei-epb-cleaning",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O04",
+      "name": "環保局（環境清潔管理科）",
+      "path": "gov-local-taipei-epb",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O05",
+      "name": "里辦公處",
+      "path": "gov-local-taipei-li",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O06",
+      "name": "學術研究單位",
+      "path": "acd",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O07",
+      "name": "公民科技社群",
+      "path": "cmt-civictech",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O08",
+      "name": "環保與零廢棄團體",
+      "path": "ngo-environment",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O09",
+      "name": "IoT／智慧城市業者",
+      "path": "ind-tech",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O10",
+      "name": "臺北捷運公司",
+      "path": "soe-taipei-metro",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O11",
+      "name": "大型活動主辦單位（跨年、演唱會、市集）",
+      "path": "ind-events",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O12",
+      "name": "工務局新建工程處（人行道管理）",
+      "path": "gov-local-taipei-pwd-nce",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O13",
+      "name": "1999 市民熱線",
+      "path": "gov-local-taipei-rdec-1999",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O14",
+      "name": "工務局公園路燈工程管理處",
+      "path": "gov-local-taipei-pwd-parks",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O15",
+      "name": "公共工程承包商（營造業者）",
+      "path": "ind-construction",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O16",
+      "name": "地下管線單位（電力、自來水、瓦斯、電信）",
+      "path": "ind-utility",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O17",
+      "name": "護樹與環境團體",
+      "path": "ngo-environment",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O18",
+      "name": "園藝與樹藝業者（含樹木醫生）",
+      "path": "ind-landscape",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O19",
+      "name": "社區認養與在地綠化團體",
+      "path": "cmt-local",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O20",
+      "name": "建商與都市更新實施者",
+      "path": "ind-realestate",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O21",
+      "name": "都市發展局",
+      "path": "gov-local-taipei-udd",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I01",
+      "name": "通勤行人（捷運、公車乘客）",
+      "path": "mov",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I02",
+      "name": "國內觀光客",
+      "path": "vis",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I03",
+      "name": "外國觀光客",
+      "path": "vis",
+      "focus": [
+        "外籍"
+      ],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I04",
+      "name": "在台外籍居民（含學生、移工）",
+      "path": "res",
+      "focus": [
+        "外籍"
+      ],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I05",
+      "name": "高齡者",
+      "path": "res",
+      "focus": [
+        "高齡"
+      ],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I06",
+      "name": "身心障礙者（視障、輪椅使用者）",
+      "path": "mov",
+      "focus": [
+        "身心障礙"
+      ],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I07",
+      "name": "推嬰兒車的家長",
+      "path": "mov",
+      "focus": [
+        "兒童與照顧者"
+      ],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I08",
+      "name": "夜班工作者（含外送員）",
+      "path": "wrk",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I09",
+      "name": "清潔箱附近住戶",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I10",
+      "name": "遛狗飼主",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I11",
+      "name": "資源回收個體業者（含高齡回收者）",
+      "path": "wrk",
+      "focus": [
+        "高齡",
+        "經濟弱勢"
+      ],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I12",
+      "name": "便利商店店員",
+      "path": "wrk",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I13",
+      "name": "清潔隊員",
+      "path": "wrk",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I14",
+      "name": "行道樹附近住戶",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I15",
+      "name": "日間戶外工作者（含外送員）",
+      "path": "wrk",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I16",
+      "name": "上下學的學童",
+      "path": "mov",
+      "focus": [
+        "兒童與照顧者"
+      ],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I17",
+      "name": "自行車騎士",
+      "path": "mov",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I18",
+      "name": "樹蔭較少地區的居民",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I19",
+      "name": "無家者",
+      "path": "res",
+      "focus": [
+        "經濟弱勢"
+      ],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I20",
+      "name": "關心老樹的居民",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    }
+  ],
+  "pathLabels": {
+    "acd": "學術",
+    "cmt": "社群",
+    "cmt-civictech": "公民科技",
+    "cmt-local": "在地自組團體",
+    "gov": "政府",
+    "gov-central": "中央政府",
+    "gov-central-ly": "立法院",
+    "gov-local": "地方政府",
+    "gov-local-taipei": "臺北市",
+    "gov-local-taipei-council": "臺北市議會",
+    "gov-local-taipei-epb": "環保局",
+    "gov-local-taipei-epb-cleaning": "清潔隊",
+    "gov-local-taipei-li": "里辦公處",
+    "gov-local-taipei-pwd": "工務局",
+    "gov-local-taipei-pwd-nce": "新建工程處",
+    "gov-local-taipei-pwd-parks": "公園路燈工程管理處",
+    "gov-local-taipei-rdec": "研究發展考核委員會",
+    "gov-local-taipei-rdec-1999": "1999 市民熱線",
+    "gov-local-taipei-udd": "都市發展局",
+    "ind": "產業",
+    "ind-construction": "營造業",
+    "ind-events": "活動產業",
+    "ind-landscape": "園藝與樹藝",
+    "ind-realestate": "不動產開發",
+    "ind-retail": "零售與商圈",
+    "ind-tech": "科技業者",
+    "ind-utility": "公用事業與管線",
+    "mov": "用路人",
+    "ngo": "公民團體",
+    "ngo-environment": "環保團體",
+    "res": "居民",
+    "soe": "公營事業",
+    "soe-taipei": "臺北市",
+    "soe-taipei-metro": "臺北捷運公司",
+    "vis": "遊客",
+    "wrk": "工作者"
+  },
+  "spaceTypes": [
+    {
+      "code": "sidewalk",
+      "name": "人行道",
+      "group": "道路",
+      "description": "道路兩側供行人通行的空間。"
+    },
+    {
+      "code": "arcade",
+      "name": "騎樓",
+      "group": "道路",
+      "description": "建築物一樓臨街、供行人通行的有頂空間。"
+    },
+    {
+      "code": "bike-lane",
+      "name": "單車道",
+      "group": "道路",
+      "description": "道路上專供自行車行駛的車道。"
+    },
+    {
+      "code": "scooter-lane",
+      "name": "機車道",
+      "group": "道路",
+      "description": "道路上供機車行駛的車道。"
+    },
+    {
+      "code": "car-lane",
+      "name": "汽車道",
+      "group": "道路",
+      "description": "道路上供汽車行駛的車道。"
+    },
+    {
+      "code": "bus-stop",
+      "name": "公車站與候車亭",
+      "group": "道路",
+      "description": "乘客上下公車與等車的地方。"
+    },
+    {
+      "code": "sewer",
+      "name": "下水道",
+      "group": "地下",
+      "description": "地面下排放雨水與污水的管道。"
+    },
+    {
+      "code": "utility",
+      "name": "地下管線",
+      "group": "地下",
+      "description": "埋在地面下的水、電、瓦斯與通訊管線。"
+    },
+    {
+      "code": "park",
+      "name": "公園綠地",
+      "group": "公共空間",
+      "description": "供民眾休憩的公園與綠地。"
+    },
+    {
+      "code": "mrt-exit",
+      "name": "捷運站出口與周邊",
+      "group": "公共空間",
+      "description": "捷運站出入口與附近的人行空間。"
+    },
+    {
+      "code": "parking",
+      "name": "停車場",
+      "group": "公共空間",
+      "description": "供汽車或機車停放的場地。"
+    },
+    {
+      "code": "indoor",
+      "name": "建築物內（室內）",
+      "group": "建築",
+      "description": "建築物裡面的空間。"
+    },
+    {
+      "code": "building-shell",
+      "name": "建築物外牆與結構",
+      "group": "建築",
+      "description": "建築物的外牆、樑柱等結構部分。"
+    }
+  ]
+}

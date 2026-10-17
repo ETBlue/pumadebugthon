@@ -1,0 +1,1678 @@
+{
+  "number": 2,
+  "folder": "2-trashcans",
+  "title": "找回消失的垃圾桶",
+  "spaces": [
+    "sidewalk",
+    "arcade",
+    "park",
+    "mrt-exit"
+  ],
+  "updated": "2026-10-18",
+  "stakeholders": [
+    {
+      "id": "O01",
+      "relation": {
+        "text": "客人把垃圾放在店門口",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O03",
+      "relation": {
+        "text": "負責清運的單位（1999 資料中，此類案件多由各區清潔隊受理）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O04",
+      "relation": {
+        "text": "決定設置與裁撤（題目原文；清潔箱資料集提供機關）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O05",
+      "relation": {
+        "text": "里民的意見窗口",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O06",
+      "relation": {
+        "text": "環境工程、都市規劃、行為科學等領域；評估方法與研究資料",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O07",
+      "relation": {
+        "text": "開放資料與工具",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O08",
+      "relation": {
+        "text": "減量與回收",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O09",
+      "relation": {
+        "text": "感測器與智慧垃圾桶供應",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O10",
+      "relation": {
+        "text": "站外出口周邊的垃圾（130 點總表含多個捷運站點）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O11",
+      "relation": {
+        "text": "活動尖峰時清潔箱不夠（步驟 3 新增）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O12",
+      "relation": {
+        "text": "人行道淨寬與設置位置（步驟 3 新增）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O13",
+      "relation": {
+        "text": "民眾通報的派工（步驟 3 新增）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I01",
+      "relation": {
+        "text": "外帶飲料、早餐包裝需要丟",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I02",
+      "relation": {
+        "text": "景點、夜市、商圈的垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I03",
+      "relation": {
+        "text": "不熟悉分類與規則",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I04",
+      "relation": {
+        "text": "語言與規則資訊",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I05",
+      "relation": {
+        "text": "投入口高度、推蓋力道",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I06",
+      "relation": {
+        "text": "清潔箱可能阻擋通行；輪椅可及性",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I07",
+      "relation": {
+        "text": "公園與親子景點的小垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I08",
+      "relation": {
+        "text": "深夜時段清潔箱常已滿",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I09",
+      "relation": {
+        "text": "異味、蚊蟲、被丟家用垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I10",
+      "relation": {
+        "text": "狗便袋需要丟",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I11",
+      "relation": {
+        "text": "生計可能和清潔箱裡的回收物有關（步驟 3 新增）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I12",
+      "relation": {
+        "text": "店內垃圾桶被外帶垃圾塞滿",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I13",
+      "relation": {
+        "text": "實際清運的人；清潔箱滿不滿會影響他們的路線與工作量",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    }
+  ],
+  "inputSources": [
+    {
+      "source": "黑客松題目原文（[題目 #2](https://puma.taipei/hackathon#issues)）",
+      "stakeholders": [
+        "O03",
+        "O04",
+        "I01",
+        "O01",
+        "I09"
+      ],
+      "fit": {
+        "text": "依內容分到 O03、O04、I01；同一訴求另列到 O01、I09（見[題目原文重點](#題目原文重點)）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "題目原文整理自市民意見，不是單一利害關係人的話"
+    },
+    {
+      "source": "「市長，你給我聽好了」資料",
+      "stakeholders": [
+        "I01",
+        "I02",
+        "I08",
+        "I09",
+        "I10"
+      ],
+      "fit": {
+        "text": "I01、I02、I08、I09、I10 等一般市民",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "只引用件數或摘要，不複製原始留言"
+    },
+    {
+      "source": "[臺北市陳情系統 1999](https://1999.gov.taipei) 類別資料",
+      "stakeholders": [
+        "I09",
+        "I01"
+      ],
+      "fit": {
+        "text": "會使用 1999、常陳情的市民（多為 I09、I01）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "偏向熟悉 1999 的人；高齡者、外籍人士可能較少使用"
+    },
+    {
+      "source": "市民自製的通報工具、社群貼文",
+      "stakeholders": [
+        "I01",
+        "I02",
+        "O07"
+      ],
+      "fit": {
+        "text": "I01、I02、O07",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "只看統計與主題，不收個資"
+    },
+    {
+      "source": "外籍居民社群與社團頁面",
+      "stakeholders": [
+        "I03",
+        "I04"
+      ],
+      "fit": {
+        "text": "I03、I04",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "需要多語言"
+    },
+    {
+      "source": "里辦公處、里民大會",
+      "stakeholders": [
+        "I09",
+        "O05",
+        "I05"
+      ],
+      "fit": {
+        "text": "I09、O05、I05",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "地方意見，可能偏向住戶觀點"
+    },
+    {
+      "source": "簡短問卷（3–5 題，捷運站外或線上）",
+      "stakeholders": [
+        "I01",
+        "I02",
+        "I07",
+        "I08",
+        "I10"
+      ],
+      "fit": {
+        "text": "I01、I02、I07、I08、I10",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "抽樣地點會影響結果"
+    },
+    {
+      "source": "現場觀察（尖峰與深夜各一次）",
+      "stakeholders": [
+        "I01",
+        "I06",
+        "I08",
+        "I12"
+      ],
+      "fit": {
+        "text": "I01、I06、I08、I12",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "只記錄數量，不拍可辨識的人臉"
+    },
+    {
+      "source": "訪談清潔隊與環保局",
+      "stakeholders": [
+        "O03",
+        "O04",
+        "I13"
+      ],
+      "fit": {
+        "text": "O03、O04、I13",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "【待補：政策組安排】"
+    },
+    {
+      "source": "身障團體、社區關懷據點",
+      "stakeholders": [
+        "I05",
+        "I06"
+      ],
+      "fit": {
+        "text": "I05、I06",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "需要無障礙的訪談方式"
+    },
+    {
+      "source": "商圈發展協會、便利商店門市",
+      "stakeholders": [
+        "O01",
+        "I12"
+      ],
+      "fit": {
+        "text": "O01、I12",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": null
+    }
+  ],
+  "stories": [
+    {
+      "id": "O01-US01",
+      "stakeholder": "O01",
+      "want": {
+        "text": "商圈有足夠的清潔箱",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "客人不會把垃圾放在店門口或花台",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問商圈發展協會",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O01-US02",
+      "stakeholder": "O01",
+      "want": {
+        "text": "清潔箱放在店前時，不要預設由店家負責清理",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "專心做生意",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O01-US03",
+      "stakeholder": "O01",
+      "want": {
+        "text": "結合行人流量、商圈分佈與民眾通報熱點，產生智慧化的垃圾桶佈建建議",
+        "tag": "實證",
+        "pending": false
+      },
+      "group": "W01",
+      "soThat": {
+        "text": "商圈裡人潮最多的路段有清潔箱，店家不必替客人收垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 I01-US04（題目原文）同一訴求，另列在店家之下",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O01-US04",
+      "stakeholder": "O01",
+      "want": {
+        "text": "活動期間可以申請臨時清潔箱與加派清運",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W02",
+      "soThat": {
+        "text": "週末與活動散場的尖峰時段，店門口不會堆滿垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增；與 O11-US01 同一訴求",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O03-US02",
+      "stakeholder": "O03",
+      "want": {
+        "text": "清潔箱被丟家用垃圾時，有方法記錄並交給稽查處理",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W03",
+      "soThat": {
+        "text": "減少重複清理",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O03-US04",
+      "stakeholder": "O03",
+      "want": {
+        "text": "做到動態清理（依實際需要安排清運）",
+        "tag": "實證",
+        "pending": false
+      },
+      "group": "W04",
+      "soThat": {
+        "text": "清潔箱不會滿出來，清潔人力用在需要的地方",
+        "tag": "實證",
+        "pending": false
+      },
+      "source": "題目原文（黑客松題目 #2：https://puma.taipei/hackathon#issues ，2026-10-15 存檔）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O04-US01",
+      "stakeholder": "O04",
+      "want": {
+        "text": "有可信的指標判斷哪裡該設、哪裡該撤",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "決策可以向市民與議會說明",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "環保局為清潔箱資料集提供機關",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O04-US02",
+      "stakeholder": "O04",
+      "want": {
+        "text": "新增清潔箱時不會讓家用垃圾違規棄置增加",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "維持垃圾費隨袋徵收的公平",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "題目原文提到現行依違規棄置量評估",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O04-US03",
+      "stakeholder": "O04",
+      "want": {
+        "text": "每個清潔箱都有設置日期、清運與通報紀錄",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "可以評估每個點的效果，不只看單一事件",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O04-US04",
+      "stakeholder": "O04",
+      "want": {
+        "text": "依家戶垃圾違規棄置量評估清潔箱的裁撤或復設（現行做法）",
+        "tag": "實證",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "【待補：題目原文沒有說明理由，需環保局確認】",
+        "tag": null,
+        "pending": true
+      },
+      "source": "題目原文（黑客松題目 #2：https://puma.taipei/hackathon#issues ，2026-10-15 存檔）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O04-US05",
+      "stakeholder": "O04",
+      "want": {
+        "text": "做到動態清理（依實際需要安排清運）",
+        "tag": "實證",
+        "pending": false
+      },
+      "group": "W04",
+      "soThat": {
+        "text": "用同樣的清運人力照顧更多清潔箱，控制清運成本",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 O03-US04（題目原文）同一訴求，另列在環保局之下",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O05-US01",
+      "stakeholder": "O05",
+      "want": {
+        "text": "新設或撤除清潔箱前先通知並和里民討論",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W05",
+      "soThat": {
+        "text": "里民不會突然看到桶子出現或消失",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問里辦公處",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O06-US01",
+      "stakeholder": "O06",
+      "want": {
+        "text": "取得清潔箱位置、清運與通報的歷史資料",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W06",
+      "soThat": {
+        "text": "研究佈建效果並做客觀評估",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O07-US01",
+      "stakeholder": "O07",
+      "want": {
+        "text": "清潔箱開放資料定期更新並提供 API",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W06",
+      "soThat": {
+        "text": "做找桶地圖和通報工具，減少重複開發",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "現有資料集時間涵蓋只到 2018-01-10（見附錄）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O08-US01",
+      "stakeholder": "O08",
+      "want": {
+        "text": "清潔箱有回收分類，並公開回收量",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W07",
+      "soThat": {
+        "text": "減少焚化量",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O08-US02",
+      "stakeholder": "O08",
+      "want": {
+        "text": "優先推動自備容器與源頭減量，而不是只增加清潔箱",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "從源頭減少垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O09-US01",
+      "stakeholder": "O09",
+      "want": {
+        "text": "全市清潔箱一次換成智慧壓縮垃圾桶",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "量大可以降低單價",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "W",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O09-US02",
+      "stakeholder": "O09",
+      "want": {
+        "text": "有清楚的試點規格與開放資料格式",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "不同廠商可以公平競標，不被單一廠商綁住",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O10-US01",
+      "stakeholder": "O10",
+      "want": {
+        "text": "站外清潔箱的權責與清運分工清楚",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "旅客不把垃圾丟在出口或帶進站內",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "130 點總表中有多個捷運站點",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O11-US01",
+      "stakeholder": "O11",
+      "want": {
+        "text": "活動期間可以申請臨時清潔箱與加派清運",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W02",
+      "soThat": {
+        "text": "活動後街道不會到處是垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O12-US01",
+      "stakeholder": "O12",
+      "want": {
+        "text": "清潔箱設置點先確認人行道淨寬與管線位置",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W08",
+      "soThat": {
+        "text": "不違反道路與無障礙相關規範",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O13-US01",
+      "stakeholder": "O13",
+      "want": {
+        "text": "民眾通報清潔箱問題時帶有精確位置與照片，直接派給區清潔隊",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "減少轉派與重複通報",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US01",
+      "stakeholder": "I01",
+      "want": {
+        "text": "在捷運站出口與公車站附近找到清潔箱",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "丟掉飲料杯與早餐包裝，不用一路拿著",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可用短問卷或站外現場觀察驗證",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US02",
+      "stakeholder": "I01",
+      "want": {
+        "text": "清潔箱不要滿出來",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W09",
+      "soThat": {
+        "text": "垃圾丟得進去，周邊不髒也不臭",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "1999「路面清潔」類別可作旁證，但該類別也含菸蒂、狗便",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US03",
+      "stakeholder": "I01",
+      "want": {
+        "text": "在手機上知道步行 3 分鐘內哪裡可以丟垃圾（含願意收垃圾的店家）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W10",
+      "soThat": {
+        "text": "不必拿著垃圾走很久",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US04",
+      "stakeholder": "I01",
+      "want": {
+        "text": "結合行人流量、商圈分佈與民眾通報熱點，產生智慧化的垃圾桶佈建建議",
+        "tag": "實證",
+        "pending": false
+      },
+      "group": "W01",
+      "soThat": {
+        "text": "清潔箱的裁撤或復設不只依家戶垃圾違規棄置量來決定",
+        "tag": "實證",
+        "pending": false
+      },
+      "source": "題目原文（黑客松題目 #2：https://puma.taipei/hackathon#issues ，2026-10-15 存檔）",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I02-US01",
+      "stakeholder": "I02",
+      "want": {
+        "text": "在景點、夜市、商圈用地圖找到最近的清潔箱",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W10",
+      "soThat": {
+        "text": "不用把垃圾帶回旅館",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可在商圈現場觀察驗證",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I03-US01",
+      "stakeholder": "I03",
+      "want": {
+        "text": "清潔箱上有英文與圖示，說明哪一口丟一般垃圾、哪一口丟回收",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "不會丟錯，也不會不敢丟",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問觀光服務中心",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I04-US01",
+      "stakeholder": "I04",
+      "want": {
+        "text": "用英文或其他語言查到清潔箱位置與規則（例如不能丟家用垃圾）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "不會因為不懂規則而被罰",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問外籍居民社群",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I05-US01",
+      "stakeholder": "I05",
+      "want": {
+        "text": "清潔箱投入口高度適中，不必用力推蓋子",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W11",
+      "soThat": {
+        "text": "自己就能丟垃圾，不用請人幫忙",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問社區關懷據點",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I06-US01",
+      "stakeholder": "I06",
+      "want": {
+        "text": "清潔箱不要擋住人行道與導盲磚",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W08",
+      "soThat": {
+        "text": "安全通行，不會撞到",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問身障團體",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I06-US02",
+      "stakeholder": "I06",
+      "want": {
+        "text": "坐輪椅也碰得到投入口",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W11",
+      "soThat": {
+        "text": "和其他人一樣可以自己丟垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問身障團體",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I07-US01",
+      "stakeholder": "I07",
+      "want": {
+        "text": "公園與親子景點附近有清潔箱",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "零食包裝、濕紙巾不用一直掛在推車上",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可在公園現場觀察驗證",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I07-US02",
+      "stakeholder": "I07",
+      "want": {
+        "text": "清潔箱不要擋住人行道",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W08",
+      "soThat": {
+        "text": "推嬰兒車時不必繞到車道上",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 I06-US01 同一訴求，另列在家長之下",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I08-US01",
+      "stakeholder": "I08",
+      "want": {
+        "text": "深夜時段清潔箱也還有空間",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W09",
+      "soThat": {
+        "text": "下班買完宵夜後有地方丟",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I09-US01",
+      "stakeholder": "I09",
+      "want": {
+        "text": "清潔箱不要放在我家門口",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "不會有異味、蚊蟲與夜間噪音",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可由里辦公處了解",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I09-US02",
+      "stakeholder": "I09",
+      "want": {
+        "text": "清潔箱附近被丟家用垃圾時能很快被處理",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W03",
+      "soThat": {
+        "text": "家門口環境不會變髒",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": null,
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I09-US03",
+      "stakeholder": "I09",
+      "want": {
+        "text": "附近的清潔箱有固定的清運頻率與負責單位聯絡方式",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "就算桶子在附近，也不會髒，有問題知道找誰",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I09-US04",
+      "stakeholder": "I09",
+      "want": {
+        "text": "結合行人流量、商圈分佈與民眾通報熱點，產生智慧化的垃圾桶佈建建議",
+        "tag": "實證",
+        "pending": false
+      },
+      "group": "W01",
+      "soThat": {
+        "text": "我常通報的髒亂熱點會被看見，不必一再陳情",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 I01-US04（題目原文）同一訴求，另列在常通報的住戶之下",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I09-US05",
+      "stakeholder": "I09",
+      "want": {
+        "text": "新設或撤除清潔箱前先通知並和里民討論",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W05",
+      "soThat": {
+        "text": "清潔箱要設在哪裡，住戶的意見能事先被聽到",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 O05-US01 同一訴求，另列在住戶之下",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I10-US01",
+      "stakeholder": "I10",
+      "want": {
+        "text": "散步路線上有清潔箱可以丟狗便袋",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "不必拿著狗便袋走一路",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "1999「路面清潔」類別名稱包含狗便",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I11-US01",
+      "stakeholder": "I11",
+      "want": {
+        "text": "回收物和一般垃圾分開投放",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W07",
+      "soThat": {
+        "text": "不用翻找桶子，也不會弄亂周邊",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I12-US01",
+      "stakeholder": "I12",
+      "want": {
+        "text": "行人有其他地方可以丟外帶垃圾",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "店內垃圾桶不會被外帶垃圾與家用垃圾塞滿",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可現場詢問門市",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I13-US01",
+      "stakeholder": "I13",
+      "want": {
+        "text": "知道哪個清潔箱快滿了再去清",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "排出比較順的路線，不白跑",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可由政策組訪談清潔隊",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I13-US02",
+      "stakeholder": "I13",
+      "want": {
+        "text": "用手機一鍵回報清潔箱的狀態（滿、壞、被丟家用垃圾）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "回報不必多寫報告，資料也能累積",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    }
+  ],
+  "groups": [
+    {
+      "id": "W01",
+      "summary": "結合行人流量、商圈與通報熱點，產生佈建建議",
+      "tag": "AI模擬",
+      "stories": [
+        "O01-US03",
+        "I01-US04",
+        "I09-US04"
+      ]
+    },
+    {
+      "id": "W02",
+      "summary": "活動期間臨時加設清潔箱與加派清運",
+      "tag": "AI模擬",
+      "stories": [
+        "O01-US04",
+        "O11-US01"
+      ]
+    },
+    {
+      "id": "W03",
+      "summary": "被丟家用垃圾時能記錄並很快處理",
+      "tag": "AI模擬",
+      "stories": [
+        "O03-US02",
+        "I09-US02"
+      ]
+    },
+    {
+      "id": "W04",
+      "summary": "動態清理",
+      "tag": "AI模擬",
+      "stories": [
+        "O03-US04",
+        "O04-US05"
+      ]
+    },
+    {
+      "id": "W05",
+      "summary": "新設或撤除前先通知並討論",
+      "tag": "AI模擬",
+      "stories": [
+        "O05-US01",
+        "I09-US05"
+      ]
+    },
+    {
+      "id": "W06",
+      "summary": "清潔箱資料公開並可取得",
+      "tag": "AI模擬",
+      "stories": [
+        "O06-US01",
+        "O07-US01"
+      ]
+    },
+    {
+      "id": "W07",
+      "summary": "回收物和一般垃圾分開投放",
+      "tag": "AI模擬",
+      "stories": [
+        "O08-US01",
+        "I11-US01"
+      ]
+    },
+    {
+      "id": "W08",
+      "summary": "清潔箱不擋住人行道",
+      "tag": "AI模擬",
+      "stories": [
+        "O12-US01",
+        "I06-US01",
+        "I07-US02"
+      ]
+    },
+    {
+      "id": "W09",
+      "summary": "清潔箱不要滿出來、隨時有空間",
+      "tag": "AI模擬",
+      "stories": [
+        "I01-US02",
+        "I08-US01"
+      ]
+    },
+    {
+      "id": "W10",
+      "summary": "用手機地圖找到最近可以丟的地方",
+      "tag": "AI模擬",
+      "stories": [
+        "I01-US03",
+        "I02-US01"
+      ]
+    },
+    {
+      "id": "W11",
+      "summary": "投入口的高度與力道人人可用",
+      "tag": "AI模擬",
+      "stories": [
+        "I05-US01",
+        "I06-US02"
+      ]
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C1",
+      "text": {
+        "text": "行人想要更多桶子；住戶不希望桶子在家門口",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I01-US01",
+        "I10-US01"
+      ],
+      "sideB": [
+        "I09-US01"
+      ],
+      "method": {
+        "text": "以里為單位的**社區工作坊**＋地圖標點，里長主持，清潔隊說明清運方式",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "先設在交通與商業節點，住宅巷弄不設；有設的點公告清運頻率與聯絡方式",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C2",
+      "text": {
+        "text": "增加桶子、佈建依據加入行人流量（W01） vs 現行依違規棄置量評估、擔心家用垃圾違規棄置增加（影響隨袋徵收公平）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I01-US01",
+        "I01-US04",
+        "O01-US03"
+      ],
+      "sideB": [
+        "O04-US02",
+        "O04-US04"
+      ],
+      "method": {
+        "text": "**公民審議會議**（隨機抽選市民，聽取專家與資料後討論設置準則）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "同意先小範圍試點，並同時監測違規棄置量",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C3",
+      "text": {
+        "text": "增加桶子 vs 源頭減量",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I01-US01"
+      ],
+      "sideB": [
+        "O08-US02"
+      ],
+      "method": {
+        "text": "全市線上意見地圖，例如 **Pol.is**（vTaiwan 曾使用的工具），找出各方都同意的說法",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "共識：新增的桶子都要有回收分類（W07），並同時推自備容器",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C4",
+      "text": {
+        "text": "全市換智慧垃圾桶（題目頁引述的壓縮垃圾桶構想，見 6.1） vs 預算有限",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "O09-US01"
+      ],
+      "sideB": [
+        "O04-US01"
+      ],
+      "method": {
+        "text": "**參與式預算**：各區提案，由居民投票決定試點地點",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "先在 2–3 個高人流點試點，用資料決定是否擴大",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C5",
+      "text": {
+        "text": "店家不想負責清理 vs 住戶與便利商店店員希望周邊乾淨",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "O01-US02"
+      ],
+      "sideB": [
+        "I09-US02",
+        "I12-US01"
+      ],
+      "method": {
+        "text": "**利害關係人圓桌**（商圈協會、清潔隊、里長）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "採自願認養，不強制",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C6",
+      "text": {
+        "text": "桶子密度 vs 人行道通行空間（W08）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I01-US01"
+      ],
+      "sideB": [
+        "I06-US01",
+        "I07-US02",
+        "O12-US01"
+      ],
+      "method": {
+        "text": "**共同設計的現場走查**（身障團體＋推車家長＋新工處＋清潔隊一起走一次路線）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "選址清單加上淨寬檢查，不合格的點不設",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C7",
+      "text": {
+        "text": "回收者翻找 vs 住戶希望整齊",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I11-US01"
+      ],
+      "sideB": [
+        "I09-US01"
+      ],
+      "method": {
+        "text": "**小型焦點團體**，請社會局與社工協助，保護弱勢者的參與",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "回收物分開投放，減少翻找",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    }
+  ],
+  "solutions": [
+    {
+      "id": "A",
+      "name": {
+        "text": "清潔箱佈建建議地圖",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "結合清潔箱位置、捷運出站量、公車站、1999 通報與商圈，算出「缺口指標」，產生設置與撤除建議清單，並加上人行道淨寬檢查",
+      "spaces": [
+        "sidewalk",
+        "mrt-exit"
+      ],
+      "stories": [
+        "O04-US01",
+        "O04-US02",
+        "O12-US01",
+        "I01-US01",
+        "I01-US04",
+        "I06-US01",
+        "I07-US02",
+        "I09-US04",
+        "O01-US01",
+        "O01-US03",
+        "O01-US04",
+        "O04-US04",
+        "O10-US01",
+        "O11-US01",
+        "I02-US01",
+        "I07-US01",
+        "I10-US01",
+        "I12-US01"
+      ]
+    },
+    {
+      "id": "B",
+      "name": {
+        "text": "滿溢回報與動態清運",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "先用低成本方法：每個桶子貼 QR code 讓民眾回報，清潔隊員用手機一鍵回報；在少數高人流點試點滿溢感測器與壓縮式智慧垃圾桶（沈伯洋構想，見下方）。資料進入派工儀表板",
+      "spaces": [
+        "sidewalk",
+        "mrt-exit",
+        "park"
+      ],
+      "stories": [
+        "O04-US02",
+        "I01-US02",
+        "I08-US01",
+        "I09-US03",
+        "O03-US02",
+        "O03-US04",
+        "O04-US03",
+        "O04-US05",
+        "O09-US02",
+        "O13-US01",
+        "I09-US02",
+        "I13-US01",
+        "I13-US02"
+      ]
+    },
+    {
+      "id": "C",
+      "name": {
+        "text": "找桶指引與開放資料更新",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "更新清潔箱開放資料（補齊行政區、加上類型與無障礙欄位）並提供 API；在台北通與地圖上多語言顯示",
+      "spaces": [
+        "sidewalk",
+        "mrt-exit",
+        "park",
+        "arcade"
+      ],
+      "stories": [
+        "I01-US01",
+        "O06-US01",
+        "O07-US01",
+        "O08-US01",
+        "I01-US03",
+        "I02-US01",
+        "I03-US01",
+        "I04-US01",
+        "I05-US01",
+        "I06-US02"
+      ]
+    },
+    {
+      "id": "D",
+      "name": {
+        "text": "參與式選址流程",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "新設或撤除前，在地圖上公告，並經里民工作坊討論；公開設置準則與每個點的紀錄",
+      "spaces": [
+        "sidewalk",
+        "arcade",
+        "park"
+      ],
+      "stories": [
+        "O04-US01",
+        "O05-US01",
+        "O12-US01",
+        "I09-US01",
+        "I09-US03",
+        "I09-US05",
+        "O01-US02",
+        "O08-US02",
+        "I11-US01"
+      ]
+    }
+  ],
+  "pending": [
+    {
+      "section": "1.2 可能的輸入來源",
+      "text": "【待補：政策組安排】",
+      "context": "訪談清潔隊與環保局"
+    },
+    {
+      "section": "步驟 2：初始使用者故事",
+      "text": "【待補：題目原文沒有說明理由，需環保局確認】",
+      "context": "O04-US04"
+    },
+    {
+      "section": "步驟 4：使用者故事總表",
+      "text": "【待補：題目原文沒有說明理由，需環保局確認】",
+      "context": "O04-US04"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：環保局稽查資料】",
+      "context": "家用垃圾違規棄置件數（試點區）"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：題目說滿溢偵測資料不存在】",
+      "context": "清潔箱滿溢比例"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：環保局各區清潔隊】",
+      "context": "每月清運趟次與工時"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：短問卷】",
+      "context": "民眾「找得到清潔箱」的比例"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：環保局或區公所是否已有紀錄；沒有的話，試點後由 D 產生】",
+      "context": "新設點中，經過里民討論的比例"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：1999 與里辦公處的撤除要求紀錄】",
+      "context": "設置後 3 個月內被要求撤除的比例"
+    },
+    {
+      "section": "7.1 解法 A：清潔箱佈建建議地圖",
+      "text": "【待補：研考會提供有地點的去識別化資料】",
+      "context": "需要的資料／API"
+    },
+    {
+      "section": "7.1 解法 A：清潔箱佈建建議地圖",
+      "text": "【待補：資料來源】",
+      "context": "需要的資料／API"
+    },
+    {
+      "section": "7.1 解法 A：清潔箱佈建建議地圖",
+      "text": "【待補：新工處】",
+      "context": "需要的資料／API"
+    },
+    {
+      "section": "7.1 解法 A：清潔箱佈建建議地圖",
+      "text": "【待補：法務確認】",
+      "context": "相關法規"
+    },
+    {
+      "section": "7.2 解法 B：滿溢回報與動態清運",
+      "text": "【待補：現有系統資訊】",
+      "context": "需要的資料／API"
+    },
+    {
+      "section": "7.2 解法 B：滿溢回報與動態清運",
+      "text": "【待補：市場詢價】",
+      "context": "成本／可行性／風險"
+    },
+    {
+      "section": "7.2 解法 B：滿溢回報與動態清運",
+      "text": "【待補：市場詢價】",
+      "context": "成本／可行性／風險"
+    },
+    {
+      "section": "7.3 解法 C：找桶指引與開放資料更新",
+      "text": "【待補：觀傳局】",
+      "context": "需要的資料／API"
+    },
+    {
+      "section": "7.4 解法 D：參與式選址流程",
+      "text": "【待補：法務確認】",
+      "context": "相關法規"
+    },
+    {
+      "section": "資料比對注意事項",
+      "text": "【待補：環保局確認目前實際數量與兩份表的關係】",
+      "context": null
+    }
+  ]
+}

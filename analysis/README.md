@@ -46,14 +46,15 @@
 
 「優先順序」欄使用 MoSCoW（M、S、C、W）。試算表依字母排序時，順序會變成 C、M、S、W，所以建議用篩選，不要用排序。
 
-修改 `issue-analysis.md` 的步驟 4 使用者故事總表後，請重建 CSV 並執行檢查（需要 Python 3）：
+修改任何 `issue-analysis.md` 或共用的 CSV 檔之後，請在 repo 根目錄執行這個指令（需要 Python 3）：
 
 ```
-python3 -I analysis/build_csv.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv
-python3 -I analysis/check_analysis.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv
+analysis/build_all.sh
 ```
 
-檢查會確認編號、連結、標記、優先順序與 CSV 是否一致。
+這個指令會依序：更新 `stakeholders.csv` 的「議題」欄、為每個議題重建 `user-stories.csv` 並執行檢查、執行單元測試、產生 app 用的 JSON（預設寫到 `app/public/data`）。任何一步失敗就會停止。
+
+檢查會確認編號（包含 `#2 O01-US01` 這種跨議題引用）、連結、標記、優先順序與 CSV 是否一致。指令更新了 CSV 時會提醒你，請一起提交。
 
 ## 資料使用說明
 

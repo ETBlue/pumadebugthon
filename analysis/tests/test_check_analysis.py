@@ -1,6 +1,6 @@
 """Tests for analysis/check_analysis.py.
 
-Each test copies issue #2 and the shared files into a temp dir, changes one
+Each test copies every issue folder that has an issue-analysis.md, and the shared files, into a temp dir, changes one
 thing, runs the check as a subprocess, and looks at the exit code and output.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
@@ -12,6 +12,12 @@ SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv"
 ISSUE = "2-trashcans"
 
 
+def issue_folders():
+    """Names of the issue folders in the working tree that have an issue-analysis.md."""
+    return sorted(n for n in os.listdir(ANALYSIS)
+                  if os.path.isfile(os.path.join(ANALYSIS, n, "issue-analysis.md")))
+
+
 class CheckAnalysisTest(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -19,7 +25,8 @@ class CheckAnalysisTest(unittest.TestCase):
         os.makedirs(self.dir)
         for name in SHARED:
             shutil.copy(os.path.join(ANALYSIS, name), self.dir)
-        shutil.copytree(os.path.join(ANALYSIS, ISSUE), os.path.join(self.dir, ISSUE))
+        for folder in issue_folders():
+            shutil.copytree(os.path.join(ANALYSIS, folder), os.path.join(self.dir, folder))
         self.md = os.path.join(self.dir, ISSUE, "issue-analysis.md")
         self.csv = os.path.join(self.dir, ISSUE, "user-stories.csv")
 
@@ -71,7 +78,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("solution D", "parking")
 
     def test_wrong_issue_value(self):
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,2,", "I05,高齡者,res,高齡,1 2,")
+        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2,", "I05,高齡者,res,高齡,2,")
         self.assertFails("I05", "議題")
 
     def test_moved_id_must_have_empty_issue_value(self):

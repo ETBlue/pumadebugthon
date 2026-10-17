@@ -2,6 +2,7 @@
 acd,學術
 cmt,社群
 cmt-civictech,公民科技
+cmt-local,在地自組團體
 gov,政府
 gov-central,中央政府
 gov-central-ly,立法院
@@ -13,12 +14,18 @@ gov-local-taipei-epb-cleaning,清潔隊
 gov-local-taipei-li,里辦公處
 gov-local-taipei-pwd,工務局
 gov-local-taipei-pwd-nce,新建工程處
+gov-local-taipei-pwd-parks,公園路燈工程管理處
 gov-local-taipei-rdec,研究發展考核委員會
 gov-local-taipei-rdec-1999,1999 市民熱線
+gov-local-taipei-udd,都市發展局
 ind,產業
+ind-construction,營造業
 ind-events,活動產業
+ind-landscape,園藝與樹藝
+ind-realestate,不動產開發
 ind-retail,零售與商圈
 ind-tech,科技業者
+ind-utility,公用事業與管線
 mov,用路人
 ngo,公民團體
 ngo-environment,環保團體

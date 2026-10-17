@@ -1,6 +1,7 @@
 """Tests for analysis/build_json.py.
 
-The tests copy issue #2 and the shared files into a temp dir and run the
+The tests copy every issue folder that has an issue-analysis.md, and the
+shared files, into a temp dir and run the
 script there as a subprocess. Every copied file comes from the last commit
 (git archive HEAD), not from the working tree. Another agent may edit the
 shared CSV files or the issue files at the same time; their edits that are
@@ -16,9 +17,17 @@ SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv"
 ISSUE = "2-trashcans"
 
 
+def head_issue_folders():
+    """Paths of the issue folders in HEAD that have an issue-analysis.md."""
+    names = subprocess.run(["git", "ls-tree", "-r", "--name-only", "HEAD", "--", "analysis"], cwd=REPO,
+                           capture_output=True, text=True, check=True).stdout.splitlines()
+    return sorted({os.path.dirname(n) for n in names
+                   if n.endswith("/issue-analysis.md") and n.count("/") == 2})
+
+
 def make_copy(root):
-    """Copy issue #2 and the shared files from HEAD into root/analysis. Return that dir."""
-    paths = [f"analysis/{n}" for n in SHARED] + [f"analysis/{ISSUE}"]
+    """Copy the issue folders and the shared files from HEAD into root/analysis. Return that dir."""
+    paths = [f"analysis/{n}" for n in SHARED] + head_issue_folders()
     tar = subprocess.run(["git", "archive", "HEAD", "--", *paths], cwd=REPO,
                          capture_output=True, check=True).stdout
     subprocess.run(["tar", "-x", "-C", root], input=tar, check=True)
@@ -123,17 +132,17 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_index_issue_list(self):
         issues = self.index["issues"]
         self.assertEqual([i["number"] for i in issues], [1, 2, 3, 4, 5, 6])
-        self.assertEqual([i["number"] for i in issues if i["available"]], [2])
-        one = issues[0]
-        self.assertEqual((one["counts"], one["spaces"], one["updated"]), (None, [], None))
+        self.assertEqual([i["number"] for i in issues if i["available"]], [1, 2])
+        three = issues[2]
+        self.assertEqual((three["counts"], three["spaces"], three["updated"]), (None, [], None))
 
     def test_moved_and_active_stakeholders(self):
         by_id = {s["id"]: s for s in self.index["stakeholders"]}
         self.assertEqual(by_id["O02"]["movedTo"], "I12")
         self.assertEqual(by_id["O02"]["issues"], [])
-        for sid in ("I12", "I13"):
+        for sid, issues in (("I12", [2]), ("I13", [1, 2])):
             self.assertIsNone(by_id[sid]["movedTo"])
-            self.assertEqual(by_id[sid]["issues"], [2])
+            self.assertEqual(by_id[sid]["issues"], issues)
         self.assertEqual(by_id["I11"]["focus"], ["高齡", "經濟弱勢"])
         self.assertEqual(by_id["O01"]["focus"], [])
         self.assertEqual(by_id["I06"]["path"], "mov")
@@ -279,7 +288,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.1:")
 
     def test_bad_issue_value_in_csv(self):
-        self.edit("I05,高齡者,res,高齡,2,", "I05,高齡者,res,高齡,2、3,", "stakeholders.csv")
+        self.edit("I05,高齡者,res,高齡,1 2,", "I05,高齡者,res,高齡,1、2,", "stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:")
 
     def test_missing_csv_file(self):

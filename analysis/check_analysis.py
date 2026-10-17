@@ -202,7 +202,7 @@ by_id = {r["利害關係人編號"]: r for r in shared}
 def compare_shared(where, sid, name, path, focus):
     r = by_id.get(sid)
     if r is None: err(f"{where}: {sid} is not in stakeholders.csv"); return
-    if r["備註"].strip(): err(f"{where}: {sid} is not active in stakeholders.csv (備註: {r['備註']})"); return
+    if r["備註"].startswith("已改為"): err(f"{where}: {sid} is not active in stakeholders.csv (備註: {r['備註']})"); return
     if name != r["利害關係人"]: err(f"{where}: {sid} name {name} != stakeholders.csv {r['利害關係人']}")
     pm = re.fullmatch(r"`([^`]+)`", path)
     if not pm: err(f"{where}: {sid} 分類路徑 must be one code in backticks: {path}")
@@ -241,7 +241,7 @@ if CHANGE_LOG in text:
 # 13. every prefix of every active path has a label
 labels = {r["分類路徑"] for r in read_csv("path-labels.csv")}
 for r in shared:
-    if r["備註"].strip(): continue
+    if r["備註"].startswith("已改為"): continue
     sid, path = r["利害關係人編號"], r["分類路徑"].strip()
     if not path: err(f"stakeholders.csv: active {sid} has no 分類路徑"); continue
     parts = path.split("-")
@@ -259,7 +259,7 @@ for f in glob.glob(os.path.join(analysis_dir, "*", "issue-analysis.md")):
         listed[c[0]].add(folder_num[folder])
 for r in shared:
     sid = r["利害關係人編號"]
-    want = "" if r["備註"].strip() else " ".join(str(n) for n in sorted(listed[sid]))
+    want = "" if r["備註"].startswith("已改為") else " ".join(str(n) for n in sorted(listed[sid]))
     if r["議題"].strip() != want: err(f"stakeholders.csv: {sid} 議題 is {r['議題']!r}, expected {want!r}")
 
 # 15. the 空間類型 line right under the title

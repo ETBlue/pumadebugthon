@@ -298,6 +298,7 @@ The picked item is a set of story IDs (one story, or all stories in the W group)
 | 這個意見沒有直接提到的人 | All stakeholders of this issue that are not in the first two parts. Prompt: 「你的意見會影響他們嗎？」 |
 
 For each stakeholder in the result, show a small mark 「也出現在 #1、#5」 when it appears in other issues.
+The mark links to the stakeholder page. Many marks on one page have the same text, so the link's accessible name also gives the stakeholder and the issue titles, for example 「I12 清潔隊員 也出現在 #1 把三千棵樹種回來」.
 
 ## 5. Changes to the analysis format
 

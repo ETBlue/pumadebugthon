@@ -140,7 +140,7 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
   const result = opinionResult(issue, picked.storyIds)
   const n = summary.number
   const alsoIn = (id: string) => (
-    <AlsoIn stakeholders={index.stakeholders} id={id} issueNumber={n} available={available} />
+    <AlsoIn index={index} id={id} issueNumber={n} available={available} />
   )
   const cards = (stories: Story[]) => (
     <ul className="mt-2 space-y-2">

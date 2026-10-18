@@ -185,7 +185,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
                   <li key={id} className="flex flex-wrap items-baseline gap-x-2">
                     <Link to={`/stakeholders/${id}`} className={linkClass}>{name(id)}</Link>
                     <span className="font-mono text-xs text-muted-foreground">{id}</span>
-                    <AlsoIn stakeholders={index.stakeholders} id={id} issueNumber={n} available={available} />
+                    <AlsoIn index={index} id={id} issueNumber={n} available={available} />
                   </li>
                 ))}
               </ul>

@@ -167,7 +167,7 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                   {entry.stakeholders.map((id) => (
                     <li key={id} className="flex flex-wrap items-baseline gap-x-2">
                       <Link to={`/stakeholders/${id}`} className={linkClass}>{name(id)}</Link>
-                      <AlsoIn stakeholders={index.stakeholders} id={id} issueNumber={entry.issueNumber} available={available} />
+                      <AlsoIn index={index} id={id} issueNumber={entry.issueNumber} available={available} />
                     </li>
                   ))}
                 </ul>

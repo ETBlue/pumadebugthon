@@ -4,7 +4,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Stakeholder } from '@/types'
 import {
-  alsoInIssues, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, issueStakeholders, resolveId, stakeholderName, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
+  alsoInIssues, alsoInLabel, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, issueStakeholders, resolveId, stakeholderName, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
 } from './stakeholders'
 
 const index = indexJson as IndexFile
@@ -271,5 +271,22 @@ describe('alsoInIssues', () => {
   it('returns issue numbers in order', () => {
     const s: Stakeholder = { id: 'I50', name: '', path: 'res', focus: [], issues: [5, 2, 1], movedTo: null, added: '2026-10-18' }
     expect(alsoInIssues([s], 'I50', 2, [1, 2, 5])).toEqual([1, 5])
+  })
+})
+
+describe('alsoInLabel', () => {
+  it('names the stakeholder and each issue with its title', () => {
+    expect(alsoInLabel(index, 'I06', [1, 8])).toBe('I06 身心障礙者（視障、輪椅使用者） 也出現在 #1 把三千棵樹種回來、#8 無菸城市')
+  })
+
+  it('gives different names to two stakeholders in the same issues', () => {
+    const others = index.stakeholders.filter((s) => s.movedTo === null && s.issues.includes(1) && s.issues.includes(2))
+    expect(others.length).toBeGreaterThan(1)
+    const labels = others.map((s) => alsoInLabel(index, s.id, [1]))
+    expect(new Set(labels).size).toBe(labels.length)
+  })
+
+  it('keeps the ID as the name for an unknown stakeholder', () => {
+    expect(alsoInLabel(index, 'X99', [2])).toBe('X99 X99 也出現在 #2 找回消失的垃圾桶')
   })
 })

@@ -1,6 +1,7 @@
 // Stakeholder lookups (design 3.1 and 3.3).
 // Order is always by path, then by ID. Nothing here sorts by a count.
-import type { IssueFile, Stakeholder, Story } from '@/types'
+import { t } from '@/i18n/zh-TW'
+import type { IndexFile, IssueFile, Stakeholder, Story } from '@/types'
 import { compareIds } from './ids'
 import { priorityCounts, type TagPriorityCounts } from './priority'
 
@@ -170,4 +171,11 @@ export function alsoInIssues(stakeholders: Stakeholder[], id: string, issueNumbe
   const s = stakeholders.find((x) => x.id === id)
   if (!s) return []
   return s.issues.filter((n) => n !== issueNumber && available.includes(n)).sort((a, b) => a - b)
+}
+
+/** The accessible name of the 「也出現在」 link, for example
+ * 「I12 清潔隊員 也出現在 #1 把三千棵樹種回來」. issues comes from alsoInIssues. */
+export function alsoInLabel(index: IndexFile, id: string, issues: number[]): string {
+  const title = (n: number) => t.issueCard.numberTitle(n, index.issues.find((i) => i.number === n)?.title ?? '').trim()
+  return t.opinion.alsoInLabel(id, stakeholderName(index.stakeholders, id), issues.map(title))
 }

@@ -264,6 +264,10 @@ export const t = {
     notMentionedPrompt: '你的意見會影響他們嗎？',
     notMentionedNone: '這個議題的利害關係人都已經在上面出現。',
     alsoIn: (issues: number[]) => `也出現在 ${issues.map((n) => `#${n}`).join('、')}`,
+    /** Accessible name of the 「也出現在」 link. The visible text is the same
+     * for many stakeholders, so the name adds who it is and the issue titles.
+     * Each item of issues is 「#1 把三千棵樹種回來」. */
+    alsoInLabel: (id: string, name: string, issues: string[]) => `${id} ${name} 也出現在 ${issues.join('、')}`,
   },
   stakeholderPage: {
     notFoundTitle: '找不到這位利害關係人',

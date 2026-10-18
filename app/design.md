@@ -77,7 +77,7 @@ Five tabs. 總覽 opens first.
 
 | Tab | Content |
 |---|---|
-| 總覽 | Title, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「資料根據」: the same breakdown as on the issue card (3.9), with the full explanation line under it. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
+| 總覽 | Title, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「資料根據」: the same breakdown as on the issue card (3.9), with the full explanation line under it. 「特別關注族群」 (decision 25): one row for each of the 6 groups, always in the fixed order 高齡, 身心障礙, 呼吸道疾病, 兒童與照顧者, 外籍, 經濟弱勢, never by count. A row with stakeholders shows the stakeholders as links (ID and name, to `#/stakeholders/<id>`), the number of their stories in this issue (a story counts once, also when its stakeholder is in two groups, for example I11), a small 資料根據 bar of those stories' cells (the `CellBasis` parts and colors, without the totals and the 實證 percent), and the 說明 cell with its tag when it is not 「—」. A group with no stakeholder shows 「本議題尚未納入」 and its 【待補】 item, in a dashed box: easy to see, but not alarming. One line explains the section: 「列出 6 類特別關注族群在本議題的利害關係人與故事。尚未納入的族群，需要由真人判斷是否應該納入。」 The logic is in `src/lib/focusGroups.ts`. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
 | 你的意見 | The opinion check (section 4) |
 | 利害關係人 | The same list as the stakeholder list page (section 3.9), limited to this issue. Each row links to the stakeholder page (section 3.3). |
 | 衝突 | C1, C2… Each shows both sides with their stories, the deliberation method, and the simulated result. |
@@ -205,6 +205,7 @@ Each list page has its own URL and an h1. The header links to it.
 | 解法 | 4 個 |
 | 跨議題共用的利害關係人 | For example 「8 位, shared with #1」 (the real number is known after #1 is written). Links to the stakeholder list page with the 「只看跨議題」 filter on (`#/stakeholders?cross=1`). Shown only when 2 or more issues exist. |
 | 資料根據 | 實證 8・AI整理 21・AI模擬 72・待補 1（共 102 格，來自 51 則故事） 實證 8%, and a small stacked bar under it. See below. |
+| 尚未納入的特別關注族群 | 呼吸道疾病、外籍 (from `focusGaps`, in the fixed order). When every group is included: 「特別關注族群　都已納入」. Never a count like 「4／6」: it reads like a score (decision 25). |
 | 更新日期 | Date of the last git commit that changed the issue folder. Left out if the build has no git history. |
 | 空間類型 | The issue's space types, for example 人行道、騎樓. Each one links to its space page (section 3.6). |
 
@@ -268,7 +269,7 @@ The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an
 
 | Card | `detailed` | `compact` |
 |---|---|---|
-| `IssueCard` (`src/components/IssueCard.tsx`) | `#/issues`: a box with all the fields in the issue table above, with 資料根據. Props: `shared`, `headingLevel`. | Home 「最近更新的議題」: the title link, 更新日期 and 空間類型, with no box |
+| `IssueCard` (`src/components/IssueCard.tsx`) | `#/issues`: a box with all the fields in the issue table above, with 資料根據 and the 特別關注族群 line. Props: `shared`, `headingLevel`. | Home 「最近更新的議題」: the title link, 更新日期 and 空間類型, with no box |
 | `SolutionCard` (`src/components/SolutionCard.tsx`) | `#/solutions`: the code and name, the summary, 空間類型, 新增日期 and the story count. Prop: `spaceTypes`. | Home 「最近分析出的解法」, the space page, the stakeholder page and the opinion check result: the code and name, and the one-line summary |
 
 Content that only one page shows is passed to `SolutionCard` as `children`, shown at the end of the card: the 新增日期 on the home page, and the other space types (「也使用：」) on the space page. `showIssue` makes the code 「#2 A」 for lists across issues. The solution link keeps `?evidence=1`. The 解法 tab of an issue page shows much more per solution, so it uses only `SolutionTitleLink`, the title part of `SolutionCard`.
@@ -479,9 +480,10 @@ Rules:
 `analysis/build_json.py`:
 - Reads every issue folder that has an `issue-analysis.md`, plus `stakeholders.csv`, `path-labels.csv`, `space-types.csv` and `open-data.csv`.
 - Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types, open datasets as `openData`) and `app/public/data/issues/<folder>.json`.
-- Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2, 6.3, each step 7 section `### 7.n 解法 X：…`, and `### 7.n 總覽`.
+- Reads these sections: title, 空間類型 line, 1.1, 1.2, `### 1.n 特別關注族群檢查`, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2, 6.3, each step 7 section `### 7.n 解法 X：…`, and `### 7.n 總覽`.
 - For each solution, also writes the fields of its page (3.12): `measures` (6.3 rows: `metric`, `baseline` Cell, `source`), `detail` (step 7 rows: `item`, `content` Cell), `overview` (`cost`, `feasibility`, `risk`, `owner`, each a Cell with the row tag), `ideas` (構想 rows: `idea`, `handling`, both Cells) and `pending` (the 【待補】 items of its step 7 section and its 6.3 rows; they stay in the issue's `pending` list too).
 - Adds per-issue counts for the issue cards (section 3.9), including `cells` for 資料根據 (`evidence`, `aiSummary`, `aiSimulated`, `pending`: the 我想要… and 以便… cells of every story by tag), and the update date from `git log -1 --format=%cs -- <folder>`.
+- Writes `focusGroups` to each issue file: `[{ tag, stakeholders: [ids], note: Cell | null }]`, one item per 特別關注 group, in the fixed order of `analysis_common.FOCUS_GROUPS`. `stakeholders` is `[]` for 「（無）」; `note` is null for 「—」. The IDs must be the step 1 stakeholders that have the group in `stakeholders.csv`. `index.json` gets `focusGaps` for each analyzed issue: the groups with no stakeholder, in the same order (`[]` when every group is included, null for an issue without an analysis).
 - Keeps each tag in its own field, for example `{ "text": "…", "tag": "AI模擬" }`. A 【待補】 cell has `"tag": null` and `"pending": true`.
 - Collects every 【待補…】 item in the issue file, including items inside longer text (for example 「【待補：法務確認】」 in step 7), with its section, for the 待補清單.
 - Stops with an error that names the issue and the section when a section cannot be read.
@@ -566,3 +568,4 @@ Required by the hackathon rules:
 22. The header gets 需求 with a count, between 訴求 and 解法. A 需求 is the 以便… cell of one story: one per story, with no merging. It gets a list page `#/needs`, built like `#/wants`, with search and the 「只看有資料根據」 filter. On this page the filter looks at the 以便… cell only. 訴求 stays the opinion check pick list (3.7, 3.9). (ETBlue, `human-inputs.md`, 2026-10-19)
 23. `[AI整理]` is yellow, not blue, so the three tags follow the color spectrum: 實證 green, AI整理 yellow, AI模擬 orange. The shades are darker (light theme `#765900`) or lighter (dark theme `#d4a300`) than Solarized yellow `#b58900`, to pass AA on the page backgrounds, also under the watermark. This also keeps the tag apart from the blue links. (ETBlue, 2026-10-19)
 24. In the light theme, 實證 green is `#2e7000` (was `#5a6800`), so it is easy to tell apart from the AI整理 yellow in the badges and the 資料根據 bar. The contrast stays about the same. (ETBlue, 2026-10-19)
+25. Each issue analysis has a 特別關注族群檢查 table in step 1 (`### 1.3`), so a 特別關注 group with no stakeholder is shown, not hidden. Only a person decides that a group does not apply: the AI writes a neutral 【待補】 question, never 「不相關」. The 總覽 tab shows all 6 groups with their stakeholders, stories and 資料根據 (3.2). The detailed issue card shows the groups not included yet, or 「都已納入」 (3.9). There is no count like 「4／6」 anywhere, because it reads like a score. Issues are never sorted, ranked or filtered by these numbers, and the groups are always in the fixed order, never by count. (ETBlue, 2026-10-19)

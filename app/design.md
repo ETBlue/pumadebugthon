@@ -350,3 +350,7 @@ Required by the hackathon rules:
 3. Space types are tagged at two levels: issue and solution. (2026-10-18)
 4. Informal groups get their own category `cmt` 社群, separate from `ngo`. (2026-10-18)
 5. A third source tag `[AI整理]` marks AI summaries of real data that no person has checked yet. The filter 「只看 `[實證]`」 became 「只看有資料根據」: it keeps `[實證]` and `[AI整理]` and hides only `[AI模擬]`. (ETBlue, 2026-10-18)
+6. `edu` 教育機構 is a first level of 分類路徑, for schools and kindergartens (O23 學校與幼兒園 in #8). It is not under `gov`. (ETBlue, 2026-10-18)
+7. The stakeholder for people with respiratory illness stays as it is: I27 過敏或呼吸道疾病者 (`res`), the exact name in `stakeholders.csv`. Its 特別關注 in `stakeholders.csv` is empty, and no new 特別關注 category is added. (ETBlue, 2026-10-18)
+8. 衛生局 (O22) is one organization stakeholder and is not split. A separate I stakeholder for its staff is added only if a story about the staff's own needs (for example workload) is added later, the same rule as 環保局清潔隊 and 清潔隊員 (5.1). (ETBlue, 2026-10-18)
+9. Content taken only from news reports is `[AI整理]`, not `[AI模擬]`: AI summarized it from a real source, and no person has checked it yet. The cell says 「新聞報導指出…」 and has a 【待補：查證…】 item; the outlet and the link are in the appendix. AI judgments based on news stay `[AI模擬]` (3.5). (ETBlue, 2026-10-18)

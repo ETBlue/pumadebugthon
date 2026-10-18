@@ -54,7 +54,7 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
           ))}
         </dl>
         <p className="mt-2">
-          <a href={METHOD_URL} className={linkClass}>{to.methodLink}</a>
+          <a href={METHOD_URL} rel="noopener noreferrer" className={linkClass}>{to.methodLink}</a>
         </p>
       </section>
 

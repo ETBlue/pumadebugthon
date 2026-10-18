@@ -42,8 +42,8 @@ export function Layout() {
       <footer className="border-t">
         <nav aria-label={t.layout.footerNav} className={`${container} py-4 text-sm`}>
           <ul className="flex flex-wrap gap-x-6 gap-y-2">
-            <li><a href={REPO} className={linkClass}>{t.layout.repo}</a></li>
-            <li><a href={METHOD} className={linkClass}>{t.layout.method}</a></li>
+            <li><a href={REPO} rel="noopener noreferrer" className={linkClass}>{t.layout.repo}</a></li>
+            <li><a href={METHOD} rel="noopener noreferrer" className={linkClass}>{t.layout.method}</a></li>
           </ul>
         </nav>
       </footer>

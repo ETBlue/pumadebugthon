@@ -13,7 +13,7 @@ steps to analyze the issues:
 
 what ETBlue expects the AI agent to do:
 * simulate the steps above
-* mark missing human inputs with placeholders or mock content ([實證] or [AI模擬])
+* mark missing human inputs with placeholders or mock content ([實證], [AI整理] or [AI模擬])
 * save the artifact in .md format, and put the files in the issue folder (e.g. `/analysis/1-trees`)
 * when it comes to step 5, list suggested prioritization methods for different contexts
 * write all artifacts in zh-TW

@@ -18,4 +18,4 @@ raw ideas:
   * "最近加入分析的族群", showing latest added stakeholders, with a link guiding users to the stakeholder list page
   * "最近分析出的解法", showing latest formed solutions, with a link guiding users to the solution list page
 * the global page footer should include GitHub link, license info, disclaimer, links to the open data used by the app (the json/csv files in the issue analysis folders), and link to the official hackathon event page
-* render a watermark on the app, so every screenshot can see it. the watermark could be: "puma.taipei 市政 debug 松展示用 MVP"
+* render a watermark on the app, so every screenshot can see it. the watermark could be: "市政 debug 松參加者作品・展示用 MVP"

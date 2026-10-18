@@ -106,7 +106,7 @@
        AI整理: adjusted blue, the same as --link.
        AI模擬: adjusted orange (#cb4b16 is 4.27 on base3): 5.71 on base3, 5.03 on base2;
        wm 5.17 / 4.57. */
-    --tag-evidence: #5a6800;
+    --tag-evidence: #2e7000;
     --tag-summary: #765900;
     --tag-simulated: #a93f12;
     /* The home page hero (design 3.1): a diagonal gradient from base2 to base3,

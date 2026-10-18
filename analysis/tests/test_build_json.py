@@ -107,7 +107,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         return next(s for s in (issue or self.issue)["solutions"] if s["id"] == code)
 
     def test_solution_measures(self):
-        # 6.3 rows whose 解法 cell lists the code. A row for 「A, D」 belongs to both.
+        # 6.3 rows whose 解法 cell lists the code. A row for 「A、D」 belongs to both.
         a = self.solution("A")
         self.assertEqual([m["metric"] for m in a["measures"]],
                          ["清潔箱總數", "無清潔箱資料的行政區數", "高人流捷運站的「每處每日出站人次」",
@@ -488,6 +488,11 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("2-trashcans: 步驟 4", out)
         self.assertIn("I01-US01", out)
+
+    def test_6_3_codes_with_comma(self):
+        # Codes in a 6.3 解法 cell are separated by 「、」, the same as other lists.
+        self.edit("| A、D | 家用垃圾違規棄置件數（試點區） |", "| A, D | 家用垃圾違規棄置件數（試點區） |")
+        self.assertFails("2-trashcans: 6.3:", "「A, D」", "separated by 「、」")
 
     def test_6_3_code_not_in_6_1(self):
         self.edit("| E | 試辦收集點的數量與每日使用量 |", "| F | 試辦收集點的數量與每日使用量 |")

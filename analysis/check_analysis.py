@@ -428,10 +428,19 @@ def main(md_path, csv_path):
     # 16c. the 6.3 成效衡量 table. The app shows each row on the solution page
     # without the tables around it, so a cell must stand alone: no 「見下表」 or
     # 「見上表」. Give the key numbers and name the section of the full table.
+    # The 解法 cell is one code, or several separated by 「、」 (「A、D」), the same
+    # as other lists. Each code is in 6.1.
     MEASURE_HEADER = ["解法", "指標", "目前數值（基準值）", "資料來源"]
     for h, rows in tables(section(text, "### 6.3") or []):
         if h != MEASURE_HEADER: continue
         for c in rows:
+            if re.search(r"[,，]", c[0]):
+                err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 解法 cell 「{c[0]}」: separate codes with 「、」, for example 「A、D」")
+            elif not re.fullmatch(r"[A-Z](?:、[A-Z])*", c[0]):
+                err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 解法 cell 「{c[0]}」 must be solution codes, for example 「A」 or 「A、D」")
+            else:
+                for code in c[0].split("、"):
+                    if code not in codes61: err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: solution {code} is not in 6.1")
             for v in c:
                 for word in ("見下表", "見上表"):
                     if word in v: err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 「{word}」 does not work on the solution page; give the key numbers and name the section of the full table")

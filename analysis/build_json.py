@@ -28,7 +28,7 @@ In other text it stays as written; check_analysis.py checks that it exists.
 
 Each solution also gets the fields for its own page in the app:
 - measures: the 6.3 rows whose 解法 cell lists its code (a cell can list
-  several, for example 「A, D」).
+  several, separated by 「、」, for example 「A、D」).
 - detail: the 項目 | 內容 rows of its step 7 section, in file order.
 - overview: its row of the 總覽 table (成本, 可行性, 主要風險, 主責單位). The
   row is found by its 代號 cell (the code only). The 解法 cell holds the row
@@ -175,13 +175,14 @@ def headings_before(lines):
     return out
 
 
-SOLUTION_CODES = re.compile(r"[A-Z](?:\s*[,、，]\s*[A-Z])*")
+# Solution codes in a 6.3 解法 cell: one code, or several separated by 「、」 (「A、D」).
+SOLUTION_CODES = re.compile(r"[A-Z](?:、[A-Z])*")
 
 
 def pending_context(line, item_start):
     """The context of a 【待補】 item in a table row: the first cell of the row
     that is not the cell holding the item, not empty, not 「—」 and not only
-    solution codes (like 「A」 or 「A, D」 in 6.3). Tags and backticks are
+    solution codes (like 「A」 or 「A、D」 in 6.3). Tags and backticks are
     removed. None when the line is not a table row or no cell fits."""
     if not line.startswith("|"):
         return None
@@ -203,10 +204,10 @@ IDEA_SOLUTION = re.compile(r"解法 ?([A-Z])(?![A-Za-z])")
 
 
 def row_codes(value, known, section_name, where):
-    """The solution codes in a cell such as 「A」 or 「A, D」. Each must be a code from 6.1."""
+    """The solution codes in a cell such as 「A」 or 「A、D」. Each must be a code from 6.1."""
     v = value.strip()
     if not SOLUTION_CODES.fullmatch(v):
-        raise ReadError(section_name, f"{where}: 解法 cell 「{value}」 must be solution codes, for example 「A」 or 「A, D」")
+        raise ReadError(section_name, f"{where}: 解法 cell 「{value}」 must be solution codes separated by 「、」, for example 「A」 or 「A、D」")
     codes = re.findall(r"[A-Z]", v)
     for c in codes:
         if c not in known:
@@ -379,7 +380,7 @@ def parse_issue(text, space_codes):
 
     sol_codes = [s["id"] for s in solutions]
 
-    # 6.3 measures: a row belongs to every solution its 解法 cell lists (「A, D」).
+    # 6.3 measures: a row belongs to every solution its 解法 cell lists (「A、D」).
     for s in solutions:
         s["measures"] = []
     for r in table_rows(common.tables(section(text, "### 6.3", "6.3")), "6.3", ["解法", "指標", "目前數值（基準值）", "資料來源"]):

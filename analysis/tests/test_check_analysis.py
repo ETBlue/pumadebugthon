@@ -134,6 +134,9 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(md, "| D | 參與式選址流程 |", "| K | 參與式選址流程 |")
         self.edit(md, "### 7.4 解法 D：", "### 7.4 解法 K：")
         self.edit(md, "| D | `[AI模擬]` 參與式選址流程 | 中 |", "| K | `[AI模擬]` 參與式選址流程 | 中 |")
+        self.edit(md, "| A、D | 家用垃圾", "| A、K | 家用垃圾")
+        self.edit(md, "| D | 新設點中", "| K | 新設點中")
+        self.edit(md, "| D | 設置後 3 個月", "| K | 設置後 3 個月")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
@@ -388,6 +391,17 @@ class CheckAnalysisTest(unittest.TestCase):
 
     # A 6.3 cell must stand alone on the solution page: no 「見下表」 or 「見上表」.
     MEASURE_ROW = "| C | 開放資料的資料時間涵蓋終點 | `[實證]` 2018-01-10 |"
+
+    # A 6.3 解法 cell lists codes separated by 「、」, the same as other lists.
+    MEASURE_AD = "| A、D | 家用垃圾違規棄置件數（試點區） |"
+
+    def test_measure_codes_with_comma_fail(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.MEASURE_AD, "| A, D | 家用垃圾違規棄置件數（試點區） |")
+        self.assertFails("6.3 row 「家用垃圾違規棄置件數（試點區）」: 解法 cell 「A, D」: separate codes with 「、」")
+
+    def test_measure_code_not_in_6_1_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.MEASURE_AD, "| A、F | 家用垃圾違規棄置件數（試點區） |")
+        self.assertFails("6.3 row 「家用垃圾違規棄置件數（試點區）」: solution F is not in 6.1")
 
     def test_measure_cell_pointing_below_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.MEASURE_ROW, "| C | 開放資料的資料時間涵蓋終點 | `[實證]` 見下表 |")

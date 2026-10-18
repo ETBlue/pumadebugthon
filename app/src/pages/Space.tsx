@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Link, useParams } from 'react-router'
 import { Field } from '@/components/Field'
 import { AlsoIn } from '@/components/issue/AlsoIn'
+import { IssueCard } from '@/components/IssueCard'
 import { LoadState } from '@/components/LoadState'
 import { SolutionCard } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
@@ -9,7 +10,6 @@ import { linkClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
-import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import {
   findSpaceType, issuesBySpace, otherSpaces, solutionsBySpace, stakeholdersBySpace, stakeholdersInSeveralIssues,
@@ -63,12 +63,10 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
           {summaries.length === 0 ? (
             <p className="mt-2">{tp.issuesNone}</p>
           ) : (
-            <ul className="mt-2 space-y-1">
+            <ul className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {summaries.map((i) => (
                 <li key={i.number}>
-                  <Link to={tabPath(i.number, 'overview')} className={linkClass}>
-                    {t.issueCard.numberTitle(i.number, i.title)}
-                  </Link>
+                  <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} />
                 </li>
               ))}
             </ul>

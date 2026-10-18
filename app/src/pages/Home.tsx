@@ -82,9 +82,9 @@ function HomeBlocks({ index }: { index: IndexFile }) {
           {issues.length === 0 ? (
             <p>{th.issuesNone}</p>
           ) : (
-            <ul className="divide-y">
+            <ul className="space-y-3">
               {issues.map((issue) => (
-                <li key={issue.number} className="py-3">
+                <li key={issue.number}>
                   <IssueCard variant="compact" issue={issue} spaceTypes={index.spaceTypes} />
                 </li>
               ))}

@@ -14,7 +14,7 @@ const tc = t.issueCard
 /** The props of IssueCard. Each variant has its own props.
  * - detailed: the issue list (#/issues). shared is null when fewer than 2
  *   issues are available; then the 跨議題 field is left out.
- * - compact: short lists, for example the home page. */
+ * - compact: short lists, for example the home page and the space page. */
 export type IssueCardProps =
   | { variant: 'detailed'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null; headingLevel?: 2 | 3 }
   | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[] }
@@ -22,8 +22,10 @@ export type IssueCardProps =
 /** One issue in a list (design 3.9). Two variants:
  * - detailed: a box with all the counts, 資料根據, 特別關注族群 (the groups not
  *   included yet), 更新日期 and 空間類型.
- * - compact: the title link, 更新日期 and 空間類型, with no box. The home page
- *   lists only analyzed issues, but an issue that is 製作中 still shows its badge.
+ * - compact: the title link, 更新日期 and 空間類型, in a smaller box. It uses
+ *   the same box as the compact SolutionCard, so the home blocks look alike.
+ *   The home page and the space page list only analyzed issues, but an issue
+ *   that is 製作中 still shows its badge and a dashed border.
  * An issue without an analysis shows 製作中, with no numbers and no link. */
 export function IssueCard(props: IssueCardProps) {
   const { issue, spaceTypes } = props
@@ -40,7 +42,7 @@ export function IssueCard(props: IssueCardProps) {
 
   if (props.variant === 'compact') {
     return (
-      <article>
+      <article className={`h-full rounded-md border p-3${issue.available ? '' : ' border-dashed'}`}>
         <p className="font-medium">
           {titleLink || title}
           {!issue.available && <Badge variant="secondary" className="ml-2 rounded-sm">{tc.inProgress}</Badge>}

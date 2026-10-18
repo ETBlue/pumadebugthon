@@ -1,10 +1,8 @@
 import { useId, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
-import { SolutionSummary } from '@/components/SolutionSummary'
-import { SpaceLinks } from '@/components/SpaceLinks'
+import { SolutionCard } from '@/components/SolutionCard'
 import { linkClass, toggleOnClass } from '@/components/styles'
 import { ToggleCheck } from '@/components/ToggleCheck'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
@@ -98,19 +96,13 @@ function SolutionList({ index }: { index: IndexFile }) {
               <ul className="mt-3 grid gap-3 md:grid-cols-2">
                 {g.solutions.map((sol) => (
                   <li key={sol.id}>
-                    <SolutionSummary
+                    <SolutionCard
+                      variant="detailed"
                       solution={sol}
                       issueNumber={g.issueNumber}
                       showIssue
-                    >
-                      <dl className="mt-2 space-y-1 text-sm">
-                        {sol.spaces.length > 0 && (
-                          <Field label={tl.solutionSpaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={sol.spaces} /></Field>
-                        )}
-                        {sol.added && <Field label={tl.solutionAdded}><time dateTime={sol.added}>{sol.added}</time></Field>}
-                        <Field label={tl.solutionStories}>{tl.solutionStoriesValue(sol.stories.length)}</Field>
-                      </dl>
-                    </SolutionSummary>
+                      spaceTypes={index.spaceTypes}
+                    />
                   </li>
                 ))}
               </ul>

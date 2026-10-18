@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
 import { PickLabel } from '@/components/PickLabel'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
-import { SolutionSummary } from '@/components/SolutionSummary'
+import { SolutionCard } from '@/components/SolutionCard'
 import { StoryCard } from '@/components/StoryCard'
 import { linkClass } from '@/components/styles'
 import { Input } from '@/components/ui/input'
@@ -202,7 +202,7 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
           <ul className="mt-2 space-y-3">
             {result.solutions.map((sol) => (
               <li key={sol.id}>
-                <SolutionSummary solution={sol} issueNumber={n} />
+                <SolutionCard variant="compact" solution={sol} issueNumber={n} />
               </li>
             ))}
           </ul>

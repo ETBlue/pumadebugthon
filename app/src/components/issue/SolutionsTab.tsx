@@ -1,6 +1,6 @@
 import { DataBasisEmpty, DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Markdown } from '@/components/Markdown'
-import { SolutionTitleLink } from '@/components/SolutionSummary'
+import { SolutionTitleLink } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { StoryList } from '@/components/StoryList'
 import { t } from '@/i18n/zh-TW'

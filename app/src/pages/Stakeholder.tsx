@@ -7,7 +7,7 @@ import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
 import { PriorityCounts } from '@/components/PriorityCounts'
-import { SolutionSummary } from '@/components/SolutionSummary'
+import { SolutionCard } from '@/components/SolutionCard'
 import { StoryCard } from '@/components/StoryCard'
 import { StoryList } from '@/components/StoryList'
 import { linkClass } from '@/components/styles'
@@ -250,7 +250,7 @@ function IssueSection({ index, issue, id, first, dataBasedOnly }: {
           <ul className="space-y-3">
             {v.solutions.map((sol) => (
               <li key={sol.id}>
-                <SolutionSummary solution={sol} issueNumber={n} />
+                <SolutionCard variant="compact" solution={sol} issueNumber={n} />
               </li>
             ))}
           </ul>

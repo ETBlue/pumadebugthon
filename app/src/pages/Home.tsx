@@ -3,8 +3,8 @@ import { Link, Navigate, useLocation } from 'react-router'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
-import { SolutionSummary } from '@/components/SolutionSummary'
-import { SpaceLinks } from '@/components/SpaceLinks'
+import { IssueCard } from '@/components/IssueCard'
+import { SolutionCard } from '@/components/SolutionCard'
 import { containerClass, linkClass } from '@/components/styles'
 import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
@@ -85,19 +85,7 @@ function HomeBlocks({ index }: { index: IndexFile }) {
             <ul className="divide-y">
               {issues.map((issue) => (
                 <li key={issue.number} className="py-3">
-                  <p className="font-medium">
-                    <Link to={`/issues/${issue.number}`} className={linkClass}>
-                      {t.issueCard.numberTitle(issue.number, issue.title)}
-                    </Link>
-                  </p>
-                  <dl className="mt-1 space-y-1 text-sm">
-                    {issue.updated && (
-                      <Field label={th.updated}><time dateTime={issue.updated}>{issue.updated}</time></Field>
-                    )}
-                    {issue.spaces.length > 0 && (
-                      <Field label={th.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={issue.spaces} /></Field>
-                    )}
-                  </dl>
+                  <IssueCard variant="compact" issue={issue} spaceTypes={index.spaceTypes} />
                 </li>
               ))}
             </ul>
@@ -159,11 +147,11 @@ function RecentSolutionList({ solutions }: { solutions: ReturnType<typeof recent
     <ul className="space-y-3">
       {solutions.map(({ issueNumber: n, solution: sol }) => (
         <li key={`${n}-${sol.id}`}>
-          <SolutionSummary solution={sol} issueNumber={n} showIssue>
+          <SolutionCard variant="compact" solution={sol} issueNumber={n} showIssue>
             <dl className="mt-1 text-sm">
               <Field label={th.solutionAdded}><time dateTime={sol.added}>{sol.added}</time></Field>
             </dl>
-          </SolutionSummary>
+          </SolutionCard>
         </li>
       ))}
     </ul>

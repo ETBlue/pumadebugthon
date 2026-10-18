@@ -49,6 +49,7 @@ export function IssueList({ index, headingLevel }: { index: IndexFile; headingLe
           {shownIssues.map((issue) => (
             <li key={issue.number}>
               <IssueCard
+                variant="detailed"
                 issue={issue}
                 spaceTypes={index.spaceTypes}
                 shared={multi && issue.available ? sharedStakeholders(index.stakeholders, issue.number) : null}

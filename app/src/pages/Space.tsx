@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router'
 import { Field } from '@/components/Field'
 import { AlsoIn } from '@/components/issue/AlsoIn'
 import { LoadState } from '@/components/LoadState'
-import { SolutionSummary } from '@/components/SolutionSummary'
+import { SolutionCard } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { linkClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
@@ -114,7 +114,8 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                       const others = otherSpaces(sol, code)
                       return (
                         <li key={sol.id}>
-                          <SolutionSummary
+                          <SolutionCard
+                            variant="compact"
                             solution={sol}
                             issueNumber={issue.number}
                           >
@@ -124,7 +125,7 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                                 <SpaceLinks spaceTypes={index.spaceTypes} codes={others} />
                               </div>
                             )}
-                          </SolutionSummary>
+                          </SolutionCard>
                         </li>
                       )
                     })}

@@ -1,0 +1,27 @@
+// The counts in the header (design 3.7). A count is a plain number, not a
+// score. Nothing here sorts.
+import type { IndexFile, IssueFile } from '@/types'
+import { availableIssues } from './issues'
+import { pickList } from './opinion'
+
+/** 議題: the analyzed issues. */
+export function issueCount(index: IndexFile): number {
+  return availableIssues(index).length
+}
+
+/** 利害關係人: active stakeholders. Moved IDs are left out. */
+export function stakeholderCount(index: IndexFile): number {
+  return index.stakeholders.filter((s) => s.movedTo === null).length
+}
+
+/** 解法: the solutions of the analyzed issues, summed. */
+export function solutionCount(index: IndexFile): number {
+  return availableIssues(index).reduce((n, i) => n + i.counts.solutions, 0)
+}
+
+/** 訴求: each W group once, plus each story with no W group. These are the
+ * items of the opinion check pick list (design 4.1), summed over the issues.
+ * Pass the files of the analyzed issues. */
+export function wantCount(issues: IssueFile[]): number {
+  return issues.reduce((n, issue) => n + pickList(issue).length, 0)
+}

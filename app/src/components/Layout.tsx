@@ -1,9 +1,9 @@
 import type { MouseEvent, ReactNode } from 'react'
-import { Link, Outlet, ScrollRestoration } from 'react-router'
+import { Outlet, ScrollRestoration } from 'react-router'
 import { t } from '@/i18n/zh-TW'
 import { METHOD_URL as METHOD, REPO_URL as REPO } from './links'
+import { Header } from './Header'
 import { Notice } from './Notice'
-import { ThemeToggle } from './ThemeToggle'
 import { linkClass } from './styles'
 
 // With hash URLs, href="#main" would change the route. Move focus instead.
@@ -28,14 +28,7 @@ export function Layout({ children }: { children?: ReactNode }) {
       >
         {t.layout.skipLink}
       </a>
-      <header className="border-b">
-        <div className={`${container} flex items-center justify-between gap-4 py-3`}>
-          <Link to="/" className="rounded-sm text-lg font-bold">
-            {t.appTitle}
-          </Link>
-          <ThemeToggle />
-        </div>
-      </header>
+      <Header container={container} />
       <main id="main" tabIndex={-1} className={`${container} flex-1 py-6 focus:outline-none`}>
         <Notice />
         <div className="mt-6">

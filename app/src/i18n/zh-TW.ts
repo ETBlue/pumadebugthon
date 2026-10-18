@@ -12,6 +12,14 @@ export const t = {
     repo: 'GitHub 原始碼',
     method: '如何閱讀議題分析',
   },
+  /** The header links with counts (design 3.7). */
+  header: {
+    nav: '主要導覽',
+    issues: '議題',
+    stakeholders: '利害關係人',
+    wants: '訴求',
+    solutions: '解法',
+  },
   /** The theme toggle in the header (design 3.10). A toggle button: the
    * name stays the same, and aria-pressed says if dark is on. */
   theme: {

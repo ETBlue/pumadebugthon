@@ -22,6 +22,11 @@
     --color-chart-1: var(--chart-1);
     --color-ring: var(--ring);
     --color-link: var(--link);
+    --color-notice: var(--notice);
+    --color-notice-border: var(--notice-border);
+    --color-tag-evidence: var(--tag-evidence);
+    --color-tag-summary: var(--tag-summary);
+    --color-tag-simulated: var(--tag-simulated);
     --color-input: var(--input);
     --color-border: var(--border);
     --color-destructive: var(--destructive);
@@ -48,77 +53,120 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Design tokens (design 3.10). Light = Solarized Light, dark = Solarized Dark.
+ * Official Solarized palette:
+ *   base03 #002b36  base02 #073642  base01 #586e75  base00 #657b83
+ *   base0  #839496  base1  #93a1a1  base2  #eee8d5  base3  #fdf6e3
+ *   yellow #b58900  orange #cb4b16  red    #dc322f  magenta #d33682
+ *   violet #6c71c4  blue   #268bd2  cyan   #2aa198  green  #859900
+ * Contrast goal: WCAG AA. Text 4.5:1, input borders and the focus ring 3:1,
+ * checked on both the page background and the muted background.
+ * "Adjusted" means a pure Solarized color failed, so the token uses a darker
+ * (light theme) or lighter (dark theme) shade of the same hue (same HSL hue
+ * and saturation, only the lightness changed). */
 :root {
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --card: oklch(1 0 0);
-    --card-foreground: oklch(0.145 0 0);
-    --popover: oklch(1 0 0);
-    --popover-foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.97 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.97 0 0);
-    --muted-foreground: oklch(0.5 0 0);
-    --accent: oklch(0.97 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    /* Border of inputs and filter chips: at least 3:1 against the background (WCAG 1.4.11). */
-    --input: oklch(0.64 0 0);
-    /* One accent color (blue) for links and focus rings. */
-    --ring: oklch(0.546 0.245 262.881);
-    --link: oklch(0.488 0.243 264.376);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    color-scheme: light;
+    --background: #fdf6e3; /* base3 */
+    /* Body text: base02. Solarized's base00 is only 4.13:1 on base3, and
+       base01 is 4.39:1 on base2, so both fail AA for body text. */
+    --foreground: #073642; /* base02: 12.05 on base3, 10.61 on base2 */
+    --card: #fdf6e3;
+    --card-foreground: #073642;
+    --popover: #fdf6e3;
+    --popover-foreground: #073642;
+    --primary: #073642;
+    --primary-foreground: #fdf6e3;
+    --secondary: #eee8d5; /* base2 */
+    --secondary-foreground: #073642;
+    --muted: #eee8d5; /* base2 */
+    /* Adjusted base01 (#586e75 is 4.39 on base2): 5.37 on base3, 4.73 on base2. */
+    --muted-foreground: #54696f;
+    --accent: #eee8d5;
+    --accent-foreground: #073642;
+    /* Adjusted red (#dc322f is 4.29 on base3): 5.38 on base3, 4.73 on base2. */
+    --destructive: #c42421;
+    /* Card and divider lines only, not needed to use a control: base1. */
+    --border: #93a1a1;
+    /* Borders of inputs and filter chips: base00, 4.13 on base3, 3.64 on base2. */
+    --input: #657b83;
+    /* Links and the focus ring. Adjusted blue (#268bd2 is 3.41 on base3):
+       5.38 on base3, 4.73 on base2. */
+    --ring: #1d6aa0;
+    --link: #1d6aa0;
+    /* The notice box: base2, with a yellow edge (decoration only). */
+    --notice: #eee8d5;
+    --notice-border: #b58900;
+    /* Tag badge text and border (design 3.5). The text is always shown.
+       實證: adjusted green (#859900 is 2.97 on base3): 5.46 on base3, 4.80 on base2.
+       AI整理: adjusted blue, the same as --link.
+       AI模擬: adjusted orange (#cb4b16 is 4.27 on base3): 5.43 on base3, 4.78 on base2. */
+    --tag-evidence: #5d6b00;
+    --tag-summary: #1d6aa0;
+    --tag-simulated: #af4113;
+    --chart-1: #268bd2;
+    --chart-2: #2aa198;
+    --chart-3: #859900;
+    --chart-4: #b58900;
+    --chart-5: #cb4b16;
     --radius: 0.625rem;
-    --sidebar: oklch(0.985 0 0);
-    --sidebar-foreground: oklch(0.145 0 0);
-    --sidebar-primary: oklch(0.205 0 0);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.97 0 0);
-    --sidebar-accent-foreground: oklch(0.205 0 0);
-    --sidebar-border: oklch(0.922 0 0);
-    --sidebar-ring: oklch(0.708 0 0);
+    --sidebar: #eee8d5;
+    --sidebar-foreground: #073642;
+    --sidebar-primary: #073642;
+    --sidebar-primary-foreground: #fdf6e3;
+    --sidebar-accent: #fdf6e3;
+    --sidebar-accent-foreground: #073642;
+    --sidebar-border: #93a1a1;
+    --sidebar-ring: #1d6aa0;
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
-    --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
-    --popover-foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --secondary: oklch(0.269 0 0);
-    --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
-    --accent-foreground: oklch(0.985 0 0);
-    --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 40%);
-    --ring: oklch(0.707 0.165 254.624);
-    --link: oklch(0.809 0.105 251.813);
-    --chart-1: oklch(0.87 0 0);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
-    --sidebar: oklch(0.205 0 0);
-    --sidebar-foreground: oklch(0.985 0 0);
-    --sidebar-primary: oklch(0.488 0.243 264.376);
-    --sidebar-primary-foreground: oklch(0.985 0 0);
-    --sidebar-accent: oklch(0.269 0 0);
-    --sidebar-accent-foreground: oklch(0.985 0 0);
-    --sidebar-border: oklch(1 0 0 / 10%);
-    --sidebar-ring: oklch(0.556 0 0);
+    color-scheme: dark;
+    --background: #002b36; /* base03 */
+    --foreground: #93a1a1; /* base1: 5.61 on base03, 4.86 on base02 */
+    --card: #002b36;
+    --card-foreground: #93a1a1;
+    --popover: #073642;
+    --popover-foreground: #93a1a1;
+    --primary: #93a1a1;
+    --primary-foreground: #002b36;
+    --secondary: #073642; /* base02 */
+    --secondary-foreground: #93a1a1;
+    --muted: #073642; /* base02 */
+    /* Adjusted base0 (#839496 is 4.11 on base02): 5.46 on base03, 4.73 on base02. */
+    --muted-foreground: #8f9fa1;
+    --accent: #073642;
+    --accent-foreground: #93a1a1;
+    /* Adjusted red (#dc322f is 3.25 on base03): 5.49 on base03, 4.76 on base02. */
+    --destructive: #e97d7b;
+    /* Card and divider lines only: base01. */
+    --border: #586e75;
+    /* Borders of inputs and filter chips: base0, 4.75 on base03, 4.11 on base02. */
+    --input: #839496;
+    /* Links and the focus ring. Adjusted blue (#268bd2 is 4.08 on base03):
+       5.45 on base03, 4.72 on base02. */
+    --ring: #4ea3df;
+    --link: #4ea3df;
+    --notice: #073642;
+    --notice-border: #b58900;
+    /* 實證: adjusted green (#859900 is 4.06 on base02): 5.46 on base03, 4.73 on base02.
+       AI整理: adjusted blue, the same as --link.
+       AI模擬: adjusted orange (#cb4b16 is 3.26 on base03): 5.44 on base03, 4.71 on base02. */
+    --tag-evidence: #90a600;
+    --tag-summary: #4ea3df;
+    --tag-simulated: #ec7d4e;
+    --chart-1: #268bd2;
+    --chart-2: #2aa198;
+    --chart-3: #859900;
+    --chart-4: #b58900;
+    --chart-5: #cb4b16;
+    --sidebar: #073642;
+    --sidebar-foreground: #93a1a1;
+    --sidebar-primary: #4ea3df;
+    --sidebar-primary-foreground: #002b36;
+    --sidebar-accent: #002b36;
+    --sidebar-accent-foreground: #93a1a1;
+    --sidebar-border: #586e75;
+    --sidebar-ring: #4ea3df;
 }
 
 @layer base {

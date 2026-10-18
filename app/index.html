@@ -6,6 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="提案小幫手：在提案之前，先看見各方利害關係人的關注。整理臺北市政議題的利害關係人、使用者故事、衝突與解法。" />
     <title>提案小幫手</title>
+    <!-- Set the theme before the app loads, so there is no flash of the wrong
+         theme (design 3.10). Same key and logic as src/lib/theme.ts. -->
+    <script>
+      (function () {
+        var saved = null
+        try { saved = localStorage.getItem('pumadebugthon-theme') } catch (e) {}
+        var dark = saved === 'dark' || (saved !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches)
+        if (dark) document.documentElement.classList.add('dark')
+      })()
+    </script>
+    <!-- The page background before the CSS loads: Solarized base3 and base03,
+         the same as --background in src/index.css. -->
+    <style>
+      html { background: #fdf6e3; color-scheme: light; }
+      html.dark { background: #002b36; color-scheme: dark; }
+    </style>
   </head>
   <body>
     <div id="root"></div>

@@ -12,6 +12,11 @@ export const t = {
     repo: 'GitHub 原始碼',
     method: '如何閱讀議題分析',
   },
+  /** The theme toggle in the header (design 3.10). A toggle button: the
+   * name stays the same, and aria-pressed says if dark is on. */
+  theme: {
+    dark: '深色模式',
+  },
   /** Design 3.5: shown on every page. */
   notice: {
     label: '說明',

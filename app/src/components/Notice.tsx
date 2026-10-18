@@ -4,7 +4,7 @@ import { TagBadge } from './TagBadge'
 /** The notice on every page (design 3.5). */
 export function Notice() {
   return (
-    <aside aria-label={t.notice.label} className="rounded-md border bg-muted/60 px-4 py-3 text-sm leading-relaxed">
+    <aside aria-label={t.notice.label} className="rounded-md border border-l-4 border-l-notice-border bg-notice px-4 py-3 text-sm leading-relaxed">
       <p>{t.notice.personal}</p>
       <p className="mt-1">
         {t.notice.aiBefore}

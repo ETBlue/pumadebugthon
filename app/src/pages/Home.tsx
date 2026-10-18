@@ -21,7 +21,8 @@ export default function Home() {
     <>
       <PageTitle />
       <h1 className="text-2xl font-bold md:text-3xl">{t.appTitle}</h1>
-      <p className="mt-2 leading-relaxed">{th.intro}</p>
+      <p className="mt-1 text-lg text-muted-foreground">{t.appSubtitle}</p>
+      <p className="mt-4 leading-relaxed">{th.intro}</p>
       <div className="mt-6">
         {index.status === 'ready' ? <HomeContent index={index.data} /> : <LoadState state={index} />}
       </div>

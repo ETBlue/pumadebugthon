@@ -1,7 +1,9 @@
 // All UI text of the app. Components never contain UI text directly.
 // An English file (src/i18n/en.ts) can copy this shape later.
 export const t = {
-  appTitle: '市政議題利害關係人瀏覽器',
+  appTitle: '提案小幫手',
+  /** Shown under the h1 on the home page, and in the index.html meta description. */
+  appSubtitle: '在提案之前，先看見各方利害關係人的關注',
   /** Between the parts of the page <title>. */
   titleSeparator: ' · ',
   layout: {

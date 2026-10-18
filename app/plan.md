@@ -180,7 +180,7 @@ All app commands run in `app/`. UI text only in `src/i18n/zh-TW.ts`.
 
 ### Task C1: scaffold
 
-1. Scaffold Vite React TS into `app/` (keep `design.md`, `plan.md`, `human-inputs.md`). Set `<html lang="zh-TW">` and the title 「市政議題利害關係人瀏覽器」 (ETBlue may rename).
+1. Scaffold Vite React TS into `app/` (keep `design.md`, `plan.md`, `human-inputs.md`). Set `<html lang="zh-TW">` and the title 「提案小幫手」 (the name ETBlue chose in `human-inputs.md`).
 2. Add Tailwind CSS v4 with `@tailwindcss/vite`.
 3. Add the `@/` path alias, then `npx shadcn@latest init`. Add only: `tabs`, `toggle-group`, `badge`, `collapsible`, `input`.
 4. Add Vitest (`npm test` runs `vitest run`) and React Router 7 with `createHashRouter`.

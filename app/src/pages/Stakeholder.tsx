@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
+import { EvidenceEmpty, EvidenceToggle, useEvidenceOnly } from '@/components/EvidenceToggle'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
@@ -15,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
+import { evidenceOnly as onlyEvidence } from '@/lib/evidence'
 import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import { movedFrom, pathTrail, stakeholderIssueNumbers, stakeholderIssueView } from '@/lib/stakeholderPage'
@@ -61,6 +63,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   const folders = useMemo(() => shown.map((i) => i.folder), [shown])
   const issues = useIssues(folders)
   const trail = pathTrail(s.path, index.pathLabels)
+  const [evidenceOnly] = useEvidenceOnly()
 
   return (
     <>
@@ -111,11 +114,20 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         </Field>
       </dl>
 
+      {shown.length > 0 && <EvidenceToggle className="mt-6" />}
+
       {shown.length > 0 && (
         <div className="mt-8 space-y-10">
           {issues.status === 'ready' ? (
             issues.data.map((issue, i) => (
-              <IssueSection key={issue.number} index={index} issue={issue} id={s.id} first={i === 0} />
+              <IssueSection
+                key={issue.number}
+                index={index}
+                issue={issue}
+                id={s.id}
+                first={i === 0}
+                evidenceOnly={evidenceOnly}
+              />
             ))
           ) : (
             <LoadState state={issues} />
@@ -139,9 +151,17 @@ function Empty({ children }: { children: ReactNode }) {
   return <p className="text-muted-foreground">{children}</p>
 }
 
-/** One issue of the stakeholder. first: show the priority legend once per page. */
-function IssueSection({ index, issue, id, first }: { index: IndexFile; issue: IssueFile; id: string; first: boolean }) {
+/** One issue of the stakeholder. first: show the priority legend once per
+ * page. evidenceOnly: the 「只看 [實證]」 filter for the story lists. */
+function IssueSection({ index, issue, id, first, evidenceOnly }: {
+  index: IndexFile
+  issue: IssueFile
+  id: string
+  first: boolean
+  evidenceOnly: boolean
+}) {
   const v = stakeholderIssueView(issue, id)
+  const stories = evidenceOnly ? onlyEvidence(v.stories) : v.stories
   const n = issue.number
   const p = `issue-${n}`
   const name = (sid: string) => stakeholderName(index.stakeholders, sid)
@@ -163,9 +183,11 @@ function IssueSection({ index, issue, id, first }: { index: IndexFile; issue: Is
       <Part id={`${p}-stories`} title={tp.stories}>
         {v.stories.length === 0 ? (
           <Empty>{tp.storiesNone}</Empty>
+        ) : stories.length === 0 ? (
+          <EvidenceEmpty />
         ) : (
           <ul className="space-y-2">
-            {v.stories.map((story) => (
+            {stories.map((story) => (
               <li key={story.id}><StoryCard story={story} stakeholderName={name(story.stakeholder)} /></li>
             ))}
           </ul>
@@ -214,7 +236,7 @@ function IssueSection({ index, issue, id, first }: { index: IndexFile; issue: Is
                   <CellText cell={c.text} />
                 </h4>
                 <p className="mt-3 text-sm text-muted-foreground">{tp.otherSide}</p>
-                <StoryList stories={otherStories} stakeholders={index.stakeholders} />
+                <StoryList stories={otherStories} stakeholders={index.stakeholders} evidenceOnly={evidenceOnly} />
               </li>
             ))}
           </ul>
@@ -239,7 +261,7 @@ function IssueSection({ index, issue, id, first }: { index: IndexFile; issue: Is
         {v.uncovered.length === 0 ? (
           <Empty>{tp.uncoveredNone}</Empty>
         ) : (
-          <StoryList stories={v.uncovered} stakeholders={index.stakeholders} />
+          <StoryList stories={v.uncovered} stakeholders={index.stakeholders} evidenceOnly={evidenceOnly} />
         )}
       </Part>
 

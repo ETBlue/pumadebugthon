@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ConflictsTab } from '@/components/issue/ConflictsTab'
 import { OpinionTab } from '@/components/issue/OpinionTab'
 import { OverviewTab } from '@/components/issue/OverviewTab'
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
+import { evidenceSearch } from '@/lib/evidence'
 import { availableIssues } from '@/lib/issues'
 import { findIssue, ISSUE_TABS, parseTab, tabPath, type IssueTab } from '@/lib/issuePage'
 import type { AvailableIssueSummary, IndexFile } from '@/types'
@@ -71,6 +72,7 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
   const available = useMemo(() => availableIssues(index).map((i) => i.number), [index])
   const navigate = useNavigate()
   const tab = parseTab(useParams().tab)
+  const [params] = useSearchParams()
 
   // The tab is in the URL. A new history entry per tab, so the back button
   // returns to the tab before. activationMode="manual": with automatic
@@ -79,7 +81,8 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
   // opens the tab.
   const onTabChange = (value: string) => {
     const next = parseTab(value)
-    if (next) navigate(tabPath(summary.number, next), { preventScrollReset: true })
+    // Keep the 「只看 [實證]」 setting (?evidence=1) when the tab changes.
+    if (next) navigate({ pathname: tabPath(summary.number, next), search: evidenceSearch(params) }, { preventScrollReset: true })
   }
 
   return (

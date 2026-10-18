@@ -1,13 +1,14 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
+import { EvidenceToggle, useEvidenceOnly, useTabTo } from '@/components/EvidenceToggle'
 import { SolutionSummary } from '@/components/SolutionSummary'
 import { StoryCard } from '@/components/StoryCard'
 import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { Input } from '@/components/ui/input'
 import { t } from '@/i18n/zh-TW'
-import { tabPath } from '@/lib/issuePage'
+import { evidenceCount, evidencePickList, isEvidenceOnly, withEvidence } from '@/lib/evidence'
 import { stripMarkdown } from '@/lib/markdown'
 import { filterPickList, opinionResult, pickList, type PickItem } from '@/lib/opinion'
 import { stakeholderName } from '@/lib/stakeholders'
@@ -35,8 +36,11 @@ function PickLabel({ item }: { item: PickItem }) {
 export function OpinionTab(props: IssueTabProps) {
   const { issue } = props
   const items = useMemo(() => pickList(issue), [issue])
+  const [evidenceOnly] = useEvidenceOnly()
+  // 「只看 [實證]」 hides pick items; a picked item stays found by its key.
+  const listed = evidenceOnly ? evidencePickList(items, issue.stories) : items
   const [query, setQuery] = useState('')
-  const shown = filterPickList(items, query)
+  const shown = filterPickList(listed, query)
   const [params, setParams] = useSearchParams()
   const pickKey = params.get('pick')
   const picked = pickKey === null ? undefined : items.find((i) => i.key === pickKey)
@@ -55,7 +59,11 @@ export function OpinionTab(props: IssueTabProps) {
 
   const select = (key: string) => {
     focusResult.current = true
-    setParams({ pick: key }, { replace: true, preventScrollReset: true })
+    // Keep the 「只看 [實證]」 setting (?evidence=1) with the pick.
+    setParams((prev) => withEvidence(new URLSearchParams({ pick: key }), isEvidenceOnly(prev)), {
+      replace: true,
+      preventScrollReset: true,
+    })
   }
 
   const searchId = useId()
@@ -65,6 +73,8 @@ export function OpinionTab(props: IssueTabProps) {
   return (
     <div className="space-y-6">
       <p className="leading-relaxed">{to.intro}</p>
+
+      <EvidenceToggle />
 
       <div className="space-y-2">
         <label htmlFor={searchId} className="block font-medium">{to.searchLabel}</label>
@@ -76,13 +86,13 @@ export function OpinionTab(props: IssueTabProps) {
           onChange={(e) => setQuery(e.target.value)}
           aria-describedby={hintId}
         />
-        <p role="status" className="text-sm text-muted-foreground">{to.matchCount(shown.length, items.length)}</p>
+        <p role="status" className="text-sm text-muted-foreground">{to.matchCount(shown.length, listed.length)}</p>
       </div>
 
       <section aria-labelledby={listLabelId}>
         <h3 id={listLabelId} className="font-medium">{to.listLabel}</h3>
         {shown.length === 0 ? (
-          <p className="mt-2">{to.noMatch}</p>
+          <p className="mt-2">{listed.length === 0 ? t.evidenceFilter.pickEmpty : to.noMatch}</p>
         ) : (
           <ul className="mt-2 max-h-96 space-y-1 overflow-y-auto rounded-md border p-1">
             {shown.map((item) => {
@@ -104,6 +114,13 @@ export function OpinionTab(props: IssueTabProps) {
                       <span className="font-mono">{item.key}</span>
                       {' · '}
                       {to.storyCount(item.storyIds.length)}
+                      {evidenceOnly && (
+                        <>
+                          {' · '}
+                          {t.evidenceFilter.countInItem(evidenceCount(item, issue.stories))}
+                          <TagBadge kind="實證" className="ml-1" />
+                        </>
+                      )}
                     </span>
                   </button>
                 </li>
@@ -135,6 +152,7 @@ export function OpinionTab(props: IssueTabProps) {
 function OpinionResult({ index, issue, summary, available, picked }: IssueTabProps & { picked: PickItem }) {
   const result = opinionResult(issue, picked.storyIds)
   const n = summary.number
+  const tabTo = useTabTo()
   const alsoIn = (id: string) => (
     <AlsoIn stakeholders={index.stakeholders} id={id} issueNumber={n} available={available} />
   )
@@ -198,7 +216,7 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
           <ul className="mt-2 space-y-3">
             {result.solutions.map((sol) => (
               <li key={sol.id}>
-                <SolutionSummary solution={sol} linkTo={tabPath(n, 'solutions')} linkLabel={to.solutionLink(sol.id)} />
+                <SolutionSummary solution={sol} linkTo={tabTo(n, 'solutions')} linkLabel={to.solutionLink(sol.id)} />
               </li>
             ))}
           </ul>

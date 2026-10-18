@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router'
+import { Link, type To } from 'react-router'
 import type { Solution } from '@/types'
 import { CellText } from './CellText'
 import { Markdown } from './Markdown'
@@ -9,7 +9,7 @@ import { linkClass } from './styles'
  * solutions tab. children are shown after the summary. */
 export function SolutionSummary({ solution: sol, linkTo, linkLabel, children }: {
   solution: Solution
-  linkTo: string
+  linkTo: To
   linkLabel: string
   children?: ReactNode
 }) {

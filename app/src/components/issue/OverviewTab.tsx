@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { useTabTo } from '@/components/EvidenceToggle'
 import { Field } from '@/components/Field'
 import { METHOD_URL } from '@/components/links'
 import { Markdown } from '@/components/Markdown'
@@ -20,6 +21,7 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const sameSpace = sameSpaceIssues(index, n)
   const titles = new Map(index.issues.map((i) => [i.number, i.title]))
   const pending = pendingBySection(issue.pending)
+  const tabTo = useTabTo()
 
   return (
     <div className="space-y-8">
@@ -27,18 +29,18 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
         <h3 id="counts-heading" className="text-lg font-semibold">{to.countsHeading}</h3>
         <dl className="mt-2 space-y-1.5">
           <Field label={to.stakeholders}>
-            <Link to={tabPath(n, 'stakeholders')} className={linkClass}>
+            <Link to={tabTo(n, 'stakeholders')} className={linkClass}>
               {to.stakeholdersValue(c.stakeholdersO, c.stakeholdersI)}
             </Link>
           </Field>
           <Field label={to.stories}>
-            <Link to={tabPath(n, 'opinion')} className={linkClass}>{to.storiesValue(c.stories)}</Link>
+            <Link to={tabTo(n, 'opinion')} className={linkClass}>{to.storiesValue(c.stories)}</Link>
           </Field>
           <Field label={to.conflicts}>
-            <Link to={tabPath(n, 'conflicts')} className={linkClass}>{to.itemsValue(c.conflicts)}</Link>
+            <Link to={tabTo(n, 'conflicts')} className={linkClass}>{to.itemsValue(c.conflicts)}</Link>
           </Field>
           <Field label={to.solutions}>
-            <Link to={tabPath(n, 'solutions')} className={linkClass}>{to.itemsValue(c.solutions)}</Link>
+            <Link to={tabTo(n, 'solutions')} className={linkClass}>{to.itemsValue(c.solutions)}</Link>
           </Field>
         </dl>
       </section>

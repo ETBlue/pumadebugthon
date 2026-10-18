@@ -128,6 +128,15 @@ export const t = {
     noSection: '其他',
     issueLink: (n: number) => `#${n}`,
   },
+  /** The 「只看 [實證]」 filter (design 3.5). */
+  evidenceFilter: {
+    label: '只看 [實證]',
+    hint: '隱藏 AI 模擬的故事。只留下「我想要…」或「以便…」有 [實證] 標記的故事。',
+    empty: '這裡沒有標記 [實證] 的故事。',
+    pickEmpty: '沒有標記 [實證] 的項目。',
+    /** Shown before the 實證 badge in a pick item: 「其中 3 則有 [實證]」. */
+    countInItem: (n: number) => `其中 ${n} 則有`,
+  },
   conflictsTab: {
     sideA: '一方',
     sideB: '另一方',

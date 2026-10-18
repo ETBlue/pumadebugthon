@@ -43,7 +43,7 @@ Building the tool also tests the analysis format. Parts that are hard to read by
 | 衝突 | 7 個 |
 | 解法 | 4 個 |
 | 跨議題共用的利害關係人 | For example 「8 位, shared with #1」 (the real number is known after #1 is written). Links to the stakeholder list with the 「只看跨議題」 filter on. Shown only when 2 or more issues exist. |
-| 實證比例 | 我想要… 6／45. A plain count, not a percentage or a bar, so it does not read like a score. |
+| 資料根據 | 我想要… 實證 6、AI整理 0／45. Two plain counts, not percentages or bars, so they do not read like a score. |
 | 更新日期 | Date of the last git commit that changed the issue folder. Left out if the build has no git history. |
 | 空間類型 | The issue's space types, for example 人行道、騎樓. Each one links to its space page (section 3.6). |
 
@@ -102,7 +102,7 @@ The analysis files and the CSV keep the letters M, S, C, W. The app shows zh-TW 
 | W | 這次不做 |
 
 Rules:
-- Priority counts always show their tag, for example 「`[AI模擬]` 必須有 1 · 應該有 1」. When some priorities become `[實證]`, the counts are split by tag.
+- Priority counts always show their tag, for example 「`[AI模擬]` 必須有 1 · 應該有 1」. When some priorities become `[實證]` or `[AI整理]`, the counts are split by tag, in the order `[實證]`, `[AI整理]`, `[AI模擬]`.
 - Counts are per issue, never summed across issues.
 - Always in the order 必須有, 應該有, 可以有, 這次不做. Zero values are left out.
 - Never sort or color a list by priority counts.
@@ -111,9 +111,13 @@ Rules:
 
 ### 3.5 Tags
 
-- `[實證]`, `[AI模擬]` and 【待補】 each have their own badge style. A tag is shown next to the text it belongs to, never only once per page.
-- Every page shows a short notice: `[AI模擬]` content is not real interviews or real citizen words.
-- A filter 「只看 `[實證]`」 hides AI content in lists.
+- There are three source tags (see `analysis/method.md`):
+  - `[實證]`: a source a person can check, or an `[AI整理]` summary that a person checked.
+  - `[AI整理]`: AI summarized it from real data (for example the 「市長，你給我聽好了」 data), with counts. No person has checked it yet. The counts come from keyword matching, so they are estimates. A person changes the tag to `[實證]` after a spot-check.
+  - `[AI模擬]`: AI made it up as a likely view. No data behind it.
+- `[實證]`, `[AI整理]`, `[AI模擬]` and 【待補】 each have their own badge style (green, blue, amber, dashed gray outline). The text is always shown, so the tag does not depend on color. A tag is shown next to the text it belongs to, never only once per page.
+- Every page shows a short notice: `[AI模擬]` content is not real interviews or real citizen words, and `[AI整理]` content is an AI summary of real data that no person has checked yet.
+- A filter 「只看有資料根據」 hides `[AI模擬]` content in lists. It keeps stories whose 我想要… or 以便… cell is `[實證]` or `[AI整理]`. Each item still shows its own tag. The URL parameter is `?evidence=1`, the name from the time the filter was 「只看 `[實證]`」, so old shared links still work.
 
 ### 3.6 Space page
 
@@ -126,7 +130,7 @@ City space is limited, so this page shows what competes for the same space:
 
 For example, under 人行道: #2 解法 A (bins), the #1 solutions about tree pits, and I06 身心障礙者, who needs sidewalk width in both issues.
 
-Space types have no `[實證]` / `[AI模擬]` tag. They are a classification, like 分類路徑.
+Space types have no `[實證]` / `[AI整理]` / `[AI模擬]` tag. They are a classification, like 分類路徑.
 
 ## 4. Opinion check
 
@@ -255,7 +259,7 @@ Rules:
 - Reads every issue folder that has an `issue-analysis.md`, plus `stakeholders.csv` and `path-labels.csv`.
 - Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types) and `app/public/data/issues/<folder>.json`.
 - Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型), 6.2.
-- Adds per-issue counts for the home page cards (section 3.1) and the update date from `git log -1 --format=%cs -- <folder>`.
+- Adds per-issue counts for the home page cards (section 3.1), including `wantsEvidence` and `wantsAiSummary` (stories whose 我想要… cell is `[實證]` or `[AI整理]`), and the update date from `git log -1 --format=%cs -- <folder>`.
 - Keeps each tag in its own field, for example `{ "text": "…", "tag": "AI模擬" }`. A 【待補】 cell has `"tag": null` and `"pending": true`.
 - Collects every 【待補…】 item in the issue file, including items inside longer text (for example 「【待補：法務確認】」 in step 7), with its section, for the 待補清單.
 - Stops with an error that names the issue and the section when a section cannot be read.
@@ -320,3 +324,4 @@ Required by the hackathon rules:
 2. Councils are included, under their level of government, for example `gov-local-taipei-council`. (2026-10-18)
 3. Space types are tagged at two levels: issue and solution. (2026-10-18)
 4. Informal groups get their own category `cmt` 社群, separate from `ngo`. (2026-10-18)
+5. A third source tag `[AI整理]` marks AI summaries of real data that no person has checked yet. The filter 「只看 `[實證]`」 became 「只看有資料根據」: it keeps `[實證]` and `[AI整理]` and hides only `[AI模擬]`. (ETBlue, 2026-10-18)

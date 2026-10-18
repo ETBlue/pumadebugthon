@@ -16,7 +16,7 @@ Claude updates this file after each review round.
 
 | Topic | Decision | Where it is now |
 |---|---|---|
-| Source tags | Every content row has `[實證]` (with a source) or `[AI模擬]`. Missing human input uses `【待補：…】`. | `human-inputs.md` line 14, all issue files |
+| Source tags | Every content row has one of three tags. `[實證]`: a source a person can check, or an `[AI整理]` summary that a person checked. `[AI整理]`: AI summarized it from real data (for example the 「市長，你給我聽好了」 data), with counts; no person has checked it yet. `[AI模擬]`: AI made it up as a likely view; no data behind it. A person changes `[AI整理]` to `[實證]` after a spot-check. `[AI整理]` counts come from keyword matching, so they are estimates. Missing human input uses `【待補：…】`. The tag list is in `analysis_common.TAGS`. | `human-inputs.md` line 14, `analysis/method.md`, all issue files |
 | Notice at the top | Every issue file starts with a short notice: made by one participant with AI help, not linked to the host, `[AI模擬]` rows are not real interviews or real citizen words, do not quote or screenshot them as citizen opinion. One line under it links to `analysis/method.md`. | all issue files |
 | Shared reading guide | `analysis/method.md` (如何閱讀議題分析) holds the text that is the same in every issue: tags, ID rules, 分類路徑, 特別關注, 空間類型, the story format, the 5.1 method table, the MoSCoW and group rules, the 6.2 全部／部分 note, the step 7 note. Each issue file keeps every heading but only its own content. | `analysis/method.md`, all issue files |
 | Issue text | It is an input source, not a stakeholder. Each item becomes a story of the stakeholder it most likely speaks for, tagged `[實證]` with the source 「題目原文」. Ideas from 沈伯洋 go to step 6. | `human-inputs.md` steps 1, 2, 6 |
@@ -32,7 +32,7 @@ Claude updates this file after each review round.
 | Notice in Google Sheets | The CSV has no notice. The README gives readers a short notice to put in the sheet title or first row. | `analysis/README.md` |
 | CSV builder | After editing the step 4 table, rebuild the CSV with `build_csv.py`, then run `check_analysis.py`. | `analysis/build_csv.py`, README |
 | Shared script rules | `check_analysis.py`, `sync_stakeholders.py` and `build_json.py` find sections and the step 1 tables (the tables under `### 1.1`, up to the next heading) with the same functions in `analysis/analysis_common.py`. | `analysis/analysis_common.py` |
-| Citizen data rule | The rules say 「市長，你給我聽好了」資料僅限於此黑客松活動使用. If the data is released, the repo cites only counts or summaries, never raw messages, and never tries to identify senders. | this file |
+| Citizen data rule | The rules say 「市長，你給我聽好了」資料僅限於此黑客松活動使用. The repo uses the data only as counts and paraphrased summaries, tagged `[AI整理]`. It never quotes raw messages. The raw file is not in the repo and is not shared. No one is identified. | this file, `analysis/method.md`, `LICENSE-CONTENT.md` |
 | Sharing | ETBlue shares each issue analysis in its issue channel on the hackathon Discord (owned by the host), as a participant. No requests to the host. Every file says it is personal work, not linked to the host. | `human-inputs.md` line 16 |
 
 ### Hackathon submission
@@ -42,7 +42,7 @@ The policy-process tool is ETBlue's main submission (confirmed 2026-10-17). It i
 Starting idea (to be designed later):
 - A web page where people browse stakeholders and user stories for an issue.
 - People can vote on priorities, for example with dot voting. The votes come from real people, not from a formula.
-- Each story shows its source tag (`[實證]` / `[AI模擬]`).
+- Each story shows its source tag (`[實證]` / `[AI整理]` / `[AI模擬]`).
 - The #2 pilot can be the demo data.
 
 Rules that apply (from `.eventinfo/event-info.md`, a local folder that git ignores):
@@ -108,3 +108,4 @@ From the #2 pilot (`2-trashcans/issue-analysis.md`). A person should decide:
 | 2026-10-17 | ETBlue changed the goal: no suggestion to the host and no blog post. ETBlue analyzes all issues as a participant and shares them on the hackathon Discord. #2 was posted. ETBlue removed the Day 1 section from the README. | Claude put back a short 資料使用說明 in the README, changed the pilot notice about 「市長，你給我聽好了」 so it does not address the host, fixed typos in `human-inputs.md`, and updated this file. The submission tool plan stays. |
 | 2026-10-18 | Moved #2 to the shared format (design 5.1–5.6). Step 1 and 3.7 now use 分類路徑 and 特別關注 from `stakeholders.csv`. O02 became I12. O03-US01 and O03-US03 became I13-US01 and I13-US02 (new I13 清潔隊員). O03, O05, O06, O12 and O13 got new names. Added the 空間類型 line, a 空間類型 column in 6.1, and a 編號異動紀錄 section. | Done. 25 stakeholders (O 12, I 13), 45 stories, no MoSCoW changes. `check_analysis.py` checks the shared files. Tests in `analysis/tests/`. |
 | 2026-10-18 | Cleanup after the #1 review. O06 is now one academic stakeholder (學術研究單位) for all issues; the fields are in each issue's 與本題的關係 cell. In #1, O19 became O06, and O20, O21, O22 became O19, O20, O21 (#1 is not public yet). Moved the shared reading text into `analysis/method.md`. Fixed bare 【待補】 items in #2, numbered the step 7 headings, and gave 6.2 a 代號 column. Added `analysis_common.py` so the three scripts find the step 1 tables the same way. | Done. #1: 26 stakeholders (O 14, I 12), 49 stories. #2: 25 stakeholders (O 12, I 13), 45 stories. No MoSCoW changes. `check_analysis.py` now reports a bare 【待補】 and a 6.2 code that is not in 6.1. |
+| 2026-10-18 | ETBlue decided on a third source tag, `[AI整理]`: AI summarized it from real data, with counts, not yet checked by a person. A person changes it to `[實證]` after a spot-check. The app filter 「只看 [實證]」 became 「只看有資料根據」 and keeps `[實證]` and `[AI整理]`; only `[AI模擬]` is hidden. The 「市長，你給我聽好了」 data is now used, only as counts and paraphrased summaries. | Done. The scripts accept the new tag (one list in `analysis_common.TAGS`). The app shows a blue badge, and the home card shows two counts (實證, AI整理). `method.md`, both READMEs, `LICENSE-CONTENT.md`, `app/design.md` and the appendix of #1 and #2 say how the data is used. |

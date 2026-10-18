@@ -23,7 +23,7 @@
 
 - **主辦單位的內容：** 議題分析引用的題目原文（例如題目名稱、標記為 `[實證]` 的題目內容），著作權屬於市政 debug 松的主辦單位，依主辦單位的規定使用，不適用 CC BY 4.0。
 - **開放資料：** 從開放資料算出的數字，依各資料集的授權使用。data.gov.tw 與 data.taipei 的資料集多數使用「政府資料開放授權條款第 1 版」。各資料集列在各議題檔案的附錄。
-- **主辦單位的保密資料：** 主辦單位提供給參加者、不公開的資料，沒有放在本 repo。
+- **主辦單位的保密資料：** 主辦單位提供給參加者、不公開的資料，沒有放在本 repo。從「市長，你給我聽好了」資料整理的件數和改寫的摘要（標記 `[AI整理]`，或經真人查核後的 `[實證]`），依活動規則僅限於此黑客松活動使用，不適用 CC BY 4.0。
 
 ---
 
@@ -43,4 +43,4 @@ Exceptions:
 
 - **Host content:** The issue text from the hackathon host that the analysis quotes (for example the issue titles and the issue text marked `[實證]`) belongs to the host. Its use follows the host's terms. It is not under CC BY 4.0.
 - **Open data:** Numbers computed from open data follow each dataset's license. Most datasets on data.gov.tw and data.taipei use the Open Government Data License, version 1.0 (政府資料開放授權條款第 1 版). The appendix of each issue file lists the datasets.
-- **Host confidential data:** Data that the host gave to participants and that is not public is not in this repo.
+- **Host confidential data:** Data that the host gave to participants and that is not public is not in this repo. The counts and paraphrased summaries made from the 「市長，你給我聽好了」 data (tagged `[AI整理]`, or `[實證]` after a person checked them) follow the event rule: the data is for this hackathon only (資料僅限於此黑客松活動使用). They are not under CC BY 4.0.

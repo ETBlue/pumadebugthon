@@ -60,8 +60,8 @@ describe('dataBasedOnly', () => {
     ])
   })
 
-  it('keeps the 24 stories of #1 with a 實證 or AI整理 tag', () => {
-    expect(dataBasedOnly(trees.stories)).toHaveLength(24)
+  it('keeps the 23 stories of #1 with a 實證 or AI整理 tag', () => {
+    expect(dataBasedOnly(trees.stories)).toHaveLength(23)
     expect(dataBasedOnly(trees.stories).every(hasDataBasis)).toBe(true)
   })
 
@@ -94,14 +94,14 @@ describe('dataBasedPickList', () => {
     expect(items.map((i) => i.key)).toContain('W08')
   })
 
-  it('keeps the pick items of the 24 data-based #1 stories', () => {
+  it('keeps the pick items of the 23 data-based #1 stories', () => {
     const items = dataBasedPickList(pickList(trees), trees.stories)
     expect(items.map((i) => i.key)).toEqual([
-      'W03', 'W04', 'W05', 'W06', 'W01', 'W02', 'W09', 'I01-US02', 'I07-US02', 'I14-US03', 'I17-US03', 'I20-US05',
+      'W03', 'W04', 'W06', 'W01', 'W02', 'W09', 'I01-US02', 'I07-US02', 'I14-US03', 'I17-US03', 'I20-US05',
       'I20-US06', 'I20-US07', 'I20-US08', 'I21-US01', 'I22-US01',
     ])
     expect(items.flatMap((i) => i.storyIds).filter((id) => dataBasedOnly(trees.stories).some((s) => s.id === id)))
-      .toHaveLength(24)
+      .toHaveLength(23)
   })
 
   it('ignores unknown story IDs', () => {

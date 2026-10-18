@@ -1,10 +1,10 @@
 import { CellText } from '@/components/CellText'
 import { Markdown } from '@/components/Markdown'
 import { SpaceLinks } from '@/components/SpaceLinks'
+import { StoryList } from '@/components/StoryList'
 import { t } from '@/i18n/zh-TW'
 import { storiesByPriority } from '@/lib/issuePage'
 import { priorityLabel } from '@/lib/priority'
-import { StoryList } from './ConflictsTab'
 import type { IssueTabProps } from './types'
 
 const ts = t.solutionsTab

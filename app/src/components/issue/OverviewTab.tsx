@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { Field } from '@/components/Field'
 import { METHOD_URL } from '@/components/links'
 import { Markdown } from '@/components/Markdown'
 import { linkClass } from '@/components/styles'
@@ -12,15 +12,6 @@ import type { IssueTabProps } from './types'
 
 const to = t.overview
 const TAG_KINDS: TagKind[] = ['實證', 'AI模擬', 'pending']
-
-function Count({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-wrap gap-x-2">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  )
-}
 
 /** 總覽 (design 3.2): counts, tag legend, 使用相同空間的議題 and 待補清單. */
 export function OverviewTab({ index, summary, issue }: IssueTabProps) {
@@ -35,20 +26,20 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
       <section aria-labelledby="counts-heading">
         <h3 id="counts-heading" className="text-lg font-semibold">{to.countsHeading}</h3>
         <dl className="mt-2 space-y-1.5">
-          <Count label={to.stakeholders}>
+          <Field label={to.stakeholders}>
             <Link to={tabPath(n, 'stakeholders')} className={linkClass}>
               {to.stakeholdersValue(c.stakeholdersO, c.stakeholdersI)}
             </Link>
-          </Count>
-          <Count label={to.stories}>
+          </Field>
+          <Field label={to.stories}>
             <Link to={tabPath(n, 'opinion')} className={linkClass}>{to.storiesValue(c.stories)}</Link>
-          </Count>
-          <Count label={to.conflicts}>
+          </Field>
+          <Field label={to.conflicts}>
             <Link to={tabPath(n, 'conflicts')} className={linkClass}>{to.itemsValue(c.conflicts)}</Link>
-          </Count>
-          <Count label={to.solutions}>
+          </Field>
+          <Field label={to.solutions}>
             <Link to={tabPath(n, 'solutions')} className={linkClass}>{to.itemsValue(c.solutions)}</Link>
-          </Count>
+          </Field>
         </dl>
       </section>
 

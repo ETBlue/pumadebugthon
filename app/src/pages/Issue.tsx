@@ -6,6 +6,7 @@ import { OverviewTab } from '@/components/issue/OverviewTab'
 import { SolutionsTab } from '@/components/issue/SolutionsTab'
 import { StakeholdersTab } from '@/components/issue/StakeholdersTab'
 import type { IssueTabProps } from '@/components/issue/types'
+import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { linkClass } from '@/components/styles'
@@ -90,16 +91,10 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
       <h1 className="text-2xl font-bold md:text-3xl">{t.issueCard.numberTitle(summary.number, summary.title)}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
         {summary.spaces.length > 0 && (
-          <div className="flex flex-wrap gap-x-2">
-            <dt className="text-muted-foreground">{ti.spaces}</dt>
-            <dd><SpaceLinks spaceTypes={index.spaceTypes} codes={summary.spaces} /></dd>
-          </div>
+          <Field label={ti.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={summary.spaces} /></Field>
         )}
         {summary.updated && (
-          <div className="flex flex-wrap gap-x-2">
-            <dt className="text-muted-foreground">{ti.updated}</dt>
-            <dd><time dateTime={summary.updated}>{summary.updated}</time></dd>
-          </div>
+          <Field label={ti.updated}><time dateTime={summary.updated}>{summary.updated}</time></Field>
         )}
       </dl>
 

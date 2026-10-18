@@ -1,7 +1,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
-import { Markdown } from '@/components/Markdown'
+import { SolutionSummary } from '@/components/SolutionSummary'
 import { StoryCard } from '@/components/StoryCard'
 import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
@@ -197,15 +197,8 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
         ) : (
           <ul className="mt-2 space-y-3">
             {result.solutions.map((sol) => (
-              <li key={sol.id} className="rounded-md border p-3">
-                <p className="font-medium">
-                  <span className="mr-2 font-mono">{sol.id}</span>
-                  <CellText cell={sol.name} />
-                </p>
-                <p className="mt-1 text-sm"><Markdown text={sol.summary} /></p>
-                <p className="mt-1 text-sm">
-                  <Link to={tabPath(n, 'solutions')} className={linkClass}>{to.solutionLink(sol.id)}</Link>
-                </p>
+              <li key={sol.id}>
+                <SolutionSummary solution={sol} linkTo={tabPath(n, 'solutions')} linkLabel={to.solutionLink(sol.id)} />
               </li>
             ))}
           </ul>

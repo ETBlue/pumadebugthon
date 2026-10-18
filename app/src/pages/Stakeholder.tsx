@@ -2,11 +2,13 @@ import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
-import { StoryList } from '@/components/issue/ConflictsTab'
+import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
 import { PriorityCounts } from '@/components/PriorityCounts'
+import { SolutionSummary } from '@/components/SolutionSummary'
 import { StoryCard } from '@/components/StoryCard'
+import { StoryList } from '@/components/StoryList'
 import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { Badge } from '@/components/ui/badge'
@@ -124,15 +126,6 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   )
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-wrap gap-x-2">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  )
-}
-
 function Part({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section aria-labelledby={id}>
@@ -234,15 +227,8 @@ function IssueSection({ index, issue, id, first }: { index: IndexFile; issue: Is
         ) : (
           <ul className="space-y-3">
             {v.solutions.map((sol) => (
-              <li key={sol.id} className="rounded-md border p-3">
-                <p className="font-medium">
-                  <span className="mr-2 font-mono">{sol.id}</span>
-                  <CellText cell={sol.name} />
-                </p>
-                <p className="mt-1 text-sm"><Markdown text={sol.summary} /></p>
-                <p className="mt-1 text-sm">
-                  <Link to={tabPath(n, 'solutions')} className={linkClass}>{tp.solutionLink(sol.id)}</Link>
-                </p>
+              <li key={sol.id}>
+                <SolutionSummary solution={sol} linkTo={tabPath(n, 'solutions')} linkLabel={tp.solutionLink(sol.id)} />
               </li>
             ))}
           </ul>

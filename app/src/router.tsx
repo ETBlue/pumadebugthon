@@ -16,7 +16,7 @@ export const router = createHashRouter([
       { path: 'issues/:number/:tab?', element: <Issue /> },
       { path: 'stakeholders/:id', element: <Stakeholder /> },
       { path: 'spaces/:code', element: <Space /> },
-      { path: '*', element: <Placeholder notFound /> },
+      { path: '*', element: <Placeholder /> },
     ],
   },
 ])

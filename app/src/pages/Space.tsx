@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router'
-import { CellText } from '@/components/CellText'
+import { Field } from '@/components/Field'
 import { AlsoIn } from '@/components/issue/AlsoIn'
 import { LoadState } from '@/components/LoadState'
-import { Markdown } from '@/components/Markdown'
+import { SolutionSummary } from '@/components/SolutionSummary'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { linkClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
@@ -52,16 +52,8 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
       <PageTitle parts={[space.name]} />
       <h1 className="text-2xl font-bold md:text-3xl">{space.name}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
-        <div className="flex flex-wrap gap-x-2">
-          <dt className="text-muted-foreground">{tp.group}</dt>
-          <dd>{space.group}</dd>
-        </div>
-        {space.description && (
-          <div className="flex flex-wrap gap-x-2">
-            <dt className="text-muted-foreground">{tp.description}</dt>
-            <dd>{space.description}</dd>
-          </div>
-        )}
+        <Field label={tp.group}>{space.group}</Field>
+        {space.description && <Field label={tp.description}>{space.description}</Field>}
       </dl>
       <p className="mt-4 leading-relaxed">{tp.intro}</p>
 
@@ -121,23 +113,19 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                     .map(({ solution: sol }) => {
                       const others = otherSpaces(sol, code)
                       return (
-                        <li key={sol.id} className="rounded-md border p-3">
-                          <p className="font-medium">
-                            <span className="mr-2 font-mono">{sol.id}</span>
-                            <CellText cell={sol.name} />
-                          </p>
-                          <p className="mt-1 text-sm"><Markdown text={sol.summary} /></p>
-                          {others.length > 0 && (
-                            <div className="mt-1 flex flex-wrap gap-x-2 text-sm">
-                              <span className="text-muted-foreground">{tp.otherSpaces}</span>
-                              <SpaceLinks spaceTypes={index.spaceTypes} codes={others} />
-                            </div>
-                          )}
-                          <p className="mt-1 text-sm">
-                            <Link to={tabPath(issue.number, 'solutions')} className={linkClass}>
-                              {tp.solutionLink(sol.id)}
-                            </Link>
-                          </p>
+                        <li key={sol.id}>
+                          <SolutionSummary
+                            solution={sol}
+                            linkTo={tabPath(issue.number, 'solutions')}
+                            linkLabel={tp.solutionLink(sol.id)}
+                          >
+                            {others.length > 0 && (
+                              <div className="mt-1 flex flex-wrap gap-x-2 text-sm">
+                                <span className="text-muted-foreground">{tp.otherSpaces}</span>
+                                <SpaceLinks spaceTypes={index.spaceTypes} codes={others} />
+                              </div>
+                            )}
+                          </SolutionSummary>
                         </li>
                       )
                     })}

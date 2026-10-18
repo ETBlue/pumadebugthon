@@ -1,6 +1,7 @@
 // Space type lookups (design 3.2 「使用相同空間的議題」 and 3.6).
 import type { AvailableIssueSummary, IndexFile, IssueFile, Solution, SpaceType } from '@/types'
 import { compareIds } from './ids'
+import { availableIssues } from './issues'
 
 export interface SpaceSolution {
   issueNumber: number
@@ -19,15 +20,9 @@ export interface SameSpace {
   issues: number[]
 }
 
-function available(index: IndexFile): AvailableIssueSummary[] {
-  return index.issues
-    .filter((i): i is AvailableIssueSummary => i.available)
-    .sort((a, b) => a.number - b.number)
-}
-
 /** The analyzed issues that use the space type, by issue number. */
 export function issuesBySpace(index: IndexFile, code: string): AvailableIssueSummary[] {
-  return available(index).filter((i) => i.spaces.includes(code))
+  return availableIssues(index).filter((i) => i.spaces.includes(code))
 }
 
 /** Every solution that uses the space type, by issue number, then in the
@@ -43,7 +38,7 @@ export function solutionsBySpace(issues: IssueFile[], code: string): SpaceSoluti
 /** For each space type of the issue (in the issue's order), the other issues
  * that use it. Space types that no other issue uses are left out. */
 export function sameSpaceIssues(index: IndexFile, issueNumber: number): SameSpace[] {
-  const all = available(index)
+  const all = availableIssues(index)
   const issue = all.find((i) => i.number === issueNumber)
   if (!issue) return []
   return issue.spaces

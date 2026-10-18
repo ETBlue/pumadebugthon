@@ -1,22 +1,13 @@
-import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
+import { Field } from './Field'
 import type { Shared } from '@/lib/issues'
 import type { IssueSummary, SpaceType } from '@/types'
 import { SpaceLinks } from './SpaceLinks'
 import { linkClass } from './styles'
 
 const tc = t.issueCard
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-wrap gap-x-2">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd>{children}</dd>
-    </div>
-  )
-}
 
 /** One issue on the home page (design 3.1). An issue without an analysis
  * shows 製作中, with no numbers and no link. shared is null when fewer than 2

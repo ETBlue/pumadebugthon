@@ -1,24 +1,9 @@
 import { CellText } from '@/components/CellText'
-import { StoryCard } from '@/components/StoryCard'
+import { StoryList } from '@/components/StoryList'
 import { t } from '@/i18n/zh-TW'
-import { stakeholderName } from '@/lib/stakeholders'
-import type { Stakeholder, Story } from '@/types'
 import type { IssueTabProps } from './types'
 
 const tc = t.conflictsTab
-
-/** A list of compact story cards. */
-export function StoryList({ stories, stakeholders }: { stories: Story[]; stakeholders: Stakeholder[] }) {
-  return (
-    <ul className="mt-2 space-y-2">
-      {stories.map((s) => (
-        <li key={s.id}>
-          <StoryCard story={s} stakeholderName={stakeholderName(stakeholders, s.stakeholder)} compact />
-        </li>
-      ))}
-    </ul>
-  )
-}
 
 /** 衝突 (design 3.2): each conflict with both sides, the method and the simulated result. */
 export function ConflictsTab({ index, issue }: IssueTabProps) {

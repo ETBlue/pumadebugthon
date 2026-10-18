@@ -220,8 +220,6 @@ export const t = {
     byIssueHeading: '各議題的利害關係人',
   },
   placeholder: {
-    title: '這一頁製作中',
-    body: '這一頁還在製作中。請先回到首頁。',
     notFoundTitle: '找不到這一頁',
     notFoundBody: '網址可能打錯了，或這一頁已經移除。',
     backHome: '回到首頁',

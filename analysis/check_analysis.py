@@ -417,6 +417,17 @@ def main(md_path, csv_path):
         if code not in step7_codes: err(f"步驟 7: solution {code} from 6.1 has no section 「### 7.n 解法 {code}：…」")
         if overview is not None and code not in overview_codes: err(f"總覽: solution {code} from 6.1 has no row")
 
+    # 16c. the 6.3 成效衡量 table. The app shows each row on the solution page
+    # without the tables around it, so a cell must stand alone: no 「見下表」 or
+    # 「見上表」. Give the key numbers and name the section of the full table.
+    MEASURE_HEADER = ["解法", "指標", "目前數值（基準值）", "資料來源"]
+    for h, rows in tables(section(text, "### 6.3") or []):
+        if h != MEASURE_HEADER: continue
+        for c in rows:
+            for v in c:
+                for word in ("見下表", "見上表"):
+                    if word in v: err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 「{word}」 does not work on the solution page; give the key numbers and name the section of the full table")
+
     # 17. 5.4 相關故事 holds local stories only
     for h, rows in tables(section(text, "### 5.4") or []):
         if "相關故事" in h:

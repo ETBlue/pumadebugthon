@@ -360,6 +360,17 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md", "| `[AI模擬]` D 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |\n", "")
         self.assertFails("總覽: solution D from 6.1 has no row")
 
+    # A 6.3 cell must stand alone on the solution page: no 「見下表」 or 「見上表」.
+    MEASURE_ROW = "| C | 開放資料的資料時間涵蓋終點 | `[實證]` 2018-01-10 |"
+
+    def test_measure_cell_pointing_below_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.MEASURE_ROW, "| C | 開放資料的資料時間涵蓋終點 | `[實證]` 見下表 |")
+        self.assertFails("6.3 row 「開放資料的資料時間涵蓋終點」: 「見下表」")
+
+    def test_measure_cell_pointing_above_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.MEASURE_ROW, "| C | 開放資料的資料時間涵蓋終點 | `[實證]` 2018-01-10（見上表） |")
+        self.assertFails("6.3 row 「開放資料的資料時間涵蓋終點」: 「見上表」")
+
     # open-data.csv lists every open dataset (data.gov.tw, data.taipei) cited in
     # an appendix, and each row lists the issues whose appendix cites it.
     SMOKE_ROW = "臺北市指定吸菸區,https://data.gov.tw/dataset/177504,臺北市政府衛生局,政府資料開放授權條款第 1 版,8\n"

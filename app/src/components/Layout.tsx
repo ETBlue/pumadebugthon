@@ -1,4 +1,4 @@
-import type { MouseEvent } from 'react'
+import type { MouseEvent, ReactNode } from 'react'
 import { Link, Outlet, ScrollRestoration } from 'react-router'
 import { t } from '@/i18n/zh-TW'
 import { METHOD_URL as METHOD, REPO_URL as REPO } from './links'
@@ -15,8 +15,9 @@ function skipToMain(e: MouseEvent<HTMLAnchorElement>) {
 
 const container = 'mx-auto w-full max-w-5xl px-4 md:px-8'
 
-/** Page frame: skip link, header, notice, main and footer. */
-export function Layout() {
+/** Page frame: skip link, header, notice, main and footer. children replace
+ * the route outlet, for the error page. */
+export function Layout({ children }: { children?: ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col">
       <a
@@ -36,7 +37,7 @@ export function Layout() {
       <main id="main" tabIndex={-1} className={`${container} flex-1 py-6 focus:outline-none`}>
         <Notice />
         <div className="mt-6">
-          <Outlet />
+          {children ?? <Outlet />}
         </div>
       </main>
       <footer className="border-t">

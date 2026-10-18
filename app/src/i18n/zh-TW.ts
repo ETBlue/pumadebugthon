@@ -220,6 +220,12 @@ export const t = {
     sharedIssues: (issues: number[]) => issues.map((n) => `#${n}`).join('、'),
     byIssueHeading: '各議題的利害關係人',
   },
+  /** The page shown when a page breaks (the errorElement of the root route). */
+  routeError: {
+    title: '頁面出了問題',
+    body: '頁面出了問題，請重新整理再試一次。',
+    backHome: '回到首頁',
+  },
   placeholder: {
     notFoundTitle: '找不到這一頁',
     notFoundBody: '網址可能打錯了，或這一頁已經移除。',

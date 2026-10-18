@@ -103,6 +103,91 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(a["spaces"], ["sidewalk", "mrt-exit"])
         self.assertTrue(a["summary"].startswith("結合清潔箱位置"))
 
+    def solution(self, code, issue=None):
+        return next(s for s in (issue or self.issue)["solutions"] if s["id"] == code)
+
+    def test_solution_measures(self):
+        # 6.3 rows whose 解法 cell lists the code. A row for 「A, D」 belongs to both.
+        a = self.solution("A")
+        self.assertEqual([m["metric"] for m in a["measures"]],
+                         ["清潔箱總數", "無清潔箱資料的行政區數", "高人流捷運站的「每處每日出站人次」",
+                          "家用垃圾違規棄置件數（試點區）"])
+        self.assertEqual(a["measures"][1], {"metric": "無清潔箱資料的行政區數",
+                                            "baseline": {"text": "1 區（北投區，主表 0 筆；130 點總表有 49 處）",
+                                                         "tag": "實證", "pending": False},
+                                            "source": "data.gov.tw 121355"})
+        d = self.solution("D")
+        self.assertEqual(d["measures"][0]["metric"], "家用垃圾違規棄置件數（試點區）")
+        self.assertEqual(d["measures"][0]["baseline"],
+                         {"text": "【待補：環保局稽查資料】", "tag": None, "pending": True})
+        self.assertEqual(len(d["measures"]), 3)
+
+    def test_solution_detail(self):
+        # The rows of the step 7 section 「### 7.n 解法 X：…」, in file order.
+        a = self.solution("A")
+        self.assertEqual([r["item"] for r in a["detail"]],
+                         ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "主責單位", "成本／可行性／風險"])
+        self.assertEqual(a["detail"][4]["content"],
+                         {"text": "環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局",
+                          "tag": "AI模擬", "pending": False})
+
+    def test_solution_overview(self):
+        # The solution's row of the 總覽 table. The row tag (in the first cell) is on every field.
+        b = self.solution("B")
+        cell = lambda t: {"text": t, "tag": "AI模擬", "pending": False}
+        self.assertEqual(b["overview"], {"cost": cell("低（QR）／中（感測器）"), "feasibility": cell("中"),
+                                         "risk": cell("維護、資安、勞動條件"), "owner": cell("環保局")})
+
+    def test_solution_ideas(self):
+        # Rows of the 6.1 構想 table whose 本文件的處理 cell names the solution (「併入解法 B」).
+        b = self.solution("B")
+        self.assertEqual(len(b["ideas"]), 2)
+        self.assertEqual(b["ideas"][0]["idea"],
+                         {"text": "設偵測系統，偵測到垃圾桶滿了才派人去收，不用一直定時巡邏",
+                          "tag": "實證", "pending": False})
+        self.assertTrue(b["ideas"][0]["handling"]["text"].startswith("併入解法 B"))
+        self.assertEqual(b["ideas"][0]["handling"]["tag"], "AI模擬")
+        self.assertEqual(list(b["ideas"][0]), ["idea", "handling"])
+        for code in "ACDE":
+            self.assertEqual(self.solution(code)["ideas"], [])
+
+    def test_solution_pending(self):
+        # 待補 items in the solution's 7.n section or in its 6.3 rows. The global list stays.
+        a = self.solution("A")
+        texts = [(p["section"], p["text"]) for p in a["pending"]]
+        self.assertIn(("6.3 成效衡量", "【待補：環保局稽查資料】"), texts)
+        self.assertIn(("7.1 解法 A：清潔箱佈建建議地圖", "【待補：法務確認】"), texts)
+        self.assertNotIn(("6.3 成效衡量", "【待補：短問卷】"), texts)  # a C row
+        self.assertTrue(all(p["section"] in ("6.3 成效衡量", "7.1 解法 A：清潔箱佈建建議地圖")
+                            for p in a["pending"]), texts)
+        d = self.solution("D")
+        self.assertIn("【待補：環保局稽查資料】", [p["text"] for p in d["pending"]])
+        for p in a["pending"]:
+            self.assertIn(p, self.issue["pending"])
+        self.assertEqual(list(a["pending"][0]), ["section", "text", "context"])
+
+    def test_solution_keys(self):
+        self.assertEqual(list(self.solution("A")),
+                         ["id", "name", "summary", "spaces", "added", "stories",
+                          "measures", "detail", "overview", "ideas", "pending"])
+
+    def test_solution_fields_in_other_issues(self):
+        with open(os.path.join(self.out, "issues", "1-trees.json"), encoding="utf-8") as f:
+            trees = json.load(f)
+        with open(os.path.join(self.out, "issues", "8-smokefree.json"), encoding="utf-8") as f:
+            smoke = json.load(f)
+        a1 = self.solution("A", trees)
+        self.assertEqual(len(a1["ideas"]), 1)
+        self.assertTrue(a1["ideas"][0]["idea"]["text"].startswith("可參考新加坡"))
+        self.assertEqual(self.solution("E", trees)["overview"]["owner"]["text"], "公園處")
+        for s in trees["solutions"] + smoke["solutions"]:
+            self.assertEqual(len(s["detail"]), 6, s["id"])
+            self.assertTrue(s["measures"], s["id"])
+        self.assertEqual([s["ideas"] for s in smoke["solutions"]], [[]] * 5)
+        b8 = self.solution("B", smoke)
+        self.assertEqual(b8["detail"][1]["content"]["tag"], "AI模擬")
+        self.assertEqual(self.solution("A", smoke)["detail"][1]["content"]["tag"], "實證")
+
     def test_pending_has_6_3_and_step_7(self):
         sections = [p["section"] for p in self.issue["pending"]]
         self.assertIn("6.3 成效衡量", sections)
@@ -403,6 +488,30 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("2-trashcans: 步驟 4", out)
         self.assertIn("I01-US01", out)
+
+    def test_6_3_code_not_in_6_1(self):
+        self.edit("| E | 試辦收集點的數量與每日使用量 |", "| F | 試辦收集點的數量與每日使用量 |")
+        self.assertFails("2-trashcans: 6.3:", "F", "not in 6.1")
+
+    def test_missing_step_7_section(self):
+        self.edit("### 7.4 解法 D：參與式選址流程", "### 7.4 參與式選址流程")
+        self.assertFails("2-trashcans: 步驟 7:", "solution D", "7.n 解法 D")
+
+    def test_step_7_section_for_unknown_code(self):
+        self.edit("### 7.4 解法 D：參與式選址流程", "### 7.4 解法 F：參與式選址流程")
+        self.assertFails("2-trashcans: 步驟 7:", "F")
+
+    def test_missing_overview_row(self):
+        self.edit("| `[AI模擬]` D 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |\n", "")
+        self.assertFails("2-trashcans: 總覽:", "solution D has no row")
+
+    def test_overview_row_without_code(self):
+        self.edit("| `[AI模擬]` D 參與式選址流程 | 中 | 中 |", "| `[AI模擬]` 參與式選址流程 | 中 | 中 |")
+        self.assertFails("2-trashcans: 總覽:", "does not start with a solution code")
+
+    def test_idea_names_unknown_solution(self):
+        self.edit("| `[AI模擬]` 併入解法 B，作為可選的試點項目", "| `[AI模擬]` 併入解法 F，作為可選的試點項目")
+        self.assertFails("2-trashcans: 6.1:", "F")
 
     def test_stale_issue_file_is_removed(self):
         os.makedirs(os.path.join(self.out, "issues"))

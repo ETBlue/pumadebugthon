@@ -14,7 +14,8 @@ A section that cannot be read stops the script with exit code 1 and the line
 Sections and tables are found with the shared rules in analysis_common.py,
 the same as in check_analysis.py and sync_stakeholders.py: by their heading
 text ("### 1.1", "### 1.2", "## 步驟 4", "### 相同訴求群組", "### 5.4",
-"### 6.1", "### 6.2"). A heading matches when the prefix is followed by a
+"### 6.1", "### 6.2", "### 6.3", one "### 7.n 解法 X：…" per solution, and
+"### 7.n 總覽"). A heading matches when the prefix is followed by a
 space, 「：」 or the end of the line, so "### 6.1" does not match "### 6.10".
 Inside a section, the script uses the tables whose header has all the wanted
 columns. There must be exactly one such table (step 1: exactly two, 組織 and
@@ -24,6 +25,18 @@ header names.
 Lists of IDs (1.2, 相同訴求群組, 5.4 相關故事, 6.2) hold IDs of this issue only.
 A reference to another issue there, like 「#2 O01-US01」, stops the script.
 In other text it stays as written; check_analysis.py checks that it exists.
+
+Each solution also gets the fields for its own page in the app:
+- measures: the 6.3 rows whose 解法 cell lists its code (a cell can list
+  several, for example 「A, D」).
+- detail: the 項目 | 內容 rows of its step 7 section, in file order.
+- overview: its row of the 總覽 table (成本, 可行性, 主要風險, 主責單位). The
+  first cell holds the row tag, the code and a short name; every field gets
+  the row tag.
+- ideas: the rows of the 6.1 構想 table (if the table exists) whose
+  本文件的處理 cell names the solution as 「解法 X」.
+- pending: the 【待補】 items of its step 7 section and of its 6.3 rows. The
+  same items are also in the issue's pending list.
 
 Markdown inside cells (for example **bold** and [links](...)) stays as written
 in the Cell text and in other text fields. The app renders it.
@@ -181,6 +194,24 @@ def pending_context(line, item_start):
             continue
         return c
     return None
+
+
+# A step 7 heading for one solution, for example 「### 7.1 解法 A：清潔箱佈建建議地圖」. Group 1 is the code.
+STEP7_SOLUTION = re.compile(r"^### 7\.\d+ 解法 ([A-Z])：")
+# A solution named in the 構想 table's 本文件的處理 cell, for example 「併入解法 B」.
+IDEA_SOLUTION = re.compile(r"解法 ?([A-Z])(?![A-Za-z])")
+
+
+def row_codes(value, known, section_name, where):
+    """The solution codes in a cell such as 「A」 or 「A, D」. Each must be a code from 6.1."""
+    v = value.strip()
+    if not SOLUTION_CODES.fullmatch(v):
+        raise ReadError(section_name, f"{where}: 解法 cell 「{value}」 must be solution codes, for example 「A」 or 「A, D」")
+    codes = re.findall(r"[A-Z]", v)
+    for c in codes:
+        if c not in known:
+            raise ReadError(section_name, f"{where}: solution {c} is not in 6.1")
+    return codes
 
 
 def cell(s, section_name, where):
@@ -346,15 +377,93 @@ def parse_issue(text, space_codes):
         if s["id"] not in in_62:
             raise ReadError("6.2", f"solution {s['id']} from 6.1 has no row in 6.2")
 
+    sol_codes = [s["id"] for s in solutions]
+
+    # 6.3 measures: a row belongs to every solution its 解法 cell lists (「A, D」).
+    for s in solutions:
+        s["measures"] = []
+    for r in table_rows(common.tables(section(text, "### 6.3", "6.3")), "6.3", ["解法", "指標", "目前數值（基準值）", "資料來源"]):
+        metric = r["指標"]
+        for code in row_codes(r["解法"], sol_codes, "6.3", f"row 「{metric}」"):
+            by_sol[code]["measures"].append({"metric": metric,
+                                             "baseline": cell(r["目前數值（基準值）"], "6.3", metric),
+                                             "source": r["資料來源"]})
+
+    # step 7: one section 「### 7.n 解法 X：…」 per solution, with a 項目 | 內容 table.
+    step7_heads = {}
+    for l in lines:
+        m = STEP7_SOLUTION.match(l)
+        if m:
+            code = m.group(1)
+            if code not in by_sol:
+                raise ReadError("步驟 7", f"「{l}」: solution {code} is not in 6.1")
+            if code in step7_heads:
+                raise ReadError("步驟 7", f"solution {code} has two sections")
+            step7_heads[code] = l
+    for s in solutions:
+        head = step7_heads.get(s["id"])
+        if head is None:
+            raise ReadError("步驟 7", f"solution {s['id']} has no section 「### 7.n 解法 {s['id']}：…」")
+        name = head[4:].replace("`", "").strip()
+        s["detail"] = [{"item": r["項目"], "content": cell(r["內容"], name, r["項目"])}
+                       for r in table_rows(common.tables(common.section(text, head)), name, ["項目", "內容"])]
+
+    # 總覽 (### 7.n 總覽): one row per solution. The first cell is the row tag,
+    # the code and a short name (「`[AI模擬]` A 佈建建議地圖」). Every field gets the row tag.
+    overview_head = next((l for l in lines if re.match(r"^### 7\.\d+ 總覽\s*$", l)), None)
+    if overview_head is None:
+        raise ReadError("總覽", "no heading 「### 7.n 總覽」")
+    for r in table_rows(common.tables(common.section(text, overview_head)), "總覽",
+                        ["解法", "成本", "可行性", "主要風險", "主責單位"]):
+        first = cell(r["解法"], "總覽", r["解法"])
+        m = re.match(r"([A-Z]) ", first["text"])
+        if not m or m.group(1) not in by_sol:
+            raise ReadError("總覽", f"row 「{r['解法']}」 does not start with a solution code from 6.1")
+        code = m.group(1)
+        if "overview" in by_sol[code]:
+            raise ReadError("總覽", f"solution {code} has two rows")
+        by_sol[code]["overview"] = {
+            key: {"text": r[col], "tag": first["tag"], "pending": first["tag"] is None and r[col].startswith("【待補")}
+            for key, col in (("cost", "成本"), ("feasibility", "可行性"), ("risk", "主要風險"), ("owner", "主責單位"))}
+    for s in solutions:
+        if "overview" not in s:
+            raise ReadError("總覽", f"solution {s['id']} has no row")
+
+    # 6.1 構想 table (optional): a row belongs to every solution that its
+    # 本文件的處理 cell names as 「解法 X」. A row that names no solution is left out.
+    for s in solutions:
+        s["ideas"] = []
+    idea_tables = [t for t in common.tables(section(text, "### 6.1", "6.1")) if "構想" in t[0] and "本文件的處理" in t[0]]
+    if idea_tables:
+        for r in table_rows(idea_tables, "6.1", ["構想", "本文件的處理"]):
+            idea = cell(r["構想"], "6.1", "構想")
+            handling = cell(r["本文件的處理"], "6.1", "構想")
+            for code in unique(IDEA_SOLUTION.findall(handling["text"])):
+                if code not in by_sol:
+                    raise ReadError("6.1", f"構想 「{idea['text']}」: 解法 {code} is not in 6.1")
+                by_sol[code]["ideas"].append({"idea": idea, "handling": handling})
+
     # every 【待補…】 item with the nearest heading. Items in backticks are
     # examples of the format (for example in the notice), not open items.
+    # An item in a solution's 7.n section or in its 6.3 row is also listed
+    # under that solution.
     pending = []
+    step7_names = {code: head[4:].replace("`", "").strip() for code, head in step7_heads.items()}
+    for s in solutions:
+        s["pending"] = []
     for line, head in zip(lines, headings_before(lines)):
         # Blank out code spans (same length) so positions still match the line.
         plain = re.sub(r"`[^`]*`", lambda m: " " * len(m.group(0)), line)
+        owners = [c for c, n in step7_names.items() if n == head]
+        if head is not None and head.split(" ")[0] == "6.3" and line.startswith("|"):
+            first = common.split_cells(line)[0]
+            if SOLUTION_CODES.fullmatch(first):
+                owners = [c for c in re.findall(r"[A-Z]", first) if c in by_sol]
         for m in PENDING.finditer(plain):
-            pending.append({"section": head, "text": m.group(0),
-                            "context": pending_context(line, m.start())})
+            item = {"section": head, "text": m.group(0), "context": pending_context(line, m.start())}
+            pending.append(item)
+            for c in owners:
+                by_sol[c]["pending"].append(item)
 
     return {"spaces": spaces, "stakeholders": stakeholders, "inputSources": input_sources,
             "stories": stories, "groups": groups, "conflicts": conflicts,

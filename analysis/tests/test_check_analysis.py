@@ -132,6 +132,8 @@ class CheckAnalysisTest(unittest.TestCase):
         md = f"{ISSUE}/issue-analysis.md"
         self.edit(md, "| D | `[AI模擬]` 參與式選址流程 |", "| K | `[AI模擬]` 參與式選址流程 |")
         self.edit(md, "| D | 參與式選址流程 |", "| K | 參與式選址流程 |")
+        self.edit(md, "### 7.4 解法 D：", "### 7.4 解法 K：")
+        self.edit(md, "| `[AI模擬]` D 參與式選址流程 |", "| `[AI模擬]` K 參與式選址流程 |")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
@@ -343,6 +345,20 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_D, self.SOL_D.replace("2026-10-16", "2999-01-01"))
         self.assertFails("6.1 solution D: 新增日期 2999-01-01", "future")
 
+
+    # Each solution in 6.1 has its own step 7 section and a 總覽 row, so its
+    # page in the app has content. A solution code is never reused.
+    def test_solution_without_step_7_section_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "### 7.4 解法 D：參與式選址流程", "### 7.4 參與式選址流程")
+        self.assertFails("步驟 7: solution D from 6.1 has no section 「### 7.n 解法 D：…」")
+
+    def test_step_7_section_for_unknown_solution_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "### 7.4 解法 D：參與式選址流程", "### 7.4 解法 F：參與式選址流程")
+        self.assertFails("步驟 7: 「### 7.4 解法 F：參與式選址流程」: solution F is not in 6.1")
+
+    def test_solution_without_overview_row_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| `[AI模擬]` D 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |\n", "")
+        self.assertFails("總覽: solution D from 6.1 has no row")
 
     # open-data.csv lists every open dataset (data.gov.tw, data.taipei) cited in
     # an appendix, and each row lists the issues whose appendix cites it.

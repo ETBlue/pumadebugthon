@@ -391,6 +391,32 @@ def main(md_path, csv_path):
                 if code not in space_codes: err(f"6.1 solution {sol}: unknown space code {code}")
                 elif code not in issue_spaces: err(f"6.1 solution {sol}: space {code} is not in the issue's 空間類型 line")
 
+    # 16b. each solution in 6.1 has its own step 7 section 「### 7.n 解法 X：…」
+    # and a row in the 總覽 table (first cell: tag, code, short name). The app
+    # gives each solution a page with this content. A code is never reused.
+    codes_61 = [cells(l)[0] for l in sec61.splitlines() if re.match(r"^\| [A-Z] \|", l)]
+    step7_codes = []
+    for line in text.splitlines():
+        m = re.match(r"^### 7\.\d+ 解法 ([A-Z])：", line)
+        if not m: continue
+        if m.group(1) not in codes_61: err(f"步驟 7: 「{line}」: solution {m.group(1)} is not in 6.1")
+        elif m.group(1) in step7_codes: err(f"步驟 7: solution {m.group(1)} has two sections")
+        step7_codes.append(m.group(1))
+    overview_codes = []
+    overview = next((l for l in text.splitlines() if re.match(r"^### 7\.\d+ 總覽\s*$", l)), None)
+    if overview is None:
+        err("總覽: no heading 「### 7.n 總覽」")
+    else:
+        for h, rows in tables(section(text, overview) or []):
+            if h and h[0] == "解法":
+                for c in rows:
+                    m = re.match(rf"(?:`\[(?:{TAG_NAMES})\]` )?([A-Z]) ", c[0])
+                    if m: overview_codes.append(m.group(1))
+                    else: err(f"總覽: row 「{c[0]}」 does not start with a solution code")
+    for code in codes_61:
+        if code not in step7_codes: err(f"步驟 7: solution {code} from 6.1 has no section 「### 7.n 解法 {code}：…」")
+        if overview is not None and code not in overview_codes: err(f"總覽: solution {code} from 6.1 has no row")
+
     # 17. 5.4 相關故事 holds local stories only
     for h, rows in tables(section(text, "### 5.4") or []):
         if "相關故事" in h:

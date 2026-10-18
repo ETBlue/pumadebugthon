@@ -79,12 +79,17 @@ export interface StakeholderListProps {
   showCrossIssueFilter: boolean
   crossIssueOnly: boolean
   onCrossIssueOnlyChange: (value: boolean) => void
+  /** Level of the 組織 and 個人 headings. The 個人 groups are one level lower.
+   * 3 under an h2 (the issue tab), 2 under an h1 (the list page). */
+  headingLevel?: 2 | 3
 }
 
-/** The stakeholder list (design 3.1): the O tree, the I groups, the filters,
+/** The stakeholder list (design 3.9): the O tree, the I groups, the filters,
  * the count note and the priority legend. Tree order or ID order only. */
 export function StakeholderList(props: StakeholderListProps) {
-  const { stakeholders, pathLabels, issues, showCrossIssueFilter, crossIssueOnly, onCrossIssueOnlyChange } = props
+  const { stakeholders, pathLabels, issues, showCrossIssueFilter, crossIssueOnly, onCrossIssueOnlyChange, headingLevel = 3 } = props
+  const H = `h${headingLevel}` as const
+  const H2 = `h${headingLevel + 1}` as 'h3' | 'h4'
   const [focus, setFocus] = useState<string[]>([])
   const focusLabelId = useId()
 
@@ -140,7 +145,7 @@ export function StakeholderList(props: StakeholderListProps) {
 
       {tree.organizations.length > 0 && (
         <section>
-          <h3 className="text-lg font-semibold">{ts.organizations}</h3>
+          <H className="text-lg font-semibold">{ts.organizations}</H>
           <ul key={treeKey} className="mt-1">
             {tree.organizations.map((n) => (
               <TreeLevel key={n.path} node={n} depth={0} openAll={filtering} counts={counts} />
@@ -151,13 +156,13 @@ export function StakeholderList(props: StakeholderListProps) {
 
       {tree.individuals.length > 0 && (
         <section>
-          <h3 className="text-lg font-semibold">{ts.individuals}</h3>
+          <H className="text-lg font-semibold">{ts.individuals}</H>
           {tree.individuals.map((n) => (
             <div key={n.path} className="mt-3">
-              <h4 className="flex flex-wrap items-baseline gap-x-2 font-medium">
+              <H2 className="flex flex-wrap items-baseline gap-x-2 font-medium">
                 {n.label}
                 <span className="text-sm font-normal text-muted-foreground">{ts.storyTotal(n.storyTotal)}</span>
-              </h4>
+              </H2>
               <ul className="ml-1 border-l pl-3 md:pl-4">
                 {n.stakeholders.map((s) => <StakeholderRow key={s.id} stakeholder={s} counts={counts} />)}
               </ul>

@@ -41,6 +41,16 @@ export const t = {
     contentLicenseFile: 'LICENSE-CONTENT.md',
     dataLicenseEnd: '：主辦單位的內容依主辦單位的規定使用；從主辦單位的市民資料整理出的內容，只限於這次黑客松使用。',
   },
+  /** The list pages (design 3.9). */
+  lists: {
+    issuesTitle: '議題',
+    issuesIntro: '所有議題，依編號排列。還在製作中的議題不能打開。',
+    stakeholdersTitle: '利害關係人',
+    stakeholdersIntro: '所有議題的利害關係人，依分類和編號排列。',
+    solutionsTitle: '解法',
+    solutionsInProgress: '解法列表還在製作中。目前請到各議題的「解法」分頁查看。',
+    toIssues: '看所有議題',
+  },
   /** The theme toggle in the header (design 3.10). A toggle button: the
    * name stays the same, and aria-pressed says if dark is on. */
   theme: {

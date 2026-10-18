@@ -9,10 +9,11 @@ import { linkClass } from './styles'
 
 const tc = t.issueCard
 
-/** One issue on the home page (design 3.1). An issue without an analysis
+/** One issue card on the issue list (design 3.9). An issue without an analysis
  * shows 製作中, with no numbers and no link. shared is null when fewer than 2
  * issues are available; then the 跨議題 field is left out. */
-export function IssueCard({ issue, spaceTypes, shared }: { issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null }) {
+export function IssueCard({ issue, spaceTypes, shared, headingLevel = 3 }: { issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null; headingLevel?: 2 | 3 }) {
+  const H = `h${headingLevel}` as const
   const title = tc.numberTitle(issue.number, issue.title)
   // An issue a participant added (not the host) says so under its title.
   const note = isParticipantIssue(issue) && (
@@ -21,7 +22,7 @@ export function IssueCard({ issue, spaceTypes, shared }: { issue: IssueSummary; 
   if (!issue.available) {
     return (
       <article className="h-full rounded-lg border border-dashed p-4">
-        <h3 className="font-semibold text-muted-foreground">{title}</h3>
+        <H className="font-semibold text-muted-foreground">{title}</H>
         {note}
         <Badge variant="secondary" className="mt-2 rounded-sm">{tc.inProgress}</Badge>
       </article>
@@ -30,9 +31,9 @@ export function IssueCard({ issue, spaceTypes, shared }: { issue: IssueSummary; 
   const c = issue.counts
   return (
     <article className="h-full rounded-lg border p-4">
-      <h3 className="text-lg font-semibold">
+      <H className="text-lg font-semibold">
         <Link to={`/issues/${issue.number}`} className={linkClass}>{title}</Link>
-      </h3>
+      </H>
       {note}
       <dl className="mt-3 space-y-1.5 text-sm">
         <Field label={tc.stakeholders}>{tc.stakeholdersValue(c.stakeholdersO, c.stakeholdersI)}</Field>
@@ -41,12 +42,7 @@ export function IssueCard({ issue, spaceTypes, shared }: { issue: IssueSummary; 
         <Field label={tc.solutions}>{tc.itemsValue(c.solutions)}</Field>
         {shared && (
           <Field label={tc.shared}>
-            <Link
-              to={{ pathname: '/', search: '?cross=1' }}
-              state={{ focus: 'stakeholders' }}
-              preventScrollReset
-              className={linkClass}
-            >
+            <Link to={{ pathname: '/stakeholders', search: '?cross=1' }} className={linkClass}>
               {tc.sharedValue(shared.count, shared.issues)}
             </Link>
           </Field>

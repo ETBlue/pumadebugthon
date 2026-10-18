@@ -216,10 +216,10 @@ All app commands run in `app/`. UI text only in `src/i18n/zh-TW.ts`.
 
 **Files:** `src/lib/stakeholders.ts`, `src/lib/stakeholders.test.ts`.
 
-- `buildTree(stakeholders, pathLabels)`: O tree by path prefix; I grouped by first level. Node: `{path, label, children, stakeholders, storyTotal}`. Order by path, then ID.
+- `buildTree(stakeholders, pathLabels, counts)`: `counts` comes from `storyCountsByStakeholder(issues)`, so the caller chooses which issues to count. O tree by path prefix; I grouped by first level. First levels in a fixed order (gov, soe, ind, acd, ngo, cmt; res, mov, vis, wrk), decided by ETBlue on 2026-10-18. Node: `{path, label, children, stakeholders, storyTotal}`. Order by path, then ID.
 - `storiesWithoutSolution(issue, stakeholderId)`
 - `resolveId(stakeholders, id)`: a moved ID returns the new ID.
-- `filterStakeholders(list, {crossIssueOnly, focus})`
+- `filterStakeholders(list, {crossIssueOnly, focus})`: moved IDs are left out; a stakeholder matches when it has ANY selected focus tag (ETBlue, 2026-10-18)
 - Tests: `resolveId('O02')` → `I12`; the 臺北市 node's `storyTotal` equals the sum of its children; a stakeholder with every story covered returns `[]`.
 
 ### Task C6: space lookups (test first)

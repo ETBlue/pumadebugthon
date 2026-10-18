@@ -2,7 +2,7 @@
 
 Usage: python3 -I analysis/build_json.py analysis app/public/data
 
-Reads issues.csv, stakeholders.csv, path-labels.csv and space-types.csv, and
+Reads issues.csv (編號, 資料夾, 題目, 來源), stakeholders.csv, path-labels.csv and space-types.csv, and
 <folder>/issue-analysis.md for each issue folder that has one. Writes
 <out>/index.json and <out>/issues/<folder>.json. Removes issues/*.json files
 for folders that no longer have an analysis.
@@ -40,6 +40,9 @@ STORY_ID = re.compile(r"[OI]\d\d-US\d\d")
 STAKEHOLDER_ID = re.compile(r"(?<![A-Za-z0-9])([OI]\d\d)(?![0-9])")
 HEADING = common.HEADING
 MOVED = "已改為"
+# 來源 values in issues.csv: the hackathon host's issues, and issues that a
+# participant added (for example #8). The app shows a note for the second one.
+ISSUE_SOURCES = ("主辦單位", "參加者補充")
 
 
 class ReadError(Exception):
@@ -346,7 +349,7 @@ def parse_issue(text, space_codes):
 # ---------- whole build ----------
 
 def build(analysis_dir):
-    issues_csv = read_csv(analysis_dir, "issues.csv", ["編號", "資料夾", "題目"])
+    issues_csv = read_csv(analysis_dir, "issues.csv", ["編號", "資料夾", "題目", "來源"])
     space_rows = read_csv(analysis_dir, "space-types.csv", ["代碼", "名稱", "分組", "說明"])
     space_codes = {r["代碼"] for r in space_rows}
     label_rows = read_csv(analysis_dir, "path-labels.csv", ["分類路徑", "名稱"])
@@ -356,10 +359,12 @@ def build(analysis_dir):
     for i, row in enumerate(issues_csv, start=2):
         if not re.fullmatch(r"\d+", row["編號"].strip()):
             raise ReadError("issues.csv", f"row {i}: 編號 「{row['編號']}」 is not a number")
-        num, folder, title = int(row["編號"]), row["資料夾"], row["題目"]
+        num, folder, title, source = int(row["編號"]), row["資料夾"], row["題目"], row["來源"].strip()
+        if source not in ISSUE_SOURCES:
+            raise ReadError("issues.csv", f"row {i}: 來源 「{row['來源']}」 must be one of {'、'.join(ISSUE_SOURCES)}")
         md = os.path.join(analysis_dir, folder, "issue-analysis.md")
         if not os.path.exists(md):
-            index_issues.append({"number": num, "folder": folder, "title": title, "available": False,
+            index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": False,
                                  "spaces": [], "updated": None, "counts": None})
             continue
         with open(md, encoding="utf-8") as f:
@@ -379,7 +384,7 @@ def build(analysis_dir):
             "wantsEvidence": sum(s["want"]["tag"] == "實證" for s in data["stories"]),
             "wantsAiSummary": sum(s["want"]["tag"] == "AI整理" for s in data["stories"]),
         }
-        index_issues.append({"number": num, "folder": folder, "title": title, "available": True,
+        index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": True,
                              "spaces": data["spaces"], "updated": updated, "counts": counts})
         issue_files[folder] = {"number": num, "folder": folder, "title": title,
                                "spaces": data["spaces"], "updated": updated, **{k: v for k, v in data.items() if k != "spaces"}}

@@ -132,10 +132,20 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_index_issue_list(self):
         issues = self.index["issues"]
-        self.assertEqual([i["number"] for i in issues], [1, 2, 3, 4, 5, 6])
-        self.assertEqual([i["number"] for i in issues if i["available"]], [1, 2])
+        # #7 (自由題) has no topic, so it is not in issues.csv. #8 is an extra issue.
+        self.assertEqual([i["number"] for i in issues], [1, 2, 3, 4, 5, 6, 8])
+        available = [i["number"] for i in issues if i["available"]]
+        self.assertTrue({1, 2} <= set(available))
+        self.assertFalse({3, 4, 5, 6} & set(available))
         three = issues[2]
         self.assertEqual((three["counts"], three["spaces"], three["updated"]), (None, [], None))
+
+    def test_index_issue_source(self):
+        # 來源 in issues.csv becomes "source": 主辦單位 for the host's issues,
+        # 參加者補充 for an issue a participant added.
+        source = {i["number"]: i["source"] for i in self.index["issues"]}
+        self.assertEqual(source, {1: "主辦單位", 2: "主辦單位", 3: "主辦單位", 4: "主辦單位",
+                                  5: "主辦單位", 6: "主辦單位", 8: "參加者補充"})
 
     def test_moved_and_active_stakeholders(self):
         by_id = {s["id"]: s for s in self.index["stakeholders"]}
@@ -296,6 +306,14 @@ class BuildJsonErrorTest(unittest.TestCase):
     def test_heading_prefix_needs_space(self):
         self.edit("### 6.1 候選解法", "### 6.10 候選解法")
         self.assertFails("2-trashcans: 6.1:")
+
+    def test_unknown_issue_source(self):
+        self.edit("8,8-smokefree,無菸城市,參加者補充", "8,8-smokefree,無菸城市,其他", "issues.csv")
+        self.assertFails("issues.csv: row 8:", "來源", "其他")
+
+    def test_missing_issue_source_column(self):
+        self.edit("編號,資料夾,題目,來源", "編號,資料夾,題目,出處", "issues.csv")
+        self.assertFails("issues.csv: header: no column 來源")
 
     def test_bad_issue_value_in_csv(self):
         self.edit("I05,高齡者,res,高齡,1 2,", "I05,高齡者,res,高齡,1、2,", "stakeholders.csv")

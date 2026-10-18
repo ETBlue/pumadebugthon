@@ -82,7 +82,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("solution D", "parking")
 
     def test_wrong_issue_value(self):
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2,", "I05,高齡者,res,高齡,2,")
+        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,2,")
         self.assertFails("I05", "議題")
 
     def test_moved_id_must_have_empty_issue_value(self):

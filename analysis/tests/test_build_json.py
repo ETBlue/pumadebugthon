@@ -316,7 +316,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("issues.csv: header: no column 來源")
 
     def test_bad_issue_value_in_csv(self):
-        self.edit("I05,高齡者,res,高齡,1 2,", "I05,高齡者,res,高齡,1、2,", "stakeholders.csv")
+        self.edit("I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,1、2、8,", "stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:")
 
     def test_missing_csv_file(self):

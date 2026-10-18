@@ -62,11 +62,11 @@ class SyncStakeholdersTest(unittest.TestCase):
         return p.returncode, p.stdout + p.stderr
 
     def test_puts_back_removed_issue_number(self):
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2,", "I05,高齡者,res,高齡,,")
+        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,,")
         self.assertNotEqual(self.csv_bytes(), self.original)
         code, out = self.run_sync()
         self.assertEqual(code, 0, out)
-        self.assertIn('I05: "" -> "1 2"', out)
+        self.assertIn('I05: "" -> "1 2 8"', out)
         self.assertIn("1 row(s) changed", out)
         self.assertEqual(self.csv_bytes(), self.original)
 
@@ -87,7 +87,7 @@ class SyncStakeholdersTest(unittest.TestCase):
         row = "| I13 | 清潔隊員 | `wrk` | — | `[AI模擬]` 實際清運的人；清潔箱滿不滿會影響他們的路線與工作量 |\n"
         new_id = next_free_id("I")
         self.edit(f"{ISSUE}/issue-analysis.md", row, row + f"| {new_id} | 新的人 | `res` | — | `[AI模擬]` 測試 |\n")
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2,", "I05,高齡者,res,高齡,,")
+        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,,")
         before = self.csv_bytes()
         code, out = self.run_sync()
         self.assertEqual(code, 1, out)

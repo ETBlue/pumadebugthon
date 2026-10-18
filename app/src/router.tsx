@@ -5,6 +5,7 @@ import Issue from '@/pages/Issue'
 import Issues from '@/pages/Issues'
 import Placeholder from '@/pages/Placeholder'
 import RouteError from '@/pages/RouteError'
+import Solution from '@/pages/Solution'
 import Solutions from '@/pages/Solutions'
 import Space from '@/pages/Space'
 import Stakeholder from '@/pages/Stakeholder'
@@ -27,6 +28,8 @@ export const router = createHashRouter([
       // The home page has a full-width hero (design 3.1).
       { index: true, element: <Home />, handle: { fullWidth: true } },
       { path: 'issues', element: <Issues /> },
+      // A solution page. More specific than the tab route, so it wins.
+      { path: 'issues/:number/solutions/:code', element: <Solution /> },
       { path: 'issues/:number/:tab?', element: <Issue /> },
       { path: 'stakeholders', element: <Stakeholders /> },
       { path: 'stakeholders/:id', element: <Stakeholder /> },

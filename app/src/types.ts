@@ -193,6 +193,55 @@ export interface Solution {
   added: string
   /** Story IDs from the 涵蓋的 Must and 涵蓋的 Should / Could columns of 6.2. */
   stories: string[]
+  /** 6.3 rows whose 解法 cell lists this solution, in file order. */
+  measures: Measure[]
+  /** The rows of its step 7 section (「### 7.n 解法 X：…」), in file order. */
+  detail: DetailRow[]
+  /** Its row of the step 7 總覽 table. Every field has the row's tag. */
+  overview: SolutionOverview
+  /** Rows of the 6.1 構想 table whose 本文件的處理 cell names this solution. */
+  ideas: SolutionIdea[]
+  /** The 【待補】 items of its step 7 section and of its 6.3 rows. The same
+   * items are also in IssueFile.pending. */
+  pending: Pending[]
+}
+
+/** A row of 6.3 (成效衡量). */
+export interface Measure {
+  /** 指標 */
+  metric: string
+  /** 目前數值（基準值） */
+  baseline: Cell
+  /** 資料來源 */
+  source: string
+}
+
+/** A row of a step 7 section, for example 相關法規. */
+export interface DetailRow {
+  /** 項目, for example 「需要的資料／API」 or 「隱私」. */
+  item: string
+  /** 內容 */
+  content: Cell
+}
+
+/** A row of the step 7 總覽 table. */
+export interface SolutionOverview {
+  /** 成本 */
+  cost: Cell
+  /** 可行性 */
+  feasibility: Cell
+  /** 主要風險 */
+  risk: Cell
+  /** 主責單位 */
+  owner: Cell
+}
+
+/** A row of the 6.1 構想 table: an idea from the issue text or a source. */
+export interface SolutionIdea {
+  /** 構想 */
+  idea: Cell
+  /** 本文件的處理 */
+  handling: Cell
 }
 
 /** A 【待補…】 item anywhere in the issue file. */

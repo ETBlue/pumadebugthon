@@ -1454,6 +1454,139 @@
         "O01-US02",
         "I01-US05",
         "I26-US03"
+      ],
+      "measures": [
+        {
+          "metric": "指定吸菸區的總數",
+          "baseline": {
+            "text": "265 筆（2026-10-05 更新）",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "data.gov.tw 177504"
+        },
+        {
+          "metric": "各行政區的吸菸區數",
+          "baseline": {
+            "text": "中正 33、中山 30、信義 29、大安 27、南港 27、士林 26、北投 20、松山 19、大同 16、文山 13、內湖 13、萬華 12",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "data.gov.tw 177504"
+        },
+        {
+          "metric": "吸菸區中，符合距離與淨寬規定的比例",
+          "baseline": {
+            "text": "【待補：要點 115-10-01 生效，需衛生局逐點檢查的結果】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "衛生局"
+        },
+        {
+          "metric": "設置或移動前經過里民討論的比例",
+          "baseline": {
+            "text": "【待補：衛生局或區公所是否已有紀錄；沒有的話，試點後由 A 產生】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "衛生局、區公所"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "指定吸菸區資料（data.gov.tw 177504，有座標）；學校、幼兒園、醫院、公車站位置；人行道寬度【待補：新工處】；#1 的樹穴與 #2 的清潔箱位置；里界資料",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "菸害防制法第 19 條第 3 項：吸菸區要有明顯標示，面積不大於該場所室外面積的二分之一，且不得設於人員往來必經之處（全國法規資料庫，見附錄）。另外，AI 整理的相關規定：臺北市吸菸區設置及管理要點（距離、淨寬、審查）；道路上設置物件的相關規定【待補：法務確認】",
+            "tag": "實證",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "只用設施位置，不需要個資；工作坊只公開彙總結果",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "距離規定加上住家與站牌後，可能找不到可以設的地點，吸菸者反而回到路上；需要邀請吸菸者參與，不能只聽住戶的意見",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "衛生局；協作：工務局新工處、公園處、交通局、民政局與各區公所",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "成本低到中（人力與工作坊）；可行性高；風險：流程變長，設置速度變慢",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "低到中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "高",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "找不到可以設的地點、流程變慢",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "衛生局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：要點 115-10-01 生效，需衛生局逐點檢查的結果】",
+          "context": "吸菸區中，符合距離與淨寬規定的比例"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：衛生局或區公所是否已有紀錄；沒有的話，試點後由 A 產生】",
+          "context": "設置或移動前經過里民討論的比例"
+        },
+        {
+          "section": "7.1 解法 A：吸菸區選址檢查與參與式選址",
+          "text": "【待補：新工處】",
+          "context": "需要的資料／API"
+        },
+        {
+          "section": "7.1 解法 A：吸菸區選址檢查與參與式選址",
+          "text": "【待補：法務確認】",
+          "context": "相關法規"
+        }
       ]
     },
     {
@@ -1479,6 +1612,125 @@
         "I01-US09",
         "I25-US02",
         "I27-US02"
+      ],
+      "measures": [
+        {
+          "metric": "封閉式（負壓式與室內）吸菸區的比例",
+          "baseline": {
+            "text": "20／265（戶外負壓式 15、室內吸菸室 5）",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "data.gov.tw 177504"
+        },
+        {
+          "metric": "吸菸區周邊的菸味或空氣品質",
+          "baseline": {
+            "text": "【待補：試點前後的現場量測】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "試點後由 B 產生"
+        },
+        {
+          "metric": "1999「路面清潔（含行人果皮箱、菸蒂、狗便）」每月件數",
+          "baseline": {
+            "text": "2026 年 7–9 月平均約 653 件／月（此類別也含清潔箱與狗便，見 #2 附錄）",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "臺北市陳情系統類別資料"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "各吸菸區的樣態與管理單位（data.gov.tw 177504）；試點前後的菸味或空氣品質量測；菸蒂清理紀錄",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "臺北市吸菸區設置及管理要點（封閉式要負壓、換氣與定期檢測）；政府採購法；建築與消防相關規定【待補：法務確認】；廢棄物清理法（菸蒂）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "量測只記錄環境數字，不拍可辨識的人臉",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "負壓式設備需要電力與維護；封閉空間需要考慮通風、消防與夜間管理；不同設計的成本差很多",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "衛生局；協作：吸菸區的管理單位、環保局",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "負壓式成本較高【待補：每處設置與維護費用】；綠籬式成本較低；可行性中；風險：設備故障時煙外溢",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "中到高",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "設備維護、故障",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "衛生局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：試點前後的現場量測】",
+          "context": "吸菸區周邊的菸味或空氣品質"
+        },
+        {
+          "section": "7.2 解法 B：吸菸區設計改善試點",
+          "text": "【待補：法務確認】",
+          "context": "相關法規"
+        },
+        {
+          "section": "7.2 解法 B：吸菸區設計改善試點",
+          "text": "【待補：每處設置與維護費用】",
+          "context": "成本／可行性／風險"
+        }
       ]
     },
     {
@@ -1512,6 +1764,130 @@
         "I27-US03",
         "I27-US04",
         "I28-US01"
+      ],
+      "measures": [
+        {
+          "metric": "有開放資料的禁菸範圍",
+          "baseline": {
+            "text": "【待補：本文件沒有找到禁菸範圍的開放資料；衛生局網頁有「臺北市公告戶外禁菸公共場所」清單】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "衛生局"
+        },
+        {
+          "metric": "市民「知道哪裡禁菸、哪裡可以吸菸」的比例",
+          "baseline": {
+            "text": "【待補：短問卷】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "問卷"
+        },
+        {
+          "metric": "戶外場所二手菸暴露率",
+          "baseline": {
+            "text": "搜尋摘要提到臺北市 113 年為 59.7%，需真人查證。【待補：查證原始資料與定義】",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "衛生局或國民健康署"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "各公告的範圍圖（目前附在公告中）；轉成可以機器讀取的範圍資料；多語言文字【待補：觀傳局】",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "菸害防制法第 19 條第 1 項第 4 款（公告指定）與第 2 項（入口處要有明顯標示）；行政程序法（公告）；政府資料開放相關規定",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "資料只含範圍與設施位置，不含個資",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "範圍變動時資料要同步更新；標示太多會影響市容與通行",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "衛生局；協作：資訊局（開放資料、台北通）、觀光傳播局（多語言）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "成本低；可行性高；風險：資料不更新會讓人誤會，降低信任",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "低",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "高",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "資料更新不持續",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "衛生局、資訊局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：本文件沒有找到禁菸範圍的開放資料；衛生局網頁有「臺北市公告戶外禁菸公共場所」清單】",
+          "context": "有開放資料的禁菸範圍"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：短問卷】",
+          "context": "市民「知道哪裡禁菸、哪裡可以吸菸」的比例"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：查證原始資料與定義】",
+          "context": "戶外場所二手菸暴露率"
+        },
+        {
+          "section": "7.3 解法 C：禁菸範圍的公告、標示與開放資料",
+          "text": "【待補：觀傳局】",
+          "context": "需要的資料／API"
+        }
       ]
     },
     {
@@ -1543,6 +1919,126 @@
         "I01-US09",
         "I17-US01",
         "I19-US01"
+      ],
+      "measures": [
+        {
+          "metric": "勸導與開罰件數",
+          "baseline": {
+            "text": "新聞報導指出，年貨大街試辦期間開罰 13 件、勸導 862 人，需真人查證【待補：查證年貨大街試辦的開罰與勸導件數】。【待補：全市與各區域的稽查統計】",
+            "tag": "AI整理",
+            "pending": false
+          },
+          "source": "衛生局"
+        },
+        {
+          "metric": "違規吸菸的通報件數與處理天數",
+          "baseline": {
+            "text": "【待補：1999 與衛生局的通報紀錄】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "1999、衛生局"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "通報紀錄（地點、時段）；稽查與勸導紀錄；1999 派工資料【待補：研考會】",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "菸害防制法第 22 條（地方主管機關稽查）、第 40 條（罰則）；廢棄物清理法第 27 條與第 50 條（菸蒂）；臺北市檢舉違反衛生管理法規案件獎勵辦法（引用的是修法前的條號，【待補：法務確認是否仍適用】）；個人資料保護法",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "通報的照片或影片可能拍到人臉，需要限定目的、最小蒐集、設定保存期限；如果使用攝影機偵測吸菸，影像屬於個人資料，需要特別評估",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "通報可能變成鄰里衝突；稽查人力有限；罰款對經濟弱勢者的影響較大，需要社工轉介",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "衛生局；協作：環保局（菸蒂）、研考會（1999）、社會局",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "成本中（稽查人力）；可行性中；風險：只看開罰件數，可能忽略勸導的效果",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "人力有限、隱私、鄰里衝突",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "衛生局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：查證年貨大街試辦的開罰與勸導件數】",
+          "context": "勸導與開罰件數"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：全市與各區域的稽查統計】",
+          "context": "勸導與開罰件數"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：1999 與衛生局的通報紀錄】",
+          "context": "違規吸菸的通報件數與處理天數"
+        },
+        {
+          "section": "7.4 解法 D：通報、勸導與稽查流程",
+          "text": "【待補：研考會】",
+          "context": "需要的資料／API"
+        },
+        {
+          "section": "7.4 解法 D：通報、勸導與稽查流程",
+          "text": "【待補：法務確認是否仍適用】",
+          "context": "相關法規"
+        }
       ]
     },
     {
@@ -1563,6 +2059,116 @@
         "O24-US01",
         "I25-US04",
         "I25-US05"
+      ],
+      "measures": [
+        {
+          "metric": "成人吸菸率",
+          "baseline": {
+            "text": "二手資料提到臺北市 111 年 18 歲以上目前吸菸率 7.56%，需真人查證。【待補：查證國民健康署的原始資料】",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "國民健康署"
+        },
+        {
+          "metric": "使用戒菸服務的人數",
+          "baseline": {
+            "text": "【待補：衛生局或國民健康署的統計】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "衛生局、國民健康署"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "規約範本；社區禁菸公告的案例（衛生局公告中有社區戶外空間的例子）；戒菸服務資源",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "公寓大廈管理條例（規約）【待補：法務確認可以約定的範圍】；菸害防制法第 18 條、第 20 條（室內有孕婦或未滿 3 歲兒童的場所）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "住戶之間的爭議不公開個人資料；戒菸服務的紀錄屬於健康資料，需要保密",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "住家內部不在公共空間的範圍，政府能做的有限；要避免住戶之間的對立",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "衛生局；協作：都市發展局（公寓大廈管理）、民政局（調解）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "成本低；可行性中；風險：只提供範本，效果取決於各社區",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "低",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "公共空間之外，效果有限",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "衛生局、都市發展局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：查證國民健康署的原始資料】",
+          "context": "成人吸菸率"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：衛生局或國民健康署的統計】",
+          "context": "使用戒菸服務的人數"
+        },
+        {
+          "section": "7.5 解法 E：住家二手菸與戒菸支援",
+          "text": "【待補：法務確認可以約定的範圍】",
+          "context": "相關法規"
+        }
       ]
     }
   ],

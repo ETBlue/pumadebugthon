@@ -1651,6 +1651,144 @@
         "I10-US01",
         "I12-US01",
         "I23-US01"
+      ],
+      "measures": [
+        {
+          "metric": "清潔箱總數",
+          "baseline": {
+            "text": "主表 681 筆；130 點總表 940 處；題目原文「約 800 組」（三者關係不清楚，見[附錄](#附錄資料來源與計算方式)）",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "data.gov.tw 121355；題目原文"
+        },
+        {
+          "metric": "無清潔箱資料的行政區數",
+          "baseline": {
+            "text": "1 區（北投區，主表 0 筆；130 點總表有 49 處）",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "data.gov.tw 121355"
+        },
+        {
+          "metric": "高人流捷運站的「每處每日出站人次」",
+          "baseline": {
+            "text": "見下表",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "捷運分時進出量 2026-09 ＋ 130 點總表"
+        },
+        {
+          "metric": "家用垃圾違規棄置件數（試點區）",
+          "baseline": {
+            "text": "【待補：環保局稽查資料】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "環保局"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "清潔箱位置（data.gov.tw 121355）、捷運分時進出量、公車站牌位置（SHP）、1999 類別資料（目前無地點，需【待補：研考會提供有地點的去識別化資料】）、商圈範圍【待補：資料來源】、人行道寬度【待補：新工處】",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "廢棄物清理法（第 27 條禁止行為、第 50 條罰鍰新臺幣 1,200–6,000 元；清潔箱上的「違者重罰新臺幣 6000 元」與此相符）；臺北市廢棄物清理自治條例（垃圾費隨袋徵收）；道路上設置物件的相關規定（市區道路條例、臺北市市區道路管理規則）【待補：法務確認】",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "使用彙總後的人流數字，不需要個資。若改用攝影機計算行人，影像可能屬於個人資料保護法的個人資料，需要特定目的、告知與最小蒐集，建議在裝置端計數、不保存影像",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "模型只是建議，不能取代現場勘查與里民討論；人流高不一定代表垃圾多；需避免只照顧商業區、忽略住宅區或弱勢地區",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "成本低（主要是人力與現有資料）；可行性高；風險：資料過舊（主表涵蓋到 2018）會讓建議失準",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "低",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "高",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "資料過舊",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "環保局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：環保局稽查資料】",
+          "context": "家用垃圾違規棄置件數（試點區）"
+        },
+        {
+          "section": "7.1 解法 A：清潔箱佈建建議地圖",
+          "text": "【待補：研考會提供有地點的去識別化資料】",
+          "context": "需要的資料／API"
+        },
+        {
+          "section": "7.1 解法 A：清潔箱佈建建議地圖",
+          "text": "【待補：資料來源】",
+          "context": "需要的資料／API"
+        },
+        {
+          "section": "7.1 解法 A：清潔箱佈建建議地圖",
+          "text": "【待補：新工處】",
+          "context": "需要的資料／API"
+        },
+        {
+          "section": "7.1 解法 A：清潔箱佈建建議地圖",
+          "text": "【待補：法務確認】",
+          "context": "相關法規"
+        }
       ]
     },
     {
@@ -1683,6 +1821,169 @@
         "I09-US02",
         "I13-US01",
         "I13-US02"
+      ],
+      "measures": [
+        {
+          "metric": "1999「路面清潔（含行人果皮箱、菸蒂、狗便）」每月件數",
+          "baseline": {
+            "text": "2026 年 7–9 月平均約 653 件／月",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "臺北市陳情系統類別資料"
+        },
+        {
+          "metric": "同類案件受理到結案的中位數",
+          "baseline": {
+            "text": "5.5–6.0 天",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "同上"
+        },
+        {
+          "metric": "清潔箱滿溢比例",
+          "baseline": {
+            "text": "【待補：題目說滿溢偵測資料不存在】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "試點後由 B 產生"
+        },
+        {
+          "metric": "每月清運趟次與工時",
+          "baseline": {
+            "text": "【待補：環保局各區清潔隊】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "環保局"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "每個桶子的唯一編號（目前資料沒有編號欄位，需新增）；回報表單或台北通功能；清潔隊派工系統的介接【待補：現有系統資訊】；試點感測器資料",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "政府採購法（感測器與系統採購）；電信管理法與 NCC 低功率射頻器材規定（無線感測器需合格認證）；資通安全管理法（市府系統與 IoT 裝置的資安）；個人資料保護法（回報者聯絡方式、照片）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "民眾回報的照片可能拍到人臉或車牌，需模糊處理或只收位置與狀態；回報者聯絡方式應選填；清潔隊員（I13）的手機定位涉及員工監督，需和員工及工會溝通",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "感測器可能被破壞或故障，需維護經費；QR code 可能被惡意貼換，需防範假網址；回報量可能偏向會用手機的人；動態清運改變班表，需尊重第一線勞動條件",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "環保局（各區清潔隊）；協作：資訊局（台北通）、研考會（1999）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "QR 回報：成本低、可行性高。感測器試點（沈伯洋構想）：成本中等【待補：市場詢價】，可行性中；壓縮式智慧垃圾桶試點（沈伯洋構想）：成本【待補：市場詢價】；全面換裝：成本高，在試點資料出來前不建議（對應 O09-US01 列為 Won't）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "低（QR）／中（感測器）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "維護、資安、勞動條件",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "環保局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [
+        {
+          "idea": {
+            "text": "設偵測系統，偵測到垃圾桶滿了才派人去收，不用一直定時巡邏",
+            "tag": "實證",
+            "pending": false
+          },
+          "handling": {
+            "text": "併入解法 B，作為「滿溢感測器試點」。B 先用 QR code 與清潔隊員回報取得滿溢資料，感測器在少數高人流點試點，比較兩者的成本與效果",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "idea": {
+            "text": "智慧垃圾桶，滿的時候裡面的機器會往下壓",
+            "tag": "實證",
+            "pending": false
+          },
+          "handling": {
+            "text": "併入解法 B，作為可選的試點項目。全市一次換裝（O09-US01）列為 Won't，等試點資料出來再評估",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：題目說滿溢偵測資料不存在】",
+          "context": "清潔箱滿溢比例"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：環保局各區清潔隊】",
+          "context": "每月清運趟次與工時"
+        },
+        {
+          "section": "7.2 解法 B：滿溢回報與動態清運",
+          "text": "【待補：現有系統資訊】",
+          "context": "需要的資料／API"
+        },
+        {
+          "section": "7.2 解法 B：滿溢回報與動態清運",
+          "text": "【待補：市場詢價】",
+          "context": "成本／可行性／風險"
+        },
+        {
+          "section": "7.2 解法 B：滿溢回報與動態清運",
+          "text": "【待補：市場詢價】",
+          "context": "成本／可行性／風險"
+        }
       ]
     },
     {
@@ -1711,6 +2012,111 @@
         "I04-US01",
         "I05-US01",
         "I06-US02"
+      ],
+      "measures": [
+        {
+          "metric": "開放資料的資料時間涵蓋終點",
+          "baseline": {
+            "text": "2018-01-10",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "data.gov.tw 121355 後設資料"
+        },
+        {
+          "metric": "民眾「找得到清潔箱」的比例",
+          "baseline": {
+            "text": "【待補：短問卷】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "問卷"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "更新後的清潔箱資料（補齊北投區、加上編號、類型、回收分類、投入口高度、無障礙）；開放 API；多語言文字【待補：觀傳局】",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "臺北市政府資料開放相關規定與政府資料開放授權條款；身心障礙者權益保障法（資訊無障礙）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "資料只含設施位置，不含個資。若 App 使用定位，只在使用者同意時於裝置端使用",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "資料不更新會讓人白跑，降低信任；需要固定的更新頻率與負責人",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "環保局（資料提供）；資訊局（開放資料平台、台北通）；觀光傳播局（多語言）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "成本低；可行性高；風險：資料品質依賴各區清潔隊回報",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "低",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "高",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "資料更新不持續",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "環保局、資訊局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：短問卷】",
+          "context": "民眾「找得到清潔箱」的比例"
+        },
+        {
+          "section": "7.3 解法 C：找桶指引與開放資料更新",
+          "text": "【待補：觀傳局】",
+          "context": "需要的資料／API"
+        }
       ]
     },
     {
@@ -1738,6 +2144,130 @@
         "O08-US02",
         "I01-US07",
         "I11-US01"
+      ],
+      "measures": [
+        {
+          "metric": "家用垃圾違規棄置件數（試點區）",
+          "baseline": {
+            "text": "【待補：環保局稽查資料】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "環保局"
+        },
+        {
+          "metric": "新設點中，經過里民討論的比例",
+          "baseline": {
+            "text": "【待補：環保局或區公所是否已有紀錄；沒有的話，試點後由 D 產生】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "環保局、區公所"
+        },
+        {
+          "metric": "設置後 3 個月內被要求撤除的比例",
+          "baseline": {
+            "text": "【待補：1999 與里辦公處的撤除要求紀錄】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "1999、里辦公處"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "解法 A 的候選點地圖；里界資料；公告平台；會議紀錄",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "地方制度法與里長相關規定（里辦公處的角色）【待補：法務確認】；個人資料保護法（工作坊報名資料）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "工作坊與線上意見只公開彙總結果，不公開個人身分",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "流程變長，設置速度變慢；容易只聽到常出席者的聲音，需主動邀請高齡者、外籍居民、身障者、推車家長、回收者；需專業主持人",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "環保局；協作：民政局與各區公所（里）、社會局（弱勢者參與）",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "成本中（人力與場地）；可行性中；風險：若討論結果不被採用，會傷害信任，需事先說明決策方式",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "流程變慢、代表性不足",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "環保局、民政局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：環保局稽查資料】",
+          "context": "家用垃圾違規棄置件數（試點區）"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：環保局或區公所是否已有紀錄；沒有的話，試點後由 D 產生】",
+          "context": "新設點中，經過里民討論的比例"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：1999 與里辦公處的撤除要求紀錄】",
+          "context": "設置後 3 個月內被要求撤除的比例"
+        },
+        {
+          "section": "7.4 解法 D：參與式選址流程",
+          "text": "【待補：法務確認】",
+          "context": "相關法規"
+        }
       ]
     },
     {
@@ -1757,6 +2287,126 @@
         "O04-US02",
         "I24-US01",
         "I01-US06"
+      ],
+      "measures": [
+        {
+          "metric": "試辦收集點的數量與每日使用量",
+          "baseline": {
+            "text": "【待補：試點後由 E 產生】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "環保局"
+        },
+        {
+          "metric": "試辦區清潔箱內的家用垃圾量",
+          "baseline": {
+            "text": "【待補：清潔隊在試辦前後的抽查紀錄】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "環保局各區清潔隊"
+        }
+      ],
+      "detail": [
+        {
+          "item": "需要的資料／API",
+          "content": {
+            "text": "各區垃圾車的路線與停靠時間；試辦地區的住宅型態與人口【待補：資料來源】；收集點的使用量與清運紀錄；試辦前後清潔箱內家用垃圾量的抽查紀錄",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "相關法規",
+          "content": {
+            "text": "廢棄物清理法；臺北市廢棄物清理自治條例（垃圾費隨袋徵收、分類規定）【待補：法務確認收集點是否需要修改自治條例或公告】",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "隱私",
+          "content": {
+            "text": "如果收集設備要用卡片或台北通確認使用者，會產生個人的使用紀錄，需要限定目的、最小蒐集，並說明保存期限；如果只用專用垃圾袋，不需要個資",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "其他顧慮",
+          "content": {
+            "text": "收集點本身可能有異味、噪音與髒亂，附近住戶可能反對（見 C8）；可能變成新的違規棄置點，需要有人管理；家戶垃圾收運不在本題範圍內，需要和負責家戶收運的單位一起討論",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "主責單位",
+          "content": {
+            "text": "環保局（各區清潔隊）；協作：民政局與各區公所（里）、資訊局",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        },
+        {
+          "item": "成本／可行性／風險",
+          "content": {
+            "text": "成本中到高【待補：設備、場地與管理人力的單價】；可行性中；風險：收集點周邊變髒，反而造成新的問題",
+            "tag": "AI模擬",
+            "pending": false
+          }
+        }
+      ],
+      "overview": {
+        "cost": {
+          "text": "中到高",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "feasibility": {
+          "text": "中",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risk": {
+          "text": "收集點周邊變髒、題目範圍外",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": {
+          "text": "環保局",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      },
+      "ideas": [],
+      "pending": [
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：試點後由 E 產生】",
+          "context": "試辦收集點的數量與每日使用量"
+        },
+        {
+          "section": "6.3 成效衡量",
+          "text": "【待補：清潔隊在試辦前後的抽查紀錄】",
+          "context": "試辦區清潔箱內的家用垃圾量"
+        },
+        {
+          "section": "7.5 解法 E：家用垃圾的彈性收集點（題目外的配套）",
+          "text": "【待補：資料來源】",
+          "context": "需要的資料／API"
+        },
+        {
+          "section": "7.5 解法 E：家用垃圾的彈性收集點（題目外的配套）",
+          "text": "【待補：法務確認收集點是否需要修改自治條例或公告】",
+          "context": "相關法規"
+        },
+        {
+          "section": "7.5 解法 E：家用垃圾的彈性收集點（題目外的配套）",
+          "text": "【待補：設備、場地與管理人力的單價】",
+          "context": "成本／可行性／風險"
+        }
       ]
     }
   ],

@@ -22,7 +22,11 @@ function stakeholder(id: string, added: string, issues: number[] = [1]): Stakeho
 }
 
 function solution(id: string, added: string, stories: string[] = []): Solution {
-  return { id, name: { text: id, tag: null, pending: false }, summary: '', spaces: [], added, stories }
+  const cell = { text: '', tag: null, pending: false }
+  return {
+    id, name: { text: id, tag: null, pending: false }, summary: '', spaces: [], added, stories,
+    measures: [], detail: [], overview: { cost: cell, feasibility: cell, risk: cell, owner: cell }, ideas: [], pending: [],
+  }
 }
 
 function issueFile(number: number, solutions: Solution[]): IssueFile {

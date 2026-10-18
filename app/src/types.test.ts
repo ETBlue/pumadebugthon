@@ -170,6 +170,30 @@ describe('issue files', () => {
         }
       })
 
+      it('solutions have the fields of the solution page', () => {
+        for (const sol of issue.solutions) {
+          expect(sol.measures.length, sol.id).toBeGreaterThan(0)
+          for (const m of sol.measures) {
+            expect(typeof m.metric).toBe('string')
+            expect(typeof m.source).toBe('string')
+            expectCell(m.baseline)
+          }
+          expect(sol.detail.length, sol.id).toBeGreaterThan(0)
+          for (const r of sol.detail) {
+            expect(typeof r.item).toBe('string')
+            expectCell(r.content)
+          }
+          for (const c of Object.values(sol.overview)) expectCell(c)
+          expect(Object.keys(sol.overview)).toEqual(['cost', 'feasibility', 'risk', 'owner'])
+          for (const i of sol.ideas) {
+            expectCell(i.idea)
+            expectCell(i.handling)
+          }
+          // Each item of the solution is also in the issue's list.
+          for (const p of sol.pending) expect(issue.pending).toContainEqual(p)
+        }
+      })
+
       it('input sources list stakeholders of this issue', () => {
         for (const src of issue.inputSources) {
           for (const id of src.stakeholders) expect(stakeholderIds.has(id), src.source).toBe(true)

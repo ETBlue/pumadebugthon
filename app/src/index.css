@@ -65,7 +65,8 @@
     --accent-foreground: oklch(0.205 0 0);
     --destructive: oklch(0.577 0.245 27.325);
     --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
+    /* Border of inputs and filter chips: at least 3:1 against the background (WCAG 1.4.11). */
+    --input: oklch(0.64 0 0);
     /* One accent color (blue) for links and focus rings. */
     --ring: oklch(0.546 0.245 262.881);
     --link: oklch(0.488 0.243 264.376);
@@ -102,7 +103,7 @@
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
+    --input: oklch(1 0 0 / 40%);
     --ring: oklch(0.707 0.165 254.624);
     --link: oklch(0.809 0.105 251.813);
     --chart-1: oklch(0.87 0 0);
@@ -134,5 +135,25 @@
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+}
+
+/* Outside any layer, so it wins over the outline-none of the shadcn parts
+   (tabs, toggle chips, input, tab panel). Their own 50% ring is too light
+   (about 2:1), so every keyboard target gets the same solid outline. */
+:is(a, button, input, [role='tab'], [role='tabpanel'], [tabindex]:not([tabindex='-1'])):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* No motion for readers who ask for less. Nothing in the app needs it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }

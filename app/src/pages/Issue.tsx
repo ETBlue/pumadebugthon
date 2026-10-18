@@ -12,6 +12,7 @@ import { linkClass } from '@/components/styles'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
+import { PageTitle } from '@/components/PageTitle'
 import { availableIssues } from '@/lib/issues'
 import { findIssue, ISSUE_TABS, parseTab, tabPath, type IssueTab } from '@/lib/issuePage'
 import type { AvailableIssueSummary, IndexFile } from '@/types'
@@ -44,6 +45,7 @@ export default function Issue() {
   if (found.kind === 'notFound') {
     return (
       <>
+        <PageTitle parts={[ti.notFoundTitle]} />
         <h1 className="text-2xl font-bold">{ti.notFoundTitle}</h1>
         <p className="mt-3">{ti.notFoundBody}</p>
         <BackHome />
@@ -53,6 +55,7 @@ export default function Issue() {
   if (found.kind === 'unavailable') {
     return (
       <>
+        <PageTitle parts={[t.issueCard.numberTitle(found.issue.number, found.issue.title)]} />
         <h1 className="text-2xl font-bold">{t.issueCard.numberTitle(found.issue.number, found.issue.title)}</h1>
         <p className="mt-3">{ti.unavailableBody}</p>
         <BackHome />
@@ -80,6 +83,10 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
 
   return (
     <>
+      {/* The overview is the issue page itself, so its title has no tab name. */}
+      <PageTitle
+        parts={[t.issueCard.numberTitle(summary.number, summary.title), tab && tab !== 'overview' ? ti.tabs[tab] : null]}
+      />
       <h1 className="text-2xl font-bold md:text-3xl">{t.issueCard.numberTitle(summary.number, summary.title)}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
         {summary.spaces.length > 0 && (

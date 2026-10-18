@@ -12,6 +12,7 @@ import { TagBadge } from '@/components/TagBadge'
 import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
+import { PageTitle } from '@/components/PageTitle'
 import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import { movedFrom, pathTrail, stakeholderIssueNumbers, stakeholderIssueView } from '@/lib/stakeholderPage'
@@ -31,6 +32,7 @@ export default function Stakeholder() {
   if (resolved === null) {
     return (
       <>
+        <PageTitle parts={[tp.notFoundTitle]} />
         <h1 className="text-2xl font-bold">{tp.notFoundTitle}</h1>
         <p className="mt-3">{tp.notFoundBody(id)}</p>
         <p className="mt-3">
@@ -65,6 +67,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
           {tp.movedNote(from, s.id)}
         </p>
       )}
+      <PageTitle parts={[s.name]} />
       <h1 className="text-2xl font-bold md:text-3xl">{s.name}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
         <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>

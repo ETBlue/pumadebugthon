@@ -2,6 +2,8 @@
 // An English file (src/i18n/en.ts) can copy this shape later.
 export const t = {
   appTitle: '市政議題利害關係人瀏覽器',
+  /** Between the parts of the page <title>. */
+  titleSeparator: ' · ',
   layout: {
     skipLink: '跳到主要內容',
     footerNav: '專案連結',

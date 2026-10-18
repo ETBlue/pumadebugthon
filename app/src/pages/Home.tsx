@@ -8,6 +8,7 @@ import { ToggleCheck } from '@/components/ToggleCheck'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
+import { PageTitle } from '@/components/PageTitle'
 import { availableIssues, filterIssuesBySpace, sharedStakeholders, usedSpaceTypes } from '@/lib/issues'
 import type { IndexFile } from '@/types'
 
@@ -18,6 +19,7 @@ export default function Home() {
   const index = useIndex()
   return (
     <>
+      <PageTitle />
       <h1 className="text-2xl font-bold md:text-3xl">{t.appTitle}</h1>
       <p className="mt-2 leading-relaxed">{th.intro}</p>
       <div className="mt-6">

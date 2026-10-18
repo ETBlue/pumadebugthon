@@ -8,6 +8,7 @@ import { SpaceLinks } from '@/components/SpaceLinks'
 import { linkClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
+import { PageTitle } from '@/components/PageTitle'
 import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import {
@@ -29,6 +30,7 @@ export default function Space() {
   if (!space) {
     return (
       <>
+        <PageTitle parts={[tp.notFoundTitle]} />
         <h1 className="text-2xl font-bold">{tp.notFoundTitle}</h1>
         <p className="mt-3">{tp.notFoundBody(code)}</p>
         <p className="mt-3">
@@ -47,6 +49,7 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
 
   return (
     <>
+      <PageTitle parts={[space.name]} />
       <h1 className="text-2xl font-bold md:text-3xl">{space.name}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
         <div className="flex flex-wrap gap-x-2">

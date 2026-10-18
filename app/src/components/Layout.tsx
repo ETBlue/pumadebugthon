@@ -1,11 +1,9 @@
 import type { MouseEvent } from 'react'
 import { Link, Outlet, ScrollRestoration } from 'react-router'
 import { t } from '@/i18n/zh-TW'
+import { METHOD_URL as METHOD, REPO_URL as REPO } from './links'
 import { Notice } from './Notice'
 import { linkClass } from './styles'
-
-const REPO = 'https://github.com/ETBlue/pumadebugthon'
-const METHOD = `${REPO}/blob/main/analysis/method.md`
 
 // With hash URLs, href="#main" would change the route. Move focus instead.
 function skipToMain(e: MouseEvent<HTMLAnchorElement>) {

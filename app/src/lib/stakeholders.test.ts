@@ -4,7 +4,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Stakeholder } from '@/types'
 import {
-  buildTree, FIRST_LEVEL_ORDER, filterStakeholders, resolveId, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
+  alsoInIssues, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, issueStakeholders, resolveId, stakeholderName, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
 } from './stakeholders'
 
 const index = indexJson as IndexFile
@@ -220,5 +220,51 @@ describe('filterStakeholders', () => {
 
   it('both filters together', () => {
     expect(filterStakeholders(list, { crossIssueOnly: true, focus: ['高齡'] }).map((s) => s.id)).toEqual(['I05'])
+  })
+})
+
+describe('issueStakeholders', () => {
+  it('returns the stakeholders of the issue from the shared list, in the order of the shared list', () => {
+    const list = issueStakeholders(index.stakeholders, trashcans)
+    expect(list.map((s) => s.id).sort()).toEqual(trashcans.stakeholders.map((s) => s.id).sort())
+    const order = index.stakeholders.map((s) => s.id).filter((id) => list.some((s) => s.id === id))
+    expect(list.map((s) => s.id)).toEqual(order)
+  })
+
+  it('leaves out the moved ID O02 and the stakeholders of other issues', () => {
+    const ids = issueStakeholders(index.stakeholders, trashcans).map((s) => s.id)
+    expect(ids).not.toContain('O02')
+    const onlyTrees = index.stakeholders.filter((s) => s.issues.length === 1 && s.issues[0] === 1)
+    expect(onlyTrees.length).toBeGreaterThan(0)
+    for (const s of onlyTrees) expect(ids).not.toContain(s.id)
+  })
+})
+
+describe('stakeholderName', () => {
+  it('returns the name, or the ID for an unknown ID', () => {
+    expect(stakeholderName(index.stakeholders, 'I06')).toBe('身心障礙者（視障、輪椅使用者）')
+    expect(stakeholderName(index.stakeholders, 'X99')).toBe('X99')
+  })
+})
+
+describe('alsoInIssues', () => {
+  it('I06 in #2 also appears in #1', () => {
+    expect(alsoInIssues(index.stakeholders, 'I06', 2, [1, 2])).toEqual([1])
+    expect(alsoInIssues(index.stakeholders, 'I06', 1, [1, 2])).toEqual([2])
+  })
+
+  it('leaves out issues that are not available', () => {
+    expect(alsoInIssues(index.stakeholders, 'I06', 2, [2])).toEqual([])
+  })
+
+  it('returns [] for a stakeholder in one issue only, and for an unknown ID', () => {
+    const only2 = index.stakeholders.find((s) => s.movedTo === null && s.issues.length === 1 && s.issues[0] === 2)!
+    expect(alsoInIssues(index.stakeholders, only2.id, 2, [1, 2])).toEqual([])
+    expect(alsoInIssues(index.stakeholders, 'X99', 2, [1, 2])).toEqual([])
+  })
+
+  it('returns issue numbers in order', () => {
+    const s: Stakeholder = { id: 'I50', name: '', path: 'res', focus: [], issues: [5, 2, 1], movedTo: null }
+    expect(alsoInIssues([s], 'I50', 2, [1, 2, 5])).toEqual([1, 5])
   })
 })

@@ -151,3 +151,23 @@ export function filterStakeholders(list: Stakeholder[], filter: StakeholderFilte
       (filter.focus.length === 0 || filter.focus.some((f) => s.focus.includes(f))),
   )
 }
+
+/** The stakeholders of one issue (its step 1 list), taken from the shared
+ * list, in the order of the shared list. */
+export function issueStakeholders(stakeholders: Stakeholder[], issue: IssueFile): Stakeholder[] {
+  const ids = new Set(issue.stakeholders.map((s) => s.id))
+  return stakeholders.filter((s) => ids.has(s.id))
+}
+
+/** The name of a stakeholder. An unknown ID keeps the ID as its name. */
+export function stakeholderName(stakeholders: Stakeholder[], id: string): string {
+  return stakeholders.find((s) => s.id === id)?.name ?? id
+}
+
+/** Design 4.2 「也出現在 #1」: the other available issues the stakeholder
+ * appears in, by number. available is the list of available issue numbers. */
+export function alsoInIssues(stakeholders: Stakeholder[], id: string, issueNumber: number, available: number[]): number[] {
+  const s = stakeholders.find((x) => x.id === id)
+  if (!s) return []
+  return s.issues.filter((n) => n !== issueNumber && available.includes(n)).sort((a, b) => a - b)
+}

@@ -2,8 +2,9 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
-import { spaceTypeNames, type Shared } from '@/lib/issues'
+import type { Shared } from '@/lib/issues'
 import type { IssueSummary, SpaceType } from '@/types'
+import { SpaceLinks } from './SpaceLinks'
 import { linkClass } from './styles'
 
 const tc = t.issueCard
@@ -59,13 +60,7 @@ export function IssueCard({ issue, spaceTypes, shared }: { issue: IssueSummary; 
         {issue.updated && <Field label={tc.updated}><time dateTime={issue.updated}>{issue.updated}</time></Field>}
         {issue.spaces.length > 0 && (
           <Field label={tc.spaces}>
-            <ul className="flex flex-wrap gap-x-3 gap-y-1">
-              {spaceTypeNames(spaceTypes, issue.spaces).map((s) => (
-                <li key={s.code}>
-                  <Link to={`/spaces/${s.code}`} className={linkClass}>{s.name}</Link>
-                </li>
-              ))}
-            </ul>
+            <SpaceLinks spaceTypes={spaceTypes} codes={issue.spaces} />
           </Field>
         )}
       </dl>

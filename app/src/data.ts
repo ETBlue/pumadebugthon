@@ -68,3 +68,9 @@ export function useIndex(): DataState<IndexFile> {
 export function useIssue(folder: string): DataState<IssueFile> {
   return useData(`issue:${folder}`, () => loadIssue(folder))
 }
+
+/** Several issue files at once, in the order of folders. Use this when the
+ * number of issues is known only after index.json is loaded. */
+export function useIssues(folders: string[]): DataState<IssueFile[]> {
+  return useData(`issues:${folders.join(',')}`, () => Promise.all(folders.map(loadIssue)))
+}

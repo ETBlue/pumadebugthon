@@ -45,7 +45,6 @@ export const t = {
     priority: '優先順序',
   },
   home: {
-    placeholder: '議題列表與利害關係人列表製作中。',
     intro: '整理臺北市政議題的利害關係人、使用者故事、衝突與解法，讓你在參與討論前，先看見各方的關注。',
     issuesHeading: '議題',
     stakeholdersHeading: '利害關係人',

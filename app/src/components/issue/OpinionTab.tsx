@@ -2,7 +2,7 @@ import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
 import { PickLabel } from '@/components/PickLabel'
-import { DataBasisToggle, useDataBasisFilter, useTabTo } from '@/components/DataBasisToggle'
+import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { SolutionSummary } from '@/components/SolutionSummary'
 import { StoryCard } from '@/components/StoryCard'
 import { linkClass } from '@/components/styles'
@@ -139,7 +139,6 @@ export function OpinionTab(props: IssueTabProps) {
 function OpinionResult({ index, issue, summary, available, picked }: IssueTabProps & { picked: PickItem }) {
   const result = opinionResult(issue, picked.storyIds)
   const n = summary.number
-  const tabTo = useTabTo()
   const alsoIn = (id: string) => (
     <AlsoIn stakeholders={index.stakeholders} id={id} issueNumber={n} available={available} />
   )
@@ -203,7 +202,7 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
           <ul className="mt-2 space-y-3">
             {result.solutions.map((sol) => (
               <li key={sol.id}>
-                <SolutionSummary solution={sol} linkTo={tabTo(n, 'solutions')} linkLabel={to.solutionLink(sol.id)} />
+                <SolutionSummary solution={sol} issueNumber={n} />
               </li>
             ))}
           </ul>

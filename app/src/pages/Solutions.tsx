@@ -10,7 +10,6 @@ import { ToggleCheck } from '@/components/ToggleCheck'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import { solutionGroups, solutionSpaceOptions } from '@/lib/solutionList'
 import type { IndexFile } from '@/types'
@@ -102,8 +101,7 @@ function SolutionList({ index }: { index: IndexFile }) {
                     <SolutionSummary
                       solution={sol}
                       issueNumber={g.issueNumber}
-                      linkTo={tabPath(g.issueNumber, 'solutions')}
-                      linkLabel={tl.solutionLink(g.issueNumber, sol.id)}
+                      showIssue
                     >
                       <dl className="mt-2 space-y-1 text-sm">
                         {sol.spaces.length > 0 && (

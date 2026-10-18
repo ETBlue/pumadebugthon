@@ -113,7 +113,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
       </nav>
 
       <h1 className="mt-4 text-2xl font-bold md:text-3xl">
-        <span className="mr-2 font-mono">{t.solutionId(n, sol.id)}</span>
+        <span className="mr-1 font-mono">{t.solutionId(n, sol.id)}</span>{' '}
         <CellText cell={sol.name} />
       </h1>
       <p className="mt-3 leading-relaxed"><Markdown text={sol.summary} /></p>

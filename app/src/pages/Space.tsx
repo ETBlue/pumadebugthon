@@ -116,8 +116,7 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                         <li key={sol.id}>
                           <SolutionSummary
                             solution={sol}
-                            linkTo={tabPath(issue.number, 'solutions')}
-                            linkLabel={tp.solutionLink(sol.id)}
+                            issueNumber={issue.number}
                           >
                             {others.length > 0 && (
                               <div className="mt-1 flex flex-wrap gap-x-2 text-sm">

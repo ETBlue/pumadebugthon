@@ -1,6 +1,6 @@
-import { CellText } from '@/components/CellText'
 import { DataBasisEmpty, DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Markdown } from '@/components/Markdown'
+import { SolutionTitleLink } from '@/components/SolutionSummary'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { StoryList } from '@/components/StoryList'
 import { t } from '@/i18n/zh-TW'
@@ -28,8 +28,7 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
             <li key={sol.id}>
               <article aria-labelledby={`solution-${sol.id}`} className="rounded-lg border p-4">
                 <h3 id={`solution-${sol.id}`} className="text-lg font-semibold">
-                  <span className="mr-2 font-mono">{sol.id}</span>
-                  <CellText cell={sol.name} />
+                  <SolutionTitleLink solution={sol} issueNumber={issue.number} />
                 </h3>
                 <p className="mt-2"><Markdown text={sol.summary} /></p>
                 {sol.spaces.length > 0 && (

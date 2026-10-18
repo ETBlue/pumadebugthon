@@ -9,7 +9,6 @@ import { containerClass, linkClass } from '@/components/styles'
 import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import { homeRedirect, recentIssues, recentSolutions, recentStakeholders } from '@/lib/recent'
 import type { IndexFile } from '@/types'
@@ -160,7 +159,7 @@ function RecentSolutionList({ solutions }: { solutions: ReturnType<typeof recent
     <ul className="space-y-3">
       {solutions.map(({ issueNumber: n, solution: sol }) => (
         <li key={`${n}-${sol.id}`}>
-          <SolutionSummary solution={sol} issueNumber={n} linkTo={tabPath(n, 'solutions')} linkLabel={th.solutionLink(n, sol.id)}>
+          <SolutionSummary solution={sol} issueNumber={n} showIssue>
             <dl className="mt-1 text-sm">
               <Field label={th.solutionAdded}><time dateTime={sol.added}>{sol.added}</time></Field>
             </dl>

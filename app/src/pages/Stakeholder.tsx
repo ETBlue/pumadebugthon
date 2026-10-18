@@ -250,7 +250,7 @@ function IssueSection({ index, issue, id, first, dataBasedOnly }: {
           <ul className="space-y-3">
             {v.solutions.map((sol) => (
               <li key={sol.id}>
-                <SolutionSummary solution={sol} linkTo={tabPath(n, 'solutions')} linkLabel={tp.solutionLink(sol.id)} />
+                <SolutionSummary solution={sol} issueNumber={n} />
               </li>
             ))}
           </ul>

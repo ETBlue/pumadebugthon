@@ -250,8 +250,11 @@ function IssueSection({ index, issue, id, first }: { index: IndexFile; issue: Is
           <ul className="list-disc space-y-2 pl-5">
             {v.inputSources.map((src, i) => (
               <li key={i}>
-                {src.fit.tag && <TagBadge kind={src.fit.tag} className="mr-1.5" />}
                 <Markdown text={src.source} />
+                <span className="block text-sm">
+                  <span className="text-muted-foreground">{tp.inputFit}</span>
+                  <CellText cell={src.fit} />
+                </span>
                 {src.note !== null && (
                   <span className="block text-sm text-muted-foreground">
                     {tp.inputNote}

@@ -195,6 +195,7 @@ export const t = {
     uncoveredNone: '這位利害關係人的故事都有解法涵蓋。',
     inputSources: '可能的輸入來源',
     inputSourcesNone: '分析裡沒有為這位利害關係人列出輸入來源。',
+    inputFit: '適合的利害關係人：',
     inputNote: '注意事項：',
   },
   spacePage: {

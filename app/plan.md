@@ -24,7 +24,7 @@
 
 **Files:** create `analysis/issues.csv`, `analysis/space-types.csv`, `analysis/path-labels.csv`.
 
-1. `analysis/issues.csv` (UTF-8 with BOM), columns `編號,資料夾,題目`. Rows #1–#6, titles from `docs/issues.md`:
+1. `analysis/issues.csv` (UTF-8 with BOM), columns `編號,資料夾,題目`. Rows #1–#6, titles from `.eventinfo/issues.md` (local, git ignores it):
    `1,1-trees,把三千棵樹種回來` / `2,2-trashcans,找回消失的垃圾桶` / `3,3-mice,鼠患四處跑，衛生安全怎麼辦` / `4,4-neihutraffic,內湖尖峰車流好比停車場` / `5,5-busroutes,公車路網如何即時反應需求` / `6,6-oldbuildings,危老耐震如何查，風險評級怎麼找`
 2. `analysis/space-types.csv`, columns `代碼,名稱,分組,說明`. The 13 rows in design section 5.3. 說明 is one short zh-TW sentence each.
 3. `analysis/path-labels.csv`, columns `分類路徑,名稱`. One row for every prefix used in Task A2, plus the first levels from design 5.2 (`gov`, `gov-central`, `gov-local`, `soe`, `ind`, `acd`, `ngo`, `cmt`, `res`, `mov`, `vis`, `wrk`), plus `gov-local-taipei-council` 臺北市議會 and `gov-central-ly` 立法院.

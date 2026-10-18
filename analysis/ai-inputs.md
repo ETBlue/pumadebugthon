@@ -45,7 +45,7 @@ Starting idea (to be designed later):
 - Each story shows its source tag (`[實證]` / `[AI模擬]`).
 - The #2 pilot can be the demo data.
 
-Rules that apply (from [docs/event-info.md](../docs/event-info.md)):
+Rules that apply (from `.eventinfo/event-info.md`, a local folder that git ignores):
 - README lists which data is real and which is mock.
 - README lists open-source packages and AI tools used.
 - (Suggested) README section 「如果市府上任 100 天內要落地，需要做什麼」.

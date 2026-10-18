@@ -11,6 +11,15 @@ steps to analyze the issues:
 6. brainstorm solutions that can fulfill as many prioritized user stories as possible. each solution should include the user stories it maps to and the methods for success measure. for each measure, add the current value (baseline) and the data source. ideas from 沈伯洋 go straight into this step, with the source cited
 7. calculate required data/api/resources, related laws, privacy issues, other possible concerns and the owner department for each solution to evaluate cost, feasibility and risks
 
-what ETBlue expects the AI agent to do: simulate the steps above, mark missing human inputs with placeholders or mock content ([實證] or [AI模擬]), save the artifact in .md format, and put the files in the issue folder (e.g. `/analysis/1-trees`). when it comes to step 5, list suggested prioritization methods for different contexts. write all artifacts in zh-TW. take issue #2 as pilot and then expand all other 5 issues. use the #2 pilot as the format model for the other issues, including the CSV file. place template files (.md and .csv) in issue #7 folder, and a README file in the analysis folder as a quick intro for other hackathon participants
+what ETBlue expects the AI agent to do:
+* simulate the steps above
+* mark missing human inputs with placeholders or mock content ([實證] or [AI模擬])
+* save the artifact in .md format, and put the files in the issue folder (e.g. `/analysis/1-trees`)
+* when it comes to step 5, list suggested prioritization methods for different contexts
+* write all artifacts in zh-TW
+* take issue #2 as pilot and then expand all other 5 issues. use the #2 pilot as the format model for the other issues, including the CSV file
+* place template files (.md and .csv) in issue #7 folder, and a README file in the analysis folder as a quick intro for other hackathon participants
+* the hackathon host provided their data collected from "市長，你給我聽好了" event. the data is confidential and cannot be shared with the public. I put the data in folder `.confidential` and ignored it in git. use the data in the issue analysis process
+* there is an extra folder `8-smokefree` which is for the "無菸城市" policy from current Taipei City government. because it's related to issue #1, #2 and #5, I would like the AI agent to gather information from the internet and do the analysis for this issue too
 
 what ETBlue wants to do with the analysis output: I would like to share the results on hackathon Discord before the event, so that other participants have time to read the content if they want to. I want the hackathon to have the best possible outcome -- becoming a successful demo of future open government initiative in Taipei

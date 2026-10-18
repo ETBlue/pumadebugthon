@@ -419,6 +419,47 @@ def main(md_path, csv_path):
             if rid not in stories: err(f"{ref}: story {rid} is not in step 4 of issue #{num} ({num_folder[num]})")
         elif rid not in stakeholders: err(f"{ref}: stakeholder {rid} is not in step 1 of issue #{num} ({num_folder[num]})")
 
+    # 19. open-data.csv lists every open dataset (on data.gov.tw or data.taipei)
+    # that the appendix of this issue cites, and every row that lists this
+    # issue in 議題 has its URL in this issue's appendix. The appendix is the
+    # "## 附錄" section, up to the next "## " heading.
+    OPEN_DATA_HEADER = ["名稱", "網址", "提供機關", "授權", "議題"]
+    DATASET_URL = re.compile(r"https://data\.gov\.tw/dataset/\d+|https://data\.taipei/dataset/detail\?id=[0-9a-f-]+")
+    od_path = os.path.join(analysis_dir, "open-data.csv")
+    if not os.path.exists(od_path):
+        err(f"open-data.csv: {od_path} does not exist")
+    else:
+        with open(od_path, "rb") as f:
+            if not f.read(3) == b"\xef\xbb\xbf": err("open-data.csv has no BOM")
+        with open(od_path, encoding="utf-8-sig", newline="") as f:
+            od_rows = list(csv.reader(f))
+        if not od_rows or od_rows[0] != OPEN_DATA_HEADER:
+            err(f"open-data.csv: header must be {','.join(OPEN_DATA_HEADER)}")
+        else:
+            listed_urls = set()
+            for r in od_rows[1:]:
+                if len(r) != len(OPEN_DATA_HEADER): err(f"open-data.csv: row {r[:1]} has {len(r)} cells"); continue
+                row = dict(zip(OPEN_DATA_HEADER, r))
+                if not all(row[c].strip() for c in OPEN_DATA_HEADER):
+                    err(f"open-data.csv: {row['網址']}: every cell must have a value")
+                nums = row["議題"].split()
+                if not nums or not all(re.fullmatch(r"\d+", x) for x in nums) or row["議題"] != " ".join(nums):
+                    err(f"open-data.csv: {row['網址']}: 議題 {row['議題']!r} must be issue numbers separated by one space"); continue
+                for x in nums:
+                    if int(x) not in num_folder: err(f"open-data.csv: {row['網址']}: issue #{x} is not in issues.csv")
+                if own_num is not None and str(own_num) in nums: listed_urls.add(row["網址"])
+            lines_ = text.splitlines()
+            start = next((i for i, l in enumerate(lines_) if l.startswith("## 附錄")), None)
+            if start is None:
+                err("no 「## 附錄」 section")
+            else:
+                end = next((i for i in range(start + 1, len(lines_)) if lines_[i].startswith("## ")), len(lines_))
+                cited = set(DATASET_URL.findall("\n".join(lines_[start:end])))
+                for u in sorted(cited - listed_urls):
+                    err(f"open-data.csv: the appendix cites {u}, but no row with this URL lists issue {own_num}")
+                for u in sorted(listed_urls - cited):
+                    err(f"open-data.csv: {u} lists issue {own_num}, but the URL is not in the appendix of this issue")
+
     print(f"stakeholders: {len(stake)} (O {sum(k[0]=='O' for k in stake)}, I {sum(k[0]=='I' for k in stake)})")
     print(f"stories: {len(step4)}; 我想要 tags: {dict(want_tags)}; 以便 tags: {dict(so_tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}")
     anchors = sorted(set(re.findall(r"\]\(#([^)]+)\)", text))); print("anchors checked:", anchors)

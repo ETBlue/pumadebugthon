@@ -261,11 +261,28 @@ Rules:
 - every space type code is in `space-types.csv`, and each solution's space types are in its issue's list
 - 新增日期 exists in `stakeholders.csv` and in 6.1, and each value is a `YYYY-MM-DD` date that is not after today
 
+### 5.7 Open data list
+
+New file `analysis/open-data.csv` (UTF-8 with BOM), for the links to open data in the page footer. Added 2026-10-18.
+
+| Column | Content |
+|---|---|
+| 名稱 | Dataset name, as the appendix writes it |
+| 網址 | The dataset page on data.gov.tw or data.taipei, the same URL as in the appendix |
+| 提供機關 | The agency that provides the dataset |
+| 授權 | 政府資料開放授權條款第 1 版, unless the appendix says otherwise |
+| 議題 | Numbers of the issues whose appendix cites the dataset, separated by one space, for example `2 8` |
+
+Rules:
+- One row per open dataset. News, laws and the host's data are not in this file.
+- `check_analysis.py` checks each issue both ways: every data.gov.tw or data.taipei dataset URL in the appendix (`## 附錄`, up to the next `## ` heading) has a row that lists the issue, and every row that lists the issue has its URL in the appendix.
+- `build_json.py` writes the rows to `index.json` as `openData`: `name`, `url`, `agency`, `license`, `issues`.
+
 ## 6. Build script
 
 `analysis/build_json.py`:
-- Reads every issue folder that has an `issue-analysis.md`, plus `stakeholders.csv` and `path-labels.csv`.
-- Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types) and `app/public/data/issues/<folder>.json`.
+- Reads every issue folder that has an `issue-analysis.md`, plus `stakeholders.csv`, `path-labels.csv`, `space-types.csv` and `open-data.csv`.
+- Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types, open datasets as `openData`) and `app/public/data/issues/<folder>.json`.
 - Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2.
 - Adds per-issue counts for the home page cards (section 3.1), including `wantsEvidence` and `wantsAiSummary` (stories whose 我想要… cell is `[實證]` or `[AI整理]`), and the update date from `git log -1 --format=%cs -- <folder>`.
 - Keeps each tag in its own field, for example `{ "text": "…", "tag": "AI模擬" }`. A 【待補】 cell has `"tag": null` and `"pending": true`.

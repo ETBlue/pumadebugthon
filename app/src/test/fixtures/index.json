@@ -846,5 +846,80 @@
       "group": "建築",
       "description": "建築物的外牆、樑柱等結構部分。"
     }
+  ],
+  "openData": [
+    {
+      "name": "臺北市行道樹及公園樹木分布圖",
+      "url": "https://data.gov.tw/dataset/128274",
+      "agency": "臺北市政府工務局公園路燈工程管理處",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        1
+      ]
+    },
+    {
+      "name": "臺北市人行道固定設施物＿樹穴",
+      "url": "https://data.gov.tw/dataset/134908",
+      "agency": "臺北市政府工務局新建工程處",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        1
+      ]
+    },
+    {
+      "name": "臺北市人行道範圍圖",
+      "url": "https://data.taipei/dataset/detail?id=715d3a83-8445-4496-b6bf-b0900538b7e7",
+      "agency": "臺北市政府工務局新建工程處",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        1
+      ]
+    },
+    {
+      "name": "臺北市公園基本資料",
+      "url": "https://data.taipei/dataset/detail?id=ea732fb5-4bec-4be7-93f2-8ab91e74a6c6",
+      "agency": "臺北市政府工務局公園路燈工程管理處",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        1
+      ]
+    },
+    {
+      "name": "臺北市行人專用清潔箱",
+      "url": "https://data.gov.tw/dataset/121355",
+      "agency": "臺北市政府環境保護局",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        2
+      ]
+    },
+    {
+      "name": "臺北市陳情系統類別資料",
+      "url": "https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf",
+      "agency": "臺北市政府研究發展考核委員會",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        2,
+        8
+      ]
+    },
+    {
+      "name": "臺北捷運各站分時進出量",
+      "url": "https://data.taipei/dataset/detail?id=63f31c7e-7fc3-418b-bd82-b95158755b4d",
+      "agency": "臺北大眾捷運股份有限公司",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        2
+      ]
+    },
+    {
+      "name": "臺北市指定吸菸區",
+      "url": "https://data.gov.tw/dataset/177504",
+      "agency": "臺北市政府衛生局",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        8
+      ]
+    }
   ]
 }

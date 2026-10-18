@@ -95,12 +95,28 @@ export interface SpaceType {
   description: string
 }
 
+/** A row of analysis/open-data.csv: an open dataset that an issue's appendix
+ * cites (data.gov.tw or data.taipei). For the footer. */
+export interface OpenDataset {
+  /** 名稱 */
+  name: string
+  /** 網址 */
+  url: string
+  /** 提供機關 */
+  agency: string
+  /** 授權, for example "政府資料開放授權條款第 1 版". */
+  license: string
+  /** 議題: the issues whose appendix cites this dataset. */
+  issues: number[]
+}
+
 export interface IndexFile {
   issues: IssueSummary[]
   stakeholders: Stakeholder[]
   /** 分類路徑 prefix -> name, for example "gov" -> "政府". */
   pathLabels: Record<string, string>
   spaceTypes: SpaceType[]
+  openData: OpenDataset[]
 }
 
 // ---------- issues/<folder>.json ----------

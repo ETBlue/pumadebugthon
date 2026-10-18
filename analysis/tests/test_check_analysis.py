@@ -8,7 +8,7 @@ import os, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "check_analysis.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "method.md")
+SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "method.md", "open-data.csv")
 ISSUE = "2-trashcans"
 
 
@@ -342,6 +342,40 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_solution_future_date_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_D, self.SOL_D.replace("2026-10-16", "2999-01-01"))
         self.assertFails("6.1 solution D: 新增日期 2999-01-01", "future")
+
+
+    # open-data.csv lists every open dataset (data.gov.tw, data.taipei) cited in
+    # an appendix, and each row lists the issues whose appendix cites it.
+    SMOKE_ROW = "臺北市指定吸菸區,https://data.gov.tw/dataset/177504,臺北市政府衛生局,政府資料開放授權條款第 1 版,8\n"
+    PETITION_ROW = "https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf,臺北市政府研究發展考核委員會,政府資料開放授權條款第 1 版,2 8\n"
+
+    def test_open_data_passes_for_each_issue(self):
+        for folder in ("1-trees", "2-trashcans", "8-smokefree"):
+            with self.subTest(folder=folder):
+                code, out = self.run_check(folder)
+                self.assertEqual(code, 0, out)
+
+    def test_appendix_dataset_missing_from_open_data(self):
+        self.edit("open-data.csv", self.SMOKE_ROW, "")
+        self.assertFails("open-data.csv", "https://data.gov.tw/dataset/177504", folder="8-smokefree")
+
+    def test_open_data_row_missing_an_issue(self):
+        self.edit("open-data.csv", self.PETITION_ROW, self.PETITION_ROW.replace(",2 8\n", ",2\n"))
+        self.assertFails("open-data.csv", "cb423c17", folder="8-smokefree")
+
+    def test_open_data_row_not_in_appendix(self):
+        self.edit("open-data.csv", self.SMOKE_ROW, self.SMOKE_ROW.replace(",8\n", ",2 8\n"))
+        self.assertFails("open-data.csv", "https://data.gov.tw/dataset/177504", "not in the appendix")
+
+    def test_open_data_bad_issue_value(self):
+        self.edit("open-data.csv", self.SMOKE_ROW, self.SMOKE_ROW.replace(",8\n", ",#8\n"))
+        self.assertFails("open-data.csv", "議題", folder="8-smokefree")
+
+    def test_open_data_file_has_bom_and_header(self):
+        with open(os.path.join(self.dir, "open-data.csv"), "rb") as f:
+            raw = f.read()
+        self.assertTrue(raw.startswith(b"\xef\xbb\xbf"))
+        self.assertEqual(raw[3:].decode("utf-8").splitlines()[0], "名稱,網址,提供機關,授權,議題")
 
 
 if __name__ == "__main__":

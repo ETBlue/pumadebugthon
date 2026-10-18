@@ -2,7 +2,8 @@
 
 Usage: python3 -I analysis/build_json.py analysis app/public/data
 
-Reads issues.csv (編號, 資料夾, 題目, 來源), stakeholders.csv, path-labels.csv and space-types.csv, and
+Reads issues.csv (編號, 資料夾, 題目, 來源), stakeholders.csv, path-labels.csv, space-types.csv,
+open-data.csv (名稱, 網址, 提供機關, 授權, 議題: the open datasets that the appendices cite), and
 <folder>/issue-analysis.md for each issue folder that has one. Writes
 <out>/index.json and <out>/issues/<folder>.json. Removes issues/*.json files
 for folders that no longer have an analysis.
@@ -426,12 +427,21 @@ def build(analysis_dir):
             "added": check_date(r["新增日期"], "stakeholders.csv", sid),
         })
 
+    open_data = []
+    for r in read_csv(analysis_dir, "open-data.csv", ["名稱", "網址", "提供機關", "授權", "議題"]):
+        nums = r["議題"].split()
+        if not nums or not all(re.fullmatch(r"\d+", x) for x in nums):
+            raise ReadError("open-data.csv", f"{r['網址']}: 議題 「{r['議題']}」 must be issue numbers separated by spaces")
+        open_data.append({"name": r["名稱"], "url": r["網址"], "agency": r["提供機關"], "license": r["授權"],
+                          "issues": [int(x) for x in nums]})
+
     index = {
         "issues": index_issues,
         "stakeholders": stakeholders,
         "pathLabels": {r["分類路徑"]: r["名稱"] for r in label_rows},
         "spaceTypes": [{"code": r["代碼"], "name": r["名稱"], "group": r["分組"], "description": r["說明"]}
                        for r in space_rows],
+        "openData": open_data,
     }
     return index, issue_files
 

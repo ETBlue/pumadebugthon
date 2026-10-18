@@ -13,7 +13,7 @@ import importlib.util, json, os, re, subprocess, sys, tempfile, unittest
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ANALYSIS)
 SCRIPT = os.path.join(ANALYSIS, "build_json.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv")
+SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "open-data.csv")
 ISSUE = "2-trashcans"
 
 
@@ -211,6 +211,17 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(added, {"A": "2026-10-16", "B": "2026-10-16", "C": "2026-10-16",
                                  "D": "2026-10-16", "E": "2026-10-18"})
 
+    def test_open_data(self):
+        # open-data.csv becomes "openData" in index.json, in file order.
+        rows = self.index["openData"]
+        self.assertEqual(len(rows), 8)
+        smoke = next(r for r in rows if r["url"] == "https://data.gov.tw/dataset/177504")
+        self.assertEqual(smoke, {"name": "臺北市指定吸菸區", "url": "https://data.gov.tw/dataset/177504",
+                                 "agency": "臺北市政府衛生局", "license": "政府資料開放授權條款第 1 版",
+                                 "issues": [8]})
+        petition = next(r for r in rows if "cb423c17" in r["url"])
+        self.assertEqual(petition["issues"], [2, 8])
+
     def test_updated_is_date_or_null(self):
         for i in [self.issue] + self.index["issues"]:
             u = i["updated"]
@@ -346,6 +357,14 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 2026-10-16 |",
                   "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 10/16 |")
         self.assertFails("2-trashcans: 6.1:", "solution D", "新增日期")
+
+    def test_open_data_bad_issue_value(self):
+        self.edit("政府資料開放授權條款第 1 版,8\n", "政府資料開放授權條款第 1 版,8、2\n", "open-data.csv")
+        self.assertFails("open-data.csv:", "議題")
+
+    def test_open_data_missing_file(self):
+        os.remove(os.path.join(self.dir, "open-data.csv"))
+        self.assertFails("open-data.csv")
 
     def test_missing_csv_file(self):
         os.remove(os.path.join(self.dir, "space-types.csv"))

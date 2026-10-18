@@ -59,13 +59,17 @@
 | #1 | [臺北市人行道固定設施物＿樹穴（data.gov.tw 134908）](https://data.gov.tw/dataset/134908) | 工務局新建工程處 |
 | #1 | [臺北市人行道範圍圖](https://data.taipei/dataset/detail?id=715d3a83-8445-4496-b6bf-b0900538b7e7) | 工務局新建工程處 |
 | #1 | [臺北市公園基本資料](https://data.taipei/dataset/detail?id=ea732fb5-4bec-4be7-93f2-8ab91e74a6c6) | 工務局公園路燈工程管理處 |
-| #2 | [臺北市行人專用清潔箱（data.gov.tw 121355）](https://data.gov.tw/dataset/121355) | 見資料集頁面 |
-| #2 | [臺北市陳情系統類別資料](https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf)（2026 年 7–9 月） | 見資料集頁面 |
-| #2 | [臺北捷運各站分時進出量](https://data.taipei/dataset/detail?id=63f31c7e-7fc3-418b-bd82-b95158755b4d)（2026 年 9 月） | 見資料集頁面 |
+| #2 | [臺北市行人專用清潔箱（data.gov.tw 121355）](https://data.gov.tw/dataset/121355) | 環境保護局 |
+| #2 | [臺北市陳情系統類別資料](https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf)（2026 年 7–9 月） | 研究發展考核委員會 |
+| #2 | [臺北捷運各站分時進出量](https://data.taipei/dataset/detail?id=63f31c7e-7fc3-418b-bd82-b95158755b4d)（2026 年 9 月） | 臺北大眾捷運股份有限公司 |
+| #8 | [臺北市指定吸菸區（data.gov.tw 177504）](https://data.gov.tw/dataset/177504) | 衛生局 |
+| #8 | [臺北市陳情系統類別資料](https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf)（沿用 #2 的計算） | 研究發展考核委員會 |
+
+完整的清單（含提供機關與授權）在 [`analysis/open-data.csv`](../analysis/open-data.csv)。
 
 #1 的部分解法參考了新加坡的做法。出處是新加坡政府的網頁與新聞報導，列在 #1 附錄；新聞的內容標記 `[AI整理]`，需要真人查證。這些解法本身仍是 `[AI模擬]`。
 
-完整的資料說明：[#1 附錄](../analysis/1-trees/issue-analysis.md#附錄資料來源與計算方式)、[#2 附錄](../analysis/2-trashcans/issue-analysis.md#附錄資料來源與計算方式)。
+完整的資料說明：[#1 附錄](../analysis/1-trees/issue-analysis.md#附錄資料來源與計算方式)、[#2 附錄](../analysis/2-trashcans/issue-analysis.md#附錄資料來源與計算方式)、[#8 附錄](../analysis/8-smokefree/issue-analysis.md#附錄資料來源與計算方式)。
 
 **「市長，你給我聽好了」資料只用來整理件數和改寫的摘要（標記 `[AI整理]`），不引用原始留言，原始檔案不公開，也不辨認任何個人。依活動規則，該資料僅限於此黑客松活動使用。**
 

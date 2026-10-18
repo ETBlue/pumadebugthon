@@ -9,7 +9,7 @@ import os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "sync_stakeholders.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv")
+SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "open-data.csv")
 ISSUE = "2-trashcans"
 
 

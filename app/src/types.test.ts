@@ -79,6 +79,18 @@ describe('index.json', () => {
     for (const s of index.stakeholders) expect(s.added, s.id).toMatch(/^\d{4}-\d\d-\d\d$/)
   })
 
+  it('has the open datasets of #1, #2 and #8 with known issue numbers', () => {
+    expect(index.openData.length).toBeGreaterThan(0)
+    const numbers = index.issues.map((i) => i.number)
+    for (const d of index.openData) {
+      expect(d.url).toMatch(/^https:\/\/data\.(gov\.tw|taipei)\//)
+      expect(d.name && d.agency && d.license).toBeTruthy()
+      expect(d.issues.length).toBeGreaterThan(0)
+      for (const n of d.issues) expect(numbers).toContain(n)
+    }
+    expect(new Set(index.openData.flatMap((d) => d.issues))).toEqual(new Set([1, 2, 8]))
+  })
+
   it('has a label for every path prefix, and known space codes', () => {
     for (const s of index.stakeholders) {
       if (s.path === null) continue

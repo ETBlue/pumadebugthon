@@ -79,12 +79,22 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_index_counts(self):
         item = next(i for i in self.index["issues"] if i["number"] == 2)
+        # cells: want + soThat. 實證 6+2, AI整理 11+10, AI模擬 34+38, 待補 0+1.
         self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 15, "stories": 51,
-                                          "conflicts": 8, "solutions": 5, "wantsEvidence": 6,
-                                          "wantsAiSummary": 11})
+                                          "conflicts": 8, "solutions": 5,
+                                          "cells": {"evidence": 8, "aiSummary": 21, "aiSimulated": 72,
+                                                    "pending": 1}})
         self.assertEqual(item["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
         self.assertEqual(item["title"], "找回消失的垃圾桶")
         self.assertEqual(item["folder"], ISSUE)
+
+    def test_cells_are_two_per_story(self):
+        # Every analyzed issue: each story has a 我想要… and a 以便… cell.
+        for item in self.index["issues"]:
+            if item["available"]:
+                c = item["counts"]
+                self.assertEqual(list(c["cells"]), ["evidence", "aiSummary", "aiSimulated", "pending"])
+                self.assertEqual(sum(c["cells"].values()), 2 * c["stories"], item["folder"])
 
     def test_conflict_c6_sides(self):
         c6 = next(c for c in self.issue["conflicts"] if c["id"] == "C6")
@@ -325,6 +335,22 @@ class BuildJsonUnitTest(unittest.TestCase):
     def test_cell_pending(self):
         self.assertEqual(self.mod.parse_cell("【待補】"), {"text": "【待補】", "tag": None, "pending": True})
 
+    def test_cell_basis_counts_want_and_so_that(self):
+        def c(tag):
+            return {"text": "x", "tag": tag, "pending": tag is None}
+        stories = [
+            {"want": c("實證"), "soThat": c("AI模擬"), "priorityTag": "實證"},
+            {"want": c("AI整理"), "soThat": c(None), "priorityTag": "AI整理"},
+            {"want": c("AI模擬"), "soThat": c("AI整理"), "priorityTag": "AI模擬"},
+        ]
+        # The priority tag is not counted.
+        self.assertEqual(self.mod.cell_basis(stories),
+                         {"evidence": 1, "aiSummary": 2, "aiSimulated": 2, "pending": 1})
+
+    def test_cell_basis_keeps_fixed_order_and_zeros(self):
+        self.assertEqual(list(self.mod.cell_basis([]).items()),
+                         [("evidence", 0), ("aiSummary", 0), ("aiSimulated", 0), ("pending", 0)])
+
     def test_git_date_of_real_folder(self):
         u = self.mod.git_updated(os.path.join(ANALYSIS, ISSUE))
         self.assertRegex(u, r"^\d{4}-\d\d-\d\d$")
@@ -557,7 +583,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertEqual(s["priorityTag"], "AI整理")
         self.assertEqual(next(g for g in issue["groups"] if g["id"] == "W01")["tag"], "AI整理")
         counts = next(i for i in index["issues"] if i["number"] == 2)["counts"]
-        self.assertEqual((counts["wantsEvidence"], counts["wantsAiSummary"]), (6, 12))
+        # O01-US01 had AI模擬 in both cells. Now both are AI整理.
+        self.assertEqual(counts["cells"], {"evidence": 8, "aiSummary": 23, "aiSimulated": 70, "pending": 1})
 
     def test_cell_with_ai_summary_and_another_tag(self):
         self.edit("| `[AI模擬]` 安全通行，不會撞到 |", "| `[AI模擬]` `[AI整理]` 安全通行，不會撞到 |")

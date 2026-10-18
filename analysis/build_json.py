@@ -79,6 +79,20 @@ def parse_cell(s):
     return {"text": text, "tag": tag, "pending": tag is None and text.startswith("【待補")}
 
 
+# 資料根據: the keys of counts.cells, in the fixed order 實證, AI整理, AI模擬, 待補.
+# The value is the cell tag. None is a cell with no tag (a 【待補】 cell).
+BASIS_KEYS = (("evidence", "實證"), ("aiSummary", "AI整理"), ("aiSimulated", "AI模擬"), ("pending", None))
+
+
+def cell_basis(stories):
+    """資料根據 of an issue: how many story cells have each tag.
+    Counts the 我想要… (want) and the 以便… (soThat) cell of every story, so the
+    total is 2 x the number of stories. The priority tag is not counted.
+    A cell with no tag counts as pending (待補)."""
+    tags = [s[k]["tag"] for s in stories for k in ("want", "soThat")]
+    return {key: sum(t == tag for t in tags) for key, tag in BASIS_KEYS}
+
+
 def dash_to_none(s):
     s = s.strip()
     return None if s in ("", "—") else s
@@ -506,8 +520,7 @@ def build(analysis_dir):
             "stories": len(data["stories"]),
             "conflicts": len(data["conflicts"]),
             "solutions": len(data["solutions"]),
-            "wantsEvidence": sum(s["want"]["tag"] == "實證" for s in data["stories"]),
-            "wantsAiSummary": sum(s["want"]["tag"] == "AI整理" for s in data["stories"]),
+            "cells": cell_basis(data["stories"]),
         }
         index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": True,
                              "spaces": data["spaces"], "updated": updated, "counts": counts})

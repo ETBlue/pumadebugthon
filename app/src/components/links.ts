@@ -10,3 +10,6 @@ export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`
 
 /** The content licenses (CC BY 4.0) and their exceptions. */
 export const CONTENT_LICENSE_URL = `${REPO_URL}/blob/main/LICENSE-CONTENT.md`
+
+/** The official event page of the hackathon (design 3.8). */
+export const EVENT_URL = 'https://puma.taipei/hackathon'

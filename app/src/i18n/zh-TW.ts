@@ -11,6 +11,10 @@ export const t = {
     footerNav: '專案連結',
     repo: 'GitHub 原始碼',
     method: '如何閱讀議題分析',
+    /** The official event page of the hackathon (design 3.8). */
+    event: '市政 debug 松活動頁面',
+    /** For screen readers, after a link that opens a new tab. */
+    newTab: '（在新分頁開啟）',
   },
   /** The header links with counts (design 3.7). */
   header: {

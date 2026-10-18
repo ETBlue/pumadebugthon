@@ -1,7 +1,7 @@
 import { useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { dataFileLinks, type DataFileLink } from '@/lib/dataFiles'
-import { CONTENT_LICENSE_URL, LICENSE_URL, METHOD_URL, REPO_URL } from './links'
+import { CONTENT_LICENSE_URL, EVENT_URL, LICENSE_URL, METHOD_URL, REPO_URL } from './links'
 import { linkClass } from './styles'
 import { TagBadge } from './TagBadge'
 
@@ -46,8 +46,9 @@ function DataFiles() {
   )
 }
 
-/** The page footer (design 3.8): project links, licenses, disclaimer and
- * the app's data files. */
+/** The page footer (design 3.8): project links (with the event page),
+ * licenses, disclaimer and the app's data files. The disclaimer is the only
+ * notice on the page (design 3.5). */
 export function Footer({ container }: { container: string }) {
   return (
     <footer className="border-t">
@@ -57,6 +58,12 @@ export function Footer({ container }: { container: string }) {
           <ul className="mt-1 flex flex-wrap gap-x-6 gap-y-1">
             <li><a href={REPO_URL} {...external} className={linkClass}>{t.layout.repo}</a></li>
             <li><a href={METHOD_URL} {...external} className={linkClass}>{t.layout.method}</a></li>
+            <li>
+              <a href={EVENT_URL} target="_blank" {...external} className={linkClass}>
+                {t.layout.event}
+                <span className="sr-only">{t.layout.newTab}</span>
+              </a>
+            </li>
           </ul>
         </nav>
         <section aria-labelledby="footer-license">

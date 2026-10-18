@@ -151,8 +151,9 @@ On every page. A `<footer>` landmark with:
 | 專案連結 | GitHub source code, and 「如何閱讀議題分析」 (`analysis/method.md`) |
 | 授權 | Code: MIT, link to `LICENSE` on GitHub. Content made by ETBlue: CC BY 4.0, link to `LICENSE-CONTENT.md` on GitHub. A short note: the host's content follows the host's rules, and open data follows each dataset's license. |
 | 免責聲明 | A personal work by one participant, made with AI help. It is not linked to the host or to the Taipei City Government. `[AI模擬]` content is not real interviews or real citizen words. `[AI整理]` content is not yet checked by a person. |
-| 本站的資料 | The data files of this app, so others can reuse them (`human-inputs.md`: "the json/csv files in the issue analysis folders"). The shared CSV files (`issues.csv`, `stakeholders.csv`, `path-labels.csv`, `space-types.csv`, `open-data.csv`) and each analyzed issue's `user-stories.csv`, as links to GitHub. The JSON the app reads (`data/index.json` and `data/issues/<folder>.json`), as links on the site. |
-| 分析引用的開放資料 | Every row of `openData` in `index.json`: the dataset name as a link (`rel="noopener noreferrer"`), and the agency. |
+| 下載資料 | The app's own data files, so others can reuse them. This is what `human-inputs.md` means by "the open data used by the app". The JSON the site reads (`data/index.json`, and `data/issues/<folder>.json` for each analyzed issue), as links on the site. The CSV files on GitHub: `analysis/stakeholders.csv`, each analyzed issue's `analysis/<folder>/user-stories.csv`, `space-types.csv`, `path-labels.csv`, `issues.csv`, `open-data.csv`. The list is built from `index.json` (a tested function in `src/lib/`), so a new issue appears with no code change. One line on the data license: the analysis is CC BY 4.0, with the exceptions in `LICENSE-CONTENT.md` (host content; content made from the host's citizen data is only for this hackathon). |
+
+The government open datasets (`openData` in `index.json`) are not in the footer. Each issue lists them in its appendix.
 
 ### 3.9 List pages
 
@@ -423,4 +424,4 @@ Required by the hackathon rules:
 10. Names: the app says 「解法」 everywhere, not 「提案」. 「訴求」 is each W group once, plus each story with no W group: the same items as the opinion check pick list, per issue, summed over the analyzed issues. (ETBlue, 2026-10-18)
 11. The home page has a hero and three blocks: 最近更新的議題, 最近加入分析的族群, 最近分析出的解法. Each is sorted by date, newest first, then by ID, highest first. Never by a count. The issue list and the stakeholder list move to their own pages (`#/issues`, `#/stakeholders`), and solutions get a list page (`#/solutions`). (ETBlue, 2026-10-18)
 12. The theme is Solarized Light, with Solarized Dark as a toggle. Colors are design tokens. AA contrast comes first: a Solarized color that fails is replaced by a darker or lighter shade of the same hue. (ETBlue, 2026-10-18)
-13. The header shows the app name, 議題, 利害關係人, 訴求 and 解法 with counts, and the theme toggle. The footer shows the GitHub link, the licenses, a disclaimer and the open data links. (ETBlue, 2026-10-18)
+13. The header shows the app name, 議題, 利害關係人, 訴求 and 解法 with counts, and the theme toggle. The footer shows the GitHub link, the licenses, a disclaimer and links to the app's own data files (JSON and CSV). The government open datasets stay in each issue's appendix, not in the footer. (ETBlue, 2026-10-18)

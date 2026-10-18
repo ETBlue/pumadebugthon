@@ -1,10 +1,9 @@
 import type { MouseEvent, ReactNode } from 'react'
 import { Outlet, ScrollRestoration } from 'react-router'
 import { t } from '@/i18n/zh-TW'
-import { METHOD_URL as METHOD, REPO_URL as REPO } from './links'
+import { Footer } from './Footer'
 import { Header } from './Header'
 import { Notice } from './Notice'
-import { linkClass } from './styles'
 
 // With hash URLs, href="#main" would change the route. Move focus instead.
 function skipToMain(e: MouseEvent<HTMLAnchorElement>) {
@@ -35,14 +34,7 @@ export function Layout({ children }: { children?: ReactNode }) {
           {children ?? <Outlet />}
         </div>
       </main>
-      <footer className="border-t">
-        <nav aria-label={t.layout.footerNav} className={`${container} py-4 text-sm`}>
-          <ul className="flex flex-wrap gap-x-6 gap-y-2">
-            <li><a href={REPO} rel="noopener noreferrer" className={linkClass}>{t.layout.repo}</a></li>
-            <li><a href={METHOD} rel="noopener noreferrer" className={linkClass}>{t.layout.method}</a></li>
-          </ul>
-        </nav>
-      </footer>
+      <Footer container={container} />
       <ScrollRestoration />
     </div>
   )

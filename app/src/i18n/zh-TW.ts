@@ -20,6 +20,27 @@ export const t = {
     wants: '訴求',
     solutions: '解法',
   },
+  /** The page footer (design 3.8). */
+  footer: {
+    licenseHeading: '授權',
+    code: '程式碼：',
+    mit: 'MIT 授權',
+    content: '作者製作的內容：',
+    ccBy: '創用 CC 姓名標示 4.0（CC BY 4.0）',
+    exceptions: '主辦單位的內容依主辦單位的規定使用。開放資料依各資料集的授權使用。',
+    disclaimerHeading: '免責聲明',
+    personal: '這是一位參加者個人用 AI 協助製作的作品，與主辦單位和臺北市政府沒有關係，也不代表他們的立場。',
+    simulated: '的內容由 AI 推想，不是真實訪談，也不是真實市民的話。',
+    summary: '的內容由 AI 整理，還沒有經過真人查核。',
+    dataHeading: '下載資料',
+    dataIntro: '本站使用的資料，歡迎在授權範圍內再利用。',
+    json: 'JSON（本站讀取的檔案）',
+    csv: 'CSV（GitHub 上的分析檔案）',
+    issueFile: (n: number, file: string) => `#${n} ${file}`,
+    dataLicense: '分析內容採用 CC BY 4.0 授權，例外見 ',
+    contentLicenseFile: 'LICENSE-CONTENT.md',
+    dataLicenseEnd: '：主辦單位的內容依主辦單位的規定使用；從主辦單位的市民資料整理出的內容，只限於這次黑客松使用。',
+  },
   /** The theme toggle in the header (design 3.10). A toggle button: the
    * name stays the same, and aria-pressed says if dark is on. */
   theme: {

@@ -3,7 +3,10 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile } from '@/types'
-import { issuesBySpace, sameSpaceIssues, solutionsBySpace, stakeholdersBySpace } from './spaces'
+import { compareIds } from './ids'
+import {
+  findSpaceType, issuesBySpace, otherSpaces, sameSpaceIssues, solutionsBySpace, stakeholdersBySpace, stakeholdersInSeveralIssues,
+} from './spaces'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
@@ -78,5 +81,49 @@ describe('stakeholdersBySpace', () => {
   it('sidewalk: an entry for each issue, by issue number; unused code: none', () => {
     expect(stakeholdersBySpace([trashcans, trees], 'sidewalk').map((x) => x.issueNumber)).toEqual([1, 2])
     expect(stakeholdersBySpace([trashcans, trees], 'parking')).toEqual([])
+  })
+})
+
+describe('findSpaceType', () => {
+  it('finds a known code and returns null for an unknown one', () => {
+    expect(findSpaceType(index.spaceTypes, 'sidewalk')?.name).toBe('人行道')
+    expect(findSpaceType(index.spaceTypes, 'nope')).toBeNull()
+  })
+})
+
+describe('otherSpaces', () => {
+  it('gives the other space types of a solution, in its own order', () => {
+    expect(otherSpaces({ ...trashcans.solutions[2], spaces: ['sidewalk', 'mrt-exit', 'park'] }, 'sidewalk')).toEqual([
+      'mrt-exit', 'park',
+    ])
+    expect(otherSpaces({ ...trashcans.solutions[0], spaces: ['sidewalk'] }, 'sidewalk')).toEqual([])
+  })
+})
+
+describe('stakeholdersInSeveralIssues', () => {
+  it('sidewalk: the stakeholders in 2 or more issues, in ID order, with their issues', () => {
+    const list = stakeholdersInSeveralIssues(stakeholdersBySpace([trashcans, trees], 'sidewalk'))
+    const ids = list.map((x) => x.id)
+    expect(ids).toContain('I06')
+    expect(ids).toContain('I07')
+    expect(list.find((x) => x.id === 'I06')?.issues).toEqual([1, 2])
+    expect([...ids].sort(compareIds)).toEqual(ids)
+  })
+
+  it('is empty with one issue only', () => {
+    expect(stakeholdersInSeveralIssues(stakeholdersBySpace([trees, trashcans], 'utility'))).toEqual([])
+  })
+
+  it('counts each issue once', () => {
+    expect(
+      stakeholdersInSeveralIssues([
+        { issueNumber: 1, stakeholders: ['I06', 'O01'] },
+        { issueNumber: 2, stakeholders: ['I06'] },
+        { issueNumber: 3, stakeholders: ['O01', 'I06'] },
+      ]),
+    ).toEqual([
+      { id: 'O01', issues: [1, 3] },
+      { id: 'I06', issues: [1, 2, 3] },
+    ])
   })
 })

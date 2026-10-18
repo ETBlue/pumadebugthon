@@ -3,10 +3,10 @@ import { Layout } from '@/components/Layout'
 import Home from '@/pages/Home'
 import Issue from '@/pages/Issue'
 import Placeholder from '@/pages/Placeholder'
+import Space from '@/pages/Space'
 import Stakeholder from '@/pages/Stakeholder'
 
 // Hash URLs (#/issues/2) work on GitHub Pages without server rewrites.
-// The space page is a placeholder until Task C12.
 export const router = createHashRouter([
   {
     path: '/',
@@ -15,7 +15,7 @@ export const router = createHashRouter([
       { index: true, element: <Home /> },
       { path: 'issues/:number/:tab?', element: <Issue /> },
       { path: 'stakeholders/:id', element: <Stakeholder /> },
-      { path: 'spaces/:code', element: <Placeholder /> },
+      { path: 'spaces/:code', element: <Space /> },
       { path: '*', element: <Placeholder notFound /> },
     ],
   },

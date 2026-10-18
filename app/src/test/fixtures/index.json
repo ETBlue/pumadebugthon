@@ -12,7 +12,7 @@
         "utility",
         "bike-lane"
       ],
-      "updated": "2026-10-18",
+      "updated": "2026-10-19",
       "counts": {
         "stakeholdersO": 14,
         "stakeholdersI": 14,
@@ -35,7 +35,7 @@
         "park",
         "mrt-exit"
       ],
-      "updated": "2026-10-18",
+      "updated": "2026-10-19",
       "counts": {
         "stakeholdersO": 12,
         "stakeholdersI": 15,
@@ -100,7 +100,7 @@
         "mrt-exit",
         "indoor"
       ],
-      "updated": "2026-10-18",
+      "updated": "2026-10-19",
       "counts": {
         "stakeholdersO": 10,
         "stakeholdersI": 11,

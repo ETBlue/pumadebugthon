@@ -23,6 +23,7 @@
     --color-ring: var(--ring);
     --color-link: var(--link);
     --color-hero-foreground: var(--hero-foreground);
+    --color-watermark: var(--watermark);
     --color-tag-evidence: var(--tag-evidence);
     --color-tag-summary: var(--tag-summary);
     --color-tag-simulated: var(--tag-simulated);
@@ -59,10 +60,14 @@
  *   yellow #b58900  orange #cb4b16  red    #dc322f  magenta #d33682
  *   violet #6c71c4  blue   #268bd2  cyan   #2aa198  green  #859900
  * Contrast goal: WCAG AA. Text 4.5:1, input borders and the focus ring 3:1,
- * checked on both the page background and the muted background.
+ * checked on both the page background and the muted background, with and
+ * without the watermark on top (design 3.11). "wm" below is the worst case
+ * under the watermark: it covers the background, the text, or both.
+ * src/lib/designTokens.test.ts checks all of these numbers.
  * "Adjusted" means a pure Solarized color failed, so the token uses a darker
  * (light theme) or lighter (dark theme) shade of the same hue (same HSL hue
- * and saturation, only the lightness changed). */
+ * and saturation, only the lightness changed). Some tokens were adjusted a
+ * second time for the watermark (2026-10-18), so they still pass under it. */
 :root {
     color-scheme: light;
     --background: #fdf6e3; /* base3 */
@@ -78,35 +83,44 @@
     --secondary: #eee8d5; /* base2 */
     --secondary-foreground: #073642;
     --muted: #eee8d5; /* base2 */
-    /* Adjusted base01 (#586e75 is 4.39 on base2): 5.37 on base3, 4.73 on base2. */
-    --muted-foreground: #54696f;
+    /* Adjusted base01 (#586e75 is 4.39 on base2): 5.78 on base3, 5.09 on base2;
+       wm 5.15 / 4.55. */
+    --muted-foreground: #506469;
     --accent: #eee8d5;
     --accent-foreground: #073642;
-    /* Adjusted red (#dc322f is 4.29 on base3): 5.38 on base3, 4.73 on base2. */
-    --destructive: #c42421;
+    /* Adjusted red (#dc322f is 4.29 on base3): 5.73 on base3, 5.04 on base2;
+       wm 5.18 / 4.58. */
+    --destructive: #bc2320;
     /* Card and divider lines only, not needed to use a control: base1. */
     --border: #93a1a1;
-    /* Borders of inputs and filter chips: base00, 4.13 on base3, 3.64 on base2. */
+    /* Borders of inputs and filter chips: base00, 4.13 on base3, 3.64 on base2;
+       wm 3.73 / 3.30. */
     --input: #657b83;
     /* Links and the focus ring. Adjusted blue (#268bd2 is 3.41 on base3):
-       5.38 on base3, 4.73 on base2. */
-    --ring: #1d6aa0;
-    --link: #1d6aa0;
+       5.78 on base3, 5.08 on base2; wm 5.17 / 4.57. */
+    --ring: #1c6599;
+    --link: #1c6599;
     /* Tag badge text and border (design 3.5). The text is always shown.
-       實證: adjusted green (#859900 is 2.97 on base3): 5.46 on base3, 4.80 on base2.
+       實證: adjusted green (#859900 is 2.97 on base3): 5.70 on base3, 5.02 on base2;
+       wm 5.15 / 4.55.
        AI整理: adjusted blue, the same as --link.
-       AI模擬: adjusted orange (#cb4b16 is 4.27 on base3): 5.43 on base3, 4.78 on base2. */
-    --tag-evidence: #5d6b00;
-    --tag-summary: #1d6aa0;
-    --tag-simulated: #af4113;
+       AI模擬: adjusted orange (#cb4b16 is 4.27 on base3): 5.71 on base3, 5.03 on base2;
+       wm 5.17 / 4.57. */
+    --tag-evidence: #5a6800;
+    --tag-summary: #1c6599;
+    --tag-simulated: #a93f12;
     /* The home page hero (design 3.1): a diagonal gradient from base2 to base3,
        with a dot pattern of yellow at 20%. The hero text is base02: 8.89 on the
-       darkest hero color (a dot on base2, #e3d5aa). */
+       darkest hero color (a dot on base2, #e3d5aa); wm 7.72. */
     --hero-from: #eee8d5;
     --hero-to: #fdf6e3;
     --hero-pattern: #b58900;
     --hero-pattern-opacity: 0.2;
     --hero-foreground: #073642;
+    /* The watermark (design 3.11): base01 at 8%. On base3 it is 1.11:1, so it
+       shows in a screenshot but does not get in the way of reading. */
+    --watermark: #586e75;
+    --watermark-opacity: 0.08;
     --chart-1: #268bd2;
     --chart-2: #2aa198;
     --chart-3: #859900;
@@ -120,63 +134,73 @@
     --sidebar-accent: #fdf6e3;
     --sidebar-accent-foreground: #073642;
     --sidebar-border: #93a1a1;
-    --sidebar-ring: #1d6aa0;
+    --sidebar-ring: #1c6599;
 }
 
 .dark {
     color-scheme: dark;
     --background: #002b36; /* base03 */
-    --foreground: #93a1a1; /* base1: 5.61 on base03, 4.86 on base02 */
+    /* Adjusted base1 (#93a1a1 is 4.86 on base02, but only 4.28 under the
+       watermark): 5.98 on base03, 5.18 on base02; wm 5.30 / 4.55. */
+    --foreground: #99a6a6;
     --card: #002b36;
-    --card-foreground: #93a1a1;
+    --card-foreground: #99a6a6;
     --popover: #073642;
-    --popover-foreground: #93a1a1;
-    --primary: #93a1a1;
+    --popover-foreground: #99a6a6;
+    --primary: #99a6a6;
     --primary-foreground: #002b36;
     --secondary: #073642; /* base02 */
-    --secondary-foreground: #93a1a1;
+    --secondary-foreground: #99a6a6;
     --muted: #073642; /* base02 */
-    /* Adjusted base0 (#839496 is 4.11 on base02): 5.46 on base03, 4.73 on base02. */
-    --muted-foreground: #8f9fa1;
+    /* Adjusted base0 (#839496 is 4.11 on base02): 6.03 on base03, 5.22 on base02;
+       wm 5.33 / 4.59. */
+    --muted-foreground: #98a7a8;
     --accent: #073642;
-    --accent-foreground: #93a1a1;
-    /* Adjusted red (#dc322f is 3.25 on base03): 5.49 on base03, 4.76 on base02. */
-    --destructive: #e97d7b;
+    --accent-foreground: #99a6a6;
+    /* Adjusted red (#dc322f is 3.25 on base03): 6.05 on base03, 5.24 on base02;
+       wm 5.29 / 4.55. */
+    --destructive: #eb8987;
     /* Card and divider lines only: base01. */
     --border: #586e75;
-    /* Borders of inputs and filter chips: base0, 4.75 on base03, 4.11 on base02. */
+    /* Borders of inputs and filter chips: base0, 4.75 on base03, 4.11 on base02;
+       wm 4.21 / 3.62. */
     --input: #839496;
     /* Links and the focus ring. Adjusted blue (#268bd2 is 4.08 on base03):
-       5.45 on base03, 4.72 on base02. */
-    --ring: #4ea3df;
-    --link: #4ea3df;
-    /* 實證: adjusted green (#859900 is 4.06 on base02): 5.46 on base03, 4.73 on base02.
+       6.06 on base03, 5.25 on base02; wm 5.31 / 4.57. */
+    --ring: #5eace2;
+    --link: #5eace2;
+    /* 實證: adjusted green (#859900 is 4.06 on base02): 6.05 on base03, 5.24 on base02;
+       wm 5.32 / 4.57.
        AI整理: adjusted blue, the same as --link.
-       AI模擬: adjusted orange (#cb4b16 is 3.26 on base03): 5.44 on base03, 4.71 on base02. */
-    --tag-evidence: #90a600;
-    --tag-summary: #4ea3df;
-    --tag-simulated: #ec7d4e;
+       AI模擬: adjusted orange (#cb4b16 is 3.26 on base03): 6.07 on base03, 5.26 on base02;
+       wm 5.32 / 4.57. */
+    --tag-evidence: #98af00;
+    --tag-summary: #5eace2;
+    --tag-simulated: #ee8b60;
     /* The hero: a diagonal gradient from base02 to base03, with a dot pattern
        of cyan at 15%. The hero text is base2, for more contrast than the body
-       text: 8.55 on the lightest hero color (a dot on base02, #0c464f). */
+       text: 8.55 on the lightest hero color (a dot on base02, #0c464f); wm 7.26. */
     --hero-from: #073642;
     --hero-to: #002b36;
     --hero-pattern: #2aa198;
     --hero-pattern-opacity: 0.15;
     --hero-foreground: #eee8d5;
+    /* The watermark: base1 at 8%. On base03 it is 1.13:1. */
+    --watermark: #93a1a1;
+    --watermark-opacity: 0.08;
     --chart-1: #268bd2;
     --chart-2: #2aa198;
     --chart-3: #859900;
     --chart-4: #b58900;
     --chart-5: #cb4b16;
     --sidebar: #073642;
-    --sidebar-foreground: #93a1a1;
-    --sidebar-primary: #4ea3df;
+    --sidebar-foreground: #99a6a6;
+    --sidebar-primary: #5eace2;
     --sidebar-primary-foreground: #002b36;
     --sidebar-accent: #002b36;
-    --sidebar-accent-foreground: #93a1a1;
+    --sidebar-accent-foreground: #99a6a6;
     --sidebar-border: #586e75;
-    --sidebar-ring: #4ea3df;
+    --sidebar-ring: #5eace2;
 }
 
 @layer base {
@@ -217,6 +241,31 @@
     ),
     linear-gradient(135deg, var(--hero-from), var(--hero-to));
   background-size: 18px 18px, auto;
+}
+
+/* The watermark over every page (design 3.11). A fixed layer the size of the
+   window, so it never makes the page wider or moves the layout. Clicks and
+   text selection go through it. */
+.watermark {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  user-select: none;
+  color: var(--watermark);
+  opacity: var(--watermark-opacity);
+  font-weight: 600;
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+/* Keep the watermark on paper too: a printed page is also a copy. */
+@media print {
+  .watermark {
+    display: block !important;
+  }
 }
 
 /* No motion for readers who ask for less. Nothing in the app needs it. */

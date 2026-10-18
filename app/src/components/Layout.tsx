@@ -5,6 +5,7 @@ import { isFullWidth } from '@/lib/layout'
 import { Footer } from './Footer'
 import { Header } from './Header'
 import { containerClass } from './styles'
+import { Watermark } from './Watermark'
 
 // With hash URLs, href="#main" would change the route. Move focus instead.
 function skipToMain(e: MouseEvent<HTMLAnchorElement>) {
@@ -14,7 +15,7 @@ function skipToMain(e: MouseEvent<HTMLAnchorElement>) {
   main?.scrollIntoView()
 }
 
-/** Page frame: skip link, header, main and footer. children
+/** Page frame: skip link, header, main, footer and the watermark. children
  * replace the route outlet, for the error page. A route with
  * handle.fullWidth (the home page) gets a full-width main and places its
  * own centered column. */
@@ -38,6 +39,7 @@ export function Layout({ children }: { children?: ReactNode }) {
         {children ?? <Outlet />}
       </main>
       <Footer container={containerClass} />
+      <Watermark />
       <ScrollRestoration />
     </div>
   )

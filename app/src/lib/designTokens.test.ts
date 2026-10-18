@@ -1,7 +1,7 @@
-// Checks the colors in index.css (design 3.1, 3.10): AA contrast of every
-// text color, and of the hero text.
+// Checks the colors in index.css (design 3.1, 3.10, 3.11): AA contrast of
+// every text color, also under the watermark, and of the hero text.
 import { describe, expect, it } from 'vitest'
-import { blend, contrastRatio } from './contrast'
+import { blend, contrastRatio, worstContrast } from './contrast'
 import { parseTokens } from './tokens'
 
 // Vitest gives an empty string for a .css import, even with ?raw, so read the
@@ -34,25 +34,39 @@ for (const [name, selector] of [['light', ':root'], ['dark', '.dark']] as const)
   describe(`${name} theme tokens`, () => {
     const tk = parseTokens(css, selector)
     const pageBgs = [tk.background, tk.muted, tk.secondary]
+    const wm = tk.watermark
+    const wmOpacity = Number(tk['watermark-opacity'])
     // Every color a pixel of the hero can have: both ends of the gradient,
     // and the pattern over each end.
     const patternOpacity = Number(tk['hero-pattern-opacity'])
     const heroBgs = [tk['hero-from'], tk['hero-to']].flatMap((c) => [c, blend(tk['hero-pattern'], c, patternOpacity)])
 
+    it('has a visible but light watermark', () => {
+      expect(wmOpacity).toBeGreaterThan(0)
+      expect(wmOpacity).toBeLessThanOrEqual(0.1)
+      // The watermark text must show in a screenshot: some contrast with the page.
+      expect(contrastRatio(blend(wm, tk.background, wmOpacity), tk.background)).toBeGreaterThan(1.05)
+    })
+
     for (const token of textTokens) {
-      it(`--${token} passes AA on the page backgrounds`, () => {
-        for (const bg of pageBgs) expect(contrastRatio(tk[token], bg)).toBeGreaterThanOrEqual(TEXT)
+      it(`--${token} passes AA on the page backgrounds, also under the watermark`, () => {
+        for (const bg of pageBgs) {
+          expect(contrastRatio(tk[token], bg)).toBeGreaterThanOrEqual(TEXT)
+          expect(worstContrast(tk[token], bg, wm, wmOpacity)).toBeGreaterThanOrEqual(TEXT)
+        }
       })
     }
 
     for (const token of uiTokens) {
-      it(`--${token} passes 3:1 on the page backgrounds`, () => {
-        for (const bg of pageBgs) expect(contrastRatio(tk[token], bg)).toBeGreaterThanOrEqual(UI)
+      it(`--${token} passes 3:1 on the page backgrounds, also under the watermark`, () => {
+        for (const bg of pageBgs) expect(worstContrast(tk[token], bg, wm, wmOpacity)).toBeGreaterThanOrEqual(UI)
       })
     }
 
-    it('hero text passes AA on every hero color', () => {
-      for (const bg of heroBgs) expect(contrastRatio(tk['hero-foreground'], bg)).toBeGreaterThanOrEqual(TEXT)
+    it('hero text passes AA on every hero color, also under the watermark', () => {
+      for (const bg of heroBgs) {
+        expect(worstContrast(tk['hero-foreground'], bg, wm, wmOpacity)).toBeGreaterThanOrEqual(TEXT)
+      }
     })
 
     it('has no tokens of the removed notice box', () => {

@@ -81,6 +81,8 @@ export const t = {
   theme: {
     dark: '深色模式',
   },
+  /** The watermark over every page (design 3.11). */
+  watermark: '市政 debug 松參加者作品・展示用 MVP',
   /** Tag badges (design 3.5). */
   tags: {
     實證: '實證',

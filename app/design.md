@@ -29,39 +29,26 @@ Building the tool also tests the analysis format. Parts that are hard to read by
 | Voting | Out of scope. It needs login, and many voting tools already exist. |
 | Cross-issue view | Yes. Stakeholders use global IDs across all issues. |
 | Space types | Each issue and each solution has space type tags (for example 人行道), from a fixed list. Issues and solutions that use the same space can be viewed together. |
+| Theme | Design tokens (CSS variables) in `src/index.css`. Solarized Light is the default; Solarized Dark is the other theme. A toggle in the header switches them (section 3.10). Text and UI parts must pass WCAG AA contrast, so some Solarized colors use a darker or lighter shade of the same hue. |
+| Names | The app says 「解法」 everywhere, never 「提案」. 「訴求」 is a thing a stakeholder wants: one per W group, plus one per story with no W group (the same items as the opinion check pick list, section 4.1). |
 
 ## 3. Screens
 
 ### 3.1 Home page
 
-**Issue list.** The issues in `analysis/issues.csv`: the 6 host issues with a topic (#1–#6), and #8 (無菸城市), which a participant added. #7 (自由題) has no topic, so it is not listed. The 來源 column of `issues.csv` (`主辦單位` or `參加者補充`) becomes `source` in `index.json`. A card with `參加者補充` shows the note 「非主辦單位題目，由參加者補充」 under its title. An issue without an analysis shows 「製作中」 with no numbers, and cannot be opened. Each analyzed issue card shows:
+URL: `#/`. The home page is short. It has a hero and three blocks. The full lists are on their own pages (section 3.9).
 
-| Field | Example (#2) |
-|---|---|
-| 利害關係人 | 24 位（組織 13、個人 11） |
-| 使用者故事 | 45 則 |
-| 衝突 | 7 個 |
-| 解法 | 4 個 |
-| 跨議題共用的利害關係人 | For example 「8 位, shared with #1」 (the real number is known after #1 is written). Links to the stakeholder list with the 「只看跨議題」 filter on. Shown only when 2 or more issues exist. |
-| 資料根據 | 我想要… 實證 6、AI整理 0／45. Two plain counts, not percentages or bars, so they do not read like a score. |
-| 更新日期 | Date of the last git commit that changed the issue folder. Left out if the build has no git history. |
-| 空間類型 | The issue's space types, for example 人行道、騎樓. Each one links to its space page (section 3.6). |
+**Hero.** The app name (h1), the subtitle 「在提案之前，先看見各方利害關係人的關注」, and one or two sentences about what the app does and who it is for.
 
-A space type filter sits above the issue list.
+**Three blocks.** Each block shows a few recent items and ends with a link to its list page.
 
-**Stakeholder list.** Every stakeholder in `stakeholders.csv`, across all issues.
+| Block | Items | Date used | Link to |
+|---|---|---|---|
+| 最近更新的議題 | Analyzed issues | `updated` (the last git commit of the issue folder) | `#/issues` |
+| 最近加入分析的族群 | Active stakeholders (moved IDs left out) | `added` (新增日期 in `stakeholders.csv`) | `#/stakeholders` |
+| 最近分析出的解法 | Solutions of every analyzed issue | `added` (新增日期 in 6.1) | `#/solutions` |
 
-| Part | Design |
-|---|---|
-| Organizations (O) | A tree from 分類路徑, for example 政府 › 地方政府 › 臺北市 › 環保局 › 清潔隊. Each level opens and closes. |
-| Individuals (I) | Grouped by 類別 (居民, 用路人, 遊客, 工作者) |
-| Each stakeholder row | Name, then one entry per issue with its priority counts (section 3.4), for example 「#2 `[AI模擬]` 必須有 1 · 應該有 1」 |
-| Each tree level | Only the total story count of the stakeholders under it, so a closed level still shows that it has content. No priority counts at tree levels. |
-| Filters | 「只看跨議題」 (2 or more issues) and the 特別關注 chips |
-| Order | Always tree order or ID order. Never sorted by count. |
-| Note | 「故事數只表示分析寫了多少，不代表重要程度。」 |
-
-Moved IDs (with 「已改為 …」) are not listed.
+Sort rule for all three blocks: by date, newest first. Items with the same date are sorted by ID, highest first (issue number; stakeholder ID; for solutions the issue number, then the solution letter). **Never sorted by a count.** An item without a date (for example an issue with no git history) goes last. The blocks are built in part 2 (plan Phase U).
 
 ### 3.2 Issue page
 
@@ -71,7 +58,7 @@ Five tabs. 總覽 opens first.
 |---|---|
 | 總覽 | Title, notice, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
 | 你的意見 | The opinion check (section 4) |
-| 利害關係人 | The same list as the home page, limited to this issue. Each row links to the stakeholder page (section 3.3). |
+| 利害關係人 | The same list as the stakeholder list page (section 3.9), limited to this issue. Each row links to the stakeholder page (section 3.3). |
 | 衝突 | C1, C2… Each shows both sides with their stories, the deliberation method, and the simulated result. |
 | 解法 | A, B… Each shows the one-line summary, its space types, and the stories it covers, grouped by priority (必須有 / 應該有 / 可以有). |
 
@@ -134,6 +121,85 @@ City space is limited, so this page shows what competes for the same space:
 For example, under 人行道: #2 解法 A (bins), the #1 solutions about tree pits, and I06 身心障礙者, who needs sidewalk width in both issues.
 
 Space types have no `[實證]` / `[AI整理]` / `[AI模擬]` tag. They are a classification, like 分類路徑.
+
+### 3.7 Header
+
+On every page. A `<header>` landmark with:
+
+- the app name 「提案小幫手」 on the left, a link to the home page
+- a `<nav>` with four links, each with a count:
+
+| Link | Count | Goes to |
+|---|---|---|
+| 議題 | Analyzed issues (`available: true`) | `#/issues` |
+| 利害關係人 | Active stakeholders (moved IDs left out) | `#/stakeholders` |
+| 訴求 | 訴求 of every analyzed issue: each W group once, plus each story with no W group (section 4.1), summed over the issues | `#/issues` for now (there is no 訴求 list page yet) |
+| 解法 | Solutions of every analyzed issue, summed | `#/solutions` |
+
+- the theme toggle on the right (section 3.10)
+
+The counts come from pure functions in `src/lib/`. A count is a plain number next to its label. It is not a score. While the data loads, the label shows with no number.
+
+On a phone (375 px) the header must not scroll sideways. The app name is on the first row. The four links and the toggle wrap onto the next row. The order on screen is the same as the keyboard order.
+
+### 3.8 Footer
+
+On every page. A `<footer>` landmark with:
+
+| Part | Content |
+|---|---|
+| 專案連結 | GitHub source code, and 「如何閱讀議題分析」 (`analysis/method.md`) |
+| 授權 | Code: MIT, link to `LICENSE` on GitHub. Content made by ETBlue: CC BY 4.0, link to `LICENSE-CONTENT.md` on GitHub. A short note: the host's content follows the host's rules, and open data follows each dataset's license. |
+| 免責聲明 | A personal work by one participant, made with AI help. It is not linked to the host or to the Taipei City Government. `[AI模擬]` content is not real interviews or real citizen words. `[AI整理]` content is not yet checked by a person. |
+| 本站的資料 | The data files of this app, so others can reuse them (`human-inputs.md`: "the json/csv files in the issue analysis folders"). The shared CSV files (`issues.csv`, `stakeholders.csv`, `path-labels.csv`, `space-types.csv`, `open-data.csv`) and each analyzed issue's `user-stories.csv`, as links to GitHub. The JSON the app reads (`data/index.json` and `data/issues/<folder>.json`), as links on the site. |
+| 分析引用的開放資料 | Every row of `openData` in `index.json`: the dataset name as a link (`rel="noopener noreferrer"`), and the agency. |
+
+### 3.9 List pages
+
+Each list page has its own URL and an h1. The header links to it.
+
+**`#/issues`: 議題列表.** The issues in `analysis/issues.csv`: the 6 host issues with a topic (#1–#6), and #8 (無菸城市), which a participant added. #7 (自由題) has no topic, so it is not listed. The 來源 column of `issues.csv` (`主辦單位` or `參加者補充`) becomes `source` in `index.json`. A card with `參加者補充` shows the note 「非主辦單位題目，由參加者補充」 under its title. An issue without an analysis shows 「製作中」 with no numbers, and cannot be opened. Each analyzed issue card shows:
+
+| Field | Example (#2) |
+|---|---|
+| 利害關係人 | 24 位（組織 13、個人 11） |
+| 使用者故事 | 45 則 |
+| 衝突 | 7 個 |
+| 解法 | 4 個 |
+| 跨議題共用的利害關係人 | For example 「8 位, shared with #1」 (the real number is known after #1 is written). Links to the stakeholder list page with the 「只看跨議題」 filter on (`#/stakeholders?cross=1`). Shown only when 2 or more issues exist. |
+| 資料根據 | 我想要… 實證 6、AI整理 0／45. Two plain counts, not percentages or bars, so they do not read like a score. |
+| 更新日期 | Date of the last git commit that changed the issue folder. Left out if the build has no git history. |
+| 空間類型 | The issue's space types, for example 人行道、騎樓. Each one links to its space page (section 3.6). |
+
+A space type filter sits above the issue list.
+
+**`#/stakeholders`: 利害關係人列表.** Every stakeholder in `stakeholders.csv`, across all issues.
+
+| Part | Design |
+|---|---|
+| Organizations (O) | A tree from 分類路徑, for example 政府 › 地方政府 › 臺北市 › 環保局 › 清潔隊. Each level opens and closes. |
+| Individuals (I) | Grouped by 類別 (居民, 用路人, 遊客, 工作者) |
+| Each stakeholder row | Name, then one entry per issue with its priority counts (section 3.4), for example 「#2 `[AI模擬]` 必須有 1 · 應該有 1」 |
+| Each tree level | Only the total story count of the stakeholders under it, so a closed level still shows that it has content. No priority counts at tree levels. |
+| Filters | 「只看跨議題」 (2 or more issues) and the 特別關注 chips |
+| Order | Always tree order or ID order. Never sorted by count. |
+| Note | 「故事數只表示分析寫了多少，不代表重要程度。」 |
+
+Moved IDs (with 「已改為 …」) are not listed.
+
+The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an issue card can link to it.
+
+**`#/solutions`: 解法列表.** Every solution of every analyzed issue, grouped by issue, in issue number order, then letter order. Each shows its name, one-line summary, space types, and a link to the issue's 解法 tab. Never sorted by a count. Filled in part 2; part 1 shows a short 「製作中」 page.
+
+### 3.10 Theme
+
+- Colors are design tokens: CSS variables in `src/index.css`. Components use the tokens (for example `bg-background`, `text-link`), never a fixed color.
+- Light theme: Solarized Light (background base3 `#fdf6e3`). Dark theme: Solarized Dark (background base03 `#002b36`).
+- App tokens on top of the shadcn tokens: `--link`, `--ring` (focus), `--notice` and `--notice-border`, and one text color per tag badge (`--tag-evidence` 實證 green, `--tag-summary` AI整理 blue, `--tag-simulated` AI模擬 orange). The badge always shows its text.
+- Contrast: WCAG AA. Text 4.5:1, UI borders and the focus ring 3:1. Several Solarized accents fail on the light background (for example yellow, green and cyan as text). Where a Solarized color fails, the token uses a darker (light theme) or lighter (dark theme) shade of the same hue. `index.css` says which ones.
+- The first visit follows the system setting (`prefers-color-scheme`). The toggle saves the choice in `localStorage`. If storage fails, the toggle still works for the current page.
+- No flash of the wrong theme: a small script in `index.html` sets the theme class before the app loads.
+- The toggle is a button with a text name and `aria-pressed` (pressed = dark).
 
 ## 4. Opinion check
 
@@ -284,7 +350,7 @@ Rules:
 - Reads every issue folder that has an `issue-analysis.md`, plus `stakeholders.csv`, `path-labels.csv`, `space-types.csv` and `open-data.csv`.
 - Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types, open datasets as `openData`) and `app/public/data/issues/<folder>.json`.
 - Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2.
-- Adds per-issue counts for the home page cards (section 3.1), including `wantsEvidence` and `wantsAiSummary` (stories whose 我想要… cell is `[實證]` or `[AI整理]`), and the update date from `git log -1 --format=%cs -- <folder>`.
+- Adds per-issue counts for the issue cards (section 3.9), including `wantsEvidence` and `wantsAiSummary` (stories whose 我想要… cell is `[實證]` or `[AI整理]`), and the update date from `git log -1 --format=%cs -- <folder>`.
 - Keeps each tag in its own field, for example `{ "text": "…", "tag": "AI模擬" }`. A 【待補】 cell has `"tag": null` and `"pending": true`.
 - Collects every 【待補…】 item in the issue file, including items inside longer text (for example 「【待補：法務確認】」 in step 7), with its section, for the 待補清單.
 - Stops with an error that names the issue and the section when a section cannot be read.
@@ -298,7 +364,7 @@ app/
     lib/                pure functions: opinion check, cross-issue lookups, filters
     types.ts            types for the JSON
     i18n/zh-TW.ts       all UI strings. Components never contain UI text directly.
-    pages/              Home, Issue (with the 5 tabs)
+    pages/              Home, Issues, Stakeholders, Solutions (list pages), Issue (with the 5 tabs), Stakeholder, Space
     components/         TagBadge, Notice, StakeholderTree, StoryCard, ...
     components/ui/      shadcn/ui parts, copied into the repo and editable
 ```
@@ -354,3 +420,7 @@ Required by the hackathon rules:
 7. A new 特別關注 category 呼吸道疾病 is added, after 身心障礙 in the list order. It is used by I27 過敏或呼吸道疾病者 (#8), the exact name in `stakeholders.csv`. (ETBlue, 2026-10-18)
 8. 衛生局 (O22) is one organization stakeholder and is not split. A separate I stakeholder for its staff is added only if a story about the staff's own needs (for example workload) is added later, the same rule as 環保局清潔隊 and 清潔隊員 (5.1). (ETBlue, 2026-10-18)
 9. Content taken only from news reports is `[AI整理]`, not `[AI模擬]`: AI summarized it from a real source, and no person has checked it yet. The cell says 「新聞報導指出…」 and has a 【待補：查證…】 item; the outlet and the link are in the appendix. AI judgments based on news stay `[AI模擬]` (3.5). (ETBlue, 2026-10-18)
+10. Names: the app says 「解法」 everywhere, not 「提案」. 「訴求」 is each W group once, plus each story with no W group: the same items as the opinion check pick list, per issue, summed over the analyzed issues. (ETBlue, 2026-10-18)
+11. The home page has a hero and three blocks: 最近更新的議題, 最近加入分析的族群, 最近分析出的解法. Each is sorted by date, newest first, then by ID, highest first. Never by a count. The issue list and the stakeholder list move to their own pages (`#/issues`, `#/stakeholders`), and solutions get a list page (`#/solutions`). (ETBlue, 2026-10-18)
+12. The theme is Solarized Light, with Solarized Dark as a toggle. Colors are design tokens. AA contrast comes first: a Solarized color that fails is replaced by a darker or lighter shade of the same hue. (ETBlue, 2026-10-18)
+13. The header shows the app name, 議題, 利害關係人, 訴求 and 解法 with counts, and the theme toggle. The footer shows the GitHub link, the licenses, a disclaimer and the open data links. (ETBlue, 2026-10-18)

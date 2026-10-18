@@ -290,3 +290,26 @@ Runs after Phase A, in parallel with Phases B and C.
 ### Task D2: cross-issue tests
 
 Add Vitest tests with the #1 + #2 fixtures: shared stakeholders show 「也出現在」, `sameSpaceIssues` of #2 includes #1, the cross-issue filter lists only shared stakeholders. Update the home page card field 跨議題共用的利害關係人.
+
+## Phase U: UI update (design 3.1, 3.7–3.10)
+
+ETBlue's notes for the UI are in `human-inputs.md`. Part 1 is U1. Part 2 is U2.
+
+### Task U1: theme, header, footer, list routes
+
+**Files:** `src/index.css`, `index.html`, `src/theme.ts`, `src/lib/theme.ts`, `src/lib/counts.ts`, `src/components/Layout.tsx`, `src/components/Header.tsx`, `src/components/Footer.tsx`, `src/components/ThemeToggle.tsx`, `src/pages/Issues.tsx`, `src/pages/Stakeholders.tsx`, `src/pages/Solutions.tsx`, `src/router.tsx`, `src/i18n/zh-TW.ts`.
+
+1. Solarized tokens in `index.css` (design 3.10). Check AA contrast for every text, link, badge, border and focus color in both themes.
+2. Theme toggle (test first for the pure part in `src/lib/theme.ts`). Inline script in `index.html` to avoid a flash.
+3. Header with counts (test first: `src/lib/counts.ts`).
+4. Footer (design 3.8).
+5. Routes `#/issues`, `#/stakeholders`, `#/solutions`. The first two show the lists that were on the home page. `#/solutions` is a 「製作中」 page.
+
+### Task U2: home page and list pages
+
+**Files:** `src/pages/Home.tsx`, `src/pages/Solutions.tsx`, `src/lib/recent.ts`.
+
+1. Test first: `recentIssues`, `recentStakeholders`, `recentSolutions` in `src/lib/recent.ts`. Sort by date, newest first, then by ID, highest first. Never by a count. An item with no date goes last.
+2. Home page: hero and the three blocks (design 3.1), each with a link to its list page. Remove the old issue and stakeholder sections from the home page.
+3. `#/solutions`: the solution list (design 3.9).
+4. Check: keyboard only, 375 px and 1280 px, both themes, `npm test`, `npm run build`.

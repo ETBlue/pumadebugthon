@@ -2,7 +2,7 @@
 
 > 本作品由一位個人參加者用 AI 協助製作，與主辦單位無關，也不代表主辦單位或市府的立場。標記 `[AI模擬]` 的內容不是真實訪談，也不是真實市民的話。
 
-- 網站：（部署後補上網址）
+- 網站：https://etblue.github.io/pumadebugthon/
 - 原始碼：<https://github.com/ETBlue/pumadebugthon>
 - 議題分析（本工具的資料來源）：[`analysis/`](../analysis/)
 

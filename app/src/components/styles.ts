@@ -11,3 +11,7 @@ export const toggleOnClass =
 /** Inline code in cell text, for example a space type code such as `utility`.
  * Same text color as the body, on a light gray box, so contrast stays high. */
 export const codeClass = 'rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground break-words'
+
+/** The centered page column. The header, the footer and most pages use it.
+ * The home page hero is full width, with this column inside it. */
+export const containerClass = 'mx-auto w-full max-w-5xl px-4 md:px-8'

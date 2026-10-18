@@ -24,7 +24,8 @@ export const router = createHashRouter([
       </Layout>
     ),
     children: [
-      { index: true, element: <Home /> },
+      // The home page has a full-width hero (design 3.1).
+      { index: true, element: <Home />, handle: { fullWidth: true } },
       { path: 'issues', element: <Issues /> },
       { path: 'issues/:number/:tab?', element: <Issue /> },
       { path: 'stakeholders', element: <Stakeholders /> },

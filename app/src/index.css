@@ -22,6 +22,7 @@
     --color-chart-1: var(--chart-1);
     --color-ring: var(--ring);
     --color-link: var(--link);
+    --color-hero-foreground: var(--hero-foreground);
     --color-notice: var(--notice);
     --color-notice-border: var(--notice-border);
     --color-tag-evidence: var(--tag-evidence);
@@ -103,6 +104,14 @@
     --tag-evidence: #5d6b00;
     --tag-summary: #1d6aa0;
     --tag-simulated: #af4113;
+    /* The home page hero (design 3.1): a diagonal gradient from base2 to base3,
+       with a dot pattern of yellow at 20%. The hero text is base02: 8.89 on the
+       darkest hero color (a dot on base2, #e3d5aa). */
+    --hero-from: #eee8d5;
+    --hero-to: #fdf6e3;
+    --hero-pattern: #b58900;
+    --hero-pattern-opacity: 0.2;
+    --hero-foreground: #073642;
     --chart-1: #268bd2;
     --chart-2: #2aa198;
     --chart-3: #859900;
@@ -154,6 +163,14 @@
     --tag-evidence: #90a600;
     --tag-summary: #4ea3df;
     --tag-simulated: #ec7d4e;
+    /* The hero: a diagonal gradient from base02 to base03, with a dot pattern
+       of cyan at 15%. The hero text is base2, for more contrast than the body
+       text: 8.55 on the lightest hero color (a dot on base02, #0c464f). */
+    --hero-from: #073642;
+    --hero-to: #002b36;
+    --hero-pattern: #2aa198;
+    --hero-pattern-opacity: 0.15;
+    --hero-foreground: #eee8d5;
     --chart-1: #268bd2;
     --chart-2: #2aa198;
     --chart-3: #859900;
@@ -192,6 +209,21 @@
 :is(a, button, input, [role='tab'], [role='tabpanel'], [tabindex]:not([tabindex='-1'])):focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* The home page hero (design 3.1): a diagonal gradient and a dot pattern,
+   only from tokens, so it follows the theme. No image files. */
+.hero-bg {
+  color: var(--hero-foreground);
+  background-color: var(--hero-to);
+  background-image:
+    radial-gradient(
+      circle,
+      color-mix(in srgb, var(--hero-pattern) calc(var(--hero-pattern-opacity) * 100%), transparent) 1.5px,
+      transparent 2px
+    ),
+    linear-gradient(135deg, var(--hero-from), var(--hero-to));
+  background-size: 18px 18px, auto;
 }
 
 /* No motion for readers who ask for less. Nothing in the app needs it. */

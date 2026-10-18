@@ -1,9 +1,11 @@
 import type { MouseEvent, ReactNode } from 'react'
-import { Outlet, ScrollRestoration } from 'react-router'
+import { Outlet, ScrollRestoration, useMatches } from 'react-router'
 import { t } from '@/i18n/zh-TW'
+import { isFullWidth } from '@/lib/layout'
 import { Footer } from './Footer'
 import { Header } from './Header'
 import { Notice } from './Notice'
+import { containerClass } from './styles'
 
 // With hash URLs, href="#main" would change the route. Move focus instead.
 function skipToMain(e: MouseEvent<HTMLAnchorElement>) {
@@ -13,11 +15,12 @@ function skipToMain(e: MouseEvent<HTMLAnchorElement>) {
   main?.scrollIntoView()
 }
 
-const container = 'mx-auto w-full max-w-5xl px-4 md:px-8'
-
-/** Page frame: skip link, header, notice, main and footer. children replace
- * the route outlet, for the error page. */
+/** Page frame: skip link, header, notice, main and footer. children
+ * replace the route outlet, for the error page. A route with
+ * handle.fullWidth (the home page) gets a full-width main and places its
+ * own centered column. */
 export function Layout({ children }: { children?: ReactNode }) {
+  const fullWidth = isFullWidth(useMatches())
   return (
     <div className="flex min-h-dvh flex-col">
       <a
@@ -27,14 +30,20 @@ export function Layout({ children }: { children?: ReactNode }) {
       >
         {t.layout.skipLink}
       </a>
-      <Header container={container} />
-      <main id="main" tabIndex={-1} className={`${container} flex-1 py-6 focus:outline-none`}>
-        <Notice />
+      <Header container={containerClass} />
+      <main
+        id="main"
+        tabIndex={-1}
+        className={`flex-1 focus:outline-none ${fullWidth && !children ? '' : `${containerClass} py-6`}`}
+      >
+        <div className={fullWidth && !children ? `${containerClass} pt-6` : ''}>
+          <Notice />
+        </div>
         <div className="mt-6">
           {children ?? <Outlet />}
         </div>
       </main>
-      <Footer container={container} />
+      <Footer container={containerClass} />
       <ScrollRestoration />
     </div>
   )

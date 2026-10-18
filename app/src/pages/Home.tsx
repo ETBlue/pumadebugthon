@@ -5,7 +5,7 @@ import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { SolutionSummary } from '@/components/SolutionSummary'
 import { SpaceLinks } from '@/components/SpaceLinks'
-import { linkClass } from '@/components/styles'
+import { containerClass, linkClass } from '@/components/styles'
 import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
@@ -19,8 +19,9 @@ const th = t.home
 /** How many items each block shows. */
 const BLOCK_SIZE = 5
 
-/** Home page (design 3.1): the hero, then three blocks of recent items. Each
- * block links to its list page. The order is by date, never by a count. */
+/** Home page (design 3.1): a full-width hero, then three blocks of recent
+ * items (3 columns from the lg breakpoint, 1 column below). Each block links
+ * to its list page. The order is by date, never by a count. */
 export default function Home() {
   const { search } = useLocation()
   const index = useIndex()
@@ -30,13 +31,19 @@ export default function Home() {
   return (
     <>
       <PageTitle />
-      <h1 className="text-2xl font-bold md:text-3xl">{t.appTitle}</h1>
-      <p className="mt-1 text-lg text-muted-foreground">{t.appSubtitle}</p>
-      <div className="mt-4 max-w-3xl space-y-2 leading-relaxed">
-        <p>{th.intro}</p>
-        <p>{th.audience}</p>
+      {/* The hero colors are tokens in index.css (.hero-bg). No disclaimer
+          here: it is in the footer. */}
+      <div className="hero-bg border-b">
+        <div className={`${containerClass} py-10 md:py-16`}>
+          <h1 className="text-3xl font-bold md:text-4xl">{t.appTitle}</h1>
+          <p className="mt-2 text-lg font-medium md:text-xl">{t.appSubtitle}</p>
+          <div className="mt-5 max-w-3xl space-y-2 leading-relaxed">
+            <p>{th.intro}</p>
+            <p>{th.audience}</p>
+          </div>
+        </div>
       </div>
-      <div className="mt-8">
+      <div className={`${containerClass} py-8`}>
         {index.status === 'ready' ? <HomeBlocks index={index.data} /> : <LoadState state={index} />}
       </div>
     </>
@@ -52,7 +59,7 @@ function Block({ id, heading, allTo, allLabel, children }: {
   children: ReactNode
 }) {
   return (
-    <section aria-labelledby={id} className="border-t pt-5">
+    <section aria-labelledby={id} className="min-w-0 border-t pt-5">
       <h2 id={id} className="text-xl font-bold">{heading}</h2>
       <div className="mt-3">{children}</div>
       <p className="mt-4">
@@ -69,79 +76,80 @@ function HomeBlocks({ index }: { index: IndexFile }) {
   const stakeholders = recentStakeholders(index.stakeholders, BLOCK_SIZE)
 
   return (
-    <div className="space-y-10">
+    <div>
       <p className="text-sm text-muted-foreground">{th.sortNote}</p>
+      <div className="mt-6 grid gap-10 lg:grid-cols-3 lg:gap-8">
+        <Block id="recent-issues" heading={th.issuesHeading} allTo="/issues" allLabel={th.issuesAll}>
+          {issues.length === 0 ? (
+            <p>{th.issuesNone}</p>
+          ) : (
+            <ul className="divide-y">
+              {issues.map((issue) => (
+                <li key={issue.number} className="py-3">
+                  <p className="font-medium">
+                    <Link to={`/issues/${issue.number}`} className={linkClass}>
+                      {t.issueCard.numberTitle(issue.number, issue.title)}
+                    </Link>
+                  </p>
+                  <dl className="mt-1 space-y-1 text-sm">
+                    {issue.updated && (
+                      <Field label={th.updated}><time dateTime={issue.updated}>{issue.updated}</time></Field>
+                    )}
+                    {issue.spaces.length > 0 && (
+                      <Field label={th.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={issue.spaces} /></Field>
+                    )}
+                  </dl>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Block>
 
-      <Block id="recent-issues" heading={th.issuesHeading} allTo="/issues" allLabel={th.issuesAll}>
-        {issues.length === 0 ? (
-          <p>{th.issuesNone}</p>
-        ) : (
-          <ul className="divide-y">
-            {issues.map((issue) => (
-              <li key={issue.number} className="py-3">
-                <p className="font-medium">
-                  <Link to={`/issues/${issue.number}`} className={linkClass}>
-                    {t.issueCard.numberTitle(issue.number, issue.title)}
-                  </Link>
-                </p>
-                <dl className="mt-1 space-y-1 text-sm">
-                  {issue.updated && (
-                    <Field label={th.updated}><time dateTime={issue.updated}>{issue.updated}</time></Field>
-                  )}
-                  {issue.spaces.length > 0 && (
-                    <Field label={th.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={issue.spaces} /></Field>
-                  )}
-                </dl>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Block>
-
-      <Block id="recent-stakeholders" heading={th.stakeholdersHeading} allTo="/stakeholders" allLabel={th.stakeholdersAll}>
-        {stakeholders.length === 0 ? (
-          <p>{th.stakeholdersNone}</p>
-        ) : (
-          <ul className="divide-y">
-            {stakeholders.map((s) => (
-              <li key={s.id} className="py-3">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <Link to={`/stakeholders/${s.id}`} className={`${linkClass} font-medium`}>{s.name}</Link>
-                  <span className="font-mono text-xs text-muted-foreground">{s.id}</span>
-                  {s.focus.length > 0 && (
-                    <span className="inline-flex flex-wrap gap-1">
-                      <span className="sr-only">{th.focusLabel}</span>
-                      {s.focus.map((f) => (
-                        <Badge key={f} variant="secondary" className="rounded-sm">{f}</Badge>
-                      ))}
-                    </span>
-                  )}
-                </div>
-                <dl className="mt-1 space-y-1 text-sm">
-                  {s.issues.length > 0 && (
-                    <Field label={th.issues}>
-                      <ul className="flex flex-wrap gap-x-3">
-                        {s.issues.map((n) => (
-                          <li key={n}><Link to={`/issues/${n}`} className={linkClass}>{th.issueLink(n)}</Link></li>
+        <Block id="recent-stakeholders" heading={th.stakeholdersHeading} allTo="/stakeholders" allLabel={th.stakeholdersAll}>
+          {stakeholders.length === 0 ? (
+            <p>{th.stakeholdersNone}</p>
+          ) : (
+            <ul className="divide-y">
+              {stakeholders.map((s) => (
+                <li key={s.id} className="py-3">
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <Link to={`/stakeholders/${s.id}`} className={`${linkClass} font-medium`}>{s.name}</Link>
+                    <span className="font-mono text-xs text-muted-foreground">{s.id}</span>
+                    {s.focus.length > 0 && (
+                      <span className="inline-flex flex-wrap gap-1">
+                        <span className="sr-only">{th.focusLabel}</span>
+                        {s.focus.map((f) => (
+                          <Badge key={f} variant="secondary" className="rounded-sm">{f}</Badge>
                         ))}
-                      </ul>
-                    </Field>
-                  )}
-                  <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
-                </dl>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Block>
+                      </span>
+                    )}
+                  </div>
+                  <dl className="mt-1 space-y-1 text-sm">
+                    {s.issues.length > 0 && (
+                      <Field label={th.issues}>
+                        <ul className="flex flex-wrap gap-x-3">
+                          {s.issues.map((n) => (
+                            <li key={n}><Link to={`/issues/${n}`} className={linkClass}>{th.issueLink(n)}</Link></li>
+                          ))}
+                        </ul>
+                      </Field>
+                    )}
+                    <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
+                  </dl>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Block>
 
-      <Block id="recent-solutions" heading={th.solutionsHeading} allTo="/solutions" allLabel={th.solutionsAll}>
-        {issueFiles.status !== 'ready' ? (
-          <LoadState state={issueFiles} />
-        ) : (
-          <RecentSolutionList solutions={recentSolutions(issueFiles.data, BLOCK_SIZE)} />
-        )}
-      </Block>
+        <Block id="recent-solutions" heading={th.solutionsHeading} allTo="/solutions" allLabel={th.solutionsAll}>
+          {issueFiles.status !== 'ready' ? (
+            <LoadState state={issueFiles} />
+          ) : (
+            <RecentSolutionList solutions={recentSolutions(issueFiles.data, BLOCK_SIZE)} />
+          )}
+        </Block>
+      </div>
     </div>
   )
 }

@@ -4,7 +4,7 @@ scripts that use it (check_analysis.py, sync_stakeholders.py, build_json.py).
 The tests read the issue files in the working tree. They do not change them.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import csv, importlib.util, os, unittest
+import csv, importlib.util, os, re, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ISSUES = {"1-trees": 28, "2-trashcans": 27}  # folder -> number of step 1 stakeholders
@@ -58,6 +58,29 @@ class AnalysisCommonTest(unittest.TestCase):
                 "| 輸入來源 | 適合的利害關係人 |\n|---|---|\n| O02 | c |\n")
         self.assertEqual([h for h, _ in self.common.step1_tables(text)], [["利害關係人編號", "名稱"]] * 2)
         self.assertEqual(self.common.step1_ids(text), ["O01", "I01"])
+
+    def test_focus_groups_fixed_order(self):
+        # The 特別關注 groups, in the fixed order of method.md.
+        self.assertEqual(self.common.FOCUS_GROUPS, ("高齡", "身心障礙", "呼吸道疾病", "兒童與照顧者", "外籍", "經濟弱勢"))
+
+    def test_focus_groups_match_the_app(self):
+        # The app keeps the same list in FOCUS_ORDER. The two lists must not differ.
+        path = os.path.join(os.path.dirname(ANALYSIS), "app", "src", "lib", "issues.ts")
+        with open(path, encoding="utf-8") as f:
+            m = re.search(r"export const FOCUS_ORDER = \[([^\]]*)\]", f.read())
+        self.assertIsNotNone(m, "FOCUS_ORDER not found in app/src/lib/issues.ts")
+        self.assertEqual(tuple(re.findall(r"'([^']+)'", m.group(1))), self.common.FOCUS_GROUPS)
+
+    def test_split_focus(self):
+        self.assertEqual(self.common.split_focus("高齡、經濟弱勢"), ["高齡", "經濟弱勢"])
+        self.assertEqual(self.common.split_focus("—"), [])
+        self.assertEqual(self.common.split_focus(" "), [])
+
+    def test_focus_tables(self):
+        text = ("### 1.2 來源\n\nx\n\n### 1.3 特別關注族群檢查\n\n說明。\n\n"
+                "| 特別關注 | 納入的利害關係人 | 說明 |\n|---|---|---|\n| 高齡 | I05 | — |\n\n---\n\n## 步驟 2\n")
+        self.assertEqual(self.common.focus_tables(text), [(["特別關注", "納入的利害關係人", "說明"], [["高齡", "I05", "—"]])])
+        self.assertIsNone(self.common.focus_tables("### 1.3 其他\n"))
 
 
 class SameStep1IdsTest(unittest.TestCase):

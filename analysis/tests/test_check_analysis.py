@@ -447,3 +447,78 @@ class CheckAnalysisTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    # ---------- 1.3 特別關注族群檢查 ----------
+    # The #2 table: 呼吸道疾病 has no stakeholder; I11 is in two groups.
+    FOCUS_RESP = "| 呼吸道疾病 | （無） | 【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】 |\n"
+    FOCUS_OLD = "| 高齡 | I05、I11 | — |\n"
+    FOCUS_FOREIGN = "| 外籍 | I03、I04 | — |\n"
+
+    def test_focus_table_passes_in_every_issue(self):
+        for folder in ("1-trees", "2-trashcans", "8-smokefree"):
+            with self.subTest(folder=folder):
+                code, out = self.run_check(folder)
+                self.assertEqual(code, 0, out)
+
+    def test_focus_section_missing_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "### 1.3 特別關注族群檢查", "### 1.3 其他檢查")
+        self.assertFails("特別關注族群檢查")
+
+    def test_focus_header_wrong_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| 特別關注 | 納入的利害關係人 | 說明 |",
+                  "| 特別關注 | 利害關係人 | 說明 |")
+        self.assertFails("特別關注族群檢查", "header")
+
+    def test_focus_group_missing_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_RESP, "")
+        self.assertFails("特別關注族群檢查", "呼吸道疾病")
+
+    def test_focus_groups_out_of_order_fail(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_OLD + "| 身心障礙 | I06 | — |\n",
+                  "| 身心障礙 | I06 | — |\n" + self.FOCUS_OLD)
+        self.assertFails("特別關注族群檢查", "order")
+
+    def test_focus_id_missing_fails(self):
+        # I11 has 高齡 in stakeholders.csv, so the 高齡 row must list it.
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_OLD, "| 高齡 | I05 | — |\n")
+        self.assertFails("特別關注族群檢查", "高齡", "I11")
+
+    def test_focus_id_without_that_tag_fails(self):
+        # I01 is in #2 but has no 特別關注.
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN, "| 外籍 | I01、I03、I04 | — |\n")
+        self.assertFails("特別關注族群檢查", "外籍", "I01")
+
+    def test_focus_id_not_in_issue_fails(self):
+        # I19 has 經濟弱勢 but is not a stakeholder of #2.
+        self.edit(f"{ISSUE}/issue-analysis.md", "| 經濟弱勢 | I11 | — |\n", "| 經濟弱勢 | I11、I19 | — |\n")
+        self.assertFails("特別關注族群檢查", "I19")
+
+    def test_focus_none_but_group_has_stakeholders_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN, "| 外籍 | （無） | 【待補：本議題是否需要納入外籍人士的觀點】 |\n")
+        self.assertFails("特別關注族群檢查", "外籍", "I03")
+
+    def test_focus_bad_id_list_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN, "| 外籍 | I03, I04 | — |\n")
+        self.assertFails("特別關注族群檢查", "外籍", "、")
+
+    def test_focus_none_with_empty_note_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_RESP, "| 呼吸道疾病 | （無） |  |\n")
+        self.assertFails("特別關注族群檢查", "呼吸道疾病", "說明")
+
+    def test_focus_none_with_dash_note_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_RESP, "| 呼吸道疾病 | （無） | — |\n")
+        self.assertFails("特別關注族群檢查", "呼吸道疾病", "說明")
+
+    def test_focus_none_note_must_be_a_pending_item(self):
+        # Only a person decides that a group does not apply, so the AI writes a question, not a verdict.
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_RESP, "| 呼吸道疾病 | （無） | `[AI模擬]` 與本題無關 |\n")
+        self.assertFails("特別關注族群檢查", "呼吸道疾病", "【待補：")
+
+    def test_focus_note_of_included_group_needs_a_tag(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN, "| 外籍 | I03、I04 | 需要多語言 |\n")
+        self.assertFails("特別關注族群檢查", "外籍", "tag")
+
+    def test_focus_note_of_included_group_with_tag_passes(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN, "| 外籍 | I03、I04 | `[AI模擬]` 需要多語言 |\n")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)

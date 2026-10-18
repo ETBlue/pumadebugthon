@@ -235,6 +235,40 @@ class BuildJsonOutputTest(unittest.TestCase):
         three = issues[2]
         self.assertEqual((three["counts"], three["spaces"], three["updated"]), (None, [], None))
 
+    def test_focus_groups(self):
+        # The 1.3 特別關注族群檢查 table: all 6 groups, in the fixed order.
+        none = lambda text: {"text": text, "tag": None, "pending": True}
+        self.assertEqual(self.issue["focusGroups"], [
+            {"tag": "高齡", "stakeholders": ["I05", "I11"], "note": None},
+            {"tag": "身心障礙", "stakeholders": ["I06"], "note": None},
+            {"tag": "呼吸道疾病", "stakeholders": [], "note": none("【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】")},
+            {"tag": "兒童與照顧者", "stakeholders": ["I07"], "note": None},
+            {"tag": "外籍", "stakeholders": ["I03", "I04"], "note": None},
+            {"tag": "經濟弱勢", "stakeholders": ["I11"], "note": None},
+        ])
+
+    def test_focus_groups_in_other_issues(self):
+        def load_issue(folder):
+            with open(os.path.join(self.out, "issues", f"{folder}.json"), encoding="utf-8") as f:
+                return json.load(f)
+        trees, smoke = load_issue("1-trees"), load_issue("8-smokefree")
+        self.assertEqual([(g["tag"], g["stakeholders"]) for g in trees["focusGroups"]],
+                         [("高齡", ["I05"]), ("身心障礙", ["I06"]), ("呼吸道疾病", []),
+                          ("兒童與照顧者", ["I07", "I16"]), ("外籍", []), ("經濟弱勢", ["I19"])])
+        self.assertEqual(trees["focusGroups"][4]["note"]["text"], "【待補：本議題是否需要納入外籍人士的觀點】")
+        self.assertEqual([(g["tag"], g["stakeholders"]) for g in smoke["focusGroups"]],
+                         [("高齡", ["I05"]), ("身心障礙", ["I06"]), ("呼吸道疾病", ["I27"]),
+                          ("兒童與照顧者", ["I07"]), ("外籍", ["I03"]), ("經濟弱勢", ["I19"])])
+        # The 待補 items of the table are in the issue's pending list, with the group as context.
+        self.assertIn({"section": "1.3 特別關注族群檢查", "text": "【待補：本議題是否需要納入外籍人士的觀點】",
+                       "context": "外籍"}, trees["pending"])
+
+    def test_index_focus_gaps(self):
+        # focusGaps: the groups with no stakeholder, in the fixed order. null for an issue without an analysis.
+        gaps = {i["number"]: i["focusGaps"] for i in self.index["issues"]}
+        self.assertEqual(gaps, {1: ["呼吸道疾病", "外籍"], 2: ["呼吸道疾病"], 3: None, 4: None,
+                                5: None, 6: None, 8: []})
+
     def test_index_issue_source(self):
         # 來源 in issues.csv becomes "source": 主辦單位 for the host's issues,
         # 參加者補充 for an issue a participant added.
@@ -386,6 +420,28 @@ class BuildJsonErrorTest(unittest.TestCase):
         for n in needles:
             self.assertIn(n, out)
         self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
+
+    FOCUS_FOREIGN = "| 外籍 | I03、I04 | — |"
+
+    def test_focus_section_missing(self):
+        self.edit("### 1.3 特別關注族群檢查", "### 1.3 其他")
+        self.assertFails("2-trashcans: 特別關注族群檢查:", "no heading")
+
+    def test_focus_groups_out_of_order(self):
+        self.edit("| 高齡 | I05、I11 | — |\n| 身心障礙 | I06 | — |", "| 身心障礙 | I06 | — |\n| 高齡 | I05、I11 | — |")
+        self.assertFails("2-trashcans: 特別關注族群檢查:", "高齡")
+
+    def test_focus_id_not_in_step_1(self):
+        self.edit(self.FOCUS_FOREIGN, "| 外籍 | I03、I04、I19 | — |")
+        self.assertFails("2-trashcans: 特別關注族群檢查:", "I19")
+
+    def test_focus_id_without_that_tag_in_stakeholders_csv(self):
+        self.edit(self.FOCUS_FOREIGN, "| 外籍 | I01、I03、I04 | — |")
+        self.assertFails("2-trashcans: 特別關注族群檢查:", "I01")
+
+    def test_focus_missing_id(self):
+        self.edit(self.FOCUS_FOREIGN, "| 外籍 | I03 | — |")
+        self.assertFails("2-trashcans: 特別關注族群檢查:", "I04")
 
     def test_moved_id_without_space(self):
         self.edit("已改為 I12", "已改為I 12", "stakeholders.csv")

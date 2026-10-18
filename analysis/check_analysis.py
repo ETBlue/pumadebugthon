@@ -4,8 +4,9 @@ from collections import Counter, defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from analysis_common import (CROSS_REF, SEPARATOR, TAG_NAMES, TAG_RE, TAGS, cross_refs, section, split_cells as cells, step1_ids,
-                             step1_tables, step4_ids, tables, without_cross_refs)
+from analysis_common import (CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, SEPARATOR, TAG_NAMES, TAG_RE, TAGS, cross_refs,
+                             focus_tables, section, split_cells as cells, split_focus, step1_ids, step1_tables, step4_ids,
+                             tables, without_cross_refs)
 
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
 # 新增日期: the date a stakeholder (stakeholders.csv) or a solution (6.1) was added.
@@ -62,10 +63,6 @@ def main(md_path, csv_path):
         """Lists such as W groups, 5.2, 5.4 and 6.2 hold local IDs only."""
         for m in CROSS_REF.finditer(value):
             err(f"{where}: {m.group(0)} refers to another issue, but this list holds stories of this issue only")
-
-    def split_focus(v):
-        v = v.strip()
-        return [] if v in ("", "—") else [x.strip() for x in v.split("、")]
 
     # 0. old English tags must be gone; only the tags in TAGS are allowed.
     # A near spelling of a tag, such as [AI 整理] or [ai整理], is an error too.
@@ -513,6 +510,53 @@ def main(md_path, csv_path):
                     err(f"open-data.csv: the appendix cites {u}, but no row with this URL lists issue {own_num}")
                 for u in sorted(listed_urls - cited):
                     err(f"open-data.csv: {u} lists issue {own_num}, but the URL is not in the appendix of this issue")
+
+    # 20. the 特別關注族群檢查 table (### 1.n, see method.md). One row per group
+    # in FOCUS_GROUPS, in that order. 納入的利害關係人 lists the step 1
+    # stakeholders that have the group in stakeholders.csv (both ways), split
+    # by 「、」, or 「（無）」 when there is none. For 「（無）」, 說明 is a
+    # 【待補：…】 item: only a person decides that a group does not apply. For
+    # an included group, 說明 is 「—」 or a short note that starts with a tag.
+    FW = "特別關注族群檢查"
+    ft = focus_tables(text)
+    if ft is None:
+        err(f"{FW}: no heading 「### 1.n {FW}」 in step 1")
+    elif [h for h, _ in ft] != [FOCUS_HEADER]:
+        err(f"{FW}: expected one table with the header {' | '.join(FOCUS_HEADER)}, found {[' | '.join(h) for h, _ in ft]}")
+    else:
+        rows_f = ft[0][1]
+        for c in rows_f:
+            if len(c) != len(FOCUS_HEADER): err(f"{FW}: row 「{c[0]}」 has {len(c)} cells, expected {len(FOCUS_HEADER)}")
+        rows_f = [c for c in rows_f if len(c) == len(FOCUS_HEADER)]
+        got = [c[0] for c in rows_f]
+        for g in FOCUS_GROUPS:
+            if g not in got: err(f"{FW}: group {g} has no row")
+        for g in got:
+            if g not in FOCUS_GROUPS: err(f"{FW}: unknown group {g} (expected one of {'、'.join(FOCUS_GROUPS)})")
+        if got != list(FOCUS_GROUPS) and sorted(got) == sorted(FOCUS_GROUPS):
+            err(f"{FW}: the groups must be in the fixed order {'、'.join(FOCUS_GROUPS)}, found {'、'.join(got)}")
+        for g, ids_cell, note in rows_f:
+            if g not in FOCUS_GROUPS: continue
+            want = [sid for sid in stake if g in split_focus(by_id.get(sid, {}).get("特別關注", ""))]
+            if ids_cell == FOCUS_NONE:
+                listed_f = []
+            elif re.fullmatch(r"[OI]\d\d(?:、[OI]\d\d)*", ids_cell):
+                listed_f = ids_cell.split("、")
+            else:
+                err(f"{FW} {g}: 納入的利害關係人 「{ids_cell}」 must be IDs separated by 「、」, or 「{FOCUS_NONE}」"); continue
+            for sid in sorted({x for x in listed_f if listed_f.count(x) > 1}): err(f"{FW} {g}: {sid} is listed twice")
+            for sid in listed_f:
+                if sid not in stake: err(f"{FW} {g}: {sid} is not a stakeholder of this issue (step 1)")
+                elif sid not in want: err(f"{FW} {g}: {sid} does not have 特別關注 {g} in stakeholders.csv")
+            for sid in want:
+                if sid not in listed_f: err(f"{FW} {g}: {sid} has 特別關注 {g} in stakeholders.csv and is in step 1, but is not listed")
+            if not listed_f:
+                if note in ("", "—"):
+                    err(f"{FW} {g}: no stakeholder, so 說明 must not be empty; write a 【待補：…】 item that asks a person to decide")
+                elif not re.fullmatch(r"【待補：[^】]+】", note):
+                    err(f"{FW} {g}: no stakeholder, so 說明 must be one 【待補：…】 item (only a person decides that a group does not apply): {note!r}")
+            elif note != "—" and not note.startswith("【待補") and not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", note):
+                err(f"{FW} {g}: 說明 must be 「—」 or start with a tag in backticks: {note!r}")
 
     print(f"stakeholders: {len(stake)} (O {sum(k[0]=='O' for k in stake)}, I {sum(k[0]=='I' for k in stake)})")
     print(f"stories: {len(step4)}; 我想要 tags: {dict(want_tags)}; 以便 tags: {dict(so_tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}")

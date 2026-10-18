@@ -23,6 +23,9 @@ Rules:
 - A source tag is one of TAGS in square brackets, for example [AI整理].
   In Markdown it is wrapped in backticks (`[AI整理]`); the CSV keeps the
   plain tag. All scripts use TAGS, so a new tag is added here only.
+- The 特別關注族群檢查 table is the table under the heading
+  "### 1.n 特別關注族群檢查" (any number n), up to the next heading. It has
+  one row per group in FOCUS_GROUPS, in that order.
 """
 import re
 
@@ -35,6 +38,17 @@ TAGS = ("實證", "AI整理", "AI模擬")
 TAG_NAMES = "|".join(map(re.escape, TAGS))
 # One tag with its brackets, for example [AI整理]. Group 1 is the tag name.
 TAG_RE = rf"\[({TAG_NAMES})\]"
+
+# The 特別關注 groups, in the fixed order (see method.md, 分類路徑與特別關注).
+# Every list of these groups uses this order, never an order by count.
+# The app keeps the same list in FOCUS_ORDER (app/src/lib/issues.ts); a test
+# checks that the two lists are the same.
+FOCUS_GROUPS = ("高齡", "身心障礙", "呼吸道疾病", "兒童與照顧者", "外籍", "經濟弱勢")
+# The 特別關注族群檢查 table in step 1 (see method.md, 特別關注族群檢查).
+FOCUS_HEADING = re.compile(r"^### 1\.\d+ 特別關注族群檢查\s*$")
+FOCUS_HEADER = ["特別關注", "納入的利害關係人", "說明"]
+# The 納入的利害關係人 cell of a group with no stakeholder in the issue.
+FOCUS_NONE = "（無）"
 
 SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
 HEADING = re.compile(r"^(#{2,3}) (.+)$")
@@ -111,3 +125,21 @@ def without_cross_refs(text):
     """The text with every cross-issue reference replaced by a space, so the
     local ID checks do not see the IDs of other issues."""
     return CROSS_REF.sub(" ", text)
+
+
+def split_focus(value):
+    """The groups in a 特別關注 value such as 「高齡、經濟弱勢」. 「—」 or empty -> []."""
+    v = value.strip()
+    return [] if v in ("", "—") else [x.strip() for x in v.split("、")]
+
+
+def focus_heading(text):
+    """The "### 1.n 特別關注族群檢查" heading line, or None."""
+    return next((l for l in text.splitlines() if FOCUS_HEADING.match(l)), None)
+
+
+def focus_tables(text):
+    """The tables under the 特別關注族群檢查 heading, up to the next heading:
+    a list of (header cells, rows of cells). None if there is no such heading."""
+    head = focus_heading(text)
+    return None if head is None else tables(section(text, head))

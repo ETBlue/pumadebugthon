@@ -13,7 +13,7 @@ A section that cannot be read stops the script with exit code 1 and the line
 
 Sections and tables are found with the shared rules in analysis_common.py,
 the same as in check_analysis.py and sync_stakeholders.py: by their heading
-text ("### 1.1", "### 1.2", "## 步驟 4", "### 相同訴求群組", "### 5.4",
+text ("### 1.1", "### 1.2", "### 1.n 特別關注族群檢查", "## 步驟 4", "### 相同訴求群組", "### 5.4",
 "### 6.1", "### 6.2", "### 6.3", one "### 7.n 解法 X：…" per solution, and
 "### 7.n 總覽"). A heading matches when the prefix is followed by a
 space, 「：」 or the end of the line, so "### 6.1" does not match "### 6.10".
@@ -37,6 +37,13 @@ Each solution also gets the fields for its own page in the app:
   本文件的處理 cell names the solution as 「解法 X」.
 - pending: the 【待補】 items of its step 7 section and of its 6.3 rows. The
   same items are also in the issue's pending list.
+
+focusGroups: the 「### 1.n 特別關注族群檢查」 table, one item per group in
+analysis_common.FOCUS_GROUPS, in that fixed order: {tag, stakeholders, note}.
+The IDs must be the step 1 stakeholders that have the group in
+stakeholders.csv. index.json gets focusGaps for each analyzed issue: the
+groups with no stakeholder, in the same order (null for an issue without an
+analysis).
 
 Markdown inside cells (for example **bold** and [links](...)) stays as written
 in the Cell text and in other text fields. The app renders it.
@@ -256,6 +263,50 @@ def no_duplicates(ids, section_name, kind):
 
 # ---------- one issue ----------
 
+FOCUS = "特別關注族群檢查"
+
+
+def parse_focus(text, step1):
+    """The 特別關注族群檢查 table -> [{"tag", "stakeholders", "note"}], one
+    item per group in common.FOCUS_GROUPS, in that order. stakeholders is []
+    for 「（無）」. note is a Cell, or None for 「—」. Each ID must be in step1."""
+    found = common.focus_tables(text)
+    if found is None:
+        raise ReadError(FOCUS, f"no heading 「### 1.n {FOCUS}」")
+    rows = table_rows(found, FOCUS, common.FOCUS_HEADER)
+    tags = [r["特別關注"] for r in rows]
+    if tags != list(common.FOCUS_GROUPS):
+        raise ReadError(FOCUS, f"the groups must be {'、'.join(common.FOCUS_GROUPS)}, in this order; found {'、'.join(tags)}")
+    out = []
+    for r in rows:
+        tag, ids_cell = r["特別關注"], r["納入的利害關係人"].strip()
+        if ids_cell == common.FOCUS_NONE:
+            ids = []
+        elif re.fullmatch(r"[OI]\d\d(?:、[OI]\d\d)*", ids_cell):
+            ids = ids_cell.split("、")
+        else:
+            raise ReadError(FOCUS, f"{tag}: 納入的利害關係人 「{ids_cell}」 must be IDs separated by 「、」, or 「{common.FOCUS_NONE}」")
+        no_duplicates(ids, FOCUS, f"{tag}: stakeholder")
+        for sid in ids:
+            if sid not in step1:
+                raise ReadError(FOCUS, f"{tag}: {sid} is not in step 1")
+        note = None if r["說明"].strip() in ("", "—") else cell(r["說明"], FOCUS, tag)
+        out.append({"tag": tag, "stakeholders": ids, "note": note})
+    return out
+
+
+def check_focus(focus_groups, step1_ids, focus_by_id):
+    """Each group lists exactly the step 1 stakeholders that have it in
+    stakeholders.csv (focus_by_id: ID -> list of groups)."""
+    for g in focus_groups:
+        want = [sid for sid in step1_ids if g["tag"] in focus_by_id.get(sid, [])]
+        for sid in g["stakeholders"]:
+            if sid not in want:
+                raise ReadError(FOCUS, f"{g['tag']}: {sid} does not have 特別關注 {g['tag']} in stakeholders.csv")
+        for sid in want:
+            if sid not in g["stakeholders"]:
+                raise ReadError(FOCUS, f"{g['tag']}: {sid} has 特別關注 {g['tag']} in stakeholders.csv but is not listed")
+
 def parse_issue(text, space_codes):
     lines = text.splitlines()
 
@@ -293,6 +344,10 @@ def parse_issue(text, space_codes):
             "fit": cell(fit, "1.2", r["輸入來源"]),
             "note": dash_to_none(r["注意事項"]),
         })
+
+    # 1.n 特別關注族群檢查: one row per group, in the fixed order. The IDs must
+    # be stakeholders of step 1. build() checks them against stakeholders.csv.
+    focus_groups = parse_focus(text, {s["id"] for s in stakeholders})
 
     # step 4 stories
     stories = []
@@ -481,7 +536,7 @@ def parse_issue(text, space_codes):
                 by_sol[c]["pending"].append(item)
 
     return {"spaces": spaces, "stakeholders": stakeholders, "inputSources": input_sources,
-            "stories": stories, "groups": groups, "conflicts": conflicts,
+            "focusGroups": focus_groups, "stories": stories, "groups": groups, "conflicts": conflicts,
             "solutions": solutions, "pending": pending}
 
 
@@ -494,6 +549,7 @@ def build(analysis_dir):
     label_rows = read_csv(analysis_dir, "path-labels.csv", ["分類路徑", "名稱"])
     stake_rows = read_csv(analysis_dir, "stakeholders.csv",
                           ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "議題", "備註", "新增日期"])
+    focus_by_id = {r["利害關係人編號"]: common.split_focus(r["特別關注"]) for r in stake_rows}
     index_issues, issue_files = [], {}
     for i, row in enumerate(issues_csv, start=2):
         if not re.fullmatch(r"\d+", row["編號"].strip()):
@@ -504,7 +560,7 @@ def build(analysis_dir):
         md = os.path.join(analysis_dir, folder, "issue-analysis.md")
         if not os.path.exists(md):
             index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": False,
-                                 "spaces": [], "updated": None, "counts": None})
+                                 "spaces": [], "updated": None, "counts": None, "focusGaps": None})
             continue
         with open(md, encoding="utf-8") as f:
             text = f.read()
@@ -512,8 +568,12 @@ def build(analysis_dir):
             data = parse_issue(text, space_codes)
         except ReadError as e:
             raise ReadError(f"{folder}: {e.section}", e.reason)
-        updated = git_updated(os.path.join(analysis_dir, folder))
         ids = [s["id"] for s in data["stakeholders"]]
+        try:
+            check_focus(data["focusGroups"], ids, focus_by_id)
+        except ReadError as e:
+            raise ReadError(f"{folder}: {e.section}", e.reason)
+        updated = git_updated(os.path.join(analysis_dir, folder))
         counts = {
             "stakeholdersO": sum(i.startswith("O") for i in ids),
             "stakeholdersI": sum(i.startswith("I") for i in ids),
@@ -523,7 +583,9 @@ def build(analysis_dir):
             "cells": cell_basis(data["stories"]),
         }
         index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": True,
-                             "spaces": data["spaces"], "updated": updated, "counts": counts})
+                             "spaces": data["spaces"], "updated": updated, "counts": counts,
+                             # The groups with no stakeholder, in the fixed order (for the issue card).
+                             "focusGaps": [g["tag"] for g in data["focusGroups"] if not g["stakeholders"]]})
         issue_files[folder] = {"number": num, "folder": folder, "title": title,
                                "spaces": data["spaces"], "updated": updated, **{k: v for k, v in data.items() if k != "spaces"}}
 

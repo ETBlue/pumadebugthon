@@ -20,8 +20,21 @@ Rules:
 - A reference to another issue is written as 「#」, the issue number, one
   space, then a story ID or a stakeholder ID: 「#2 O01-US01」 or 「#2 O03」
   (CROSS_REF). Such a reference is not a local ID of the file it is in.
+- A source tag is one of TAGS in square brackets, for example [AI整理].
+  In Markdown it is wrapped in backticks (`[AI整理]`); the CSV keeps the
+  plain tag. All scripts use TAGS, so a new tag is added here only.
 """
 import re
+
+# The source tags, in display order (see method.md, section 標記):
+# 實證 = a person can check the source, or a person checked the AI summary.
+# AI整理 = AI summarized it from real data, with counts; no person checked it yet.
+# AI模擬 = AI made it up as a likely view; no data behind it.
+TAGS = ("實證", "AI整理", "AI模擬")
+# The tag names as a regex alternation, for building other patterns.
+TAG_NAMES = "|".join(map(re.escape, TAGS))
+# One tag with its brackets, for example [AI整理]. Group 1 is the tag name.
+TAG_RE = rf"\[({TAG_NAMES})\]"
 
 SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
 HEADING = re.compile(r"^(#{2,3}) (.+)$")

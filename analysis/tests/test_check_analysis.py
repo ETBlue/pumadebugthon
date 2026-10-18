@@ -223,5 +223,44 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("6.2", "#1 O01-US01")
 
 
+    # The third source tag, [AI整理] (owner decision 2026-10-18): AI summarized it
+    # from real data, with counts. It is accepted wherever [實證] and [AI模擬] are.
+    ROW_MD = ("| O01-US01 | 商圈店家與攤商 | `[AI模擬]` 商圈有足夠的清潔箱 | — | "
+              "`[AI模擬]` 客人不會把垃圾放在店門口或花台 | 可詢問商圈發展協會 | `[AI模擬]` S |")
+    ROW_CSV = "商圈有足夠的清潔箱,[AI模擬],—,客人不會把垃圾放在店門口或花台,[AI模擬],可詢問商圈發展協會,S,[AI模擬]"
+
+    def test_ai_summary_tag_passes(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.ROW_MD, self.ROW_MD.replace("[AI模擬]", "[AI整理]"))
+        self.edit(f"{ISSUE}/user-stories.csv", self.ROW_CSV, self.ROW_CSV.replace("[AI模擬]", "[AI整理]"))
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("'[AI整理]': 1", out)
+
+    def test_ai_summary_tag_in_group_and_moscow_rows_passes(self):
+        md = f"{ISSUE}/issue-analysis.md"
+        self.edit(md, "| `[AI模擬]` W01 |", "| `[AI整理]` W01 |")
+        self.edit(md, "| `[AI模擬]` Must | 14 |", "| `[AI整理]` Must | 14 |")
+        self.edit(md, "| I11 | `[AI模擬]` 資源回收個體業者", "| I11 | `[AI整理]` 資源回收個體業者")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_bare_ai_summary_tag_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.ROW_MD,
+                  self.ROW_MD.replace("`[AI模擬]` 商圈有足夠的清潔箱", "[AI整理] 商圈有足夠的清潔箱"))
+        self.assertFails("1 tag(s) without backticks")
+
+    def test_ai_summary_tag_variant_fails(self):
+        for wrong in ("[AI 整理]", "[ai整理]", "[AI模擬 ]"):
+            with self.subTest(wrong=wrong):
+                self.tearDown(); self.setUp()
+                self.edit(f"{ISSUE}/issue-analysis.md", self.ROW_MD,
+                          self.ROW_MD.replace("`[AI模擬]` 商圈有足夠的清潔箱", f"`{wrong}` 商圈有足夠的清潔箱"))
+                self.assertFails(f"tag variant {wrong}")
+
+    def test_ai_summary_tag_in_source_cell_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.ROW_MD,
+                  self.ROW_MD.replace("| 可詢問商圈發展協會 |", "| `[AI整理]` 可詢問商圈發展協會 |"))
+        self.assertFails("O01-US01 來源 cell should not have a tag")
+
 if __name__ == "__main__":
     unittest.main()

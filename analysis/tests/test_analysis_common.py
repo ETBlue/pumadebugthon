@@ -36,6 +36,13 @@ class AnalysisCommonTest(unittest.TestCase):
         self.assertEqual(len(ids), 45)
         self.assertIn("O01-US01", ids)
 
+    def test_tags(self):
+        # The three source tags, in display order: 實證, AI整理, AI模擬.
+        self.assertEqual(self.common.TAGS, ("實證", "AI整理", "AI模擬"))
+        for tag in self.common.TAGS:
+            self.assertRegex(f"[{tag}]", self.common.TAG_RE)
+        self.assertNotRegex("[AI 整理]", self.common.TAG_RE)
+
     def test_split_cells(self):
         self.assertEqual(self.common.split_cells("| A | `[AI模擬]` 文字 | — |"), ["A", "`[AI模擬]` 文字", "—"])
 

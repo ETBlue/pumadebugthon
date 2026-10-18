@@ -3,7 +3,7 @@
 The script runs as a subprocess on files from the working tree.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import os, subprocess, sys, tempfile, unittest
+import csv, os, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "build_csv.py")
@@ -47,6 +47,35 @@ class BuildCsvTest(unittest.TestCase):
         code, output = run(md, self.out)
         self.assertEqual(code, 1, output)
         self.assertIn("O01-US01: bad priority cell", output)
+
+
+    def test_ai_summary_tag(self):
+        # [AI整理] is the third source tag. The CSV keeps it without backticks.
+        with open(MD, encoding="utf-8") as f:
+            text = f.read()
+        start = text.index("\n| O01-US01 |") + 1
+        end = text.index("\n", start)
+        md = os.path.join(self._tmp.name, "issue-analysis.md")
+        with open(md, "w", encoding="utf-8") as f:
+            f.write(text[:start] + text[start:end].replace("[AI模擬]", "[AI整理]") + text[end:])
+        code, output = run(md, self.out)
+        self.assertEqual(code, 0, output)
+        with open(self.out, encoding="utf-8-sig", newline="") as f:
+            rows = {r["故事編號"]: r for r in csv.DictReader(f)}
+        r = rows["O01-US01"]
+        self.assertEqual((r["我想要標記"], r["以便標記"], r["優先順序標記"]), ("[AI整理]",) * 3)
+        self.assertEqual(r["我想要…"], "商圈有足夠的清潔箱")
+        self.assertEqual(r["優先順序"], "S")
+
+    def test_bare_tag_word_without_brackets_exits_1(self):
+        with open(MD, encoding="utf-8") as f:
+            text = f.read()
+        md = os.path.join(self._tmp.name, "issue-analysis.md")
+        with open(md, "w", encoding="utf-8") as f:
+            f.write(text.replace("| `[AI模擬]` 商圈有足夠的清潔箱 |", "| AI整理 商圈有足夠的清潔箱 |", 1))
+        code, output = run(md, self.out)
+        self.assertEqual(code, 1, output)
+        self.assertIn("O01-US01: 我想要 cell has no tag", output)
 
 
 if __name__ == "__main__":

@@ -80,7 +80,8 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_index_counts(self):
         item = next(i for i in self.index["issues"] if i["number"] == 2)
         self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 13, "stories": 45,
-                                          "conflicts": 7, "solutions": 4, "wantsEvidence": 6})
+                                          "conflicts": 7, "solutions": 4, "wantsEvidence": 6,
+                                          "wantsAiSummary": 0})
         self.assertEqual(item["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
         self.assertEqual(item["title"], "找回消失的垃圾桶")
         self.assertEqual(item["folder"], ISSUE)
@@ -198,6 +199,7 @@ class BuildJsonUnitTest(unittest.TestCase):
     def test_cell_with_tag(self):
         self.assertEqual(self.mod.parse_cell("`[AI模擬]` 文字"), {"text": "文字", "tag": "AI模擬", "pending": False})
         self.assertEqual(self.mod.parse_cell("`[實證]` 文字"), {"text": "文字", "tag": "實證", "pending": False})
+        self.assertEqual(self.mod.parse_cell("`[AI整理]` 文字"), {"text": "文字", "tag": "AI整理", "pending": False})
 
     def test_cell_pending(self):
         self.assertEqual(self.mod.parse_cell("【待補】"), {"text": "【待補】", "tag": None, "pending": True})
@@ -346,6 +348,31 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertFalse(os.path.exists(stale))
         self.assertTrue(os.path.exists(os.path.join(self.out, "issues", f"{ISSUE}.json")))
+
+
+    def test_ai_summary_tag(self):
+        # [AI整理] is the third source tag. JSON writes it without brackets.
+        row = ("| O01-US01 | 商圈店家與攤商 | `[AI模擬]` 商圈有足夠的清潔箱 | — | "
+               "`[AI模擬]` 客人不會把垃圾放在店門口或花台 | 可詢問商圈發展協會 | `[AI模擬]` S |")
+        self.edit(row, row.replace("[AI模擬]", "[AI整理]"))
+        self.edit("| `[AI模擬]` W01 |", "| `[AI整理]` W01 |")
+        code, out = run_build(self.dir, self.out)
+        self.assertEqual(code, 0, out)
+        with open(os.path.join(self.out, "issues", f"{ISSUE}.json"), encoding="utf-8") as f:
+            issue = json.load(f)
+        with open(os.path.join(self.out, "index.json"), encoding="utf-8") as f:
+            index = json.load(f)
+        s = next(x for x in issue["stories"] if x["id"] == "O01-US01")
+        self.assertEqual(s["want"], {"text": "商圈有足夠的清潔箱", "tag": "AI整理", "pending": False})
+        self.assertEqual(s["soThat"]["tag"], "AI整理")
+        self.assertEqual(s["priorityTag"], "AI整理")
+        self.assertEqual(next(g for g in issue["groups"] if g["id"] == "W01")["tag"], "AI整理")
+        counts = next(i for i in index["issues"] if i["number"] == 2)["counts"]
+        self.assertEqual((counts["wantsEvidence"], counts["wantsAiSummary"]), (6, 1))
+
+    def test_cell_with_ai_summary_and_another_tag(self):
+        self.edit("| `[AI模擬]` 安全通行，不會撞到 |", "| `[AI模擬]` `[AI整理]` 安全通行，不會撞到 |")
+        self.assertFails("2-trashcans: 步驟 4:", "I06-US01")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from analysis_common import (CROSS_REF, SEPARATOR, cross_refs, section, split_cells as cells, step1_ids,
+from analysis_common import (CROSS_REF, SEPARATOR, TAG_NAMES, TAG_RE, TAGS, cross_refs, section, split_cells as cells, step1_ids,
                              step1_tables, step4_ids, tables, without_cross_refs)
 
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
@@ -51,16 +51,20 @@ def main(md_path, csv_path):
         v = v.strip()
         return [] if v in ("", "—") else [x.strip() for x in v.split("、")]
 
-    # 0. old English tags must be gone; only new tags allowed
+    # 0. old English tags must be gone; only the tags in TAGS are allowed.
+    # A near spelling of a tag, such as [AI 整理] or [ai整理], is an error too.
     csv_text = open(csv_path, encoding="utf-8").read()
+    near = {t.upper() for t in TAGS}
     for name, body in ((md_path, text), (csv_path, csv_text)):
         for old_tag in ("[evidence]", "[simulated]"):
             if old_tag in body: err(f"{name}: old tag {old_tag} remains ({body.count(old_tag)}x)")
-        for t_ in set(re.findall(r"\[[^\[\]]{1,12}\]", body)):
+        for t_ in sorted(set(re.findall(r"\[[^\[\]]{1,12}\]", body))):
             if t_.isascii() and t_.lower().strip("[]") in ("evidence", "simulated"): err(f"{name}: old tag variant {t_}")
+            elif t_.strip("[]") not in TAGS and re.sub(r"\s", "", t_.strip("[]")).upper() in near:
+                err(f"{name}: tag variant {t_}; write one of {', '.join(f'[{t}]' for t in TAGS)}")
 
     # 0b. in Markdown, every tag is wrapped in backticks (the CSV keeps plain tags)
-    bare = re.findall(r"(?<!`)\[(?:實證|AI模擬)\](?!`)", text)
+    bare = re.findall(rf"(?<!`){TAG_RE}(?!`)", text)
     if bare: err(f"{md_path}: {len(bare)} tag(s) without backticks")
 
     # 0c. every open item says what is missing inside the brackets: 【待補：…】,
@@ -128,7 +132,7 @@ def main(md_path, csv_path):
         if len(r) != 11: err(f"CSV row {r[0]} has {len(r)} fields")
     # 我想要… and 以便… start with a tag; a 【待補】 cell has no tag.
     def split_tag(cell):
-        m = re.match(r"^(\[實證\]|\[AI模擬\]) (.+)$", cell)
+        m = re.match(rf"^(\[(?:{TAG_NAMES})\]) (.+)$", cell)
         return (m.group(2), m.group(1)) if m else (cell, "")
     exp = [[c[0], c[0][:3], c[1], *split_tag(c[2]), c[3], *split_tag(c[4]), c[5], c[6].split(" ")[1], c[6].split(" ")[0]] for c in step4]
     if rows[1:] != exp:
@@ -147,7 +151,7 @@ def main(md_path, csv_path):
         if len({x[:3] for x in l}) != len(l): err(f"{w} has two rows of the same stakeholder")
     secw = text.split("### 相同訴求群組", 1)[1].split("\n---", 1)[0]
     for line in secw.splitlines():
-        m = re.match(r"^\| `\[AI模擬\]` (W\d\d) \| [^|]+ \| ([^|]+) \| ([^|]+) \|", line)
+        m = re.match(rf"^\| `\[(?:{TAG_NAMES})\]` (W\d\d) \| [^|]+ \| ([^|]+) \| ([^|]+) \|", line)
         if m:
             local_only(f"group table {m.group(1)}", m.group(2) + " " + m.group(3))
             l = re.findall(r"[OI]\d\d-US\d\d", m.group(2))
@@ -164,10 +168,10 @@ def main(md_path, csv_path):
     sec5 = text.split("### 5.2", 1)[1].split("### 5.3", 1)[0]
     # priority column is a tag, then the MoSCoW letter
     for r in step4:
-        if not re.fullmatch(r"\[(?:實證|AI模擬)\] [MSCW]", r[6]): err(f"{r[0]} bad priority value {r[6]}")
+        if not re.fullmatch(rf"\[(?:{TAG_NAMES})\] [MSCW]", r[6]): err(f"{r[0]} bad priority value {r[6]}")
         for name, cell in (("我想要", r[2]), ("以便", r[4])):
             if not split_tag(cell)[1] and not cell.startswith("【待補"): err(f"{r[0]} {name} cell has no tag: {cell}")
-        if re.match(r"^\[(?:實證|AI模擬)\]", r[5]): err(f"{r[0]} 來源 cell should not have a tag: {r[5]}")
+        if re.match(rf"^\[(?:{TAG_NAMES})\]", r[5]): err(f"{r[0]} 來源 cell should not have a tag: {r[5]}")
     # Must count claimed in 6.2 summary
     mm = re.search(r"全部 (\d+) 則 Must", text)
     nm = sum(1 for r in step4 if r[6].endswith(" M"))
@@ -175,7 +179,7 @@ def main(md_path, csv_path):
     names = {"Must": "M", "Should": "S", "Could": "C", "Won't": "W"}
     mos = {}
     for line in sec5.splitlines():
-        m = re.match(r"^\| `\[AI模擬\]` (Must|Should|Could|Won't)[^|]* \| (\d+) \| ([^|]+) \|", line)
+        m = re.match(rf"^\| `\[(?:{TAG_NAMES})\]` (Must|Should|Could|Won't)[^|]* \| (\d+) \| ([^|]+) \|", line)
         if m:
             local_only(f"5.2 MoSCoW {m.group(1)}", m.group(3))
             l = re.findall(r"[OI]\d\d-US\d\d", m.group(3))
@@ -274,7 +278,7 @@ def main(md_path, csv_path):
         c = cells(l)
         if len(c) != len(STEP37_HEADER): err(f"3.7 row {c[0]} has {len(c)} cells, expected {len(STEP37_HEADER)}"); continue
         if c[0] not in stake: err(f"3.7: {c[0]} is not in step 1")
-        name = re.sub(r"^`\[(?:實證|AI模擬)\]` ", "", c[1])
+        name = re.sub(rf"^`\[(?:{TAG_NAMES})\]` ", "", c[1])
         compare_shared("3.7", c[0], name, c[2], c[3])
 
     # 12. 編號異動紀錄: each new ID exists; each old ID is gone from step 1 and step 4

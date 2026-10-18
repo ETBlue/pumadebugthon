@@ -33,7 +33,8 @@ import csv, glob, json, os, re, subprocess, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analysis_common as common
 
-TAG = re.compile(r"`?\[(實證|AI模擬)\]`?")
+# A source tag (see analysis_common.TAGS), with or without backticks. Group 1 is the tag name.
+TAG = re.compile(rf"`?{common.TAG_RE}`?")
 PENDING = re.compile(r"【待補[^】]*】")
 STORY_ID = re.compile(r"[OI]\d\d-US\d\d")
 STAKEHOLDER_ID = re.compile(r"(?<![A-Za-z0-9])([OI]\d\d)(?![0-9])")
@@ -237,7 +238,7 @@ def parse_issue(text, space_codes):
         sid = r["故事編號"]
         if not re.fullmatch(STORY_ID, sid):
             raise ReadError("步驟 4", f"bad story ID 「{sid}」")
-        p = re.fullmatch(r"`?\[(實證|AI模擬)\]`? ([MSCW])", r["優先順序"])
+        p = re.fullmatch(rf"`?{common.TAG_RE}`? ([MSCW])", r["優先順序"])
         if not p:
             raise ReadError("步驟 4", f"{sid}: bad 優先順序 cell 「{r['優先順序']}」 (expected a tag and M, S, C or W)")
         group = dash_to_none(r["相同訴求編號"])
@@ -376,6 +377,7 @@ def build(analysis_dir):
             "conflicts": len(data["conflicts"]),
             "solutions": len(data["solutions"]),
             "wantsEvidence": sum(s["want"]["tag"] == "實證" for s in data["stories"]),
+            "wantsAiSummary": sum(s["want"]["tag"] == "AI整理" for s in data["stories"]),
         }
         index_issues.append({"number": num, "folder": folder, "title": title, "available": True,
                              "spaces": data["spaces"], "updated": updated, "counts": counts})

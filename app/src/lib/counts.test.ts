@@ -4,7 +4,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { IndexFile, IssueFile, Story } from '@/types'
-import { issueCount, solutionCount, stakeholderCount, wantCount } from './counts'
+import { issueCount, needCount, solutionCount, stakeholderCount, wantCount } from './counts'
 import { pickList } from './opinion'
 
 const index = indexJson as IndexFile
@@ -57,3 +57,25 @@ describe('wantCount', () => {
   })
 })
 
+
+describe('needCount', () => {
+  it('counts one 需求 per story with a 以便… cell, summed over the issues', () => {
+    expect(needCount(issues)).toBe(65 + 51 + 45)
+  })
+
+  it('counts a 【待補】 cell, but not an empty one', () => {
+    const story = (id: string, text: string, pending = false): Story => ({
+      id, stakeholder: id.split('-')[0], group: 'W01',
+      want: { text: id, tag: 'AI模擬', pending: false },
+      soThat: { text, tag: pending ? null : 'AI模擬', pending },
+      source: null, priority: 'M', priorityTag: 'AI模擬',
+    })
+    const issue = {
+      ...issues[0],
+      stories: [story('I01-US01', 'a'), story('I02-US01', 'a'), story('I03-US01', '【待補】', true), story('I04-US01', ' ')],
+    } as IssueFile
+    // Two stories with the same text are still two 需求: 以便… cells have no groups.
+    expect(needCount([issue])).toBe(3)
+    expect(needCount([])).toBe(0)
+  })
+})

@@ -3,6 +3,7 @@ import { Layout } from '@/components/Layout'
 import Home from '@/pages/Home'
 import Issue from '@/pages/Issue'
 import Issues from '@/pages/Issues'
+import Needs from '@/pages/Needs'
 import Placeholder from '@/pages/Placeholder'
 import RouteError from '@/pages/RouteError'
 import Solution from '@/pages/Solution'
@@ -35,6 +36,7 @@ export const router = createHashRouter([
       { path: 'stakeholders/:id', element: <Stakeholder /> },
       { path: 'solutions', element: <Solutions /> },
       { path: 'wants', element: <Wants /> },
+      { path: 'needs', element: <Needs /> },
       { path: 'spaces/:code', element: <Space /> },
       { path: '*', element: <Placeholder /> },
     ],

@@ -30,7 +30,7 @@ Building the tool also tests the analysis format. Parts that are hard to read by
 | Cross-issue view | Yes. Stakeholders use global IDs across all issues. |
 | Space types | Each issue and each solution has space type tags (for example 人行道), from a fixed list. Issues and solutions that use the same space can be viewed together. |
 | Theme | Design tokens (CSS variables) in `src/index.css`. Solarized Light is the default; Solarized Dark is the other theme. A toggle in the header switches them (section 3.10). Text and UI parts must pass WCAG AA contrast, so some Solarized colors use a darker or lighter shade of the same hue. |
-| Names | The app says 「解法」 everywhere, never 「提案」. 「訴求」 is a thing a stakeholder wants: one per W group, plus one per story with no W group (the same items as the opinion check pick list, section 4.1). |
+| Names | The app says 「解法」 everywhere, never 「提案」. 「訴求」 is a thing a stakeholder wants: one per W group, plus one per story with no W group (the same items as the opinion check pick list, section 4.1). 「需求」 is the 以便… cell of one story: one per story, with no groups. |
 
 ## 3. Screens
 
@@ -148,13 +148,14 @@ Space types have no `[實證]` / `[AI整理]` / `[AI模擬]` tag. They are a cla
 On every page. A `<header>` landmark with:
 
 - the app name 「提案小幫手」 on the left, a link to the home page
-- a `<nav>` with four links, each with a count:
+- a `<nav>` with five links, each with a count:
 
 | Link | Count | Goes to |
 |---|---|---|
 | 議題 | Analyzed issues (`available: true`) | `#/issues` |
 | 利害關係人 | Active stakeholders (moved IDs left out) | `#/stakeholders` |
 | 訴求 | 訴求 of every analyzed issue: each W group once, plus each story with no W group (section 4.1), summed over the issues | `#/wants` |
+| 需求 | 需求 of every analyzed issue: one per story with a 以便… cell (`needCount` in `src/lib/counts.ts`). A 【待補】 cell counts. 以便… cells have no groups, so nothing is merged. | `#/needs` |
 | 解法 | Solutions of every analyzed issue, summed | `#/solutions` |
 
 - the theme toggle on the right (section 3.10)
@@ -167,6 +168,7 @@ A link looks active (bold and underlined) on its list page and on the pages unde
 | `#/issues/<n>/solutions/<code>` (one solution's page, 3.12) | 解法 |
 | `#/stakeholders`, `#/stakeholders/<id>` | 利害關係人 |
 | `#/wants` and the pages under it | 訴求 |
+| `#/needs` and the pages under it | 需求 |
 | `#/solutions` and the pages under it | 解法 |
 | `#/`, `#/spaces/<code>`, unknown pages | none |
 
@@ -174,7 +176,7 @@ The active link has `aria-current="page"` only on the list page itself. On a pag
 
 The counts come from pure functions in `src/lib/`. A count is a plain number next to its label. It is not a score. While the data loads, the label shows with no number.
 
-On a phone (375 px) the header must not scroll sideways. The app name is on the first row. The four links and the toggle wrap onto the next row. The order on screen is the same as the keyboard order.
+On a phone (375 px) the header must not scroll sideways. The app name is on the first row. The five links and the toggle wrap onto the next row. The order on screen is the same as the keyboard order.
 
 ### 3.8 Footer
 
@@ -251,6 +253,16 @@ The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an
 | Filter | 「只看有資料根據」 (3.5), in the URL as `?evidence=1`. The link to the opinion check keeps it. With the filter on, each item also says how many of its stories have a data basis. |
 | Order | Issue number, then pick list order. Never by a count. |
 | Logic | `wantGroups` and `opinionPickTo` in `src/lib/wants.ts` |
+
+**`#/needs`: 需求列表.** The 以便… (`soThat`) cell of every story of every analyzed issue, one item per story, grouped by issue (an h2 per issue). A 訴求 is what a stakeholder wants (我想要…); a 需求 is why they want it (以便…). The header link 需求 goes here. The page is built like `#/wants`.
+
+| Part | Design |
+|---|---|
+| Each item | The tag badge and the 以便… text, as a link to the opinion check with the story's pick item picked: its W group, or the story ID when it has no group (`#/issues/<n>/opinion?pick=<key>`). Then the story ID and the stakeholder name, as a link to the stakeholder page. |
+| Search | A search box. It matches the 以便… text without Markdown. A status line says how many items match. |
+| Filter | 「只看有資料根據」 (3.5), in the URL as `?evidence=1`. It keeps a story when its 以便… cell is `[實證]` or `[AI整理]`. The page shows only that cell, so the tag of the 我想要… cell does not count here. The link to the opinion check keeps the filter. |
+| Order | Issue number, then the story order of the issue file. Never by a count. |
+| Logic | `needGroups` and `needPickKey` in `src/lib/needs.ts`, `needCount` in `src/lib/counts.ts` |
 
 **Shared cards.** Every list of 議題 or 解法 uses one of two shared components. Each has two variants, set with the prop `variant: 'detailed' | 'compact'`. The title is a link to the item's own page. A tag badge stays outside the link.
 
@@ -483,7 +495,7 @@ app/
     lib/                pure functions: opinion check, cross-issue lookups, filters
     types.ts            types for the JSON
     i18n/zh-TW.ts       all UI strings. Components never contain UI text directly.
-    pages/              Home, Issues, Stakeholders, Solutions, Wants (list pages), Issue (with the 5 tabs), Stakeholder, Space
+    pages/              Home, Issues, Stakeholders, Solutions, Wants, Needs (list pages), Issue (with the 5 tabs), Stakeholder, Space
     components/         TagBadge, Watermark, StakeholderTree, StoryCard, IssueCard, SolutionCard, ...
     components/ui/      shadcn/ui parts, copied into the repo and editable
 ```
@@ -551,3 +563,4 @@ Required by the hackathon rules:
 19. A header link also looks active on the pages under its list page, for example 議題 on `#/issues/2/overview` and 利害關係人 on `#/stakeholders/I12`. One solution's page `#/issues/<n>/solutions/<code>` makes 解法 active, not 議題. `aria-current` is `page` on the list page and `true` on a page under it (3.7). (2026-10-19)
 20. 資料根據 shows each issue's story cells by tag: the 我想要… and the 以便… cell of every story, in the fixed order 實證, AI整理, AI模擬, 待補. It is on the issue card (`#/issues`) and the 總覽 tab, as text with counts, the 實證 percent next to the counts, and a small stacked bar. It replaces the old field that counted only the 我想要… cell. Issues are never sorted, ranked or filtered by it, and the home page does not show it. One explanation line says it is the make-up of the data sources, not the importance or quality of the issue, and that organization stories are `[AI模擬]` until a real interview, so it never reaches 100%. One percent is not shown alone: it looks like a score and can mislead. For example #8 has 39 `[AI整理]` cells that no person has checked yet, so a single number would hide what is behind it (3.9). (ETBlue, 2026-10-19)
 21. Every list of 議題 and 解法 uses a shared card: `IssueCard` or `SolutionCard`. Each card has two variants, `detailed` (the list pages `#/issues` and `#/solutions`) and `compact` (the home page, the space page, the stakeholder page and the opinion check). `SolutionSummary` is removed (3.9). (ETBlue, `human-inputs.md`, 2026-10-19)
+22. The header gets 需求 with a count, between 訴求 and 解法. A 需求 is the 以便… cell of one story: one per story, with no merging. It gets a list page `#/needs`, built like `#/wants`, with search and the 「只看有資料根據」 filter. On this page the filter looks at the 以便… cell only. 訴求 stays the opinion check pick list (3.7, 3.9). (ETBlue, `human-inputs.md`, 2026-10-19)

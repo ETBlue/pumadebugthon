@@ -1,6 +1,6 @@
 // The counts in the header (design 3.7). A count is a plain number, not a
 // score. Nothing here sorts.
-import type { IndexFile, IssueFile } from '@/types'
+import type { IndexFile, IssueFile, Story } from '@/types'
 import { availableIssues } from './issues'
 import { pickList } from './opinion'
 
@@ -24,4 +24,16 @@ export function solutionCount(index: IndexFile): number {
  * Pass the files of the analyzed issues. */
 export function wantCount(issues: IssueFile[]): number {
   return issues.reduce((n, issue) => n + pickList(issue).length, 0)
+}
+
+/** True when the story has a 以便… cell. A 【待補】 cell counts; an empty one does not. */
+export function hasSoThat(story: Story): boolean {
+  return story.soThat.text.trim() !== ''
+}
+
+/** 需求: one per story with a 以便… cell, summed over the issues. 以便…
+ * cells have no groups, so two cells with the same text are two 需求.
+ * Pass the files of the analyzed issues. */
+export function needCount(issues: IssueFile[]): number {
+  return issues.reduce((n, issue) => n + issue.stories.filter(hasSoThat).length, 0)
 }

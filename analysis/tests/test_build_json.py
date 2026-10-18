@@ -132,7 +132,7 @@ class BuildJsonOutputTest(unittest.TestCase):
                           "tag": "AI模擬", "pending": False})
 
     def test_solution_overview(self):
-        # The solution's row of the 總覽 table. The row tag (in the first cell) is on every field.
+        # The solution's row of the 總覽 table, found by its 代號 cell. The row tag (in the 解法 cell) is on every field.
         b = self.solution("B")
         cell = lambda t: {"text": t, "tag": "AI模擬", "pending": False}
         self.assertEqual(b["overview"], {"cost": cell("低（QR）／中（感測器）"), "feasibility": cell("中"),
@@ -502,12 +502,21 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 步驟 7:", "F")
 
     def test_missing_overview_row(self):
-        self.edit("| `[AI模擬]` D 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |\n", "")
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |\n", "")
         self.assertFails("2-trashcans: 總覽:", "solution D has no row")
 
-    def test_overview_row_without_code(self):
-        self.edit("| `[AI模擬]` D 參與式選址流程 | 中 | 中 |", "| `[AI模擬]` 參與式選址流程 | 中 | 中 |")
-        self.assertFails("2-trashcans: 總覽:", "does not start with a solution code")
+    def test_overview_row_with_unknown_code(self):
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | 中 | 中 |", "| F | `[AI模擬]` 參與式選址流程 | 中 | 中 |")
+        self.assertFails("2-trashcans: 總覽:", "代號 「F」 is not a solution code from 6.1")
+
+    def test_overview_row_with_tag_in_code_cell(self):
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | 中 | 中 |", "| `[AI模擬]` D | 參與式選址流程 | 中 | 中 |")
+        self.assertFails("2-trashcans: 總覽:", "is not a solution code from 6.1")
+
+    def test_overview_old_header(self):
+        self.edit("| 代號 | 解法 | 成本 | 可行性 | 主要風險 | 主責單位 |\n|---|---|---|---|---|---|",
+                  "| 解法 | 成本 | 可行性 | 主要風險 | 主責單位 |\n|---|---|---|---|---|")
+        self.assertFails("2-trashcans: 總覽")
 
     def test_idea_names_unknown_solution(self):
         self.edit("| `[AI模擬]` 併入解法 B，作為可選的試點項目", "| `[AI模擬]` 併入解法 F，作為可選的試點項目")

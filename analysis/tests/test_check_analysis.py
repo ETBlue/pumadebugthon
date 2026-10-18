@@ -4,7 +4,7 @@ Each test copies every issue folder that has an issue-analysis.md, and the share
 thing, runs the check as a subprocess, and looks at the exit code and output.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import os, shutil, subprocess, sys, tempfile, unittest
+import os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "check_analysis.py")
@@ -130,10 +130,10 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_6_2_any_capital_letter_code(self):
         # A code like E or K is fine when 6.1 has it too.
         md = f"{ISSUE}/issue-analysis.md"
-        self.edit(md, "| D | `[AI模擬]` 參與式選址流程 |", "| K | `[AI模擬]` 參與式選址流程 |")
+        self.edit(md, "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`", "| K | `[AI模擬]` 參與式選址流程 | `sidewalk`")
         self.edit(md, "| D | 參與式選址流程 |", "| K | 參與式選址流程 |")
         self.edit(md, "### 7.4 解法 D：", "### 7.4 解法 K：")
-        self.edit(md, "| `[AI模擬]` D 參與式選址流程 |", "| `[AI模擬]` K 參與式選址流程 |")
+        self.edit(md, "| D | `[AI模擬]` 參與式選址流程 | 中 |", "| K | `[AI模擬]` 參與式選址流程 | 中 |")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
@@ -357,8 +357,34 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("步驟 7: 「### 7.4 解法 F：參與式選址流程」: solution F is not in 6.1")
 
     def test_solution_without_overview_row_fails(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", "| `[AI模擬]` D 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |\n", "")
+        self.edit(f"{ISSUE}/issue-analysis.md", self.OVERVIEW_D + "\n", "")
         self.assertFails("總覽: solution D from 6.1 has no row")
+
+    # The 總覽 table: 代號 (the code only), then 解法 (the row tag and a short name).
+    OVERVIEW_D = "| D | `[AI模擬]` 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |"
+
+    def test_overview_old_format_fails(self):
+        # The old table put the tag, the code and the name in one first cell.
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        start = text.index("| 代號 | 解法 | 成本 |")
+        end = text.index("\n\n", start)
+        old = "\n".join(re.sub(r"^\| ([A-Z]) \| (`[^`]+`) ", r"| \2 \1 ", l) for l in text[start:end].split("\n")[2:])
+        self.edit(f"{ISSUE}/issue-analysis.md", text[start:end],
+                  "| 解法 | 成本 | 可行性 | 主要風險 | 主責單位 |\n|---|---|---|---|---|\n" + old)
+        self.assertFails("總覽: expected one table with the header 代號 | 解法 | 成本 | 可行性 | 主要風險 | 主責單位")
+
+    def test_overview_code_with_tag_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.OVERVIEW_D, self.OVERVIEW_D.replace("| D | `[AI模擬]` ", "| `[AI模擬]` D | "))
+        self.assertFails("總覽: 代號 must be one capital letter")
+
+    def test_overview_name_without_tag_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.OVERVIEW_D, self.OVERVIEW_D.replace("`[AI模擬]` ", ""))
+        self.assertFails("總覽 row D: the 解法 cell must start with the row tag")
+
+    def test_overview_two_rows_fail(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.OVERVIEW_D, self.OVERVIEW_D + "\n" + self.OVERVIEW_D)
+        self.assertFails("總覽: solution D has two rows")
 
     # A 6.3 cell must stand alone on the solution page: no 「見下表」 or 「見上表」.
     MEASURE_ROW = "| C | 開放資料的資料時間涵蓋終點 | `[實證]` 2018-01-10 |"

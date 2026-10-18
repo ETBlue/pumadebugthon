@@ -31,8 +31,8 @@ Each solution also gets the fields for its own page in the app:
   several, for example 「A, D」).
 - detail: the 項目 | 內容 rows of its step 7 section, in file order.
 - overview: its row of the 總覽 table (成本, 可行性, 主要風險, 主責單位). The
-  first cell holds the row tag, the code and a short name; every field gets
-  the row tag.
+  row is found by its 代號 cell (the code only). The 解法 cell holds the row
+  tag and a short name; every field gets the row tag.
 - ideas: the rows of the 6.1 構想 table (if the table exists) whose
   本文件的處理 cell names the solution as 「解法 X」.
 - pending: the 【待補】 items of its step 7 section and of its 6.3 rows. The
@@ -408,18 +408,18 @@ def parse_issue(text, space_codes):
         s["detail"] = [{"item": r["項目"], "content": cell(r["內容"], name, r["項目"])}
                        for r in table_rows(common.tables(common.section(text, head)), name, ["項目", "內容"])]
 
-    # 總覽 (### 7.n 總覽): one row per solution. The first cell is the row tag,
-    # the code and a short name (「`[AI模擬]` A 佈建建議地圖」). Every field gets the row tag.
+    # 總覽 (### 7.n 總覽): one row per solution. The 代號 cell is the code only
+    # (「A」). The 解法 cell is the row tag and a short name (「`[AI模擬]` 佈建建議地圖」).
+    # Every field gets the row tag.
     overview_head = next((l for l in lines if re.match(r"^### 7\.\d+ 總覽\s*$", l)), None)
     if overview_head is None:
         raise ReadError("總覽", "no heading 「### 7.n 總覽」")
     for r in table_rows(common.tables(common.section(text, overview_head)), "總覽",
-                        ["解法", "成本", "可行性", "主要風險", "主責單位"]):
-        first = cell(r["解法"], "總覽", r["解法"])
-        m = re.match(r"([A-Z]) ", first["text"])
-        if not m or m.group(1) not in by_sol:
-            raise ReadError("總覽", f"row 「{r['解法']}」 does not start with a solution code from 6.1")
-        code = m.group(1)
+                        ["代號", "解法", "成本", "可行性", "主要風險", "主責單位"]):
+        code = r["代號"].strip()
+        if not re.fullmatch(r"[A-Z]", code) or code not in by_sol:
+            raise ReadError("總覽", f"row 「{r['解法']}」: 代號 「{r['代號']}」 is not a solution code from 6.1")
+        first = cell(r["解法"], "總覽", code)
         if "overview" in by_sol[code]:
             raise ReadError("總覽", f"solution {code} has two rows")
         by_sol[code]["overview"] = {

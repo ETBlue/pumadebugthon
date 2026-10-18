@@ -392,7 +392,8 @@ def main(md_path, csv_path):
                 elif code not in issue_spaces: err(f"6.1 solution {sol}: space {code} is not in the issue's 空間類型 line")
 
     # 16b. each solution in 6.1 has its own step 7 section 「### 7.n 解法 X：…」
-    # and a row in the 總覽 table (first cell: tag, code, short name). The app
+    # and a row in the 總覽 table (代號: the code only; 解法: the row tag and a
+    # short name; then 成本, 可行性, 主要風險, 主責單位). The app
     # gives each solution a page with this content. A code is never reused.
     codes_61 = [cells(l)[0] for l in sec61.splitlines() if re.match(r"^\| [A-Z] \|", l)]
     step7_codes = []
@@ -407,12 +408,19 @@ def main(md_path, csv_path):
     if overview is None:
         err("總覽: no heading 「### 7.n 總覽」")
     else:
-        for h, rows in tables(section(text, overview) or []):
-            if h and h[0] == "解法":
-                for c in rows:
-                    m = re.match(rf"(?:`\[(?:{TAG_NAMES})\]` )?([A-Z]) ", c[0])
-                    if m: overview_codes.append(m.group(1))
-                    else: err(f"總覽: row 「{c[0]}」 does not start with a solution code")
+        OVERVIEW_HEADER = ["代號", "解法", "成本", "可行性", "主要風險", "主責單位"]
+        t_ov = tables(section(text, overview) or [])
+        if [h for h, _ in t_ov] != [OVERVIEW_HEADER]:
+            err(f"總覽: expected one table with the header {' | '.join(OVERVIEW_HEADER)}, found {[' | '.join(h) for h, _ in t_ov]}")
+        for h, rows in t_ov:
+            if h != OVERVIEW_HEADER: continue
+            for c in rows:
+                if len(c) != len(OVERVIEW_HEADER): err(f"總覽 row 「{c[0]}」 has {len(c)} cells, expected {len(OVERVIEW_HEADER)}"); continue
+                if not re.fullmatch(r"[A-Z]", c[0]): err(f"總覽: 代號 must be one capital letter: {c[0]!r}"); continue
+                if c[0] in overview_codes: err(f"總覽: solution {c[0]} has two rows")
+                overview_codes.append(c[0])
+                if not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", c[1]):
+                    err(f"總覽 row {c[0]}: the 解法 cell must start with the row tag and a short name: {c[1]!r}")
     for code in codes_61:
         if code not in step7_codes: err(f"步驟 7: solution {code} from 6.1 has no section 「### 7.n 解法 {code}：…」")
         if overview is not None and code not in overview_codes: err(f"總覽: solution {code} from 6.1 has no row")

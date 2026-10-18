@@ -426,7 +426,7 @@ Rules:
 ### 5.8 Solution codes
 
 - A solution code (A, B…) is never reused in an issue, also when a solution is removed or merged. So a shared link such as `#/issues/2/solutions/A` keeps working, the same as stakeholder IDs (5.1) and space codes (5.3).
-- Each solution in 6.1 has its own step 7 section, `### 7.n 解法 X：…`, with a 項目 | 內容 table, and one row in the 總覽 table (`### 7.n 總覽`). The first cell of the 總覽 row is the tag, the code and a short name, for example 「`[AI模擬]` A 佈建建議地圖」. `check_analysis.py` checks both.
+- Each solution in 6.1 has its own step 7 section, `### 7.n 解法 X：…`, with a 項目 | 內容 table, and one row in the 總覽 table (`### 7.n 總覽`). The 總覽 table has the columns 代號, 解法, 成本, 可行性, 主要風險, 主責單位. 代號 is the code only, for example 「A」. 解法 is the row tag and a short name, for example 「`[AI模擬]` 佈建建議地圖」. The row tag is for every cell of the row. `check_analysis.py` checks both.
 - A 6.3 row lists one or more codes in its 解法 cell, for example `A, D`.
 - A row of the 6.1 構想 table belongs to a solution when its 本文件的處理 cell names it as 「解法 X」, for example 「併入解法 B」.
 

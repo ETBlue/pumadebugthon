@@ -1,17 +1,23 @@
 import { useMemo } from 'react'
-import { Link, NavLink } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { issueCount, solutionCount, stakeholderCount, wantCount } from '@/lib/counts'
 import { availableIssues } from '@/lib/issues'
+import { activeNavItem, isNavListPage, type NavItem } from '@/lib/nav'
 import type { IndexFile } from '@/types'
 import { ThemeToggle } from './ThemeToggle'
 
 const th = t.header
 const linkBase = 'inline-flex min-h-10 items-center gap-1.5 rounded-sm underline-offset-4 hover:underline'
 
-/** One header link with its count. count is null while the data loads. */
-function CountLink({ to, label, count }: { to: string; label: string; count: number | null }) {
+/** One header link with its count. count is null while the data loads.
+ * The link looks active on its list page and on its subpages (design 3.7).
+ * aria-current is "page" only on the list page itself, and "true" on a subpage. */
+function CountLink({ item, label, count }: { item: NavItem; label: string; count: number | null }) {
+  const { pathname } = useLocation()
+  const active = activeNavItem(pathname) === item
+  const current = active ? (isNavListPage(pathname) ? 'page' : 'true') : undefined
   const content = (
     <>
       <span>{label}</span>
@@ -19,9 +25,9 @@ function CountLink({ to, label, count }: { to: string; label: string; count: num
     </>
   )
   return (
-    <NavLink to={to} end className={({ isActive }) => `${linkBase} ${isActive ? 'font-semibold underline' : ''}`}>
+    <Link to={`/${item}`} aria-current={current} className={`${linkBase} ${active ? 'font-semibold underline' : ''}`}>
       {content}
-    </NavLink>
+    </Link>
   )
 }
 
@@ -31,10 +37,10 @@ function Links({ index }: { index: IndexFile | null }) {
   const wants = index && issues.status === 'ready' ? wantCount(issues.data) : null
   return (
     <ul className="flex flex-wrap items-center gap-x-4 gap-y-0 text-sm md:gap-x-5">
-      <li><CountLink to="/issues" label={th.issues} count={index && issueCount(index)} /></li>
-      <li><CountLink to="/stakeholders" label={th.stakeholders} count={index && stakeholderCount(index)} /></li>
-      <li><CountLink to="/wants" label={th.wants} count={wants} /></li>
-      <li><CountLink to="/solutions" label={th.solutions} count={index && solutionCount(index)} /></li>
+      <li><CountLink item="issues" label={th.issues} count={index && issueCount(index)} /></li>
+      <li><CountLink item="stakeholders" label={th.stakeholders} count={index && stakeholderCount(index)} /></li>
+      <li><CountLink item="wants" label={th.wants} count={wants} /></li>
+      <li><CountLink item="solutions" label={th.solutions} count={index && solutionCount(index)} /></li>
     </ul>
   )
 }

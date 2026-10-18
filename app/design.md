@@ -159,6 +159,19 @@ On every page. A `<header>` landmark with:
 
 - the theme toggle on the right (section 3.10)
 
+A link looks active (bold and underlined) on its list page and on the pages under it. The pure function `activeNavItem(pathname)` in `src/lib/nav.ts` decides which link is active. It reads the path only, not the query string, and matches whole path segments only (`#/issuesx` is not 議題).
+
+| Page | Active link |
+|---|---|
+| `#/issues`, `#/issues/<n>`, `#/issues/<n>/<tab>` (also the issue's own 解法 tab `#/issues/<n>/solutions`) | 議題 |
+| `#/issues/<n>/solutions/<code>` (one solution's page, 3.12) | 解法 |
+| `#/stakeholders`, `#/stakeholders/<id>` | 利害關係人 |
+| `#/wants` and the pages under it | 訴求 |
+| `#/solutions` and the pages under it | 解法 |
+| `#/`, `#/spaces/<code>`, unknown pages | none |
+
+The active link has `aria-current="page"` only on the list page itself. On a page under it, the link has `aria-current="true"`.
+
 The counts come from pure functions in `src/lib/`. A count is a plain number next to its label. It is not a score. While the data loads, the label shows with no number.
 
 On a phone (375 px) the header must not scroll sideways. The app name is on the first row. The four links and the toggle wrap onto the next row. The order on screen is the same as the keyboard order.
@@ -516,3 +529,4 @@ Required by the hackathon rules:
 16. The notice box at the top of every page is removed. The footer keeps the full disclaimer, and every content cell keeps its tag badge (3.5, 3.8). The footer gets a link 「市政 debug 松活動頁面」 to https://puma.taipei/hackathon in 專案連結, next to the disclaimer (3.8). (ETBlue, 2026-10-18)
 17. Every page has a watermark 「市政 debug 松參加者作品・展示用 MVP」: light, at an angle, repeated over the whole window, also when printing. It does not block clicks and is hidden from screen readers. Text under it still passes AA in both themes, so some text tokens became slightly darker (light) or lighter (dark) (3.10, 3.11). (ETBlue, 2026-10-18)
 18. Each solution has its own page, `#/issues/<n>/solutions/<code>`, because its content can be long. It shows the covered stories, W groups, stakeholders, conflicts, measures, the step 7 details and the 待補 items of the solution. Every mention of a solution links to it. A solution code is never reused in an issue, so the links keep working (3.12, 5.8). (ETBlue, `human-inputs.md`, 2026-10-18)
+19. A header link also looks active on the pages under its list page, for example 議題 on `#/issues/2/overview` and 利害關係人 on `#/stakeholders/I12`. One solution's page `#/issues/<n>/solutions/<code>` makes 解法 active, not 議題. `aria-current` is `page` on the list page and `true` on a page under it (3.7). (2026-10-19)

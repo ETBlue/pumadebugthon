@@ -161,4 +161,10 @@ analysis/build_all.sh     # 在 repo 根目錄執行：檢查議題分析並執�
 
 ## 7. 授權
 
-授權：【待補：由作者決定】
+- 原始碼：MIT，見 [`LICENSE`](../LICENSE)。
+- 作者製作的內容（議題分析、說明文件、網站的介面文字）：[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。
+- 題目原文：著作權屬於主辦單位，依主辦單位的規定使用。
+- 開放資料：依各資料集的授權使用（data.gov.tw 與 data.taipei 多數為「政府資料開放授權條款第 1 版」）。
+- 主辦單位不公開的資料，沒有放在本 repo。
+
+詳細範圍見 [`LICENSE-CONTENT.md`](../LICENSE-CONTENT.md)。

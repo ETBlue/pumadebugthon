@@ -61,6 +61,15 @@ analysis/build_all.sh
 - 依活動規則，如果使用「市長，你給我聽好了」的資料，只引用件數或摘要，不複製原始留言，也不嘗試反推陳情人身分。
 - 開放資料各數字的來源與計算方式，寫在每個議題檔案的附錄。
 
+## 授權
+
+- 本資料夾的議題分析、CSV 檔與說明文件由作者製作，使用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。
+- 程式（`*.py`、`*.sh`、`tests/`）使用 MIT，見 [`LICENSE`](../LICENSE)。
+- 題目原文的著作權屬於主辦單位，依主辦單位的規定使用。
+- 開放資料的數字依各資料集的授權使用，資料集列在各議題檔案的附錄。
+
+詳細範圍見 [`LICENSE-CONTENT.md`](../LICENSE-CONTENT.md)。
+
 ## 回饋
 
 歡迎在 [GitHub issues](https://github.com/ETBlue/pumadebugthon/issues) 留言。

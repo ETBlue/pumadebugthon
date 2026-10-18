@@ -264,5 +264,34 @@ class CheckAnalysisTest(unittest.TestCase):
                   self.ROW_MD.replace("| 可詢問商圈發展協會；", "| `[AI整理]` 可詢問商圈發展協會；"))
         self.assertFails("O01-US01 來源 cell should not have a tag")
 
+    # News content is [AI整理] (owner decision 2026-10-18). An [AI整理] cell that
+    # mentions 新聞 must have a 【待補：查證…】 item in the same row (or line).
+    NEWS_ROW = "需真人查證【待補：查證 Nature Ways 的官方數字】（來源：Mothership，2020）"
+
+    def test_news_cell_with_verify_item_passes(self):
+        code, out = self.run_check("1-trees")
+        self.assertEqual(code, 0, out)
+        with open(os.path.join(self.dir, "1-trees", "issue-analysis.md"), encoding="utf-8") as f:
+            self.assertIn("| Nature Ways | `[AI整理]` 新聞報導指出", f.read())
+
+    def test_news_cell_without_verify_item_fails(self):
+        self.edit("1-trees/issue-analysis.md", self.NEWS_ROW, "需真人查證（來源：Mothership，2020）")
+        self.assertFails("[AI整理]", "新聞", "【待補：查證…】", folder="1-trees")
+
+    def test_news_paragraph_without_verify_item_fails(self):
+        self.edit("1-trees/issue-analysis.md", self.NEWS_ROW, "需真人查證（來源：Mothership，2020）")
+        self.edit("1-trees/issue-analysis.md", "| Nature Ways | `[AI整理]` 新聞報導指出",
+                  "| Nature Ways | `[AI模擬]` 新聞報導指出")
+        code, out = self.run_check("1-trees")
+        self.assertEqual(code, 0, out)
+        self.edit("1-trees/issue-analysis.md", "\n## 步驟 2", "\n`[AI整理]` 新聞報導指出某件事。\n\n## 步驟 2")
+        self.assertFails("[AI整理]", "新聞", folder="1-trees")
+
+    def test_citizen_data_ai_summary_needs_no_verify_item(self):
+        # [AI整理] cells from the citizen data do not mention 新聞, so no 查證 item is needed.
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+
 if __name__ == "__main__":
     unittest.main()

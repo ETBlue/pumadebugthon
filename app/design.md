@@ -113,10 +113,13 @@ Rules:
 
 - There are three source tags (see `analysis/method.md`):
   - `[實證]`: a source a person can check, or an `[AI整理]` summary that a person checked.
-  - `[AI整理]`: AI summarized it from real data (for example the 「市長，你給我聽好了」 data), with counts. No person has checked it yet. The counts come from keyword matching, so they are estimates. A person changes the tag to `[實證]` after a spot-check.
+  - `[AI整理]`: AI summarized it from a real source, and no person has checked it yet. There are two kinds of source:
+    - the host's citizen data (the 「市長，你給我聽好了」 data), with counts. Only cells with 10 or more messages get this tag. The counts come from keyword matching, so they are estimates.
+    - news reports. The cell says 「新聞報導指出…」 and has a 【待補：查證…】 item in the same cell or row. The outlet name and the link are in the issue's appendix. (Owner decision, 2026-10-18.)
+    A person changes the tag to `[實證]` after a spot-check.
   - `[AI模擬]`: AI made it up as a likely view. No data behind it.
 - `[實證]`, `[AI整理]`, `[AI模擬]` and 【待補】 each have their own badge style (green, blue, amber, dashed gray outline). The text is always shown, so the tag does not depend on color. A tag is shown next to the text it belongs to, never only once per page.
-- Every page shows a short notice: `[AI模擬]` content is not real interviews or real citizen words, and `[AI整理]` content is an AI summary of real data that no person has checked yet.
+- Every page shows a short notice: `[AI模擬]` content is not real interviews or real citizen words, and `[AI整理]` content is an AI summary of real data or news reports that no person has checked yet.
 - A filter 「只看有資料根據」 hides `[AI模擬]` content in lists. It keeps stories whose 我想要… or 以便… cell is `[實證]` or `[AI整理]`. Each item still shows its own tag. The URL parameter is `?evidence=1`, the name from the time the filter was 「只看 `[實證]`」, so old shared links still work.
 
 ### 3.6 Space page

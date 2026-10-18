@@ -77,6 +77,14 @@ def main(md_path, csv_path):
             if not re.fullmatch(r"【待補：[^】]+】", m.group(0)):
                 err(f"line {n}: bad 待補 item {m.group(0)!r}; write 【待補：…】 with the explanation inside the brackets: {plain[m.start():m.start() + 30]!r}")
 
+    # 0d. news content is [AI整理] and still needs a person to check it (see
+    # method.md, 標記). News content is written as 「`[AI整理]` 新聞報導指出…」
+    # (or 新聞報導引用…). Such a line must have a 【待補：查證…】 item: in a
+    # table, anywhere in the same row; outside a table, in the same line.
+    for n, line in enumerate(text.splitlines(), 1):
+        if re.search(r"`\[AI整理\]`\s*新聞報導", line) and "【待補：查證" not in line:
+            err(f"line {n}: an [AI整理] cell mentions 新聞 (新聞報導) but its row has no 【待補：查證…】 item: {line[:50]!r}")
+
     # 1. no old S\d\d IDs
     old = re.findall(r"(?<![A-Za-z0-9])S\d\d(?:-US\d\d)?", text)
     csv_raw = open(csv_path, encoding="utf-8").read()

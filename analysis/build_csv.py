@@ -1,15 +1,21 @@
 """Rebuild user-stories.csv from the step 4 table in issue-analysis.md.
 Usage: python3 -I analysis/build_csv.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv"""
-import csv, re, sys
+import csv, os, re, sys
+
+# python3 -I does not put the script folder on sys.path, so add it for analysis_common.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from analysis_common import STEP4_ROW, section, split_cells
 
 md, out = sys.argv[1], sys.argv[2]
 text = open(md, encoding="utf-8").read()
-sec = text.split("## 步驟 4：使用者故事總表", 1)[1].split("### 相同訴求群組", 1)[0]
+# The step 4 section: from "## 步驟 4" up to the next heading (### 相同訴求群組).
+sec = section(text, "## 步驟 4")
+assert sec is not None, f"{md}: no '## 步驟 4' heading"
 rows = []
-for line in sec.splitlines():
-    if re.match(r"^\| [OI]\d\d-US\d\d \|", line):
+for line in sec:
+    if STEP4_ROW.match(line):
         # Markdown cells wrap tags in backticks; the CSV keeps plain tags.
-        cells = [c.strip().replace("`", "") for c in line.strip().strip("|").split(" | ")]
+        cells = [c.replace("`", "") for c in split_cells(line)]
         assert len(cells) == 7, cells
         sid, who, want, w, so, src, pri = cells
         # 我想要… and 以便… start with a tag. A 【待補】 cell has no tag.

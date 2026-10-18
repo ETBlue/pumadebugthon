@@ -12,7 +12,7 @@ raw ideas:
 * the app can be named as "提案小幫手", since the goal is to help people with building proposals. I had built an app named "審稿小幫手", so I think it is easier for people to remember if we follow the same naming pattern
 * license for source code: MIT. license for content I produced: CC-BY 4.0. license for content from the hackathon host: depends on the host
 * for the UI, use design tokens for theme maintainence. apply "solarized light" theme to the app, with "solarized dark" theme togglable
-* the app header should include: app name (link to home), "議題" with count, "利害關係人" with count, "訴求" with count, "解法" with count, and theme toggle on the right
+* the app header should include: app name (link to home), "議題" with count, "利害關係人" with count, "訴求" with count, "需求" with count, "解法" with count, and theme toggle on the right
 * home page should include: a full-width hero section with background images or colors, providing a brief intro of the app (disclaimers are in footer, not here), followed by 3 call-to-action block (3 columns on desktop, 1 column on mobile) -- 
   * "最近更新的議題", showing latest updated issues, with a link guiding users to the issue list page
   * "最近加入分析的族群", showing latest added stakeholders, with a link guiding users to the stakeholder list page
@@ -20,3 +20,4 @@ raw ideas:
 * the global page footer should include GitHub link, license info, disclaimer, links to the open data used by the app (the json/csv files in the issue analysis folders), and link to the official hackathon event page
 * render a watermark on the app, so every screenshot can see it. the watermark could be: "市政 debug 松參加者作品・展示用 MVP"
 * give each solution a unique url and a standalone page, since the content could be very long
+* for all 議題 and 解法 in list view, reuse shared card components. e.g. IssueCard, SolutionCard. the card components support 2 variations: detailed view and compact view

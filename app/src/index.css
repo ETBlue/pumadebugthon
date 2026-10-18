@@ -107,7 +107,7 @@
        AI模擬: adjusted orange (#cb4b16 is 4.27 on base3): 5.71 on base3, 5.03 on base2;
        wm 5.17 / 4.57. */
     --tag-evidence: #5a6800;
-    --tag-summary: #1c6599;
+    --tag-summary: #765900;
     --tag-simulated: #a93f12;
     /* The home page hero (design 3.1): a diagonal gradient from base2 to base3,
        with a dot pattern of yellow at 20%. The hero text is base02: 8.89 on the
@@ -175,7 +175,7 @@
        AI模擬: adjusted orange (#cb4b16 is 3.26 on base03): 6.07 on base03, 5.26 on base02;
        wm 5.32 / 4.57. */
     --tag-evidence: #98af00;
-    --tag-summary: #5eace2;
+    --tag-summary: #d4a300;
     --tag-simulated: #ee8b60;
     /* The hero: a diagonal gradient from base02 to base03, with a dot pattern
        of cyan at 15%. The hero text is base2, for more contrast than the body

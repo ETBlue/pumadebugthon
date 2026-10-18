@@ -389,6 +389,54 @@
       "note": null
     }
   ],
+  "focusGroups": [
+    {
+      "tag": "高齡",
+      "stakeholders": [
+        "I05",
+        "I11"
+      ],
+      "note": null
+    },
+    {
+      "tag": "身心障礙",
+      "stakeholders": [
+        "I06"
+      ],
+      "note": null
+    },
+    {
+      "tag": "呼吸道疾病",
+      "stakeholders": [],
+      "note": {
+        "text": "【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】",
+        "tag": null,
+        "pending": true
+      }
+    },
+    {
+      "tag": "兒童與照顧者",
+      "stakeholders": [
+        "I07"
+      ],
+      "note": null
+    },
+    {
+      "tag": "外籍",
+      "stakeholders": [
+        "I03",
+        "I04"
+      ],
+      "note": null
+    },
+    {
+      "tag": "經濟弱勢",
+      "stakeholders": [
+        "I11"
+      ],
+      "note": null
+    }
+  ],
   "stories": [
     {
       "id": "O01-US01",
@@ -2415,6 +2463,11 @@
       "section": "1.2 可能的輸入來源",
       "text": "【待補：政策組安排】",
       "context": "訪談清潔隊與環保局"
+    },
+    {
+      "section": "1.3 特別關注族群檢查",
+      "text": "【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】",
+      "context": "呼吸道疾病"
     },
     {
       "section": "步驟 2：初始使用者故事",

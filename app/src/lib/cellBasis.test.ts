@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
-import type { CellCounts, IndexFile } from '@/types'
-import { BASIS_ORDER, basisBar, basisTextParts, basisTotal, evidencePercent } from './cellBasis'
+import type { CellCounts, IndexFile, IssueFile } from '@/types'
+import treesJson from '@/test/fixtures/issues/1-trees.json'
+import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
+import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import { BASIS_ORDER, basisBar, basisTextParts, basisTotal, evidencePercent, storyCells } from './cellBasis'
 
 const index = indexJson as IndexFile
+const trees = treesJson as IssueFile
+const trashcans = trashcansJson as IssueFile
+const smokefree = smokefreeJson as IssueFile
 const cellsOf = (n: number): CellCounts => {
   const i = index.issues.find((x) => x.number === n)
   if (!i?.available) throw new Error(`#${n} is not available`)
@@ -85,5 +91,12 @@ describe('the fixture issues', () => {
     expect(cellsOf(2)).toEqual(cells(8, 21, 72, 1))
     expect(cellsOf(8)).toEqual(cells(3, 39, 48, 0))
     expect([1, 2, 8].map((n) => evidencePercent(cellsOf(n)))).toEqual([6, 8, 3])
+  })
+})
+
+describe('storyCells', () => {
+  it('counts the 我想要… and 以便… cells by tag, the same as build_json.py', () => {
+    for (const f of [trees, trashcans, smokefree]) expect(storyCells(f.stories)).toEqual(cellsOf(f.number))
+    expect(storyCells([])).toEqual(cells(0, 0, 0, 0))
   })
 })

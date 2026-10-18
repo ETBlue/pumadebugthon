@@ -359,6 +359,50 @@
       "note": "需要多語言"
     }
   ],
+  "focusGroups": [
+    {
+      "tag": "高齡",
+      "stakeholders": [
+        "I05"
+      ],
+      "note": null
+    },
+    {
+      "tag": "身心障礙",
+      "stakeholders": [
+        "I06"
+      ],
+      "note": null
+    },
+    {
+      "tag": "呼吸道疾病",
+      "stakeholders": [
+        "I27"
+      ],
+      "note": null
+    },
+    {
+      "tag": "兒童與照顧者",
+      "stakeholders": [
+        "I07"
+      ],
+      "note": null
+    },
+    {
+      "tag": "外籍",
+      "stakeholders": [
+        "I03"
+      ],
+      "note": null
+    },
+    {
+      "tag": "經濟弱勢",
+      "stakeholders": [
+        "I19"
+      ],
+      "note": null
+    }
+  ],
   "stories": [
     {
       "id": "O01-US01",

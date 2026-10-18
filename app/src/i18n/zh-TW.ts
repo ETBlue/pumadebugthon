@@ -164,6 +164,11 @@ export const t = {
       issues.length > 0 ? `${n} 位，也出現在 ${issues.map((i) => `#${i}`).join('、')}` : `${n} 位`,
     updated: '更新日期',
     spaces: '空間類型',
+    /** 特別關注族群 (design 3.9). Never a count like 「4／6」: it reads like a score. */
+    focusGaps: '尚未納入的特別關注族群',
+    focusGapsValue: (groups: string[]) => groups.join('、'),
+    focusAll: '特別關注族群',
+    focusAllValue: '都已納入',
   },
   stakeholderList: {
     filters: '篩選利害關係人',
@@ -215,6 +220,13 @@ export const t = {
     sameSpaceHeading: '使用相同空間的議題',
     sameSpaceNone: '目前沒有其他議題使用相同的空間類型。',
     sameSpaceSeparator: '：',
+    /** 特別關注族群 (design 3.2): 6 rows, always in the fixed order. */
+    focusHeading: '特別關注族群',
+    focusIntro: '列出 6 類特別關注族群在本議題的利害關係人與故事。尚未納入的族群，需要由真人判斷是否應該納入。',
+    focusStakeholders: '利害關係人',
+    focusStories: (n: number) => `${n} 則故事`,
+    focusNotIncluded: '本議題尚未納入',
+    focusStakeholderLink: (id: string, name: string) => `${id} ${name}`,
     pendingHeading: '待補清單',
     pendingIntro: '這些地方還需要真人提供資訊。',
     pendingNone: '這個議題沒有待補的項目。',

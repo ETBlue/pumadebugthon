@@ -1,12 +1,14 @@
 import { Link } from 'react-router'
 import { useTabTo } from '@/components/DataBasisToggle'
 import { CellBasis } from '@/components/CellBasis'
+import { CellText } from '@/components/CellText'
 import { Field } from '@/components/Field'
 import { METHOD_URL } from '@/components/links'
 import { Markdown } from '@/components/Markdown'
 import { linkClass } from '@/components/styles'
 import { TagBadge, type TagKind } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
+import { focusRows } from '@/lib/focusGroups'
 import { spaceTypeNames } from '@/lib/issues'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
 import { sameSpaceIssues } from '@/lib/spaces'
@@ -15,7 +17,7 @@ import type { IssueTabProps } from './types'
 const to = t.overview
 const TAG_KINDS: TagKind[] = ['實證', 'AI整理', 'AI模擬', 'pending']
 
-/** 總覽 (design 3.2): counts, 資料根據, tag legend, 使用相同空間的議題 and 待補清單. */
+/** 總覽 (design 3.2): counts, 資料根據, 特別關注族群, tag legend, 使用相同空間的議題 and 待補清單. */
 export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const c = summary.counts
   const n = summary.number
@@ -23,6 +25,7 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const titles = new Map(index.issues.map((i) => [i.number, i.title]))
   const pending = pendingBySection(issue.pending)
   const tabTo = useTabTo()
+  const focus = focusRows(issue, index.stakeholders)
 
   return (
     <div className="space-y-8">
@@ -52,6 +55,45 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
           <CellBasis cells={c.cells} stories={c.stories} />
         </div>
         <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.basis.note}</p>
+      </section>
+
+      <section aria-labelledby="focus-heading">
+        <h3 id="focus-heading" className="text-lg font-semibold">{to.focusHeading}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{to.focusIntro}</p>
+        {/* Always the 6 groups in the fixed order (FOCUS_ORDER), never by count (design 13). */}
+        <ul className="mt-3 grid gap-3 md:grid-cols-2">
+          {focus.map((g) => (
+            <li
+              key={g.tag}
+              className={g.included ? 'min-w-0 rounded-lg border p-3' : 'min-w-0 rounded-lg border border-dashed border-muted-foreground bg-muted/40 p-3'}
+            >
+              <h4 className="font-medium">{g.tag}</h4>
+              {g.included ? (
+                <div className="mt-1 space-y-1.5 text-sm">
+                  <p className="flex flex-wrap gap-x-2">
+                    <span className="text-muted-foreground">{to.focusStakeholders}</span>
+                    <span className="min-w-0">
+                      {g.stakeholders.map((s, i) => (
+                        <span key={s.id}>
+                          <Link to={`/stakeholders/${s.id}`} className={linkClass}>{to.focusStakeholderLink(s.id, s.name)}</Link>
+                          {i < g.stakeholders.length - 1 && '、'}
+                        </span>
+                      ))}
+                    </span>
+                  </p>
+                  <p>{to.focusStories(g.stories)}</p>
+                  <CellBasis cells={g.cells} stories={g.stories} compact />
+                  {g.note && <p><CellText cell={g.note} /></p>}
+                </div>
+              ) : (
+                <div className="mt-1 space-y-1.5 text-sm">
+                  <p className="font-medium">{to.focusNotIncluded}</p>
+                  {g.note && <p><CellText cell={g.note} /></p>}
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-labelledby="legend-heading">

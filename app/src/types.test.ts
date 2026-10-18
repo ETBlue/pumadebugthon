@@ -221,3 +221,30 @@ describe('issue files', () => {
     })
   }
 })
+
+describe('特別關注族群 (focusGroups and focusGaps)', () => {
+  it('each issue file has the 6 groups in the fixed order, with IDs of its own stakeholders', () => {
+    for (const issue of issues) {
+      expect(issue.focusGroups.map((g) => g.tag)).toEqual(['高齡', '身心障礙', '呼吸道疾病', '兒童與照顧者', '外籍', '經濟弱勢'])
+      const own = new Set(issue.stakeholders.map((s) => s.id))
+      for (const g of issue.focusGroups) {
+        for (const id of g.stakeholders) expect(own.has(id)).toBe(true)
+        if (g.note !== null) expectCell(g.note)
+        // A group with no stakeholder always has a 【待補】 note for a person to decide.
+        if (g.stakeholders.length === 0) expect(g.note?.pending).toBe(true)
+      }
+    }
+  })
+
+  it('focusGaps in index.json are the groups with no stakeholder; null without an analysis', () => {
+    for (const i of index.issues) {
+      if (!i.available) {
+        expect(i.focusGaps).toBeNull()
+        continue
+      }
+      const file = issues.find((f) => f.number === i.number)
+      if (!file) continue
+      expect(i.focusGaps).toEqual(file.focusGroups.filter((g) => g.stakeholders.length === 0).map((g) => g.tag))
+    }
+  })
+})

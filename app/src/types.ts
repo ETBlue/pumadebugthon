@@ -70,6 +70,10 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
   /** Date of the last git commit (YYYY-MM-DD), or null without git history. */
   updated: string | null
   counts: IssueCounts
+  /** 特別關注 groups with no stakeholder in this issue, in the fixed order
+   * (FOCUS_ORDER). Empty when every group is included. For the issue card.
+   * Never sort, rank or filter issues by it (design 13). */
+  focusGaps: string[]
 }
 
 /** An issue without an analysis yet (shown as 製作中). */
@@ -78,6 +82,7 @@ export interface UnavailableIssueSummary extends IssueSummaryBase {
   spaces: []
   updated: null
   counts: null
+  focusGaps: null
 }
 
 export type IssueSummary = AvailableIssueSummary | UnavailableIssueSummary
@@ -149,6 +154,19 @@ export interface InputSource {
   fit: Cell
   /** 注意事項. null when the cell is empty or 「—」. */
   note: string | null
+}
+
+/** A row of the 特別關注族群檢查 table (step 1, 「### 1.n 特別關注族群檢查」).
+ * build_json.py writes all 6 groups, in the fixed order (FOCUS_ORDER). */
+export interface FocusGroup {
+  /** 特別關注, for example 「高齡」. */
+  tag: string
+  /** 納入的利害關係人: the stakeholder IDs of this issue that have the group.
+   * Empty when the table says 「（無）」. */
+  stakeholders: string[]
+  /** 說明. null for 「—」. For a group with no stakeholder, a 【待補】 cell
+   * that asks a person to decide if the group should be included. */
+  note: Cell | null
 }
 
 /** A row of the step 4 table. */
@@ -277,6 +295,8 @@ export interface IssueFile {
   updated: string | null
   stakeholders: IssueStakeholder[]
   inputSources: InputSource[]
+  /** The 特別關注族群檢查 table: 6 groups, in the fixed order. */
+  focusGroups: FocusGroup[]
   stories: Story[]
   groups: Group[]
   conflicts: Conflict[]

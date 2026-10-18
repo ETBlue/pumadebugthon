@@ -59,6 +59,7 @@ describe('pendingBySection', () => {
   it('groups by section, in the order of the first item of each section', () => {
     expect(groups.map((g) => g.section)).toEqual([
       '1.2 可能的輸入來源',
+      '1.3 特別關注族群檢查',
       '步驟 2：初始使用者故事',
       '步驟 4：使用者故事總表',
       '6.3 成效衡量',

@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
 import { CellBasis } from './CellBasis'
 import { Field } from './Field'
+import { focusGapsText } from '@/lib/focusGroups'
 import { isParticipantIssue, type Shared } from '@/lib/issues'
 import type { IssueSummary, SpaceType } from '@/types'
 import { SpaceLinks } from './SpaceLinks'
@@ -19,7 +20,8 @@ export type IssueCardProps =
   | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[] }
 
 /** One issue in a list (design 3.9). Two variants:
- * - detailed: a box with all the counts, 資料根據, 更新日期 and 空間類型.
+ * - detailed: a box with all the counts, 資料根據, 特別關注族群 (the groups not
+ *   included yet), 更新日期 and 空間類型.
  * - compact: the title link, 更新日期 and 空間類型, with no box. The home page
  *   lists only analyzed issues, but an issue that is 製作中 still shows its badge.
  * An issue without an analysis shows 製作中, with no numbers and no link. */
@@ -66,6 +68,8 @@ export function IssueCard(props: IssueCardProps) {
     )
   }
   const c = issue.counts
+  // 特別關注族群: the groups not included yet, or 都已納入. Never a count (design 13).
+  const gaps = focusGapsText(issue)
   return (
     <article className="h-full rounded-lg border p-4">
       <H className="text-lg font-semibold">{titleLink}</H>
@@ -85,6 +89,11 @@ export function IssueCard(props: IssueCardProps) {
         <Field label={t.basis.label}>
           <CellBasis cells={c.cells} stories={c.stories} />
         </Field>
+        {gaps && (gaps.kind === 'all' ? (
+          <Field label={tc.focusAll}>{tc.focusAllValue}</Field>
+        ) : (
+          <Field label={tc.focusGaps}>{tc.focusGapsValue(gaps.groups)}</Field>
+        ))}
         {updated}
         {spaces}
       </dl>

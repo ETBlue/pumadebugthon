@@ -2,7 +2,7 @@
 // build_json.py counts the cells (counts.cells in index.json). This file only
 // orders the parts and makes the numbers for the text and the bar.
 // Never sort, rank or filter issues by these numbers (design 13).
-import type { CellCounts } from '@/types'
+import type { CellCounts, Story, Tag } from '@/types'
 
 export type BasisKey = keyof CellCounts
 
@@ -50,4 +50,16 @@ export function evidencePercent(cells: CellCounts): number | null {
   if (e > 0 && rounded < 1) return 1
   if (e < total && rounded > 99) return 99
   return rounded
+}
+
+const TAG_KEY: Record<Exclude<Tag, null>, BasisKey> = { 實證: 'evidence', AI整理: 'aiSummary', AI模擬: 'aiSimulated' }
+
+/** 資料根據 of some stories: the 我想要… and 以便… cells by tag, the same rule
+ * as build_json.py (cell_basis). A cell with no tag counts as 待補. */
+export function storyCells(stories: Story[]): CellCounts {
+  const out: CellCounts = { evidence: 0, aiSummary: 0, aiSimulated: 0, pending: 0 }
+  for (const s of stories) {
+    for (const c of [s.want, s.soThat]) out[c.tag === null ? 'pending' : TAG_KEY[c.tag]] += 1
+  }
+  return out
 }

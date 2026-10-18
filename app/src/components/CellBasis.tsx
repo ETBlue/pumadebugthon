@@ -21,20 +21,23 @@ const textColor: Record<BasisKey, string> = {
 
 /** 資料根據 of one issue (design 3.2, 3.9): the counts as text, the 實證
  * share, and a small stacked bar. The text carries the meaning; the bar is
- * hidden from screen readers. */
-export function CellBasis({ cells, stories }: { cells: CellCounts; stories: number }) {
-  const percent = evidencePercent(cells)
+ * hidden from screen readers.
+ * compact (the 特別關注族群 rows): only the counts and the bar, with no totals
+ * and no 實證 share, so the rows do not read like scores. */
+export function CellBasis({ cells, stories, compact = false }: { cells: CellCounts; stories: number; compact?: boolean }) {
+  const percent = compact ? null : evidencePercent(cells)
   const bar = basisBar(cells)
   return (
     <div className="min-w-0">
       <p>
+        {compact && <span className="text-muted-foreground">{tb.label} </span>}
         {basisTextParts(cells).map((p, i) => (
           <span key={p.key}>
             {i > 0 && tb.separator}
             <span className={textColor[p.key]}>{tb.parts[p.key]}</span> {p.count}
           </span>
         ))}
-        <span>{tb.totals(basisTotal(cells), stories)}</span>
+        {!compact && <span>{tb.totals(basisTotal(cells), stories)}</span>}
         {percent !== null && <span className="ml-2 font-medium whitespace-nowrap">{tb.evidencePercent(percent)}</span>}
       </p>
       {bar.length > 0 && (

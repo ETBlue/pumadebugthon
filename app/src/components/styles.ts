@@ -7,3 +7,7 @@ export const linkClass = 'text-link underline underline-offset-4 hover:decoratio
  * The check icon (see ToggleCheck) shows the state without color. */
 export const toggleOnClass =
   'data-[state=on]:border-foreground data-[state=on]:bg-muted data-[state=on]:font-semibold'
+
+/** Inline code in cell text, for example a space type code such as `utility`.
+ * Same text color as the body, on a light gray box, so contrast stays high. */
+export const codeClass = 'rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground break-words'

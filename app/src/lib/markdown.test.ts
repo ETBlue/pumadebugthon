@@ -23,6 +23,11 @@ describe('stripMarkdown', () => {
     expect(stripMarkdown('甲 \\| 乙')).toBe('甲 | 乙')
   })
 
+  it('removes the backticks of inline code', () => {
+    expect(stripMarkdown('地下管線空間 `utility`')).toBe('地下管線空間 utility')
+    expect(stripMarkdown('a ` b')).toBe('a ` b')
+  })
+
   it('keeps a lone ** or brackets without a link', () => {
     expect(stripMarkdown('a ** b')).toBe('a ** b')
     expect(stripMarkdown('[實證] 文字')).toBe('[實證] 文字')
@@ -81,10 +86,28 @@ describe('parseMarkdown', () => {
     expect(parseMarkdown('[實證] 文字')).toEqual([{ type: 'text', text: '[實證] 文字' }])
   })
 
+  it('turns `text` into a code token and keeps a lone backtick as text', () => {
+    expect(parseMarkdown('地下管線空間 `utility`，見 **`sidewalk`**')).toEqual([
+      { type: 'text', text: '地下管線空間 ' },
+      { type: 'code', text: 'utility' },
+      { type: 'text', text: '，見 ' },
+      { type: 'strong', children: [{ type: 'code', text: 'sidewalk' }] },
+    ])
+    expect(parseMarkdown('a ` b')).toEqual([{ type: 'text', text: 'a ` b' }])
+  })
+
+  it('does not read ** or links inside inline code', () => {
+    expect(parseMarkdown('`**x**` [y](https://y.tw)')).toEqual([
+      { type: 'code', text: '**x**' },
+      { type: 'text', text: ' ' },
+      { type: 'link', href: 'https://y.tw', children: [{ type: 'text', text: 'y' }] },
+    ])
+  })
+
   it('gives the same plain text as stripMarkdown', () => {
     const plain = (tokens: MdToken[]): string =>
-      tokens.map((tk) => (tk.type === 'text' ? tk.text : plain(tk.children))).join('')
-    for (const s of ['**社區工作坊**：每區一場', '[**A**](a) 與 [B](b)', '甲 \\| 乙', 'a ** b']) {
+      tokens.map((tk) => (tk.type === 'text' || tk.type === 'code' ? tk.text : plain(tk.children))).join('')
+    for (const s of ['**社區工作坊**：每區一場', '[**A**](a) 與 [B](b)', '甲 \\| 乙', 'a ** b', '空間 `utility` 與 **`park`**']) {
       expect(plain(parseMarkdown(s))).toBe(stripMarkdown(s))
     }
   })

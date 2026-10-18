@@ -7,7 +7,7 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 import csv, importlib.util, os, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ISSUES = {"1-trees": 26, "2-trashcans": 25}  # folder -> number of step 1 stakeholders
+ISSUES = {"1-trees": 28, "2-trashcans": 25}  # folder -> number of step 1 stakeholders
 
 
 def load(name):

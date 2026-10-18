@@ -66,7 +66,7 @@ function storyTotalOf(counts: StoryCountsByStakeholder, id: string): number {
 /** Order of the first path levels (design 5.2). Unknown first levels go
  * after these, by code. Deeper levels are in code order. */
 export const FIRST_LEVEL_ORDER = {
-  organizations: ['gov', 'soe', 'ind', 'acd', 'ngo', 'cmt'],
+  organizations: ['gov', 'soe', 'ind', 'acd', 'edu', 'ngo', 'cmt'],
   individuals: ['res', 'mov', 'vis', 'wrk'],
 } as const
 

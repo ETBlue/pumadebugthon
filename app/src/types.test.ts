@@ -6,12 +6,14 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
+import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { Cell, IndexFile, IssueFile } from '@/types'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
-const issues = [trees, trashcans]
+const smokefree = smokefreeJson as IssueFile
+const issues = [trees, trashcans, smokefree]
 
 const TAGS = ['實證', 'AI整理', 'AI模擬', null]
 const PRIORITIES = ['M', 'S', 'C', 'W']
@@ -25,9 +27,16 @@ function expectCell(c: Cell) {
 }
 
 describe('index.json', () => {
-  it('has the 6 issues; #1 and #2 are available', () => {
-    expect(index.issues.map((i) => i.number)).toEqual([1, 2, 3, 4, 5, 6])
-    expect(index.issues.filter((i) => i.available).map((i) => i.number)).toEqual([1, 2])
+  it('has the 6 host issues and #8; #1, #2 and #8 are available', () => {
+    // #7 (自由題) has no topic, so it is not listed.
+    expect(index.issues.map((i) => i.number)).toEqual([1, 2, 3, 4, 5, 6, 8])
+    expect(index.issues.filter((i) => i.available).map((i) => i.number)).toEqual([1, 2, 8])
+  })
+
+  it('has the source of each issue: #8 was added by a participant', () => {
+    expect(index.issues.map((i) => [i.number, i.source])).toEqual([
+      [1, '主辦單位'], [2, '主辦單位'], [3, '主辦單位'], [4, '主辦單位'], [5, '主辦單位'], [6, '主辦單位'], [8, '參加者補充'],
+    ])
   })
 
   it('has no counts, spaces or date for unavailable issues', () => {

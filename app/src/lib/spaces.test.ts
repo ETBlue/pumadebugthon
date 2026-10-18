@@ -16,12 +16,12 @@ const pairs = (list: { issueNumber: number; solution: { id: string } }[]) =>
   list.map((x) => `#${x.issueNumber} ${x.solution.id}`)
 
 describe('issuesBySpace', () => {
-  it('sidewalk: issues 1 and 2', () => {
-    expect(issuesBySpace(index, 'sidewalk').map((i) => i.number)).toEqual([1, 2])
+  it('sidewalk: issues 1, 2 and 8', () => {
+    expect(issuesBySpace(index, 'sidewalk').map((i) => i.number)).toEqual([1, 2, 8])
   })
 
-  it('arcade: only issue 2; an unused or unknown code: none', () => {
-    expect(issuesBySpace(index, 'arcade').map((i) => i.number)).toEqual([2])
+  it('arcade: issues 2 and 8; an unused or unknown code: none', () => {
+    expect(issuesBySpace(index, 'arcade').map((i) => i.number)).toEqual([2, 8])
     expect(issuesBySpace(index, 'parking')).toEqual([])
     expect(issuesBySpace(index, 'nope')).toEqual([])
   })
@@ -43,22 +43,24 @@ describe('solutionsBySpace', () => {
 })
 
 describe('sameSpaceIssues', () => {
-  it('#2 shares sidewalk and park with #1, in the order of the #2 space list', () => {
+  it('#2 shares spaces with #1 and #8, in the order of the #2 space list', () => {
     expect(sameSpaceIssues(index, 2)).toEqual([
-      { code: 'sidewalk', issues: [1] },
-      { code: 'park', issues: [1] },
+      { code: 'sidewalk', issues: [1, 8] },
+      { code: 'arcade', issues: [8] },
+      { code: 'park', issues: [1, 8] },
+      { code: 'mrt-exit', issues: [8] },
     ])
   })
 
-  it('#1 shares sidewalk and park with #2', () => {
+  it('#1 shares sidewalk and park with #2 and #8', () => {
     expect(sameSpaceIssues(index, 1)).toEqual([
-      { code: 'sidewalk', issues: [2] },
-      { code: 'park', issues: [2] },
+      { code: 'sidewalk', issues: [2, 8] },
+      { code: 'park', issues: [2, 8] },
     ])
   })
 
   it('is empty when no other issue uses the same space, or for an unknown issue', () => {
-    const only2: IndexFile = { ...index, issues: index.issues.filter((i) => i.number !== 1) }
+    const only2: IndexFile = { ...index, issues: index.issues.filter((i) => i.number === 2) }
     expect(sameSpaceIssues(only2, 2)).toEqual([])
     expect(sameSpaceIssues(index, 3)).toEqual([])
     expect(sameSpaceIssues(index, 99)).toEqual([])

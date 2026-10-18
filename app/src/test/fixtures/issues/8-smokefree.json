@@ -1,0 +1,1701 @@
+{
+  "number": 8,
+  "folder": "8-smokefree",
+  "title": "無菸城市",
+  "spaces": [
+    "sidewalk",
+    "arcade",
+    "bus-stop",
+    "park",
+    "mrt-exit",
+    "indoor"
+  ],
+  "updated": "2026-10-18",
+  "stakeholders": [
+    {
+      "id": "O01",
+      "relation": {
+        "text": "衛生局公告的戶外禁菸場所包含部分店家的騎樓與庇廊（臺北市公告戶外禁菸公共場所清單）；商圈也在公告的禁菸區域內",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O03",
+      "relation": {
+        "text": "部分吸菸區由環保局負責清潔（「臺北市指定吸菸區」資料的管理單位欄）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O04",
+      "relation": {
+        "text": "亂丟菸蒂屬於廢棄物清理法的禁止行為（步驟 3 新增）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O05",
+      "relation": {
+        "text": "部分禁菸公告的範圍是里辦公處或社區的戶外空間（衛生局公告列表）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O07",
+      "relation": {
+        "text": "開放資料與地圖工具",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O12",
+      "relation": {
+        "text": "吸菸區設在人行道時要保留 1.5 公尺淨寬（設置及管理要點）（步驟 3 新增）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O13",
+      "relation": {
+        "text": "市民通報的窗口之一",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "O22",
+      "relation": {
+        "text": "公告禁菸區域、審查吸菸區、稽查（菸害防制法、衛生局公告、設置及管理要點）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O23",
+      "relation": {
+        "text": "學校與幼兒園全面禁止吸菸（菸害防制法第 18 條）；非封閉式吸菸區要距離其主要出入口 25 公尺以上（設置及管理要點）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "O24",
+      "relation": {
+        "text": "社區公共空間的管理者；住戶之間菸味爭議的協調窗口（步驟 3 新增）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I01",
+      "relation": {
+        "text": "走路與等車時吸到二手菸（「市長，你給我聽好了」資料，約 449 則，關鍵字估算）",
+        "tag": "AI整理",
+        "pending": false
+      }
+    },
+    {
+      "id": "I03",
+      "relation": {
+        "text": "西門町、迪化街等觀光區是公告的禁菸區域；可能不熟悉規定",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I05",
+      "relation": {
+        "text": "在公園運動與休息",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I06",
+      "relation": {
+        "text": "吸菸區與它的圍籬可能影響人行道通行",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I07",
+      "relation": {
+        "text": "學校、公園周邊與小孩吸到二手菸（「市長，你給我聽好了」資料，約 85 則，關鍵字估算）",
+        "tag": "AI整理",
+        "pending": false
+      }
+    },
+    {
+      "id": "I17",
+      "relation": {
+        "text": "騎車與停等紅燈時吸到旁邊騎士的菸（「市長，你給我聽好了」資料，約 123 則，關鍵字估算）",
+        "tag": "AI整理",
+        "pending": false
+      }
+    },
+    {
+      "id": "I19",
+      "relation": {
+        "text": "長時間停留在公園、騎樓等公共空間；罰款對經濟弱勢的影響較大",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "I25",
+      "relation": {
+        "text": "禁菸區域擴大後，需要知道哪裡可以合法吸菸；違規吸菸會被罰（菸害防制法第 40 條）",
+        "tag": "實證",
+        "pending": false
+      }
+    },
+    {
+      "id": "I26",
+      "relation": {
+        "text": "樓梯間、出入口與鄰居的菸味飄進家裡（由「市長，你給我聽好了」資料發現，約 167 則，關鍵字估算）",
+        "tag": "AI整理",
+        "pending": false
+      }
+    },
+    {
+      "id": "I27",
+      "relation": {
+        "text": "二手菸可能引起過敏或氣喘（「市長，你給我聽好了」資料，約 49 則同時提到二手菸與過敏、氣喘、咳嗽或呼吸，關鍵字估算）",
+        "tag": "AI整理",
+        "pending": false
+      }
+    },
+    {
+      "id": "I28",
+      "relation": {
+        "text": "辦公大樓出入口有人吸菸（由「市長，你給我聽好了」資料發現，約 33 則，關鍵字估算）",
+        "tag": "AI整理",
+        "pending": false
+      }
+    }
+  ],
+  "inputSources": [
+    {
+      "source": "官方資料（衛生局公告、菸害防制法、臺北市吸菸區設置及管理要點）",
+      "stakeholders": [
+        "O22"
+      ],
+      "fit": {
+        "text": "依內容分到 O22（見[題目原文重點](#題目原文重點)）",
+        "tag": "實證",
+        "pending": false
+      },
+      "note": "本題沒有主辦單位的題目原文，改用官方資料"
+    },
+    {
+      "source": "「市長，你給我聽好了」資料",
+      "stakeholders": [
+        "I01",
+        "I07",
+        "I17",
+        "I25",
+        "I26",
+        "I27",
+        "I28"
+      ],
+      "fit": {
+        "text": "一般市民。本文件依留言內容，把需求放到 I01、I07、I17、I25、I26、I27、I28 等利害關係人之下（見步驟 4 與[附錄](#市長你給我聽好了資料的使用方式)）",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "note": "主辦單位的資料沒有吸菸的類別，留言多在「07 其他」。只用件數與改寫的摘要，不引用原始留言，件數是關鍵字估算"
+    },
+    {
+      "source": "開放資料「臺北市指定吸菸區」",
+      "stakeholders": [
+        "O22",
+        "O03",
+        "I25",
+        "O07"
+      ],
+      "fit": {
+        "text": "O22、O03、I25、O07",
+        "tag": "實證",
+        "pending": false
+      },
+      "note": "有位置、樣態與管理單位；沒有禁菸範圍的資料"
+    },
+    {
+      "source": "[臺北市陳情系統 1999](https://1999.gov.taipei) 類別資料",
+      "stakeholders": [
+        "I01",
+        "I26"
+      ],
+      "fit": {
+        "text": "會使用 1999、常陳情的市民（多為 I01、I26）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "偏向熟悉 1999 的人；吸菸者、外籍人士可能較少使用"
+    },
+    {
+      "source": "吸菸者的簡短問卷（在吸菸區旁或線上）",
+      "stakeholders": [
+        "I25"
+      ],
+      "fit": {
+        "text": "I25",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "吸菸者較少在網路上表達需要；問卷要匿名，不收個資"
+    },
+    {
+      "source": "里辦公處、里民大會、大樓住戶會議",
+      "stakeholders": [
+        "O05",
+        "O24",
+        "I26",
+        "I05"
+      ],
+      "fit": {
+        "text": "O05、O24、I26、I05",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "地方意見，可能偏向住戶觀點"
+    },
+    {
+      "source": "學校、幼兒園與家長會",
+      "stakeholders": [
+        "O23",
+        "I07"
+      ],
+      "fit": {
+        "text": "O23、I07",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "【待補：需要有人聯繫學校】"
+    },
+    {
+      "source": "現場觀察（吸菸區周邊、公車站、商圈的尖峰時段）",
+      "stakeholders": [
+        "I01",
+        "I06",
+        "I17",
+        "I25",
+        "O01"
+      ],
+      "fit": {
+        "text": "I01、I06、I17、I25、O01",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "只記錄數量與位置，不拍可辨識的人臉"
+    },
+    {
+      "source": "訪談衛生局與吸菸區的管理單位",
+      "stakeholders": [
+        "O22",
+        "O03",
+        "O12"
+      ],
+      "fit": {
+        "text": "O22、O03、O12",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "【待補：需要有人安排訪談】"
+    },
+    {
+      "source": "醫療院所、病友團體",
+      "stakeholders": [
+        "I27"
+      ],
+      "fit": {
+        "text": "I27",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "需要專業人士協助，不收病歷資料"
+    },
+    {
+      "source": "社會局與無家者服務單位",
+      "stakeholders": [
+        "I19"
+      ],
+      "fit": {
+        "text": "I19",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "需要社工協助，保護當事人"
+    },
+    {
+      "source": "商圈發展協會",
+      "stakeholders": [
+        "O01"
+      ],
+      "fit": {
+        "text": "O01",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": null
+    },
+    {
+      "source": "外籍居民社群、觀光服務中心",
+      "stakeholders": [
+        "I03"
+      ],
+      "fit": {
+        "text": "I03",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "note": "需要多語言"
+    }
+  ],
+  "stories": [
+    {
+      "id": "O01-US01",
+      "stakeholder": "O01",
+      "want": {
+        "text": "店門口與騎樓的禁菸規定和標示清楚，由主管機關負責勸導與稽查",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "店員不必自己勸客人，不會和客人起衝突",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問商圈發展協會；市民留言約 35 則提到店家或餐廳門口有人吸菸（「市長，你給我聽好了」資料，關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O01-US02",
+      "stakeholder": "O01",
+      "want": {
+        "text": "商圈附近有合法的吸菸地點，可以引導吸菸的客人過去",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "門口禁菸後，吸菸的客人也有地方去，生意不受太大影響",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問商圈發展協會",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O03-US01",
+      "stakeholder": "O03",
+      "want": {
+        "text": "吸菸區附設菸蒂收集設備，並排入固定的清理路線",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W10",
+      "soThat": {
+        "text": "減少路面與水溝裡的菸蒂",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "市民留言約 131 則提到菸蒂讓街道或水溝髒亂（「市長，你給我聽好了」資料，關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O04-US01",
+      "stakeholder": "O04",
+      "want": {
+        "text": "亂丟菸蒂的稽查和違規吸菸的稽查，與衛生局分工清楚、資料互通",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "同一個地點的問題不必由兩個局處各自處理",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增；市民留言約 54 則提到菸蒂要罰或要有地方丟（「市長，你給我聽好了」資料，關鍵字估算）",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O05-US01",
+      "stakeholder": "O05",
+      "want": {
+        "text": "設置或移動吸菸區之前，先通知並和里民討論",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W11",
+      "soThat": {
+        "text": "里民不會突然發現家門口多了吸菸區",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問里辦公處",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O07-US01",
+      "stakeholder": "O07",
+      "want": {
+        "text": "吸菸區位置與禁菸範圍有開放資料（位置、範圍、更新日期）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "做查詢地圖與通報工具，減少重複開發",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "開放資料的現況見附錄",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O12-US01",
+      "stakeholder": "O12",
+      "want": {
+        "text": "在人行道上設置吸菸區之前，先確認通行淨寬，並和清潔箱、樹穴一起規劃",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W07",
+      "soThat": {
+        "text": "人行道上的設施不違反道路與無障礙相關規範",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O13-US01",
+      "stakeholder": "O13",
+      "want": {
+        "text": "違規吸菸的通報帶有地點與時段，可以直接轉給負責稽查的單位",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "減少轉派，通報的人也知道處理結果",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "市民留言約 22 則提到打 1999 或陳情吸菸的問題（「市長，你給我聽好了」資料，關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O22-US01",
+      "stakeholder": "O22",
+      "want": {
+        "text": "在公告的區域內，除吸菸區外不得吸菸；沒有設吸菸區的地方，全面禁止吸菸",
+        "tag": "實證",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "防制菸害，維護國民健康",
+        "tag": "實證",
+        "pending": false
+      },
+      "source": "衛生局公告（例：捷運市政府站 2、3 號出口周邊，115-11-01 起）與菸害防制法第 1 條、第 19 條第 1 項第 4 款（見附錄）；市民留言約 2,443 則提到吸菸（「市長，你給我聽好了」資料，關鍵字估算）",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O22-US02",
+      "stakeholder": "O22",
+      "want": {
+        "text": "吸菸區依「臺北市吸菸區設置及管理要點」設置與管理（封閉式要負壓、非封閉式要和建築物出入口與學校保持距離、人行道保留 1.5 公尺淨寬）",
+        "tag": "實證",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "吸菸區的煙不影響周邊的人，設置標準全市一致",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "臺北市吸菸區設置及管理要點（115-10-01 生效，見附錄）；市民留言約 137 則提到吸菸區要密閉或過濾（「市長，你給我聽好了」資料，關鍵字估算）",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O22-US03",
+      "stakeholder": "O22",
+      "want": {
+        "text": "有一致的成效指標，並定期公開",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "政策成效可以用資料向市民與議會說明，也能依資料調整",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "市民留言約 45 則提到政策的成效（「市長，你給我聽好了」資料，關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O22-US04",
+      "stakeholder": "O22",
+      "want": {
+        "text": "稽查與勸導人力安排在違規吸菸最常發生的地點與時段",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "有限的稽查人力用在最需要的地方",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問衛生局；稽查人力的安排見附錄的新聞報導，需真人查證",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O23-US01",
+      "stakeholder": "O23",
+      "want": {
+        "text": "校園周邊的禁菸範圍清楚標示，上下學時段有人巡查",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W08",
+      "soThat": {
+        "text": "學童上下學不必經過吸菸的人群",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "市民留言約 85 則提到學校或幼兒園周邊要禁菸（「市長，你給我聽好了」資料，關鍵字估算）",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "O24-US01",
+      "stakeholder": "O24",
+      "want": {
+        "text": "有規約範本與法規說明，可以約定社區公共空間禁菸",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "處理住戶之間的菸味爭議時有依據",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US01",
+      "stakeholder": "I01",
+      "want": {
+        "text": "走在人行道上不吸到二手菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W01",
+      "soThat": {
+        "text": "為了健康，不必一路閃躲或憋氣",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 449 則（關鍵字估算），其中約 77 則也提到健康、閃躲或憋氣",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US02",
+      "stakeholder": "I01",
+      "want": {
+        "text": "限制邊走邊吸菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "走在後面的人不必一路吸到菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 306 則（關鍵字估算），其中約 76 則也提到走在後面或躲不開",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US03",
+      "stakeholder": "I01",
+      "want": {
+        "text": "公車站與捷運出口周邊禁菸，吸菸區不設在站牌旁",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "等車時不吸到二手菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 117 則（關鍵字估算），其中約 63 則也提到吸到或聞到菸味",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US04",
+      "stakeholder": "I01",
+      "want": {
+        "text": "吸菸區改為密閉、有排風或過濾的空間",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W02",
+      "soThat": {
+        "text": "煙不會飄到路人身上",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 137 則（關鍵字估算），其中約 37 則也提到煙飄出來或影響路人",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US05",
+      "stakeholder": "I01",
+      "want": {
+        "text": "吸菸區集中設置、規劃妥善",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W03",
+      "soThat": {
+        "text": "吸菸的人不在人行道上隨處吸菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 130 則提到多設、集中或好好規劃吸菸區（關鍵字估算），其中約 56 則也提到不要在路上吸菸或不影響行人",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US06",
+      "stakeholder": "I01",
+      "want": {
+        "text": "違規吸菸真的會被開罰",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "市民不必自己出面勸導",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 211 則（關鍵字估算），其中約 17 則也提到沒人管或要自己勸",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US07",
+      "stakeholder": "I01",
+      "want": {
+        "text": "檢舉違規吸菸的方法簡單、有回應",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "看到違規時可以通報，不必當面勸",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 19 則（關鍵字估算）；另約 22 則提到打 1999 或陳情",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US08",
+      "stakeholder": "I01",
+      "want": {
+        "text": "騎樓、店門口與大樓出入口禁菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W04",
+      "soThat": {
+        "text": "走騎樓、進出建築或在騎樓用餐時不吸到菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 277 則（關鍵字估算），其中約 130 則也提到吸到菸、進出或用餐",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US09",
+      "stakeholder": "I01",
+      "want": {
+        "text": "亂丟菸蒂要罰，也要有地方熄菸、丟菸蒂",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "街道與水溝是乾淨的",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 54 則（關鍵字估算）；另約 131 則提到菸蒂讓街道或水溝髒亂",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US10",
+      "stakeholder": "I01",
+      "want": {
+        "text": "禁菸範圍與吸菸區位置清楚標示",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W05",
+      "soThat": {
+        "text": "不必一處一處猜哪裡禁菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 76 則（關鍵字估算），其中約 43 則也提到不知道或不清楚範圍",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I03-US01",
+      "stakeholder": "I03",
+      "want": {
+        "text": "禁菸範圍與吸菸區位置清楚標示，並有英文與圖示",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W05",
+      "soThat": {
+        "text": "不會因為看不懂規定而違規",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問觀光服務中心；「市長，你給我聽好了」資料約 108 則提到觀光或國際形象，但沒有找到提到英文標示的留言（關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I05-US01",
+      "stakeholder": "I05",
+      "want": {
+        "text": "公園禁菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W06",
+      "soThat": {
+        "text": "在公園運動與休息時呼吸乾淨的空氣",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 113 則提到公園要禁菸或在公園吸到菸（關鍵字估算）；提到長輩的只有約 5 則",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I06-US01",
+      "stakeholder": "I06",
+      "want": {
+        "text": "吸菸區與它的盆栽、圍籬不佔用人行道的通行空間",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W07",
+      "soThat": {
+        "text": "安全通行，不必繞到車道上",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可詢問身障團體；「市長，你給我聽好了」資料約 69 則同時提到吸菸區與人行道或騎樓，但多數講菸味，不是講通行，也不是身障者的觀點（關鍵字估算）",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I07-US01",
+      "stakeholder": "I07",
+      "want": {
+        "text": "學校與幼兒園周邊確實禁菸，範圍夠大",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W08",
+      "soThat": {
+        "text": "小孩不吸到二手菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 85 則（關鍵字估算）；另約 85 則提到小孩、孕婦或嬰兒吸到二手菸",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I07-US02",
+      "stakeholder": "I07",
+      "want": {
+        "text": "公園禁菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W06",
+      "soThat": {
+        "text": "小孩在遊戲場玩時不吸到二手菸",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 I05-US01 同一訴求，另列在家長之下；「市長，你給我聽好了」資料約 113 則（關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I07-US03",
+      "stakeholder": "I07",
+      "want": {
+        "text": "吸菸區不設在學校、公園、站牌與住家旁邊",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W09",
+      "soThat": {
+        "text": "推嬰兒車時不必經過吸菸區",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 57 則（關鍵字估算）",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I17-US01",
+      "stakeholder": "I17",
+      "want": {
+        "text": "騎車與停等紅燈時，旁邊的騎士不吸菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "停等時不吸到旁邊騎士的菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 123 則（關鍵字估算），其中約 54 則也提到停等時吸到菸",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I19-US01",
+      "stakeholder": "I19",
+      "want": {
+        "text": "禁菸規定由人員當面說明，並轉介社福服務，而不是只開罰",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "知道規定，也不會收到付不出來的罰單",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "可請社會局與無家者服務單位協助；「市長，你給我聽好了」資料約 33 則提到遊民或街友吸菸，多是旁人的觀點（關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I25-US01",
+      "stakeholder": "I25",
+      "want": {
+        "text": "吸菸區集中設置、規劃妥善",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W03",
+      "soThat": {
+        "text": "吸菸時不影響別人，自己也有合法的地方可以去",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 130 則提到多設、集中或好好規劃吸菸區（關鍵字估算），其中約 23 則也提到吸菸者的需要或兼顧雙方；多數留言沒有說自己是否吸菸，自述吸菸者的留言少於 10 則",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I25-US02",
+      "stakeholder": "I25",
+      "want": {
+        "text": "吸菸區附設菸蒂收集設備，並排入固定的清理路線",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W10",
+      "soThat": {
+        "text": "吸完菸有地方熄菸、丟菸蒂",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 O03-US01 同一訴求，另列在吸菸者之下；「市長，你給我聽好了」資料約 47 則提到吸菸區的遮雨、座位或菸灰桶，多數不是吸菸者的觀點（關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I25-US03",
+      "stakeholder": "I25",
+      "want": {
+        "text": "禁菸範圍與吸菸區位置清楚標示",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W05",
+      "soThat": {
+        "text": "不會不小心在禁菸範圍吸菸而被罰",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 I01-US10 同一訴求，另列在吸菸者之下；「市長，你給我聽好了」資料約 76 則（關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I25-US04",
+      "stakeholder": "I25",
+      "want": {
+        "text": "戒菸服務容易找到、容易使用",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "想戒菸時知道可以去哪裡",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料約 14 則提到戒菸（關鍵字估算），內容不一定是吸菸者自己的需要",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I25-US05",
+      "stakeholder": "I25",
+      "want": {
+        "text": "住家附近有可以合法吸菸的地方",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "不必在樓梯間或陽台吸菸，也不會和鄰居起衝突",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "步驟 3 追問後新增",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I26-US01",
+      "stakeholder": "I26",
+      "want": {
+        "text": "樓梯間、出入口和鄰居的菸味不飄進家裡",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "在家裡呼吸乾淨的空氣",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料發現，約 167 則（關鍵字估算），其中約 20 則也提到健康、睡眠或小孩",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I26-US02",
+      "stakeholder": "I26",
+      "want": {
+        "text": "吸菸區不設在學校、公園、站牌與住家旁邊",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W09",
+      "soThat": {
+        "text": "窗戶可以打開，不怕菸味飄進來",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 I07-US03 同一訴求，另列在住戶之下；「市長，你給我聽好了」資料約 57 則，其中約 47 則提到吸菸區靠近住家（關鍵字估算）",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I26-US03",
+      "stakeholder": "I26",
+      "want": {
+        "text": "設置或移動吸菸區之前，先通知並和里民討論",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "group": "W11",
+      "soThat": {
+        "text": "住戶的意見能事先被聽到",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 O05-US01 同一訴求，另列在住戶之下",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I27-US01",
+      "stakeholder": "I27",
+      "want": {
+        "text": "走在人行道上不吸到二手菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W01",
+      "soThat": {
+        "text": "不會因為菸味引起過敏或氣喘",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "與 I01-US01 同一訴求，另列在過敏或呼吸道疾病者之下；「市長，你給我聽好了」資料約 449 則，其中約 49 則也提到過敏、氣喘、咳嗽或呼吸（關鍵字估算）",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I27-US02",
+      "stakeholder": "I27",
+      "want": {
+        "text": "吸菸區改為密閉、有排風或過濾的空間",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W02",
+      "soThat": {
+        "text": "經過吸菸區附近時，身體不會不舒服",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 I01-US04 同一訴求，另列在過敏或呼吸道疾病者之下；「市長，你給我聽好了」資料約 137 則（關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I27-US03",
+      "stakeholder": "I27",
+      "want": {
+        "text": "禁菸範圍與吸菸區位置清楚標示",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W05",
+      "soThat": {
+        "text": "出門前可以規劃避開吸菸區的路線",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "與 I01-US10 同一訴求，另列在過敏或呼吸道疾病者之下；「市長，你給我聽好了」資料約 76 則（關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I27-US04",
+      "stakeholder": "I27",
+      "want": {
+        "text": "戶外公共場所全面禁菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "外出時不必擔心哪裡會有菸味",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "「市長，你給我聽好了」資料，約 52 則（關鍵字估算）",
+      "priority": "C",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I28-US01",
+      "stakeholder": "I28",
+      "want": {
+        "text": "騎樓、店門口與大樓出入口禁菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W04",
+      "soThat": {
+        "text": "進出辦公大樓時不吸到菸",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料發現；約 277 則（關鍵字估算），其中約 33 則提到辦公大樓或上班的地方門口有人吸菸",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    }
+  ],
+  "groups": [
+    {
+      "id": "W01",
+      "summary": "走在人行道上不吸到二手菸",
+      "tag": "AI模擬",
+      "stories": [
+        "I01-US01",
+        "I27-US01"
+      ]
+    },
+    {
+      "id": "W02",
+      "summary": "吸菸區改為密閉、有排風或過濾",
+      "tag": "AI模擬",
+      "stories": [
+        "I01-US04",
+        "I27-US02"
+      ]
+    },
+    {
+      "id": "W03",
+      "summary": "吸菸區集中設置、規劃妥善",
+      "tag": "AI模擬",
+      "stories": [
+        "I01-US05",
+        "I25-US01"
+      ]
+    },
+    {
+      "id": "W04",
+      "summary": "騎樓、店門口與大樓出入口禁菸",
+      "tag": "AI模擬",
+      "stories": [
+        "I01-US08",
+        "I28-US01"
+      ]
+    },
+    {
+      "id": "W05",
+      "summary": "禁菸範圍與吸菸區位置清楚標示",
+      "tag": "AI模擬",
+      "stories": [
+        "I01-US10",
+        "I03-US01",
+        "I25-US03",
+        "I27-US03"
+      ]
+    },
+    {
+      "id": "W06",
+      "summary": "公園禁菸",
+      "tag": "AI模擬",
+      "stories": [
+        "I05-US01",
+        "I07-US02"
+      ]
+    },
+    {
+      "id": "W07",
+      "summary": "吸菸區不佔用人行道的通行空間",
+      "tag": "AI模擬",
+      "stories": [
+        "O12-US01",
+        "I06-US01"
+      ]
+    },
+    {
+      "id": "W08",
+      "summary": "學校與幼兒園周邊確實禁菸",
+      "tag": "AI模擬",
+      "stories": [
+        "O23-US01",
+        "I07-US01"
+      ]
+    },
+    {
+      "id": "W09",
+      "summary": "吸菸區不設在學校、公園、站牌與住家旁邊",
+      "tag": "AI模擬",
+      "stories": [
+        "I07-US03",
+        "I26-US02"
+      ]
+    },
+    {
+      "id": "W10",
+      "summary": "吸菸區附設菸蒂收集設備",
+      "tag": "AI模擬",
+      "stories": [
+        "O03-US01",
+        "I25-US02"
+      ]
+    },
+    {
+      "id": "W11",
+      "summary": "設置或移動吸菸區前先通知並討論",
+      "tag": "AI模擬",
+      "stories": [
+        "O05-US01",
+        "I26-US03"
+      ]
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "C1",
+      "text": {
+        "text": "吸菸者與店家需要附近有合法的吸菸地點；家長與住戶不希望吸菸區在學校、公園、站牌或住家旁",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I25-US01",
+        "O01-US02"
+      ],
+      "sideB": [
+        "I07-US03",
+        "I26-US02"
+      ],
+      "method": {
+        "text": "以里為單位的**社區工作坊**＋地圖標點，里長主持，衛生局說明設置規定，並邀請吸菸者參加",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "依設置及管理要點的距離規定先畫出不能設的範圍，再從剩下的地點一起選；試辦 3 個月後依里民與吸菸者的意見調整",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C2",
+      "text": {
+        "text": "希望戶外公共場所全面禁菸；吸菸者需要合法的吸菸地點",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I27-US04"
+      ],
+      "sideB": [
+        "I25-US01"
+      ],
+      "method": {
+        "text": "**公民審議會議**（隨機抽選市民，包含吸菸者與不吸菸者，聽取公共衛生、法務與吸菸者的說明後討論）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "依地點分階段處理：人多的地方先禁菸，同時確保步行距離內有合法的吸菸區；定期公開資料再檢討",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C3",
+      "text": {
+        "text": "吸菸區要設在人多的地方附近；人行道要保留通行淨寬。同一段人行道也要放 #2 的清潔箱與 #1 的樹穴",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I25-US01",
+        "I01-US05"
+      ],
+      "sideB": [
+        "I06-US01",
+        "O12-US01"
+      ],
+      "method": {
+        "text": "**跨議題的共同設計工作坊**（#1、#2 與本題的利害關係人一起參加：衛生局、新工處、公園處、清潔隊、身障團體、推車家長、吸菸者代表），用人行道斷面圖討論每樣設施放在哪裡",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "先畫出通行淨寬，再把吸菸區、清潔箱與樹放在同一條設施帶；設施帶太窄的路段不設吸菸區，改用公園邊緣、退縮地或室內吸菸室",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C4",
+      "text": {
+        "text": "希望違規吸菸真的被開罰；經濟弱勢者希望先說明規定、轉介服務",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I01-US06"
+      ],
+      "sideB": [
+        "I19-US01"
+      ],
+      "method": {
+        "text": "**小型焦點團體**，請社會局與社工協助，保護弱勢者的參與",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "先勸導並轉介，再依規定開罰；公開勸導與開罰的件數",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C5",
+      "text": {
+        "text": "住戶不希望菸味飄進家裡；住在附近的吸菸者沒有合法的地方可去",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I26-US01"
+      ],
+      "sideB": [
+        "I25-US05"
+      ],
+      "method": {
+        "text": "**大樓住戶會議**，由管委會主持，必要時請里長或調解委員協助",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "依住戶會議的決定，在規約中約定社區公共空間禁菸，或指定遠離窗戶的吸菸位置",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "C6",
+      "text": {
+        "text": "行人與上班族希望騎樓、店門口與大樓出入口禁菸；店家擔心吸菸的客人沒有地方去",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I01-US08",
+        "I28-US01"
+      ],
+      "sideB": [
+        "O01-US02"
+      ],
+      "method": {
+        "text": "**商圈圓桌**（商圈協會、衛生局、里長、大樓管理單位）",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "門口與騎樓禁菸；商圈內依設置規定指定合法的吸菸地點，並清楚標示",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    }
+  ],
+  "solutions": [
+    {
+      "id": "A",
+      "name": {
+        "text": "吸菸區選址檢查與參與式選址",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "把設置及管理要點的距離與淨寬規定，加上公車站與住家窗戶，做成每個候選點的檢查清單；設置或移動前在地圖上公告，經里民工作坊討論，也邀請吸菸者參加。人行道的設施帶和 #1、#2 一起規劃",
+      "spaces": [
+        "sidewalk",
+        "arcade",
+        "bus-stop",
+        "park",
+        "mrt-exit"
+      ],
+      "stories": [
+        "O05-US01",
+        "O12-US01",
+        "O22-US02",
+        "I01-US03",
+        "I06-US01",
+        "I07-US03",
+        "I25-US01",
+        "I26-US02",
+        "O01-US02",
+        "I01-US05",
+        "I26-US03"
+      ]
+    },
+    {
+      "id": "B",
+      "name": {
+        "text": "吸菸區設計改善試點",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "在幾個人多的地點，比較負壓式、綠籬式等不同設計對周邊菸味的影響；吸菸區附設菸蒂收集設備，排入清理路線",
+      "spaces": [
+        "sidewalk",
+        "park",
+        "mrt-exit"
+      ],
+      "stories": [
+        "O22-US02",
+        "I01-US01",
+        "I27-US01",
+        "O03-US01",
+        "I01-US04",
+        "I01-US09",
+        "I25-US02",
+        "I27-US02"
+      ]
+    },
+    {
+      "id": "C",
+      "name": {
+        "text": "禁菸範圍的公告、標示與開放資料",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "每個公告的禁菸範圍有一致的現場標示（含英文與圖示）；把禁菸範圍和吸菸區一起做成開放資料與地圖。學校、幼兒園、公園、公車站與騎樓等常被提到的地點，列入公告範圍的討論",
+      "spaces": [
+        "sidewalk",
+        "arcade",
+        "bus-stop",
+        "park",
+        "mrt-exit"
+      ],
+      "stories": [
+        "O22-US01",
+        "O23-US01",
+        "I01-US03",
+        "I07-US01",
+        "O07-US01",
+        "I01-US08",
+        "I01-US10",
+        "I03-US01",
+        "I05-US01",
+        "I07-US02",
+        "I25-US03",
+        "I27-US03",
+        "I27-US04",
+        "I28-US01"
+      ]
+    },
+    {
+      "id": "D",
+      "name": {
+        "text": "通報、勸導與稽查流程",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "通報帶有地點與時段，轉給負責的單位；稽查人力排在通報最多的地點與時段；對經濟弱勢者先勸導與轉介；違規吸菸與亂丟菸蒂的稽查分工清楚；定期公開勸導、開罰與通報件數",
+      "spaces": [
+        "sidewalk",
+        "arcade",
+        "bus-stop",
+        "park",
+        "mrt-exit"
+      ],
+      "stories": [
+        "O22-US01",
+        "O01-US01",
+        "O04-US01",
+        "O13-US01",
+        "O22-US03",
+        "O22-US04",
+        "I01-US02",
+        "I01-US06",
+        "I01-US07",
+        "I01-US09",
+        "I17-US01",
+        "I19-US01"
+      ]
+    },
+    {
+      "id": "E",
+      "name": {
+        "text": "住家二手菸與戒菸支援",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "summary": "提供公寓大廈規約的範本與法規說明，協助住戶處理樓梯間、出入口的菸味爭議；在吸菸區與社區提供戒菸服務的資訊",
+      "spaces": [
+        "indoor",
+        "arcade"
+      ],
+      "stories": [
+        "I26-US01",
+        "O24-US01",
+        "I25-US04",
+        "I25-US05"
+      ]
+    }
+  ],
+  "pending": [
+    {
+      "section": "題目原文重點",
+      "text": "【待補：查證「無菸城市」的官方名稱、範圍與階段】",
+      "context": "政策名稱與原則"
+    },
+    {
+      "section": "題目原文重點",
+      "text": "【待補：查證各區域的公告文號與範圍】",
+      "context": "已實施的區域"
+    },
+    {
+      "section": "1.1 利害關係人清單",
+      "text": "【待補：確認是否需要新增特別關注的類別】",
+      "context": null
+    },
+    {
+      "section": "1.2 可能的輸入來源",
+      "text": "【待補：需要有人聯繫學校】",
+      "context": "學校、幼兒園與家長會"
+    },
+    {
+      "section": "1.2 可能的輸入來源",
+      "text": "【待補：需要有人安排訪談】",
+      "context": "訪談衛生局與吸菸區的管理單位"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：要點 115-10-01 生效，需衛生局逐點檢查的結果】",
+      "context": "吸菸區中，符合距離與淨寬規定的比例"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：衛生局或區公所是否已有紀錄；沒有的話，試點後由 A 產生】",
+      "context": "設置或移動前經過里民討論的比例"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：試點前後的現場量測】",
+      "context": "吸菸區周邊的菸味或空氣品質"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：本文件沒有找到禁菸範圍的開放資料；衛生局網頁有「臺北市公告戶外禁菸公共場所」清單】",
+      "context": "有開放資料的禁菸範圍"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：短問卷】",
+      "context": "市民「知道哪裡禁菸、哪裡可以吸菸」的比例"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：查證原始資料與定義】",
+      "context": "戶外場所二手菸暴露率"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：全市與各區域的稽查統計】",
+      "context": "勸導與開罰件數"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：1999 與衛生局的通報紀錄】",
+      "context": "違規吸菸的通報件數與處理天數"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：查證國民健康署的原始資料】",
+      "context": "成人吸菸率"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：衛生局或國民健康署的統計】",
+      "context": "使用戒菸服務的人數"
+    },
+    {
+      "section": "7.1 解法 A：吸菸區選址檢查與參與式選址",
+      "text": "【待補：新工處】",
+      "context": "需要的資料／API"
+    },
+    {
+      "section": "7.1 解法 A：吸菸區選址檢查與參與式選址",
+      "text": "【待補：法務確認】",
+      "context": "相關法規"
+    },
+    {
+      "section": "7.2 解法 B：吸菸區設計改善試點",
+      "text": "【待補：法務確認】",
+      "context": "相關法規"
+    },
+    {
+      "section": "7.2 解法 B：吸菸區設計改善試點",
+      "text": "【待補：每處設置與維護費用】",
+      "context": "成本／可行性／風險"
+    },
+    {
+      "section": "7.3 解法 C：禁菸範圍的公告、標示與開放資料",
+      "text": "【待補：觀傳局】",
+      "context": "需要的資料／API"
+    },
+    {
+      "section": "7.4 解法 D：通報、勸導與稽查流程",
+      "text": "【待補：研考會】",
+      "context": "需要的資料／API"
+    },
+    {
+      "section": "7.4 解法 D：通報、勸導與稽查流程",
+      "text": "【待補：法務確認是否仍適用】",
+      "context": "相關法規"
+    },
+    {
+      "section": "7.5 解法 E：住家二手菸與戒菸支援",
+      "text": "【待補：法務確認可以約定的範圍】",
+      "context": "相關法規"
+    },
+    {
+      "section": "資料比對注意事項",
+      "text": "【待補：衛生局確認目前的數量與計算方式】",
+      "context": null
+    },
+    {
+      "section": "資料比對注意事項",
+      "text": "【待補：法務確認這個辦法目前怎麼適用】",
+      "context": null
+    },
+    {
+      "section": "資料比對注意事項",
+      "text": "【待補：查證環保局對亂丟菸蒂的裁罰基準】",
+      "context": null
+    },
+    {
+      "section": "官方與新聞來源",
+      "text": "【待補：查證內容與生效日期】",
+      "context": "[臺北市吸菸區認養作業要點](https://laws.gov.taipei/law/LawSearch/LawExport/FL106610?type=0)"
+    }
+  ]
+}

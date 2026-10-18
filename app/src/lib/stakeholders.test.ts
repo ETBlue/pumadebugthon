@@ -66,16 +66,17 @@ describe('buildTree', () => {
   })
 
   it('orders nodes by path and stakeholders by ID', () => {
-    expect(tree.organizations.map((n) => n.path)).toEqual(['gov', 'soe', 'ind', 'acd', 'ngo', 'cmt'])
+    expect(tree.organizations.map((n) => n.path)).toEqual(['gov', 'soe', 'ind', 'acd', 'edu', 'ngo', 'cmt'])
     expect(find(tree.organizations, 'gov-local-taipei')!.children.map((c) => c.path)).toEqual([
-      'gov-local-taipei-epb', 'gov-local-taipei-li', 'gov-local-taipei-pwd', 'gov-local-taipei-rdec', 'gov-local-taipei-udd',
+      'gov-local-taipei-doh', 'gov-local-taipei-epb', 'gov-local-taipei-li', 'gov-local-taipei-pwd', 'gov-local-taipei-rdec',
+      'gov-local-taipei-udd',
     ])
     expect(find(tree.organizations, 'ngo-environment')!.stakeholders.map((s) => s.id)).toEqual(['O08', 'O17'])
   })
 
   it('uses the first-level order of FIRST_LEVEL_ORDER; unknown first levels go last, by code', () => {
     expect(FIRST_LEVEL_ORDER).toEqual({
-      organizations: ['gov', 'soe', 'ind', 'acd', 'ngo', 'cmt'],
+      organizations: ['gov', 'soe', 'ind', 'acd', 'edu', 'ngo', 'cmt'],
       individuals: ['res', 'mov', 'vis', 'wrk'],
     })
     const base = { name: '', focus: [], issues: [1], movedTo: null }
@@ -99,7 +100,7 @@ describe('buildTree', () => {
     ])
     for (const n of tree.individuals) expect(n.children).toEqual([])
     expect(tree.individuals.find((n) => n.path === 'wrk')!.stakeholders.map((s) => s.id)).toEqual([
-      'I08', 'I11', 'I12', 'I13', 'I15',
+      'I08', 'I11', 'I12', 'I13', 'I15', 'I28',
     ])
   })
 
@@ -206,7 +207,7 @@ describe('filterStakeholders', () => {
 
   it('crossIssueOnly keeps only stakeholders with 2 or more issues', () => {
     const ids = filterStakeholders(list, { crossIssueOnly: true, focus: [] }).map((s) => s.id)
-    expect(ids).toEqual(['O01', 'O05', 'O06', 'O07', 'O12', 'O13', 'I01', 'I05', 'I06', 'I07', 'I13'])
+    expect(ids).toEqual(['O01', 'O03', 'O04', 'O05', 'O06', 'O07', 'O12', 'O13', 'I01', 'I03', 'I05', 'I06', 'I07', 'I13', 'I17', 'I19'])
     expect(ids).not.toContain('O02')
   })
 

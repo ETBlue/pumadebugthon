@@ -62,6 +62,7 @@ export const t = {
   issueCard: {
     numberTitle: (n: number, title: string) => `#${n} ${title}`,
     inProgress: '製作中',
+    participantNote: '非主辦單位題目，由參加者補充',
     stakeholders: '利害關係人',
     stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,
     stories: '使用者故事',

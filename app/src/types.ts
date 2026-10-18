@@ -36,11 +36,16 @@ export interface IssueCounts {
   wantsAiSummary: number
 }
 
+/** 來源 in analysis/issues.csv: the hackathon host's issue, or an issue a
+ * participant added (for example #8). */
+export type IssueSource = '主辦單位' | '參加者補充'
+
 interface IssueSummaryBase {
   number: number
   /** Folder name in analysis/, for example "2-trashcans". */
   folder: string
   title: string
+  source: IssueSource
 }
 
 /** An issue with an analysis. */

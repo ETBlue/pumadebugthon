@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import type { IndexFile, IssueSummary, Stakeholder } from '@/types'
-import { availableIssues, filterIssuesBySpace, focusOptions, sharedStakeholders, spaceTypeNames, usedSpaceTypes } from './issues'
+import {
+  availableIssues, filterIssuesBySpace, focusOptions, isParticipantIssue, sharedStakeholders, spaceTypeNames, usedSpaceTypes,
+} from './issues'
 
 const index = indexJson as IndexFile
 
@@ -11,14 +13,23 @@ const person = (id: string, issues: number[], extra: Partial<Stakeholder> = {}):
 
 describe('availableIssues', () => {
   it('returns the analyzed issues by number', () => {
-    expect(availableIssues(index).map((i) => i.number)).toEqual([1, 2])
+    expect(availableIssues(index).map((i) => i.number)).toEqual([1, 2, 8])
+  })
+})
+
+describe('isParticipantIssue', () => {
+  it('is true only for an issue that a participant added (來源 參加者補充)', () => {
+    const byNumber = (n: number) => index.issues.find((i) => i.number === n)!
+    expect(isParticipantIssue(byNumber(8))).toBe(true)
+    for (const n of [1, 2, 3, 4, 5, 6]) expect(isParticipantIssue(byNumber(n))).toBe(false)
   })
 })
 
 describe('sharedStakeholders', () => {
-  it('counts the stakeholders of #2 that are also in #1', () => {
-    expect(sharedStakeholders(index.stakeholders, 2)).toEqual({ count: 11, issues: [1] })
-    expect(sharedStakeholders(index.stakeholders, 1)).toEqual({ count: 11, issues: [2] })
+  it('counts the stakeholders of an issue that are also in another issue', () => {
+    expect(sharedStakeholders(index.stakeholders, 2)).toEqual({ count: 14, issues: [1, 8] })
+    expect(sharedStakeholders(index.stakeholders, 1)).toEqual({ count: 13, issues: [2, 8] })
+    expect(sharedStakeholders(index.stakeholders, 8)).toEqual({ count: 14, issues: [1, 2] })
   })
 
   it('leaves out moved IDs and lists other issues in number order', () => {
@@ -40,7 +51,7 @@ describe('usedSpaceTypes', () => {
   it('lists the space types of analyzed issues, in space-types.csv order', () => {
     const codes = usedSpaceTypes(index).map((s) => s.code)
     const all = index.spaceTypes.map((s) => s.code)
-    expect(new Set(codes)).toEqual(new Set(['sidewalk', 'arcade', 'park', 'mrt-exit', 'utility', 'bike-lane']))
+    expect(new Set(codes)).toEqual(new Set(['sidewalk', 'arcade', 'bus-stop', 'park', 'mrt-exit', 'indoor', 'utility', 'bike-lane']))
     expect(codes).toEqual(all.filter((c) => codes.includes(c)))
   })
 })
@@ -61,10 +72,10 @@ describe('filterIssuesBySpace', () => {
 
   it('keeps the issues that use ANY selected code, and no unavailable issue', () => {
     const numbers = (list: IssueSummary[]) => list.map((i) => i.number)
-    expect(numbers(filterIssuesBySpace(index.issues, ['arcade']))).toEqual([2])
+    expect(numbers(filterIssuesBySpace(index.issues, ['arcade']))).toEqual([2, 8])
     expect(numbers(filterIssuesBySpace(index.issues, ['utility']))).toEqual([1])
-    expect(numbers(filterIssuesBySpace(index.issues, ['arcade', 'utility']))).toEqual([1, 2])
-    expect(numbers(filterIssuesBySpace(index.issues, ['indoor']))).toEqual([])
+    expect(numbers(filterIssuesBySpace(index.issues, ['indoor', 'utility']))).toEqual([1, 8])
+    expect(numbers(filterIssuesBySpace(index.issues, ['parking']))).toEqual([])
   })
 })
 

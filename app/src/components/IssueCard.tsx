@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
 import { Field } from './Field'
-import type { Shared } from '@/lib/issues'
+import { isParticipantIssue, type Shared } from '@/lib/issues'
 import type { IssueSummary, SpaceType } from '@/types'
 import { SpaceLinks } from './SpaceLinks'
 import { linkClass } from './styles'
@@ -14,10 +14,15 @@ const tc = t.issueCard
  * issues are available; then the 跨議題 field is left out. */
 export function IssueCard({ issue, spaceTypes, shared }: { issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null }) {
   const title = tc.numberTitle(issue.number, issue.title)
+  // An issue a participant added (not the host) says so under its title.
+  const note = isParticipantIssue(issue) && (
+    <p className="mt-1 text-sm text-muted-foreground">{tc.participantNote}</p>
+  )
   if (!issue.available) {
     return (
       <article className="h-full rounded-lg border border-dashed p-4">
         <h3 className="font-semibold text-muted-foreground">{title}</h3>
+        {note}
         <Badge variant="secondary" className="mt-2 rounded-sm">{tc.inProgress}</Badge>
       </article>
     )
@@ -28,6 +33,7 @@ export function IssueCard({ issue, spaceTypes, shared }: { issue: IssueSummary; 
       <h3 className="text-lg font-semibold">
         <Link to={`/issues/${issue.number}`} className={linkClass}>{title}</Link>
       </h3>
+      {note}
       <dl className="mt-3 space-y-1.5 text-sm">
         <Field label={tc.stakeholders}>{tc.stakeholdersValue(c.stakeholdersO, c.stakeholdersI)}</Field>
         <Field label={tc.stories}>{tc.storiesValue(c.stories)}</Field>

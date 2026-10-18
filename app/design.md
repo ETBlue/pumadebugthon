@@ -34,7 +34,7 @@ Building the tool also tests the analysis format. Parts that are hard to read by
 
 ### 3.1 Home page
 
-**Issue list.** The 6 issues with a topic (#1–#6). #7 (自由題) has no topic, so it is not listed. An issue without an analysis shows 「製作中」 with no numbers, and cannot be opened. Each analyzed issue card shows:
+**Issue list.** The issues in `analysis/issues.csv`: the 6 host issues with a topic (#1–#6), and #8 (無菸城市), which a participant added. #7 (自由題) has no topic, so it is not listed. The 來源 column of `issues.csv` (`主辦單位` or `參加者補充`) becomes `source` in `index.json`. A card with `參加者補充` shows the note 「非主辦單位題目，由參加者補充」 under its title. An issue without an analysis shows 「製作中」 with no numbers, and cannot be opened. Each analyzed issue card shows:
 
 | Field | Example (#2) |
 |---|---|
@@ -185,6 +185,7 @@ Codes are joined with `-`. The app shows the names from `analysis/path-labels.cs
 | O | `soe` 公營事業 | Owner and name, for example `soe-taipei-metro` |
 | O | `ind` 產業 | Optional sector |
 | O | `acd` 學術 | Optional field |
+| O | `edu` 教育機構 | Schools and kindergartens, for example O23 學校與幼兒園 (#8). Added 2026-10-18. |
 | O | `ngo` 公民團體 | Registered groups (associations, foundations). Optional focus. |
 | O | `cmt` 社群 | Informal groups that are not registered and whose members change over time, for example open-source and civic tech communities, online groups, self-organized local groups. Optional focus. |
 | I | `res` 居民 | Affected where they live |

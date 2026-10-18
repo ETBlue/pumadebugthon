@@ -2,6 +2,12 @@
 // Order is always by issue number or by file order. Nothing here sorts by a count.
 import type { AvailableIssueSummary, IndexFile, IssueSummary, SpaceType, Stakeholder } from '@/types'
 
+/** True for an issue that a participant added, not the hackathon host
+ * (來源 參加者補充 in issues.csv). The home card shows a note for it. */
+export function isParticipantIssue(issue: IssueSummary): boolean {
+  return issue.source === '參加者補充'
+}
+
 /** The analyzed issues, by issue number. */
 export function availableIssues(index: IndexFile): AvailableIssueSummary[] {
   return index.issues

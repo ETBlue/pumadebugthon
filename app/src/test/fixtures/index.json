@@ -4,6 +4,7 @@
       "number": 1,
       "folder": "1-trees",
       "title": "把三千棵樹種回來",
+      "source": "主辦單位",
       "available": true,
       "spaces": [
         "sidewalk",
@@ -26,6 +27,7 @@
       "number": 2,
       "folder": "2-trashcans",
       "title": "找回消失的垃圾桶",
+      "source": "主辦單位",
       "available": true,
       "spaces": [
         "sidewalk",
@@ -48,6 +50,7 @@
       "number": 3,
       "folder": "3-mice",
       "title": "鼠患四處跑，衛生安全怎麼辦",
+      "source": "主辦單位",
       "available": false,
       "spaces": [],
       "updated": null,
@@ -57,6 +60,7 @@
       "number": 4,
       "folder": "4-neihutraffic",
       "title": "內湖尖峰車流好比停車場",
+      "source": "主辦單位",
       "available": false,
       "spaces": [],
       "updated": null,
@@ -66,6 +70,7 @@
       "number": 5,
       "folder": "5-busroutes",
       "title": "公車路網如何即時反應需求",
+      "source": "主辦單位",
       "available": false,
       "spaces": [],
       "updated": null,
@@ -75,10 +80,36 @@
       "number": 6,
       "folder": "6-oldbuildings",
       "title": "危老耐震如何查，風險評級怎麼找",
+      "source": "主辦單位",
       "available": false,
       "spaces": [],
       "updated": null,
       "counts": null
+    },
+    {
+      "number": 8,
+      "folder": "8-smokefree",
+      "title": "無菸城市",
+      "source": "參加者補充",
+      "available": true,
+      "spaces": [
+        "sidewalk",
+        "arcade",
+        "bus-stop",
+        "park",
+        "mrt-exit",
+        "indoor"
+      ],
+      "updated": "2026-10-18",
+      "counts": {
+        "stakeholdersO": 10,
+        "stakeholdersI": 11,
+        "stories": 45,
+        "conflicts": 6,
+        "solutions": 5,
+        "wantsEvidence": 2,
+        "wantsAiSummary": 24
+      }
     }
   ],
   "stakeholders": [
@@ -89,7 +120,8 @@
       "focus": [],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -107,7 +139,8 @@
       "path": "gov-local-taipei-epb-cleaning",
       "focus": [],
       "issues": [
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -117,7 +150,8 @@
       "path": "gov-local-taipei-epb",
       "focus": [],
       "issues": [
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -128,7 +162,8 @@
       "focus": [],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -150,7 +185,8 @@
       "focus": [],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -201,7 +237,8 @@
       "focus": [],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -212,7 +249,8 @@
       "focus": [],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -297,13 +335,44 @@
       "movedTo": null
     },
     {
+      "id": "O22",
+      "name": "衛生局",
+      "path": "gov-local-taipei-doh",
+      "focus": [],
+      "issues": [
+        8
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O23",
+      "name": "學校與幼兒園",
+      "path": "edu",
+      "focus": [],
+      "issues": [
+        8
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "O24",
+      "name": "公寓大廈管理委員會",
+      "path": "cmt-building",
+      "focus": [],
+      "issues": [
+        8
+      ],
+      "movedTo": null
+    },
+    {
       "id": "I01",
       "name": "通勤行人（捷運、公車乘客）",
       "path": "mov",
       "focus": [],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -325,7 +394,8 @@
         "外籍"
       ],
       "issues": [
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -350,7 +420,8 @@
       ],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -363,7 +434,8 @@
       ],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -376,7 +448,8 @@
       ],
       "issues": [
         1,
-        2
+        2,
+        8
       ],
       "movedTo": null
     },
@@ -482,7 +555,8 @@
       "path": "mov",
       "focus": [],
       "issues": [
-        1
+        1,
+        8
       ],
       "movedTo": null
     },
@@ -504,7 +578,8 @@
         "經濟弱勢"
       ],
       "issues": [
-        1
+        1,
+        8
       ],
       "movedTo": null
     },
@@ -557,19 +632,62 @@
         2
       ],
       "movedTo": null
+    },
+    {
+      "id": "I25",
+      "name": "吸菸者",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        8
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I26",
+      "name": "公寓與大樓住戶",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        8
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I27",
+      "name": "過敏或呼吸道疾病者",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        8
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I28",
+      "name": "辦公大樓上班族",
+      "path": "wrk",
+      "focus": [],
+      "issues": [
+        8
+      ],
+      "movedTo": null
     }
   ],
   "pathLabels": {
     "acd": "學術",
     "cmt": "社群",
+    "cmt-building": "公寓大廈管理委員會",
     "cmt-civictech": "公民科技",
     "cmt-local": "在地自組團體",
+    "edu": "教育機構",
     "gov": "政府",
     "gov-central": "中央政府",
     "gov-central-ly": "立法院",
     "gov-local": "地方政府",
     "gov-local-taipei": "臺北市",
     "gov-local-taipei-council": "臺北市議會",
+    "gov-local-taipei-doh": "衛生局",
     "gov-local-taipei-epb": "環保局",
     "gov-local-taipei-epb-cleaning": "清潔隊",
     "gov-local-taipei-li": "里辦公處",

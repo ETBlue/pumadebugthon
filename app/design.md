@@ -65,7 +65,7 @@ Each item shows:
 |---|---|
 | 最近更新的議題 | 「#8 無菸城市」 (link to the issue), 更新日期, the space types (links to the space pages) |
 | 最近加入分析的族群 | The name (link to the stakeholder page), the ID, the 特別關注 badges, the issues it appears in (links), 加入日期 |
-| 最近分析出的解法 | 「#8 E」 and the name with its tag, the one-line summary, 新增日期, a link to the issue's 解法 tab |
+| 最近分析出的解法 | 「#8 E」 and the name with its tag (the code and name are a link to the solution page, 3.12), the one-line summary, 新增日期 |
 
 Sort rule for all three blocks: by date, newest first. Items with the same date are sorted by ID, highest first (issue number; stakeholder ID, the reverse of the usual ID order, so I comes before O and I28 before I27; for solutions the issue number, then the solution letter). **Never sorted by a count.** An item without a date (for example an issue with no git history) goes last. The sort functions are `recentIssues`, `recentStakeholders` and `recentSolutions` in `src/lib/recent.ts`.
 
@@ -81,7 +81,7 @@ Five tabs. 總覽 opens first.
 | 你的意見 | The opinion check (section 4) |
 | 利害關係人 | The same list as the stakeholder list page (section 3.9), limited to this issue. Each row links to the stakeholder page (section 3.3). |
 | 衝突 | C1, C2… Each shows both sides with their stories, the deliberation method, and the simulated result. |
-| 解法 | A, B… Each shows the one-line summary, its space types, and the stories it covers, grouped by priority (必須有 / 應該有 / 可以有). |
+| 解法 | A, B… Each shows the one-line summary, its space types, and the stories it covers, grouped by priority (必須有 / 應該有 / 可以有). The code and name of each solution are a link to its page (3.12). |
 
 ### 3.3 Stakeholder page
 
@@ -215,7 +215,7 @@ The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an
 
 | Part | Design |
 |---|---|
-| Each solution | 「#2 A」 and the name with its tag, the one-line summary, space types (links), 新增日期, the number of stories it covers as plain text (for example 「21 則」), and a link to the issue's 解法 tab |
+| Each solution | 「#2 A」 and the name with its tag, the one-line summary, space types (links), 新增日期, the number of stories it covers as plain text (for example 「21 則」). The code and name are a link to the solution page (3.12). |
 | Filters | Space type and issue, both as toggle chips. Several picked chips in one filter: a solution matches ANY of them. Nothing picked: all. A status line says how many solutions match. |
 | Logic | `solutionGroups` and `solutionSpaceOptions` in `src/lib/solutionList.ts` |
 
@@ -251,6 +251,32 @@ On every page, the text 「市政 debug 松參加者作品・展示用 MVP」 (`
 | Use | `pointer-events: none`, so links and buttons under it work. `user-select: none`. `aria-hidden="true"`, because the footer says the same thing. |
 | Layout | `position: fixed`, `inset: 0`: it never makes the page wider and never moves the layout. |
 | Print | Shown when printing (`@media print`, `print-color-adjust: exact`). |
+
+### 3.12 Solution page
+
+URL: `#/issues/<n>/solutions/<code>`, for example `#/issues/2/solutions/A`. One page per solution, because the content of a solution can be long (ETBlue, `human-inputs.md`). Page title: 「#2 A 清潔箱佈建建議地圖 · 解法 · 提案小幫手」.
+
+The page shows, in this order:
+
+| Part | Content | Data |
+|---|---|---|
+| Breadcrumb | 首頁 › #2 找回消失的垃圾桶 › 解法 › A, in a `<nav>` | |
+| h1 | 「#2 A」 and the name with its tag | 6.1 |
+| Header | The one-line summary, the space types (links), 新增日期 | 6.1 |
+| 涵蓋的使用者故事 | The covered stories, grouped by priority label. The 「只看有資料根據」 toggle works here too (`?evidence=1`). | 6.2 |
+| 涵蓋的相同訴求群組 | Each W group with a covered story: 全部 or 部分 (with the covered stories), and the stakeholders of the group as links | Worked out from the stories. `check_analysis.py` already checks that the 6.2 column matches them. |
+| 相關的利害關係人 | The stakeholders of the covered stories, in ID order, as links, with the 「也出現在」 mark (4.2) | 6.2 |
+| 相關的衝突 | Each conflict with a covered story on either side: the text with its tag and the covered stories. One link to the issue's 衝突 tab. | 5.4 |
+| 成效衡量 | Each measure: 指標, 目前數值（基準值） with its tag, 資料來源 | 6.3 (`measures`) |
+| 資源、法規、隱私與風險 | The 總覽 row (成本, 可行性, 主要風險, 主責單位, each with the row tag), then the step 7 rows as a definition list | step 7 (`overview`, `detail`) |
+| 題目或研究中的構想 | Only when there is one: the idea and how the analysis handles it | 6.1 構想 table (`ideas`) |
+| 待補 | The 【待補】 items of the solution, grouped by section | `pending` of the solution |
+| 更多 | Links to the issue's 解法 tab and to `#/solutions` | |
+
+Rules:
+- Every mention of a solution links to its page: the issue 解法 tab, `#/solutions`, the home block, the opinion result (相關解法), the space page and the stakeholder page. The link text is the code and the name, so each solution has one link and no two links have the same text and different targets. The link keeps `?evidence=1`.
+- An unknown issue, an issue with no analysis, or an unknown code shows a short message with links (the issue's 解法 tab, `#/solutions`, the home page).
+- The logic is in `src/lib/solutionPage.ts`: `solutionPath`, `findSolution`, `solutionTitle`, `solutionStoryGroups`, `solutionGroupCoverage`, `solutionStakeholders`, `solutionConflicts`. Nothing is sorted by a count.
 
 ## 4. Opinion check
 
@@ -377,6 +403,7 @@ Rules:
 - the 議題 column matches the issue files
 - every space type code is in `space-types.csv`, and each solution's space types are in its issue's list
 - 新增日期 exists in `stakeholders.csv` and in 6.1, and each value is a `YYYY-MM-DD` date that is not after today
+- each solution in 6.1 has its own step 7 section `### 7.n 解法 X：…` and a 總覽 row (5.8)
 
 ### 5.7 Open data list
 
@@ -395,12 +422,20 @@ Rules:
 - `check_analysis.py` checks each issue both ways: every data.gov.tw or data.taipei dataset URL in the appendix (`## 附錄`, up to the next `## ` heading) has a row that lists the issue, and every row that lists the issue has its URL in the appendix.
 - `build_json.py` writes the rows to `index.json` as `openData`: `name`, `url`, `agency`, `license`, `issues`.
 
+### 5.8 Solution codes
+
+- A solution code (A, B…) is never reused in an issue, also when a solution is removed or merged. So a shared link such as `#/issues/2/solutions/A` keeps working, the same as stakeholder IDs (5.1) and space codes (5.3).
+- Each solution in 6.1 has its own step 7 section, `### 7.n 解法 X：…`, with a 項目 | 內容 table, and one row in the 總覽 table (`### 7.n 總覽`). The first cell of the 總覽 row is the tag, the code and a short name, for example 「`[AI模擬]` A 佈建建議地圖」. `check_analysis.py` checks both.
+- A 6.3 row lists one or more codes in its 解法 cell, for example `A, D`.
+- A row of the 6.1 構想 table belongs to a solution when its 本文件的處理 cell names it as 「解法 X」, for example 「併入解法 B」.
+
 ## 6. Build script
 
 `analysis/build_json.py`:
 - Reads every issue folder that has an `issue-analysis.md`, plus `stakeholders.csv`, `path-labels.csv`, `space-types.csv` and `open-data.csv`.
 - Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types, open datasets as `openData`) and `app/public/data/issues/<folder>.json`.
-- Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2.
+- Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2, 6.3, each step 7 section `### 7.n 解法 X：…`, and `### 7.n 總覽`.
+- For each solution, also writes the fields of its page (3.12): `measures` (6.3 rows: `metric`, `baseline` Cell, `source`), `detail` (step 7 rows: `item`, `content` Cell), `overview` (`cost`, `feasibility`, `risk`, `owner`, each a Cell with the row tag), `ideas` (構想 rows: `idea`, `handling`, both Cells) and `pending` (the 【待補】 items of its step 7 section and its 6.3 rows; they stay in the issue's `pending` list too).
 - Adds per-issue counts for the issue cards (section 3.9), including `wantsEvidence` and `wantsAiSummary` (stories whose 我想要… cell is `[實證]` or `[AI整理]`), and the update date from `git log -1 --format=%cs -- <folder>`.
 - Keeps each tag in its own field, for example `{ "text": "…", "tag": "AI模擬" }`. A 【待補】 cell has `"tag": null` and `"pending": true`.
 - Collects every 【待補…】 item in the issue file, including items inside longer text (for example 「【待補：法務確認】」 in step 7), with its section, for the 待補清單.
@@ -479,3 +514,4 @@ Required by the hackathon rules:
 15. The home page hero is full width, with a background of colors and a simple pattern made from the Solarized tokens (no photos or image files). It changes with the theme, and its text passes AA in both themes. The three home blocks are 3 columns from the `lg` breakpoint and 1 column below it (3.1). (ETBlue, 2026-10-18)
 16. The notice box at the top of every page is removed. The footer keeps the full disclaimer, and every content cell keeps its tag badge (3.5, 3.8). The footer gets a link 「市政 debug 松活動頁面」 to https://puma.taipei/hackathon in 專案連結, next to the disclaimer (3.8). (ETBlue, 2026-10-18)
 17. Every page has a watermark 「市政 debug 松參加者作品・展示用 MVP」: light, at an angle, repeated over the whole window, also when printing. It does not block clicks and is hidden from screen readers. Text under it still passes AA in both themes, so some text tokens became slightly darker (light) or lighter (dark) (3.10, 3.11). (ETBlue, 2026-10-18)
+18. Each solution has its own page, `#/issues/<n>/solutions/<code>`, because its content can be long. It shows the covered stories, W groups, stakeholders, conflicts, measures, the step 7 details and the 待補 items of the solution. Every mention of a solution links to it. A solution code is never reused in an issue, so the links keep working (3.12, 5.8). (ETBlue, `human-inputs.md`, 2026-10-18)

@@ -53,7 +53,7 @@ export function filterIssuesBySpace(issues: IssueSummary[], codes: string[]): Is
 }
 
 /** 特別關注 values in the order of design 5.1. */
-export const FOCUS_ORDER = ['高齡', '身心障礙', '兒童與照顧者', '外籍', '經濟弱勢'] as const
+export const FOCUS_ORDER = ['高齡', '身心障礙', '呼吸道疾病', '兒童與照顧者', '外籍', '經濟弱勢'] as const
 
 /** The 特別關注 values that active stakeholders use: first in FOCUS_ORDER,
  * then unknown values in string order. */

@@ -211,6 +211,10 @@ describe('filterStakeholders', () => {
     expect(ids).not.toContain('O02')
   })
 
+  it('focus 呼吸道疾病 keeps I27 過敏或呼吸道疾病者', () => {
+    expect(filterStakeholders(list, { crossIssueOnly: false, focus: ['呼吸道疾病'] }).map((s) => s.id)).toEqual(['I27'])
+  })
+
   it('focus keeps stakeholders that have any selected focus tag', () => {
     expect(filterStakeholders(list, { crossIssueOnly: false, focus: ['高齡'] }).map((s) => s.id)).toEqual(['I05', 'I11'])
     expect(filterStakeholders(list, { crossIssueOnly: false, focus: ['高齡', '身心障礙'] }).map((s) => s.id)).toEqual([

@@ -81,7 +81,12 @@ describe('filterIssuesBySpace', () => {
 
 describe('focusOptions', () => {
   it('lists the 特別關注 values in use, in the design order', () => {
-    expect(focusOptions(index.stakeholders)).toEqual(['高齡', '身心障礙', '兒童與照顧者', '外籍', '經濟弱勢'])
+    expect(focusOptions(index.stakeholders)).toEqual(['高齡', '身心障礙', '呼吸道疾病', '兒童與照顧者', '外籍', '經濟弱勢'])
+  })
+
+  it('puts 呼吸道疾病 right after 身心障礙 (owner decision 2026-10-18)', () => {
+    const list = [person('I01', [8], { focus: ['外籍', '呼吸道疾病'] }), person('I02', [1], { focus: ['身心障礙'] })]
+    expect(focusOptions(list)).toEqual(['身心障礙', '呼吸道疾病', '外籍'])
   })
 
   it('puts unknown values last and skips moved IDs', () => {

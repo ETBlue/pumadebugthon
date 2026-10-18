@@ -167,7 +167,7 @@ New file `analysis/stakeholders.csv` (UTF-8 with BOM):
 | 利害關係人編號 | Global ID, for example `O04`, `I06`. The same ID means the same stakeholder in every issue. |
 | 利害關係人 | Name |
 | 分類路徑 | Category path (5.2) |
-| 特別關注 | Zero or more of: 高齡, 身心障礙, 兒童與照顧者, 外籍, 經濟弱勢. Separated by 「、」. |
+| 特別關注 | Zero or more of: 高齡, 身心障礙, 呼吸道疾病, 兒童與照顧者, 外籍, 經濟弱勢. Separated by 「、」. 呼吸道疾病 was added 2026-10-18 (13, item 7). |
 | 議題 | Issue numbers, for example `1 2 5`. Filled by a script. |
 | 備註 | For a moved ID: 「已改為 I12」 |
 | 新增日期 | The date the ID was added to this file, `YYYY-MM-DD`. A new stakeholder gets today's date. The date never changes, also when the row is moved or renamed. Used for the app's "recent" lists. In `index.json` it is `added`. Added 2026-10-18; the first values come from git history (the first commit where the ID is in this file). |
@@ -351,6 +351,6 @@ Required by the hackathon rules:
 4. Informal groups get their own category `cmt` 社群, separate from `ngo`. (2026-10-18)
 5. A third source tag `[AI整理]` marks AI summaries of real data that no person has checked yet. The filter 「只看 `[實證]`」 became 「只看有資料根據」: it keeps `[實證]` and `[AI整理]` and hides only `[AI模擬]`. (ETBlue, 2026-10-18)
 6. `edu` 教育機構 is a first level of 分類路徑, for schools and kindergartens (O23 學校與幼兒園 in #8). It is not under `gov`. (ETBlue, 2026-10-18)
-7. The stakeholder for people with respiratory illness stays as it is: I27 過敏或呼吸道疾病者 (`res`), the exact name in `stakeholders.csv`. Its 特別關注 in `stakeholders.csv` is empty, and no new 特別關注 category is added. (ETBlue, 2026-10-18)
+7. A new 特別關注 category 呼吸道疾病 is added, after 身心障礙 in the list order. It is used by I27 過敏或呼吸道疾病者 (#8), the exact name in `stakeholders.csv`. (ETBlue, 2026-10-18)
 8. 衛生局 (O22) is one organization stakeholder and is not split. A separate I stakeholder for its staff is added only if a story about the staff's own needs (for example workload) is added later, the same rule as 環保局清潔隊 and 清潔隊員 (5.1). (ETBlue, 2026-10-18)
 9. Content taken only from news reports is `[AI整理]`, not `[AI模擬]`: AI summarized it from a real source, and no person has checked it yet. The cell says 「新聞報導指出…」 and has a 【待補：查證…】 item; the outlet and the link are in the appendix. AI judgments based on news stay `[AI模擬]` (3.5). (ETBlue, 2026-10-18)

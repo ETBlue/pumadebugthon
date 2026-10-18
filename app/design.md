@@ -77,7 +77,7 @@ Five tabs. 總覽 opens first.
 
 | Tab | Content |
 |---|---|
-| 總覽 | Title, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
+| 總覽 | Title, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「資料根據」: the same breakdown as on the issue card (3.9), with the full explanation line under it. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
 | 你的意見 | The opinion check (section 4) |
 | 利害關係人 | The same list as the stakeholder list page (section 3.9), limited to this issue. Each row links to the stakeholder page (section 3.3). |
 | 衝突 | C1, C2… Each shows both sides with their stories, the deliberation method, and the simulated result. |
@@ -202,11 +202,21 @@ Each list page has its own URL and an h1. The header links to it.
 | 衝突 | 7 個 |
 | 解法 | 4 個 |
 | 跨議題共用的利害關係人 | For example 「8 位, shared with #1」 (the real number is known after #1 is written). Links to the stakeholder list page with the 「只看跨議題」 filter on (`#/stakeholders?cross=1`). Shown only when 2 or more issues exist. |
-| 資料根據 | 我想要… 實證 6、AI整理 0／45. Two plain counts, not percentages or bars, so they do not read like a score. |
+| 資料根據 | 實證 8・AI整理 21・AI模擬 72・待補 1（共 102 格，來自 51 則故事） 實證 8%, and a small stacked bar under it. See below. |
 | 更新日期 | Date of the last git commit that changed the issue folder. Left out if the build has no git history. |
 | 空間類型 | The issue's space types, for example 人行道、騎樓. Each one links to its space page (section 3.6). |
 
 A space type filter sits above the issue list.
+
+**資料根據** (issue card and 總覽 tab, decision 20):
+- Unit: story cells. Each story has two: 我想要… (`want`) and 以便… (`soThat`). 65 stories have 130 cells. The priority tag and other tables are not counted.
+- Parts, in a fixed order: 實證, AI整理, AI模擬, 待補 (a cell with no tag, `tag: null`). The text always lists the first three, also when 0. 待補 is listed only when there is one.
+- `build_json.py` counts the cells (`counts.cells` in `index.json`). `src/lib/cellBasis.ts` makes the text parts, the bar and the percent.
+- The 實證 percent is shown next to the counts, never alone. It rounds to the nearest whole number, a half up (12.5 → 13). It is at least 1 when there is a 實證 cell, and at most 99 when not every cell is 實證.
+- The bar is `aria-hidden`; the text carries the meaning, so color is never the only signal. The segments use the tag badge colors (`--tag-evidence`, `--tag-summary`, `--tag-simulated`; 待補 is `--muted-foreground`). They pass 3:1 on the page backgrounds in both themes (tested).
+- One explanation line, once on `#/issues` (not on each card) and on the 總覽 tab: 「這是分析內容的資料來源組成，不代表議題的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。」
+- An issue that is 製作中 shows no breakdown.
+- Issues are never sorted, ranked or filtered by these numbers. The list keeps issue number order. The home page does not show them.
 
 **`#/stakeholders`: 利害關係人列表.** Every stakeholder in `stakeholders.csv`, across all issues.
 
@@ -450,7 +460,7 @@ Rules:
 - Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types, open datasets as `openData`) and `app/public/data/issues/<folder>.json`.
 - Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2, 6.3, each step 7 section `### 7.n 解法 X：…`, and `### 7.n 總覽`.
 - For each solution, also writes the fields of its page (3.12): `measures` (6.3 rows: `metric`, `baseline` Cell, `source`), `detail` (step 7 rows: `item`, `content` Cell), `overview` (`cost`, `feasibility`, `risk`, `owner`, each a Cell with the row tag), `ideas` (構想 rows: `idea`, `handling`, both Cells) and `pending` (the 【待補】 items of its step 7 section and its 6.3 rows; they stay in the issue's `pending` list too).
-- Adds per-issue counts for the issue cards (section 3.9), including `wantsEvidence` and `wantsAiSummary` (stories whose 我想要… cell is `[實證]` or `[AI整理]`), and the update date from `git log -1 --format=%cs -- <folder>`.
+- Adds per-issue counts for the issue cards (section 3.9), including `cells` for 資料根據 (`evidence`, `aiSummary`, `aiSimulated`, `pending`: the 我想要… and 以便… cells of every story by tag), and the update date from `git log -1 --format=%cs -- <folder>`.
 - Keeps each tag in its own field, for example `{ "text": "…", "tag": "AI模擬" }`. A 【待補】 cell has `"tag": null` and `"pending": true`.
 - Collects every 【待補…】 item in the issue file, including items inside longer text (for example 「【待補：法務確認】」 in step 7), with its section, for the 待補清單.
 - Stops with an error that names the issue and the section when a section cannot be read.
@@ -530,3 +540,4 @@ Required by the hackathon rules:
 17. Every page has a watermark 「市政 debug 松參加者作品・展示用 MVP」: light, at an angle, repeated over the whole window, also when printing. It does not block clicks and is hidden from screen readers. Text under it still passes AA in both themes, so some text tokens became slightly darker (light) or lighter (dark) (3.10, 3.11). (ETBlue, 2026-10-18)
 18. Each solution has its own page, `#/issues/<n>/solutions/<code>`, because its content can be long. It shows the covered stories, W groups, stakeholders, conflicts, measures, the step 7 details and the 待補 items of the solution. Every mention of a solution links to it. A solution code is never reused in an issue, so the links keep working (3.12, 5.8). (ETBlue, `human-inputs.md`, 2026-10-18)
 19. A header link also looks active on the pages under its list page, for example 議題 on `#/issues/2/overview` and 利害關係人 on `#/stakeholders/I12`. One solution's page `#/issues/<n>/solutions/<code>` makes 解法 active, not 議題. `aria-current` is `page` on the list page and `true` on a page under it (3.7). (2026-10-19)
+20. 資料根據 shows each issue's story cells by tag: the 我想要… and the 以便… cell of every story, in the fixed order 實證, AI整理, AI模擬, 待補. It is on the issue card (`#/issues`) and the 總覽 tab, as text with counts, the 實證 percent next to the counts, and a small stacked bar. It replaces the old field that counted only the 我想要… cell. Issues are never sorted, ranked or filtered by it, and the home page does not show it. One explanation line says it is the make-up of the data sources, not the importance or quality of the issue, and that organization stories are `[AI模擬]` until a real interview, so it never reaches 100%. One percent is not shown alone: it looks like a score and can mislead. For example #8 has 39 `[AI整理]` cells that no person has checked yet, so a single number would hide what is behind it (3.9). (ETBlue, 2026-10-19)

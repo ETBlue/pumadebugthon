@@ -38,9 +38,20 @@ Building the tool also tests the analysis format. Parts that are hard to read by
 
 URL: `#/`. The home page is short. It has a hero and three blocks. The full lists are on their own pages (section 3.9).
 
-**Hero.** The app name (h1), the subtitle 「在提案之前，先看見各方利害關係人的關注」, and two short paragraphs: what the app does, and who it is for (citizens, civil servants, civic tech communities). The notice (3.5) stays above the hero, in the page layout. A short line under the hero says the lists are by date, not ranked by number.
+**Hero.** A full-width band at the top of the page, under the header. It has the app name (h1), the subtitle 「在提案之前，先看見各方利害關係人的關注」, and two short paragraphs: what the app does, and who it is for (citizens, civil servants, civic tech communities). No disclaimer in the hero: it is in the footer (3.8). A short line under the hero says the lists are by date, not ranked by number.
 
-**Three blocks.** Each block is a section with an h2. It shows the 5 most recent items and ends with a link to its list page (「看全部議題」, 「看全部利害關係人」, 「看全部解法」).
+The hero background is made only from colors and a simple pattern, with no photos or image files: a diagonal gradient and a dot pattern (CSS `linear-gradient` and `radial-gradient`, class `.hero-bg` in `index.css`). All colors are tokens, so the hero follows the theme:
+
+| Token | Light | Dark |
+|---|---|---|
+| `--hero-from` → `--hero-to` (gradient) | base2 `#eee8d5` → base3 `#fdf6e3` | base02 `#073642` → base03 `#002b36` |
+| `--hero-pattern` and `--hero-pattern-opacity` (dots) | yellow `#b58900` at 20% | cyan `#2aa198` at 15% |
+| `--hero-foreground` (all hero text) | base02 `#073642` | base2 `#eee8d5` |
+| Lowest text contrast (on a dot over the gradient end) | 8.89:1, 7.72:1 under the watermark | 8.55:1, 7.26:1 under the watermark |
+
+The page frame is full width only on the home page (the route has `handle: { fullWidth: true }`, read by `isFullWidth` in `src/lib/layout.ts`). The hero text and the blocks use the same centered column as the other pages.
+
+**Three blocks.** Each block is a section with an h2. It shows the 5 most recent items and ends with a link to its list page (「看全部議題」, 「看全部利害關係人」, 「看全部解法」). On large screens (the `lg` breakpoint, 1024 px, and wider) the blocks are 3 columns side by side. Below that (phone and tablet) they are 1 column, in the same order as the keyboard order.
 
 | Block | Items | Date used | Link to |
 |---|---|---|---|
@@ -66,7 +77,7 @@ Five tabs. 總覽 opens first.
 
 | Tab | Content |
 |---|---|
-| 總覽 | Title, notice, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
+| 總覽 | Title, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
 | 你的意見 | The opinion check (section 4) |
 | 利害關係人 | The same list as the stakeholder list page (section 3.9), limited to this issue. Each row links to the stakeholder page (section 3.3). |
 | 衝突 | C1, C2… Each shows both sides with their stories, the deliberation method, and the simulated result. |
@@ -116,7 +127,7 @@ Rules:
     A person changes the tag to `[實證]` after a spot-check.
   - `[AI模擬]`: AI made it up as a likely view. No data behind it.
 - `[實證]`, `[AI整理]`, `[AI模擬]` and 【待補】 each have their own badge style (green, blue, amber, dashed gray outline). The text is always shown, so the tag does not depend on color. A tag is shown next to the text it belongs to, never only once per page.
-- Every page shows a short notice: `[AI模擬]` content is not real interviews or real citizen words, and `[AI整理]` content is an AI summary of real data or news reports that no person has checked yet.
+- There is no notice box at the top of the pages (removed 2026-10-18, decision 16). The footer disclaimer (3.8) says what `[AI模擬]` and `[AI整理]` mean, on every page. Every cell still shows its own tag badge, so a reader sees the tag next to the content.
 - A filter 「只看有資料根據」 hides `[AI模擬]` content in lists. It keeps stories whose 我想要… or 以便… cell is `[實證]` or `[AI整理]`. Each item still shows its own tag. The URL parameter is `?evidence=1`, the name from the time the filter was 「只看 `[實證]`」, so old shared links still work.
 
 ### 3.6 Space page
@@ -158,9 +169,9 @@ On every page. A `<footer>` landmark with:
 
 | Part | Content |
 |---|---|
-| 專案連結 | GitHub source code, and 「如何閱讀議題分析」 (`analysis/method.md`) |
+| 專案連結 | GitHub source code, 「如何閱讀議題分析」 (`analysis/method.md`), and 「市政 debug 松活動頁面」 (https://puma.taipei/hackathon, the official event page; opens in a new tab, `rel="noopener noreferrer"`, with 「（在新分頁開啟）」 for screen readers). The disclaimer is right next to it, so the link gives the context and does not suggest that the host approved the app. |
 | 授權 | Code: MIT, link to `LICENSE` on GitHub. Content made by ETBlue: CC BY 4.0, link to `LICENSE-CONTENT.md` on GitHub. A short note: the host's content follows the host's rules, and open data follows each dataset's license. |
-| 免責聲明 | A personal work by one participant, made with AI help. It is not linked to the host or to the Taipei City Government. `[AI模擬]` content is not real interviews or real citizen words. `[AI整理]` content is not yet checked by a person. |
+| 免責聲明 | A personal work by one participant, made with AI help. It is not linked to the host or to the Taipei City Government. `[AI模擬]` content is not real interviews or real citizen words. `[AI整理]` content is an AI summary of real data or news reports, not yet checked by a person, and its counts are estimates. This is the only disclaimer on the page (3.5). |
 | 下載資料 | The app's own data files, so others can reuse them. This is what `human-inputs.md` means by "the open data used by the app". The JSON the site reads (`data/index.json`, and `data/issues/<folder>.json` for each analyzed issue), as links on the site. The CSV files on GitHub: `analysis/stakeholders.csv`, each analyzed issue's `analysis/<folder>/user-stories.csv`, `space-types.csv`, `path-labels.csv`, `issues.csv`, `open-data.csv`. The list is built from `index.json` (a tested function in `src/lib/`), so a new issue appears with no code change. One line on the data license: the analysis is CC BY 4.0, with the exceptions in `LICENSE-CONTENT.md` (host content; content made from the host's citizen data is only for this hackathon). |
 
 The government open datasets (`openData` in `index.json`) are not in the footer. Each issue lists them in its appendix.
@@ -222,11 +233,24 @@ The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an
 
 - Colors are design tokens: CSS variables in `src/index.css`. Components use the tokens (for example `bg-background`, `text-link`), never a fixed color.
 - Light theme: Solarized Light (background base3 `#fdf6e3`). Dark theme: Solarized Dark (background base03 `#002b36`).
-- App tokens on top of the shadcn tokens: `--link`, `--ring` (focus), `--notice` and `--notice-border`, and one text color per tag badge (`--tag-evidence` 實證 green, `--tag-summary` AI整理 blue, `--tag-simulated` AI模擬 orange). The badge always shows its text.
-- Contrast: WCAG AA. Text 4.5:1, UI borders and the focus ring 3:1. Several Solarized accents fail on the light background (for example yellow, green and cyan as text). Where a Solarized color fails, the token uses a darker (light theme) or lighter (dark theme) shade of the same hue. `index.css` says which ones.
+- App tokens on top of the shadcn tokens: `--link`, `--ring` (focus), one text color per tag badge (`--tag-evidence` 實證 green, `--tag-summary` AI整理 blue, `--tag-simulated` AI模擬 orange), the hero tokens (3.1) and the watermark tokens (3.11). The badge always shows its text.
+- Contrast: WCAG AA. Text 4.5:1, UI borders and the focus ring 3:1, on the page background and the muted background, with and without the watermark on top. Several Solarized accents fail on the light background (for example yellow, green and cyan as text). Where a Solarized color fails, the token uses a darker (light theme) or lighter (dark theme) shade of the same hue. `index.css` says which ones, with the numbers. `src/lib/designTokens.test.ts` reads `index.css` and checks every number, so a token change that fails AA fails the tests.
 - The first visit follows the system setting (`prefers-color-scheme`). The toggle saves the choice in `localStorage`. If storage fails, the toggle still works for the current page.
 - No flash of the wrong theme: a small script in `index.html` sets the theme class before the app loads.
 - The toggle is a button with a text name and `aria-pressed` (pressed = dark).
+
+### 3.11 Watermark
+
+On every page, the text 「市政 debug 松參加者作品・展示用 MVP」 (`t.watermark`) is repeated over the whole window, light and at an angle (−30°). Any screenshot of any part of a page shows it. It does not use the host's domain.
+
+| Part | Design |
+|---|---|
+| How | One inline SVG (`src/components/Watermark.tsx`) in a fixed layer the size of the window. A `<pattern>` tile (400 × 130 px) holds two copies of the text, the second moved half a tile, and fills the whole layer. |
+| Color | `--watermark` and `--watermark-opacity` tokens. Light: base01 `#586e75` at 8%. Dark: base1 `#93a1a1` at 8%. The watermark text is 1.11:1 on base3 and 1.13:1 on base03: it shows in a screenshot, but it is much lighter than any text. |
+| Contrast under it | The worst case of three: the watermark over the background only, over the text only, or over both. Every text token still passes 4.5:1 on base3/base2 (light) and base03/base02 (dark). The lowest values are 4.55:1 (light `--muted-foreground` and `--tag-evidence` on base2; dark `--foreground` and `--destructive` on base02). To get there, some text tokens became a little darker (light) or lighter (dark), with the same hue (3.10). |
+| Use | `pointer-events: none`, so links and buttons under it work. `user-select: none`. `aria-hidden="true"`, because the footer says the same thing. |
+| Layout | `position: fixed`, `inset: 0`: it never makes the page wider and never moves the layout. |
+| Print | Shown when printing (`@media print`, `print-color-adjust: exact`). |
 
 ## 4. Opinion check
 
@@ -392,7 +416,7 @@ app/
     types.ts            types for the JSON
     i18n/zh-TW.ts       all UI strings. Components never contain UI text directly.
     pages/              Home, Issues, Stakeholders, Solutions, Wants (list pages), Issue (with the 5 tabs), Stakeholder, Space
-    components/         TagBadge, Notice, StakeholderTree, StoryCard, ...
+    components/         TagBadge, Watermark, StakeholderTree, StoryCard, ...
     components/ui/      shadcn/ui parts, copied into the repo and editable
 ```
 
@@ -452,3 +476,6 @@ Required by the hackathon rules:
 12. The theme is Solarized Light, with Solarized Dark as a toggle. Colors are design tokens. AA contrast comes first: a Solarized color that fails is replaced by a darker or lighter shade of the same hue. (ETBlue, 2026-10-18)
 13. The header shows the app name, 議題, 利害關係人, 訴求 and 解法 with counts, and the theme toggle. The footer shows the GitHub link, the licenses, a disclaimer and links to the app's own data files (JSON and CSV). The government open datasets stay in each issue's appendix, not in the footer. (ETBlue, 2026-10-18)
 14. 訴求 gets a list page `#/wants`: the opinion check pick items of every analyzed issue, grouped by issue, with search and the 「只看有資料根據」 filter. Each item links to the opinion check with that item picked. The header link 訴求 goes there. (ETBlue, 2026-10-18)
+15. The home page hero is full width, with a background of colors and a simple pattern made from the Solarized tokens (no photos or image files). It changes with the theme, and its text passes AA in both themes. The three home blocks are 3 columns from the `lg` breakpoint and 1 column below it (3.1). (ETBlue, 2026-10-18)
+16. The notice box at the top of every page is removed. The footer keeps the full disclaimer, and every content cell keeps its tag badge (3.5, 3.8). The footer gets a link 「市政 debug 松活動頁面」 to https://puma.taipei/hackathon in 專案連結, next to the disclaimer (3.8). (ETBlue, 2026-10-18)
+17. Every page has a watermark 「市政 debug 松參加者作品・展示用 MVP」: light, at an angle, repeated over the whole window, also when printing. It does not block clicks and is hidden from screen readers. Text under it still passes AA in both themes, so some text tokens became slightly darker (light) or lighter (dark) (3.10, 3.11). (ETBlue, 2026-10-18)

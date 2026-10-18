@@ -293,7 +293,7 @@ Add Vitest tests with the #1 + #2 fixtures: shared stakeholders show 「也出�
 
 ## Phase U: UI update (design 3.1, 3.7–3.10)
 
-ETBlue's notes for the UI are in `human-inputs.md`. Part 1 is U1. Part 2 is U2.
+ETBlue's notes for the UI are in `human-inputs.md`. Part 1 is U1. Part 2 is U2. Part 3 is U3.
 
 ### Task U1: theme, header, footer, list routes
 
@@ -314,3 +314,14 @@ ETBlue's notes for the UI are in `human-inputs.md`. Part 1 is U1. Part 2 is U2.
 3. `#/solutions`: the solution list (design 3.9).
 4. `#/wants`: the 訴求 list (design 3.9), added by ETBlue on 2026-10-18. The header link 訴求 goes there.
 5. Check: keyboard only, 375 px and 1280 px, both themes, `npm test`, `npm run build`.
+
+### Task U3: full-width hero, columns, no notice box, event link, watermark
+
+**Files:** `src/index.css`, `src/components/Layout.tsx`, `src/components/Footer.tsx`, `src/components/Watermark.tsx`, `src/components/links.ts`, `src/components/styles.ts`, `src/pages/Home.tsx`, `src/router.tsx`, `src/i18n/zh-TW.ts`, `src/lib/contrast.ts`, `src/lib/tokens.ts`, `src/lib/layout.ts`. Remove `src/components/Notice.tsx`.
+
+1. Test first: `contrastRatio`, `blend`, `worstContrast` (`src/lib/contrast.ts`), `parseTokens` (`src/lib/tokens.ts`), `isFullWidth` (`src/lib/layout.ts`), and `src/lib/designTokens.test.ts`, which checks the token contrast in `index.css`.
+2. Full-width hero and 3 columns from `lg` (design 3.1, decision 15).
+3. Remove the notice box (design 3.5, decision 16).
+4. Footer link to the event page (design 3.8, decision 16).
+5. Watermark (design 3.11, decision 17).
+6. Check: 1280, 768 and 375 px, both themes, clicks through the watermark, no sideways scroll, no console errors, `npm test`, `npm run build`.

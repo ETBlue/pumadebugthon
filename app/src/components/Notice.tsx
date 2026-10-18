@@ -11,6 +11,11 @@ export function Notice() {
         <TagBadge kind="AI模擬" className="mx-1" />
         {t.notice.aiAfter}
       </p>
+      <p className="mt-1">
+        {t.notice.summaryBefore}
+        <TagBadge kind="AI整理" className="mx-1" />
+        {t.notice.summaryAfter}
+      </p>
     </aside>
   )
 }

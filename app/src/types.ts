@@ -1,8 +1,12 @@
 // Types for the JSON written by analysis/build_json.py.
 // build_json.py is the source of truth. When it changes, change these types.
 
-/** A tag on analysis text. null means no tag (for example a 【待補】 cell). */
-export type Tag = '實證' | 'AI模擬' | null
+/** A tag on analysis text (see analysis/method.md, section 標記).
+ * 實證: a person can check the source, or a person checked the AI summary.
+ * AI整理: AI summarized it from real data, with counts; not checked by a person yet.
+ * AI模擬: AI made it up as a likely view; no data behind it.
+ * null means no tag (for example a 【待補】 cell). */
+export type Tag = '實證' | 'AI整理' | 'AI模擬' | null
 
 /** The tag on a story's priority. build_json.py always finds one. */
 export type PriorityTag = Exclude<Tag, null>
@@ -28,6 +32,8 @@ export interface IssueCounts {
   solutions: number
   /** Stories whose 我想要… cell has the 實證 tag. */
   wantsEvidence: number
+  /** Stories whose 我想要… cell has the AI整理 tag. */
+  wantsAiSummary: number
 }
 
 interface IssueSummaryBase {

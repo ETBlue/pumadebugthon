@@ -1,18 +1,18 @@
 import { StoryCard } from '@/components/StoryCard'
-import { evidenceOnly as onlyEvidence } from '@/lib/evidence'
+import { dataBasedOnly as onlyDataBased } from '@/lib/dataBasis'
 import { stakeholderName } from '@/lib/stakeholders'
 import type { Stakeholder, Story } from '@/types'
-import { EvidenceEmpty } from './EvidenceToggle'
+import { DataBasisEmpty } from './DataBasisToggle'
 
-/** A list of compact story cards. evidenceOnly: show only the stories with
- * the 實證 tag; when none is left, show a short text instead. */
-export function StoryList({ stories, stakeholders, evidenceOnly = false }: {
+/** A list of compact story cards. dataBasedOnly: show only the stories with
+ * the 實證 or AI整理 tag; when none is left, show a short text instead. */
+export function StoryList({ stories, stakeholders, dataBasedOnly = false }: {
   stories: Story[]
   stakeholders: Stakeholder[]
-  evidenceOnly?: boolean
+  dataBasedOnly?: boolean
 }) {
-  const shown = evidenceOnly ? onlyEvidence(stories) : stories
-  if (evidenceOnly && shown.length === 0 && stories.length > 0) return <EvidenceEmpty />
+  const shown = dataBasedOnly ? onlyDataBased(stories) : stories
+  if (dataBasedOnly && shown.length === 0 && stories.length > 0) return <DataBasisEmpty />
   return (
     <ul className="mt-2 space-y-2">
       {shown.map((s) => (

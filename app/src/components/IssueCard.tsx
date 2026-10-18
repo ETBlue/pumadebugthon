@@ -45,8 +45,8 @@ export function IssueCard({ issue, spaceTypes, shared }: { issue: IssueSummary; 
             </Link>
           </Field>
         )}
-        <Field label={tc.evidence}>
-          <span title={tc.evidenceHint}>{tc.evidenceValue(c.wantsEvidence, c.stories)}</span>
+        <Field label={tc.dataBasis}>
+          <span title={tc.dataBasisHint}>{tc.dataBasisValue(c.wantsEvidence, c.wantsAiSummary, c.stories)}</span>
         </Field>
         {issue.updated && <Field label={tc.updated}><time dateTime={issue.updated}>{issue.updated}</time></Field>}
         {issue.spaces.length > 0 && (

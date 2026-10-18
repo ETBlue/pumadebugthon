@@ -13,7 +13,7 @@ const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const issues = [trees, trashcans]
 
-const TAGS = ['實證', 'AI模擬', null]
+const TAGS = ['實證', 'AI整理', 'AI模擬', null]
 const PRIORITIES = ['M', 'S', 'C', 'W']
 
 function expectCell(c: Cell) {
@@ -41,7 +41,7 @@ describe('index.json', () => {
   it('has the counts of #2', () => {
     const i = index.issues.find((i) => i.number === 2)
     expect(i?.counts).toEqual({
-      stakeholdersO: 12, stakeholdersI: 13, stories: 45, conflicts: 7, solutions: 4, wantsEvidence: 6,
+      stakeholdersO: 12, stakeholdersI: 13, stories: 45, conflicts: 7, solutions: 4, wantsEvidence: 6, wantsAiSummary: 0,
     })
   })
 
@@ -122,7 +122,7 @@ describe('issue files', () => {
           expectCell(s.want)
           expectCell(s.soThat)
           expect(PRIORITIES).toContain(s.priority)
-          expect(['實證', 'AI模擬']).toContain(s.priorityTag)
+          expect(['實證', 'AI整理', 'AI模擬']).toContain(s.priorityTag)
           if (s.group !== null) expect(groupIds.has(s.group), s.id).toBe(true)
         }
       })

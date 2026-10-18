@@ -1,10 +1,10 @@
 import { CellText } from '@/components/CellText'
-import { EvidenceEmpty, EvidenceToggle, useEvidenceOnly } from '@/components/EvidenceToggle'
+import { DataBasisEmpty, DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Markdown } from '@/components/Markdown'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { StoryList } from '@/components/StoryList'
 import { t } from '@/i18n/zh-TW'
-import { evidenceOnly as onlyEvidence } from '@/lib/evidence'
+import { dataBasedOnly as onlyDataBased } from '@/lib/dataBasis'
 import { storiesByPriority } from '@/lib/issuePage'
 import { priorityLabel } from '@/lib/priority'
 import type { IssueTabProps } from './types'
@@ -14,15 +14,15 @@ const ts = t.solutionsTab
 /** 解法 (design 3.2): each solution with its summary, space types and the
  * stories it covers, grouped by priority. */
 export function SolutionsTab({ index, issue }: IssueTabProps) {
-  const [evidenceOnly] = useEvidenceOnly()
+  const [dataBasedOnly] = useDataBasisFilter()
   if (issue.solutions.length === 0) return <p>{ts.none}</p>
-  const evidenceIds = new Set(onlyEvidence(issue.stories).map((s) => s.id))
+  const dataBasedIds = new Set(onlyDataBased(issue.stories).map((s) => s.id))
   return (
     <>
-      <EvidenceToggle className="mb-6" />
+      <DataBasisToggle className="mb-6" />
       <ul className="space-y-6">
         {issue.solutions.map((sol) => {
-          const ids = evidenceOnly ? sol.stories.filter((id) => evidenceIds.has(id)) : sol.stories
+          const ids = dataBasedOnly ? sol.stories.filter((id) => dataBasedIds.has(id)) : sol.stories
           const groups = storiesByPriority(issue, ids)
           return (
             <li key={sol.id}>
@@ -39,7 +39,7 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
                   </div>
                 )}
                 <h4 className="mt-4 font-medium">{ts.stories}</h4>
-                {evidenceOnly && groups.length === 0 && sol.stories.length > 0 && <EvidenceEmpty />}
+                {dataBasedOnly && groups.length === 0 && sol.stories.length > 0 && <DataBasisEmpty />}
                 {groups.map((g) => (
                   <section key={g.priority} className="mt-3">
                     <h5 className="text-sm font-semibold">{priorityLabel(g.priority)}</h5>

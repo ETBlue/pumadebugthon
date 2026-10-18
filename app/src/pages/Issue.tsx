@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
-import { evidenceSearch } from '@/lib/evidence'
+import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
 import { findIssue, ISSUE_TABS, parseTab, tabPath, type IssueTab } from '@/lib/issuePage'
 import type { AvailableIssueSummary, IndexFile } from '@/types'
@@ -81,8 +81,8 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
   // opens the tab.
   const onTabChange = (value: string) => {
     const next = parseTab(value)
-    // Keep the 「只看 [實證]」 setting (?evidence=1) when the tab changes.
-    if (next) navigate({ pathname: tabPath(summary.number, next), search: evidenceSearch(params) }, { preventScrollReset: true })
+    // Keep the 「只看有資料根據」 setting (?evidence=1) when the tab changes.
+    if (next) navigate({ pathname: tabPath(summary.number, next), search: dataBasisFilterSearch(params) }, { preventScrollReset: true })
   }
 
   return (

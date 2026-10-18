@@ -18,7 +18,8 @@
         "stories": 55,
         "conflicts": 7,
         "solutions": 5,
-        "wantsEvidence": 7
+        "wantsEvidence": 7,
+        "wantsAiSummary": 0
       }
     },
     {
@@ -39,7 +40,8 @@
         "stories": 45,
         "conflicts": 7,
         "solutions": 4,
-        "wantsEvidence": 6
+        "wantsEvidence": 6,
+        "wantsAiSummary": 0
       }
     },
     {

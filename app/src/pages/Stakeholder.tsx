@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
-import { EvidenceEmpty, EvidenceToggle, useEvidenceOnly } from '@/components/EvidenceToggle'
+import { DataBasisEmpty, DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
-import { evidenceOnly as onlyEvidence } from '@/lib/evidence'
+import { dataBasedOnly as onlyDataBased } from '@/lib/dataBasis'
 import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import { movedFrom, pathTrail, stakeholderIssueNumbers, stakeholderIssueView } from '@/lib/stakeholderPage'
@@ -63,7 +63,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   const folders = useMemo(() => shown.map((i) => i.folder), [shown])
   const issues = useIssues(folders)
   const trail = pathTrail(s.path, index.pathLabels)
-  const [evidenceOnly] = useEvidenceOnly()
+  const [dataBasedOnly] = useDataBasisFilter()
 
   return (
     <>
@@ -114,7 +114,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         </Field>
       </dl>
 
-      {shown.length > 0 && <EvidenceToggle className="mt-6" />}
+      {shown.length > 0 && <DataBasisToggle className="mt-6" />}
 
       {shown.length > 0 && (
         <div className="mt-8 space-y-10">
@@ -126,7 +126,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
                 issue={issue}
                 id={s.id}
                 first={i === 0}
-                evidenceOnly={evidenceOnly}
+                dataBasedOnly={dataBasedOnly}
               />
             ))
           ) : (
@@ -152,16 +152,16 @@ function Empty({ children }: { children: ReactNode }) {
 }
 
 /** One issue of the stakeholder. first: show the priority legend once per
- * page. evidenceOnly: the 「只看 [實證]」 filter for the story lists. */
-function IssueSection({ index, issue, id, first, evidenceOnly }: {
+ * page. dataBasedOnly: the 「只看有資料根據」 filter for the story lists. */
+function IssueSection({ index, issue, id, first, dataBasedOnly }: {
   index: IndexFile
   issue: IssueFile
   id: string
   first: boolean
-  evidenceOnly: boolean
+  dataBasedOnly: boolean
 }) {
   const v = stakeholderIssueView(issue, id)
-  const stories = evidenceOnly ? onlyEvidence(v.stories) : v.stories
+  const stories = dataBasedOnly ? onlyDataBased(v.stories) : v.stories
   const n = issue.number
   const p = `issue-${n}`
   const name = (sid: string) => stakeholderName(index.stakeholders, sid)
@@ -184,7 +184,7 @@ function IssueSection({ index, issue, id, first, evidenceOnly }: {
         {v.stories.length === 0 ? (
           <Empty>{tp.storiesNone}</Empty>
         ) : stories.length === 0 ? (
-          <EvidenceEmpty />
+          <DataBasisEmpty />
         ) : (
           <ul className="space-y-2">
             {stories.map((story) => (
@@ -236,7 +236,7 @@ function IssueSection({ index, issue, id, first, evidenceOnly }: {
                   <CellText cell={c.text} />
                 </h4>
                 <p className="mt-3 text-sm text-muted-foreground">{tp.otherSide}</p>
-                <StoryList stories={otherStories} stakeholders={index.stakeholders} evidenceOnly={evidenceOnly} />
+                <StoryList stories={otherStories} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
               </li>
             ))}
           </ul>
@@ -261,7 +261,7 @@ function IssueSection({ index, issue, id, first, evidenceOnly }: {
         {v.uncovered.length === 0 ? (
           <Empty>{tp.uncoveredNone}</Empty>
         ) : (
-          <StoryList stories={v.uncovered} stakeholders={index.stakeholders} evidenceOnly={evidenceOnly} />
+          <StoryList stories={v.uncovered} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
         )}
       </Part>
 

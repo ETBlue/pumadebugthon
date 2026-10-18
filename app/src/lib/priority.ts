@@ -5,8 +5,8 @@ import type { Priority, PriorityTag, Story } from '@/types'
 /** Display order of priorities. */
 export const PRIORITIES: readonly Priority[] = ['M', 'S', 'C', 'W']
 
-/** Display order of priority tags: 實證 first. */
-export const PRIORITY_TAGS: readonly PriorityTag[] = ['實證', 'AI模擬']
+/** Display order of priority tags: 實證, AI整理, AI模擬. */
+export const PRIORITY_TAGS: readonly PriorityTag[] = ['實證', 'AI整理', 'AI模擬']
 
 export interface PriorityCount {
   priority: Priority
@@ -23,8 +23,8 @@ export function priorityLabel(p: Priority): string {
   return t.priority[p]
 }
 
-/** Counts per priority tag. One entry per tag that the stories use (實證
- * first). Counts are in the order M, S, C, W. Zero values are left out. */
+/** Counts per priority tag. One entry per tag that the stories use (in the
+ * order of PRIORITY_TAGS). Counts are in the order M, S, C, W. Zero values are left out. */
 export function priorityCounts(stories: readonly Pick<Story, 'priority' | 'priorityTag'>[]): TagPriorityCounts[] {
   const result: TagPriorityCounts[] = []
   for (const tag of PRIORITY_TAGS) {

@@ -1,14 +1,14 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
-import { EvidenceToggle, useEvidenceOnly, useTabTo } from '@/components/EvidenceToggle'
+import { DataBasisToggle, useDataBasisFilter, useTabTo } from '@/components/DataBasisToggle'
 import { SolutionSummary } from '@/components/SolutionSummary'
 import { StoryCard } from '@/components/StoryCard'
 import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { Input } from '@/components/ui/input'
 import { t } from '@/i18n/zh-TW'
-import { evidenceCount, evidencePickList, isEvidenceOnly, withEvidence } from '@/lib/evidence'
+import { dataBasedCount, dataBasedPickList, isDataBasisFilterOn, withDataBasisFilter } from '@/lib/dataBasis'
 import { stripMarkdown } from '@/lib/markdown'
 import { filterPickList, opinionResult, pickList, type PickItem } from '@/lib/opinion'
 import { stakeholderName } from '@/lib/stakeholders'
@@ -36,9 +36,9 @@ function PickLabel({ item }: { item: PickItem }) {
 export function OpinionTab(props: IssueTabProps) {
   const { issue } = props
   const items = useMemo(() => pickList(issue), [issue])
-  const [evidenceOnly] = useEvidenceOnly()
-  // 「只看 [實證]」 hides pick items; a picked item stays found by its key.
-  const listed = evidenceOnly ? evidencePickList(items, issue.stories) : items
+  const [dataBasedOnly] = useDataBasisFilter()
+  // 「只看有資料根據」 hides pick items; a picked item stays found by its key.
+  const listed = dataBasedOnly ? dataBasedPickList(items, issue.stories) : items
   const [query, setQuery] = useState('')
   const shown = filterPickList(listed, query)
   const [params, setParams] = useSearchParams()
@@ -59,8 +59,8 @@ export function OpinionTab(props: IssueTabProps) {
 
   const select = (key: string) => {
     focusResult.current = true
-    // Keep the 「只看 [實證]」 setting (?evidence=1) with the pick.
-    setParams((prev) => withEvidence(new URLSearchParams({ pick: key }), isEvidenceOnly(prev)), {
+    // Keep the 「只看有資料根據」 setting (?evidence=1) with the pick.
+    setParams((prev) => withDataBasisFilter(new URLSearchParams({ pick: key }), isDataBasisFilterOn(prev)), {
       replace: true,
       preventScrollReset: true,
     })
@@ -74,7 +74,7 @@ export function OpinionTab(props: IssueTabProps) {
     <div className="space-y-6">
       <p className="leading-relaxed">{to.intro}</p>
 
-      <EvidenceToggle />
+      <DataBasisToggle />
 
       <div className="space-y-2">
         <label htmlFor={searchId} className="block font-medium">{to.searchLabel}</label>
@@ -92,7 +92,7 @@ export function OpinionTab(props: IssueTabProps) {
       <section aria-labelledby={listLabelId}>
         <h3 id={listLabelId} className="font-medium">{to.listLabel}</h3>
         {shown.length === 0 ? (
-          <p className="mt-2">{listed.length === 0 ? t.evidenceFilter.pickEmpty : to.noMatch}</p>
+          <p className="mt-2">{listed.length === 0 ? t.dataBasisFilter.pickEmpty : to.noMatch}</p>
         ) : (
           <ul className="mt-2 max-h-96 space-y-1 overflow-y-auto rounded-md border p-1">
             {shown.map((item) => {
@@ -114,11 +114,10 @@ export function OpinionTab(props: IssueTabProps) {
                       <span className="font-mono">{item.key}</span>
                       {' · '}
                       {to.storyCount(item.storyIds.length)}
-                      {evidenceOnly && (
+                      {dataBasedOnly && (
                         <>
                           {' · '}
-                          {t.evidenceFilter.countInItem(evidenceCount(item, issue.stories))}
-                          <TagBadge kind="實證" className="ml-1" />
+                          {t.dataBasisFilter.countInItem(dataBasedCount(item, issue.stories))}
                         </>
                       )}
                     </span>

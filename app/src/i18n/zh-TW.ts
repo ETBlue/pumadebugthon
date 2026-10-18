@@ -18,10 +18,13 @@ export const t = {
     personal: '這是一位個人參加者用 AI 協助製作的作品，與主辦單位無關，也不代表主辦單位或市府的立場。',
     aiBefore: '標記',
     aiAfter: '的內容由 AI 推想，不是真實訪談，也不是真實市民的話。',
+    summaryBefore: '標記',
+    summaryAfter: '的內容由 AI 從真實資料整理，數字是估計，還沒有經過真人查核。',
   },
   /** Tag badges (design 3.5). */
   tags: {
     實證: '實證',
+    AI整理: 'AI整理',
     AI模擬: 'AI模擬',
     pending: '待補',
   },
@@ -69,9 +72,10 @@ export const t = {
     shared: '跨議題共用的利害關係人',
     sharedValue: (n: number, issues: number[]) =>
       issues.length > 0 ? `${n} 位，也出現在 ${issues.map((i) => `#${i}`).join('、')}` : `${n} 位`,
-    evidence: '實證比例',
-    evidenceValue: (n: number, total: number) => `我想要… ${n}／${total}`,
-    evidenceHint: '「我想要…」有實證標記的故事數／全部故事數',
+    dataBasis: '資料根據',
+    dataBasisValue: (evidence: number, summary: number, total: number) =>
+      `我想要… 實證 ${evidence}、AI整理 ${summary}／${total}`,
+    dataBasisHint: '「我想要…」標記 [實證] 的故事數、標記 [AI整理] 的故事數／全部故事數',
     updated: '更新日期',
     spaces: '空間類型',
   },
@@ -116,8 +120,9 @@ export const t = {
     itemsValue: (n: number) => `${n} 個`,
     legendHeading: '標記說明',
     legend: {
-      實證: '有來源連結或可查證的出處。',
-      AI模擬: '由 AI 推想，不是真實訪談，也不是真實市民的話，需要真人確認。',
+      實證: '有來源連結或可查證的出處，或 AI 整理的內容已經由真人查核。',
+      AI整理: '由 AI 從真實資料整理，附有件數。數字是估計，還沒有經過真人查核。',
+      AI模擬: '由 AI 推想，背後沒有資料。不是真實訪談，也不是真實市民的話，需要真人確認。',
       pending: '需要真人提供的資訊。括號內寫缺少什麼。',
     },
     methodLink: '完整說明：如何閱讀議題分析',
@@ -130,14 +135,14 @@ export const t = {
     noSection: '其他',
     issueLink: (n: number) => `#${n}`,
   },
-  /** The 「只看 [實證]」 filter (design 3.5). */
-  evidenceFilter: {
-    label: '只看 [實證]',
-    hint: '隱藏 AI 模擬的故事。只留下「我想要…」或「以便…」有 [實證] 標記的故事。',
-    empty: '這裡沒有標記 [實證] 的故事。',
-    pickEmpty: '沒有標記 [實證] 的項目。',
-    /** Shown before the 實證 badge in a pick item: 「其中 3 則有 [實證]」. */
-    countInItem: (n: number) => `其中 ${n} 則有`,
+  /** The 「只看有資料根據」 filter (design 3.5). It keeps [實證] and [AI整理]. */
+  dataBasisFilter: {
+    label: '只看有資料根據',
+    hint: '顯示標記 [實證] 或 [AI整理] 的內容。',
+    empty: '這裡沒有標記 [實證] 或 [AI整理] 的故事。',
+    pickEmpty: '沒有標記 [實證] 或 [AI整理] 的項目。',
+    /** Shown in a pick item: 「其中 3 則有資料根據」. */
+    countInItem: (n: number) => `其中 ${n} 則有資料根據`,
   },
   conflictsTab: {
     sideA: '一方',

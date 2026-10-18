@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { useTabTo } from '@/components/EvidenceToggle'
+import { useTabTo } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { METHOD_URL } from '@/components/links'
 import { Markdown } from '@/components/Markdown'
@@ -12,7 +12,7 @@ import { sameSpaceIssues } from '@/lib/spaces'
 import type { IssueTabProps } from './types'
 
 const to = t.overview
-const TAG_KINDS: TagKind[] = ['實證', 'AI模擬', 'pending']
+const TAG_KINDS: TagKind[] = ['實證', 'AI整理', 'AI模擬', 'pending']
 
 /** 總覽 (design 3.2): counts, tag legend, 使用相同空間的議題 and 待補清單. */
 export function OverviewTab({ index, summary, issue }: IssueTabProps) {

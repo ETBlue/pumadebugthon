@@ -128,6 +128,8 @@ export const t = {
     audience: '想參與政策討論的市民，可以在提出意見之前，先看見其他人的關注。公務員和公民科技社群，也可以依利害關係人或空間，查找以前的分析再利用。',
     sortNote: '下面的清單依日期排列，最新的在前面，不依數量排名。',
     issuesHeading: '最近更新的議題',
+    /** The visible text of the 3 links next to the block headings. */
+    all: '看全部',
     issuesAll: '看全部議題',
     issuesNone: '目前沒有已完成分析的議題。',
     stakeholdersHeading: '最近加入分析的族群',

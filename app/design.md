@@ -51,7 +51,7 @@ The hero background is made only from colors and a simple pattern, with no photo
 
 The page frame is full width only on the home page (the route has `handle: { fullWidth: true }`, read by `isFullWidth` in `src/lib/layout.ts`). The hero text and the blocks use the same centered column as the other pages.
 
-**Three blocks.** Each block is a section with an h2. It shows the 5 most recent items and ends with a link to its list page (「看全部議題」, 「看全部利害關係人」, 「看全部解法」). On large screens (the `lg` breakpoint, 1024 px, and wider) the blocks are 3 columns side by side. Below that (phone and tablet) they are 1 column, in the same order as the keyboard order.
+**Three blocks.** Each block is a section with an h2. It shows the 5 most recent items and has a link to its list page on the heading row, right aligned. The link text is 「看全部」; its accessible name is the full name (「看全部議題」, 「看全部利害關係人」, 「看全部解法」), so the three links do not share one name. On large screens (the `lg` breakpoint, 1024 px, and wider) the blocks are 3 columns side by side. Below that (phone and tablet) they are 1 column, in the same order as the keyboard order.
 
 | Block | Items | Date used | Link to |
 |---|---|---|---|
@@ -572,3 +572,4 @@ Required by the hackathon rules:
 24. In the light theme, 實證 green is `#2e7000` (was `#5a6800`), so it is easy to tell apart from the AI整理 yellow in the badges and the 資料根據 bar. The contrast stays about the same. (ETBlue, 2026-10-19)
 25. Each issue analysis has a 特別關注族群檢查 table in step 1 (`### 1.3`), so a 特別關注 group with no stakeholder is shown, not hidden. Only a person decides that a group does not apply: the AI writes a neutral 【待補】 question, never 「不相關」. The 總覽 tab shows all 6 groups with their stakeholders, stories and 資料根據 (3.2). The detailed issue card shows the groups not included yet, or 「都已納入」 (3.9). There is no count like 「4／6」 anywhere, because it reads like a score. Issues are never sorted, ranked or filtered by these numbers, and the groups are always in the fixed order, never by count. (ETBlue, 2026-10-19)
 26. Every list of 議題 uses the card look, also the short lists. The compact `IssueCard` is a box like the compact `SolutionCard` (`rounded-md border p-3`, dashed for 製作中). The home block 「最近更新的議題」 stacks these cards with a gap instead of a line between items. The space page lists its issues with the compact `IssueCard` in a grid (1, 2 or 3 columns by width), not as plain links. Issue links inside a sentence or a field stay plain links, because they are references, not lists (3.6, 3.9). (ETBlue, 2026-10-19)
+27. The home block links to the list pages are named 「看全部」 and sit on the heading row, right aligned. Each keeps its full name (for example 「看全部議題」) as its `aria-label` (3.1). (ETBlue, 2026-10-19)

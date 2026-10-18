@@ -59,11 +59,13 @@ function Block({ id, heading, allTo, allLabel, children }: {
 }) {
   return (
     <section aria-labelledby={id} className="min-w-0 border-t pt-5">
-      <h2 id={id} className="text-xl font-bold">{heading}</h2>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+        <h2 id={id} className="text-xl font-bold">{heading}</h2>
+        {/* The visible text is the same in all 3 blocks, so the accessible
+            name keeps the list name (for example 看全部議題). */}
+        <Link to={allTo} aria-label={allLabel} className={`${linkClass} text-sm font-medium`}>{th.all}</Link>
+      </div>
       <div className="mt-3">{children}</div>
-      <p className="mt-4">
-        <Link to={allTo} className={`${linkClass} font-medium`}>{allLabel}</Link>
-      </p>
     </section>
   )
 }

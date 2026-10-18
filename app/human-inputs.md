@@ -13,8 +13,9 @@ raw ideas:
 * license for source code: MIT. license for content I produced: CC-BY 4.0. license for content from the hackathon host: depends on the host
 * for the UI, use design tokens for theme maintainence. apply "solarized light" theme to the app, with "solarized dark" theme togglable
 * the app header should include: app name (link to home), "議題" with count, "利害關係人" with count, "訴求" with count, "解法" with count, and theme toggle on the right
-* home page should include: a hero section providing a brief intro of the app, followed by 3 call-to-action block -- 
+* home page should include: a full-width hero section with background images or colors, providing a brief intro of the app (disclaimers are in footer, not here), followed by 3 call-to-action block (3 columns on desktop, 1 column on mobile) -- 
   * "最近更新的議題", showing latest updated issues, with a link guiding users to the issue list page
   * "最近加入分析的族群", showing latest added stakeholders, with a link guiding users to the stakeholder list page
   * "最近分析出的解法", showing latest formed solutions, with a link guiding users to the solution list page
-* the global page footer should include GitHub link, license info, disclaimer, and links to the open data used by the app (the json/csv files in the issue analysis folders)
+* the global page footer should include GitHub link, license info, disclaimer, links to the open data used by the app (the json/csv files in the issue analysis folders), and link to the official hackathon event page
+* render a watermark on the app, so every screenshot can see it. the watermark could be: "puma.taipei 市政 debug 松展示用 MVP"

@@ -158,7 +158,7 @@ export const t = {
     result: '模擬結果',
     solutionsHeading: '相關解法',
     solutionsNone: '分析裡沒有解法涵蓋這個意見。',
-    solutionLink: '到解法分頁看詳細內容',
+    solutionLink: (id: string) => `到解法分頁看解法 ${id} 的詳細內容`,
     notMentionedHeading: '這個意見沒有直接提到的人',
     notMentionedPrompt: '你的意見會影響他們嗎？',
     notMentionedNone: '這個議題的利害關係人都已經在上面出現。',

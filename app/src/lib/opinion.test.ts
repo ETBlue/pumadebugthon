@@ -21,13 +21,13 @@ describe('pickList', () => {
 
   it('uses the group summary and all group stories for a W group', () => {
     expect(items.find((i) => i.key === 'W08')).toMatchObject({
-      key: 'W08', label: '清潔箱不擋住人行道', storyIds: ['O12-US01', 'I06-US01', 'I07-US02'],
+      key: 'W08', label: '清潔箱不擋住人行道', tag: 'AI模擬', pending: false, storyIds: ['O12-US01', 'I06-US01', 'I07-US02'],
     })
   })
 
   it('uses the 我想要… text for a story without a group', () => {
     expect(items.find((i) => i.key === 'I09-US01')).toEqual({
-      key: 'I09-US01', label: '清潔箱不要放在我家門口', storyIds: ['I09-US01'], searchText: '清潔箱不要放在我家門口',
+      key: 'I09-US01', label: '清潔箱不要放在我家門口', tag: 'AI模擬', pending: false, storyIds: ['I09-US01'], searchText: '清潔箱不要放在我家門口',
     })
   })
 
@@ -41,13 +41,19 @@ describe('pickList', () => {
   it('keeps the order of the stories in the issue file', () => {
     expect(items.slice(0, 4).map((i) => i.key)).toEqual(['O01-US01', 'O01-US02', 'W01', 'W02'])
   })
+
+  it('a story item takes the tag and pending flag of its 我想要… cell', () => {
+    const story = { ...trashcans.stories[0], group: null, want: { text: '【待補：原文】', tag: null, pending: true } }
+    const item = pickList({ ...trashcans, stories: [story], groups: [] })[0]
+    expect(item).toMatchObject({ key: story.id, tag: null, pending: true })
+  })
 })
 
 describe('filterPickList', () => {
   const items: PickItem[] = [
-    { key: 'W01', label: '清潔箱不擋住人行道', storyIds: ['I06-US01'], searchText: '清潔箱不擋住人行道\n不擋住導盲磚' },
-    { key: 'I01-US01', label: '開放資料提供 API', storyIds: ['I01-US01'], searchText: '開放資料提供 API' },
-    { key: 'I02-US01', label: '見 [**市府網站**](https://example.org)', storyIds: ['I02-US01'], searchText: '見 市府網站' },
+    { key: 'W01', label: '清潔箱不擋住人行道', tag: 'AI模擬', pending: false, storyIds: ['I06-US01'], searchText: '清潔箱不擋住人行道\n不擋住導盲磚' },
+    { key: 'I01-US01', label: '開放資料提供 API', tag: 'AI模擬', pending: false, storyIds: ['I01-US01'], searchText: '開放資料提供 API' },
+    { key: 'I02-US01', label: '見 [**市府網站**](https://example.org)', tag: 'AI模擬', pending: false, storyIds: ['I02-US01'], searchText: '見 市府網站' },
   ]
 
   it('returns all items for an empty or blank query', () => {

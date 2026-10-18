@@ -1,5 +1,5 @@
 // The opinion check (design section 4).
-import type { Conflict, IssueFile, Solution, Story } from '@/types'
+import type { Conflict, IssueFile, Solution, Story, Tag } from '@/types'
 import { compareIds } from './ids'
 import { stripMarkdown } from './markdown'
 
@@ -9,6 +9,10 @@ export interface PickItem {
   key: string
   /** The group summary, or the 我想要… text of the story. Can hold Markdown. */
   label: string
+  /** The tag of the label: the group's tag, or the tag of the 我想要… cell. */
+  tag: Tag
+  /** True when the label is a 【待補…】 cell with no tag. Groups are never pending. */
+  pending: boolean
   storyIds: string[]
   /** Plain text for search (design 4.1): the label and the 我想要… of every
    * story in the item, without Markdown, joined with new lines. */
@@ -45,12 +49,13 @@ export function pickList(issue: IssueFile): PickItem[] {
   for (const s of issue.stories) {
     const g = s.group === null ? undefined : groups.get(s.group)
     if (!g) {
-      items.push({ key: s.id, label: s.want.text, storyIds: [s.id], searchText: stripMarkdown(s.want.text) })
+      const { text, tag, pending } = s.want
+      items.push({ key: s.id, label: text, tag, pending, storyIds: [s.id], searchText: stripMarkdown(text) })
     } else if (!seen.has(g.id)) {
       seen.add(g.id)
       const wants = g.stories.flatMap((id) => byId.get(id)?.want.text ?? [])
       const searchText = [g.summary, ...wants].map(stripMarkdown).join('\n')
-      items.push({ key: g.id, label: g.summary, storyIds: [...g.stories], searchText })
+      items.push({ key: g.id, label: g.summary, tag: g.tag, pending: false, storyIds: [...g.stories], searchText })
     }
   }
   return items

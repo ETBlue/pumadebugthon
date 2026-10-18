@@ -69,7 +69,10 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
   const tab = parseTab(useParams().tab)
 
   // The tab is in the URL. A new history entry per tab, so the back button
-  // returns to the tab before.
+  // returns to the tab before. activationMode="manual": with automatic
+  // activation, Radix calls onValueChange on mouse down and again on focus,
+  // which adds two history entries. Arrow keys move the focus; Enter or Space
+  // opens the tab.
   const onTabChange = (value: string) => {
     const next = parseTab(value)
     if (next) navigate(tabPath(summary.number, next), { preventScrollReset: true })
@@ -93,7 +96,7 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
         )}
       </dl>
 
-      <Tabs value={tab ?? ''} onValueChange={onTabChange} className="mt-6">
+      <Tabs value={tab ?? ''} onValueChange={onTabChange} activationMode="manual" className="mt-6">
         <TabsList aria-label={ti.tabsLabel} className="h-auto w-full flex-wrap justify-start">
           {ISSUE_TABS.map((name) => (
             <TabsTrigger key={name} value={name} className="flex-1 px-2 py-1.5 md:px-3">

@@ -12,6 +12,8 @@ export default function Issues() {
       <PageTitle parts={[t.lists.issuesTitle]} />
       <h1 className="text-2xl font-bold md:text-3xl">{t.lists.issuesTitle}</h1>
       <p className="mt-2 leading-relaxed">{t.lists.issuesIntro}</p>
+      {/* Once on the page, not on each card (design 3.9). */}
+      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote}</p>
       {index.status === 'ready' ? <IssueList index={index.data} headingLevel={2} /> : <LoadState state={index} />}
     </>
   )

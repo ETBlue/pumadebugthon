@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
 import { useTabTo } from '@/components/DataBasisToggle'
+import { CellBasis } from '@/components/CellBasis'
 import { Field } from '@/components/Field'
 import { METHOD_URL } from '@/components/links'
 import { Markdown } from '@/components/Markdown'
@@ -14,7 +15,7 @@ import type { IssueTabProps } from './types'
 const to = t.overview
 const TAG_KINDS: TagKind[] = ['實證', 'AI整理', 'AI模擬', 'pending']
 
-/** 總覽 (design 3.2): counts, tag legend, 使用相同空間的議題 and 待補清單. */
+/** 總覽 (design 3.2): counts, 資料根據, tag legend, 使用相同空間的議題 and 待補清單. */
 export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const c = summary.counts
   const n = summary.number
@@ -43,6 +44,14 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
             <Link to={tabTo(n, 'solutions')} className={linkClass}>{to.itemsValue(c.solutions)}</Link>
           </Field>
         </dl>
+      </section>
+
+      <section aria-labelledby="basis-heading">
+        <h3 id="basis-heading" className="text-lg font-semibold">{t.basis.label}</h3>
+        <div className="mt-2">
+          <CellBasis cells={c.cells} stories={c.stories} />
+        </div>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.basis.note}</p>
       </section>
 
       <section aria-labelledby="legend-heading">

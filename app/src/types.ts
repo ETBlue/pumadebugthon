@@ -31,10 +31,23 @@ export interface IssueCounts {
   stories: number
   conflicts: number
   solutions: number
-  /** Stories whose 我想要… cell has the 實證 tag. */
-  wantsEvidence: number
-  /** Stories whose 我想要… cell has the AI整理 tag. */
-  wantsAiSummary: number
+  /** 資料根據: the story cells by tag. */
+  cells: CellCounts
+}
+
+/** 資料根據 of an issue: how many story cells have each tag. build_json.py
+ * counts the 我想要… and the 以便… cell of every story, so the total is
+ * 2 x stories. The priority tag is not counted. The key order is the fixed
+ * order of the parts: 實證, AI整理, AI模擬, 待補. */
+export interface CellCounts {
+  /** 實證 */
+  evidence: number
+  /** AI整理 */
+  aiSummary: number
+  /** AI模擬 */
+  aiSimulated: number
+  /** 待補: a cell with no tag. */
+  pending: number
 }
 
 /** 來源 in analysis/issues.csv: the hackathon host's issue, or an issue a

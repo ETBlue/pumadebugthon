@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
+import { CellBasis } from './CellBasis'
 import { Field } from './Field'
 import { isParticipantIssue, type Shared } from '@/lib/issues'
 import type { IssueSummary, SpaceType } from '@/types'
@@ -47,8 +48,8 @@ export function IssueCard({ issue, spaceTypes, shared, headingLevel = 3 }: { iss
             </Link>
           </Field>
         )}
-        <Field label={tc.dataBasis}>
-          <span title={tc.dataBasisHint}>{tc.dataBasisValue(c.wantsEvidence, c.wantsAiSummary, c.stories)}</span>
+        <Field label={t.basis.label}>
+          <CellBasis cells={c.cells} stories={c.stories} />
         </Field>
         {issue.updated && <Field label={tc.updated}><time dateTime={issue.updated}>{issue.updated}</time></Field>}
         {issue.spaces.length > 0 && (

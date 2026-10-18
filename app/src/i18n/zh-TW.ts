@@ -156,10 +156,6 @@ export const t = {
     shared: '跨議題共用的利害關係人',
     sharedValue: (n: number, issues: number[]) =>
       issues.length > 0 ? `${n} 位，也出現在 ${issues.map((i) => `#${i}`).join('、')}` : `${n} 位`,
-    dataBasis: '資料根據',
-    dataBasisValue: (evidence: number, summary: number, total: number) =>
-      `我想要… 實證 ${evidence}、AI整理 ${summary}／${total}`,
-    dataBasisHint: '「我想要…」標記 [實證] 的故事數、標記 [AI整理] 的故事數／全部故事數',
     updated: '更新日期',
     spaces: '空間類型',
   },
@@ -218,6 +214,18 @@ export const t = {
     pendingNone: '這個議題沒有待補的項目。',
     noSection: '其他',
     issueLink: (n: number) => `#${n}`,
+  },
+  /** 資料根據 (design 3.2, 3.9): the story cells (我想要… and 以便…) by tag. */
+  basis: {
+    label: '資料根據',
+    parts: { evidence: '實證', aiSummary: 'AI整理', aiSimulated: 'AI模擬', pending: '待補' },
+    separator: '・',
+    totals: (cells: number, stories: number) => `（共 ${cells} 格，來自 ${stories} 則故事）`,
+    evidencePercent: (p: number) => `實證 ${p}%`,
+    /** Shown once on the overview tab. */
+    note: '這是分析內容的資料來源組成，不代表議題的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。',
+    /** Shown once on the issue list page, not on each card. */
+    listNote: '「資料根據」是分析內容的資料來源組成，不代表議題的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。',
   },
   /** The 「只看有資料根據」 filter (design 3.5). It keeps [實證] and [AI整理]. */
   dataBasisFilter: {

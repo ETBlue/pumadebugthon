@@ -38,7 +38,8 @@ describe('dataFileLinks', () => {
       issues: [
         ...index.issues,
         { number: 9, folder: '9-new', title: 'x', source: '主辦單位', available: true, spaces: [], updated: null,
-          counts: { stakeholdersO: 0, stakeholdersI: 0, stories: 0, conflicts: 0, solutions: 0, wantsEvidence: 0, wantsAiSummary: 0 } },
+          counts: { stakeholdersO: 0, stakeholdersI: 0, stories: 0, conflicts: 0, solutions: 0,
+            cells: { evidence: 0, aiSummary: 0, aiSimulated: 0, pending: 0 } } },
       ],
     }
     const l = dataFileLinks(more, '/', repo)

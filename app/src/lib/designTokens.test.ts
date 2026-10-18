@@ -63,6 +63,14 @@ for (const [name, selector] of [['light', ':root'], ['dark', '.dark']] as const)
       })
     }
 
+    // The 資料根據 bar (CellBasis.tsx). Each segment must show on the page
+    // background: 3:1, the rule for parts of a graphic.
+    it('資料根據 bar segments pass 3:1 on the page backgrounds, also under the watermark', () => {
+      for (const token of ['tag-evidence', 'tag-summary', 'tag-simulated', 'muted-foreground']) {
+        for (const bg of pageBgs) expect(worstContrast(tk[token], bg, wm, wmOpacity)).toBeGreaterThanOrEqual(UI)
+      }
+    })
+
     it('hero text passes AA on every hero color, also under the watermark', () => {
       for (const bg of heroBgs) {
         expect(worstContrast(tk['hero-foreground'], bg, wm, wmOpacity)).toBeGreaterThanOrEqual(TEXT)

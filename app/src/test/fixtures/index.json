@@ -19,8 +19,12 @@
         "stories": 65,
         "conflicts": 8,
         "solutions": 5,
-        "wantsEvidence": 7,
-        "wantsAiSummary": 16
+        "cells": {
+          "evidence": 8,
+          "aiSummary": 27,
+          "aiSimulated": 95,
+          "pending": 0
+        }
       }
     },
     {
@@ -42,8 +46,12 @@
         "stories": 51,
         "conflicts": 8,
         "solutions": 5,
-        "wantsEvidence": 6,
-        "wantsAiSummary": 11
+        "cells": {
+          "evidence": 8,
+          "aiSummary": 21,
+          "aiSimulated": 72,
+          "pending": 1
+        }
       }
     },
     {
@@ -107,8 +115,12 @@
         "stories": 45,
         "conflicts": 6,
         "solutions": 5,
-        "wantsEvidence": 2,
-        "wantsAiSummary": 24
+        "cells": {
+          "evidence": 3,
+          "aiSummary": 39,
+          "aiSimulated": 48,
+          "pending": 0
+        }
       }
     }
   ],

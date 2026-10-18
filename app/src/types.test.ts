@@ -50,7 +50,8 @@ describe('index.json', () => {
   it('has the counts of #2', () => {
     const i = index.issues.find((i) => i.number === 2)
     expect(i?.counts).toEqual({
-      stakeholdersO: 12, stakeholdersI: 15, stories: 51, conflicts: 8, solutions: 5, wantsEvidence: 6, wantsAiSummary: 11,
+      stakeholdersO: 12, stakeholdersI: 15, stories: 51, conflicts: 8, solutions: 5,
+      cells: { evidence: 8, aiSummary: 21, aiSimulated: 72, pending: 1 },
     })
   })
 
@@ -64,6 +65,14 @@ describe('index.json', () => {
       expect(s.counts.solutions).toBe(issue.solutions.length)
       expect(s.counts.stakeholdersO + s.counts.stakeholdersI).toBe(issue.stakeholders.length)
       expect(s.spaces).toEqual(issue.spaces)
+      // 資料根據: the 我想要… and the 以便… cell of every story, by tag.
+      const cells = issue.stories.flatMap((x) => [x.want, x.soThat])
+      expect(s.counts.cells).toEqual({
+        evidence: cells.filter((c) => c.tag === '實證').length,
+        aiSummary: cells.filter((c) => c.tag === 'AI整理').length,
+        aiSimulated: cells.filter((c) => c.tag === 'AI模擬').length,
+        pending: cells.filter((c) => c.tag === null).length,
+      })
     }
   })
 

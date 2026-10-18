@@ -85,8 +85,10 @@ export const t = {
   },
   /** The theme toggle in the header (design 3.10). A toggle button: the
    * name stays the same, and aria-pressed says if dark is on. */
+  /** The theme button shows the theme it switches to. */
   theme: {
     dark: '深色模式',
+    light: '淺色模式',
   },
   /** The watermark over every page (design 3.11). */
   watermark: '市政 debug 松參加者作品・展示用 MVP',

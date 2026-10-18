@@ -7,7 +7,7 @@ import { IssueCard } from './IssueCard'
 import { toggleOnClass } from './styles'
 import { ToggleCheck } from './ToggleCheck'
 
-const th = t.home
+const th = t.issueList
 
 /** The issue cards with the space type filter (design 3.9). Issue number
  * order. headingLevel is the level of each card title. */

@@ -11,15 +11,13 @@ const th = t.header
 const linkBase = 'inline-flex min-h-10 items-center gap-1.5 rounded-sm underline-offset-4 hover:underline'
 
 /** One header link with its count. count is null while the data loads. */
-function CountLink({ to, label, count, current = true }: { to: string; label: string; count: number | null; current?: boolean }) {
+function CountLink({ to, label, count }: { to: string; label: string; count: number | null }) {
   const content = (
     <>
       <span>{label}</span>
       {count !== null && <span className="font-semibold tabular-nums">{count}</span>}
     </>
   )
-  // 訴求 has no list page yet, so its link never marks the current page.
-  if (!current) return <Link to={to} className={linkBase}>{content}</Link>
   return (
     <NavLink to={to} end className={({ isActive }) => `${linkBase} ${isActive ? 'font-semibold underline' : ''}`}>
       {content}
@@ -35,7 +33,7 @@ function Links({ index }: { index: IndexFile | null }) {
     <ul className="flex flex-wrap items-center gap-x-4 gap-y-0 text-sm md:gap-x-5">
       <li><CountLink to="/issues" label={th.issues} count={index && issueCount(index)} /></li>
       <li><CountLink to="/stakeholders" label={th.stakeholders} count={index && stakeholderCount(index)} /></li>
-      <li><CountLink to="/issues" label={th.wants} count={wants} current={false} /></li>
+      <li><CountLink to="/wants" label={th.wants} count={wants} /></li>
       <li><CountLink to="/solutions" label={th.solutions} count={index && solutionCount(index)} /></li>
     </ul>
   )

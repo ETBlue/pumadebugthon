@@ -9,6 +9,7 @@ import Solutions from '@/pages/Solutions'
 import Space from '@/pages/Space'
 import Stakeholder from '@/pages/Stakeholder'
 import Stakeholders from '@/pages/Stakeholders'
+import Wants from '@/pages/Wants'
 
 // Hash URLs (#/issues/2) work on GitHub Pages without server rewrites.
 export const router = createHashRouter([
@@ -29,6 +30,7 @@ export const router = createHashRouter([
       { path: 'stakeholders', element: <Stakeholders /> },
       { path: 'stakeholders/:id', element: <Stakeholder /> },
       { path: 'solutions', element: <Solutions /> },
+      { path: 'wants', element: <Wants /> },
       { path: 'spaces/:code', element: <Space /> },
       { path: '*', element: <Placeholder /> },
     ],

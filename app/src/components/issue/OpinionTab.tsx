@@ -1,15 +1,14 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
+import { PickLabel } from '@/components/PickLabel'
 import { DataBasisToggle, useDataBasisFilter, useTabTo } from '@/components/DataBasisToggle'
 import { SolutionSummary } from '@/components/SolutionSummary'
 import { StoryCard } from '@/components/StoryCard'
 import { linkClass } from '@/components/styles'
-import { TagBadge } from '@/components/TagBadge'
 import { Input } from '@/components/ui/input'
 import { t } from '@/i18n/zh-TW'
 import { dataBasedCount, dataBasedPickList, isDataBasisFilterOn, withDataBasisFilter } from '@/lib/dataBasis'
-import { stripMarkdown } from '@/lib/markdown'
 import { filterPickList, opinionResult, pickList, type PickItem } from '@/lib/opinion'
 import { stakeholderName } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
@@ -18,17 +17,6 @@ import { AlsoIn } from './AlsoIn'
 import type { IssueTabProps } from './types'
 
 const to = t.opinion
-
-/** The label of a pick item with its tag. A 【待補】 label has no tag. */
-function PickLabel({ item }: { item: PickItem }) {
-  if (item.pending) return <span className="text-muted-foreground">{stripMarkdown(item.label)}</span>
-  return (
-    <>
-      {item.tag && <TagBadge kind={item.tag} className="mr-1.5" />}
-      {stripMarkdown(item.label)}
-    </>
-  )
-}
 
 /** 你的意見 (design 4): pick what you want, then see who wants the same,
  * who may disagree, the related solutions and who is not mentioned. The

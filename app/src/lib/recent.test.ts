@@ -98,8 +98,10 @@ describe('recentStakeholders', () => {
   })
 
   it('is not changed by the number of issues', () => {
-    const list = [stakeholder('I01', '2026-10-18', [1, 2, 8]), stakeholder('I02', '2026-10-18', [2])]
-    expect(recentStakeholders(list).map((s) => s.id)).toEqual(['I02', 'I01'])
+    const few = [stakeholder('I01', '2026-10-18', [1, 2, 8]), stakeholder('I02', '2026-10-18', [2])]
+    const many = [stakeholder('I01', '2026-10-18', [2]), stakeholder('I02', '2026-10-18', [1, 2, 8])]
+    expect(recentStakeholders(few).map((s) => s.id)).toEqual(['I02', 'I01'])
+    expect(recentStakeholders(many).map((s) => s.id)).toEqual(['I02', 'I01'])
   })
 
   it('keeps only the first items when a limit is given', () => {
@@ -129,8 +131,10 @@ describe('recentSolutions', () => {
   })
 
   it('is not changed by the number of stories', () => {
-    const list = [issueFile(3, [solution('A', '2026-10-18', ['a', 'b', 'c']), solution('B', '2026-10-18', [])])]
-    expect(recentSolutions(list).map(key)).toEqual(['3B', '3A'])
+    const few = [issueFile(3, [solution('A', '2026-10-18', ['a', 'b', 'c']), solution('B', '2026-10-18', [])])]
+    const many = [issueFile(3, [solution('A', '2026-10-18', []), solution('B', '2026-10-18', ['a', 'b', 'c'])])]
+    expect(recentSolutions(few).map(key)).toEqual(['3B', '3A'])
+    expect(recentSolutions(many).map(key)).toEqual(['3B', '3A'])
   })
 
   it('keeps only the first items when a limit is given', () => {

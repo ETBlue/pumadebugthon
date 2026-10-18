@@ -118,8 +118,8 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("solution D: space code sidewalk is listed twice")
 
     def test_6_2_code_not_in_6_1(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 |", "| E | 參與式選址流程 |")
-        self.assertFails("6.2: solution E is not in 6.1", "6.2: solution D from 6.1 has no row")
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 |", "| F | 參與式選址流程 |")
+        self.assertFails("6.2: solution F is not in 6.1", "6.2: solution D from 6.1 has no row")
 
     def test_6_2_old_layout_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md",
@@ -226,20 +226,22 @@ class CheckAnalysisTest(unittest.TestCase):
     # The third source tag, [AI整理] (owner decision 2026-10-18): AI summarized it
     # from real data, with counts. It is accepted wherever [實證] and [AI模擬] are.
     ROW_MD = ("| O01-US01 | 商圈店家與攤商 | `[AI模擬]` 商圈有足夠的清潔箱 | — | "
-              "`[AI模擬]` 客人不會把垃圾放在店門口或花台 | 可詢問商圈發展協會 | `[AI模擬]` S |")
-    ROW_CSV = "商圈有足夠的清潔箱,[AI模擬],—,客人不會把垃圾放在店門口或花台,[AI模擬],可詢問商圈發展協會,S,[AI模擬]"
+              "`[AI模擬]` 客人不會把垃圾放在店門口或花台 | 可詢問商圈發展協會；市民留言約 118 則提到同樣訴求"
+              "（「市長，你給我聽好了」資料，關鍵字估算） | `[AI模擬]` S |")
+    ROW_CSV = ("商圈有足夠的清潔箱,[AI模擬],—,客人不會把垃圾放在店門口或花台,[AI模擬],可詢問商圈發展協會；"
+               "市民留言約 118 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）,S,[AI模擬]")
 
     def test_ai_summary_tag_passes(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.ROW_MD, self.ROW_MD.replace("[AI模擬]", "[AI整理]"))
         self.edit(f"{ISSUE}/user-stories.csv", self.ROW_CSV, self.ROW_CSV.replace("[AI模擬]", "[AI整理]"))
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
-        self.assertIn("'[AI整理]': 1", out)
+        self.assertIn("'[AI整理]': 12", out)
 
     def test_ai_summary_tag_in_group_and_moscow_rows_passes(self):
         md = f"{ISSUE}/issue-analysis.md"
         self.edit(md, "| `[AI模擬]` W01 |", "| `[AI整理]` W01 |")
-        self.edit(md, "| `[AI模擬]` Must | 14 |", "| `[AI整理]` Must | 14 |")
+        self.edit(md, "| `[AI模擬]` Must | 16 |", "| `[AI整理]` Must | 16 |")
         self.edit(md, "| I11 | `[AI模擬]` 資源回收個體業者", "| I11 | `[AI整理]` 資源回收個體業者")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
@@ -259,7 +261,7 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_ai_summary_tag_in_source_cell_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.ROW_MD,
-                  self.ROW_MD.replace("| 可詢問商圈發展協會 |", "| `[AI整理]` 可詢問商圈發展協會 |"))
+                  self.ROW_MD.replace("| 可詢問商圈發展協會；", "| `[AI整理]` 可詢問商圈發展協會；"))
         self.assertFails("O01-US01 來源 cell should not have a tag")
 
 if __name__ == "__main__":

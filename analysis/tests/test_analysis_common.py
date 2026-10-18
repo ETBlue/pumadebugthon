@@ -7,7 +7,7 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 import csv, importlib.util, os, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ISSUES = {"1-trees": 28, "2-trashcans": 25}  # folder -> number of step 1 stakeholders
+ISSUES = {"1-trees": 28, "2-trashcans": 27}  # folder -> number of step 1 stakeholders
 
 
 def load(name):
@@ -33,7 +33,7 @@ class AnalysisCommonTest(unittest.TestCase):
 
     def test_step4_ids(self):
         ids = self.common.step4_ids(read("2-trashcans"))
-        self.assertEqual(len(ids), 45)
+        self.assertEqual(len(ids), 51)
         self.assertIn("O01-US01", ids)
 
     def test_tags(self):

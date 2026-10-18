@@ -71,17 +71,17 @@ class BuildJsonOutputTest(unittest.TestCase):
         return next(s for s in self.issue["stories"] if s["id"] == sid)
 
     def test_counts(self):
-        self.assertEqual(len(self.issue["stories"]), 45)
-        self.assertEqual(len(self.issue["conflicts"]), 7)
-        self.assertEqual(len(self.issue["solutions"]), 4)
+        self.assertEqual(len(self.issue["stories"]), 51)
+        self.assertEqual(len(self.issue["conflicts"]), 8)
+        self.assertEqual(len(self.issue["solutions"]), 5)
         self.assertEqual(len(self.issue["groups"]), 11)
-        self.assertEqual(len(self.issue["stakeholders"]), 25)
+        self.assertEqual(len(self.issue["stakeholders"]), 27)
 
     def test_index_counts(self):
         item = next(i for i in self.index["issues"] if i["number"] == 2)
-        self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 13, "stories": 45,
-                                          "conflicts": 7, "solutions": 4, "wantsEvidence": 6,
-                                          "wantsAiSummary": 0})
+        self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 15, "stories": 51,
+                                          "conflicts": 8, "solutions": 5, "wantsEvidence": 6,
+                                          "wantsAiSummary": 11})
         self.assertEqual(item["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
         self.assertEqual(item["title"], "找回消失的垃圾桶")
         self.assertEqual(item["folder"], ISSUE)
@@ -267,8 +267,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.2:", "D")
 
     def test_6_2_code_not_in_6_1(self):
-        self.edit("| D | 參與式選址流程 |", "| E | 參與式選址流程 |")
-        self.assertFails("2-trashcans: 6.2:", "「E」 is not in 6.1")
+        self.edit("| D | 參與式選址流程 |", "| F | 參與式選址流程 |")
+        self.assertFails("2-trashcans: 6.2:", "「F」 is not in 6.1")
 
     def test_6_2_code_must_be_one_letter(self):
         self.edit("| D | 參與式選址流程 |", "| D 參與式選址流程 | 參與式選址流程 |")
@@ -333,7 +333,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertIn("2-trashcans: 6.2", out)
 
     def test_bad_priority_cell(self):
-        self.edit("| 可用短問卷或站外現場觀察驗證 | `[AI模擬]` M |", "| 可用短問卷或站外現場觀察驗證 | M |")
+        self.edit("；也可用短問卷或站外現場觀察驗證 | `[AI模擬]` M |", "；也可用短問卷或站外現場觀察驗證 | M |")
         code, out = run_build(self.dir, self.out)
         self.assertEqual(code, 1, out)
         self.assertIn("2-trashcans: 步驟 4", out)
@@ -353,7 +353,8 @@ class BuildJsonErrorTest(unittest.TestCase):
     def test_ai_summary_tag(self):
         # [AI整理] is the third source tag. JSON writes it without brackets.
         row = ("| O01-US01 | 商圈店家與攤商 | `[AI模擬]` 商圈有足夠的清潔箱 | — | "
-               "`[AI模擬]` 客人不會把垃圾放在店門口或花台 | 可詢問商圈發展協會 | `[AI模擬]` S |")
+               "`[AI模擬]` 客人不會把垃圾放在店門口或花台 | 可詢問商圈發展協會；市民留言約 118 則提到同樣訴求"
+               "（「市長，你給我聽好了」資料，關鍵字估算） | `[AI模擬]` S |")
         self.edit(row, row.replace("[AI模擬]", "[AI整理]"))
         self.edit("| `[AI模擬]` W01 |", "| `[AI整理]` W01 |")
         code, out = run_build(self.dir, self.out)
@@ -368,7 +369,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertEqual(s["priorityTag"], "AI整理")
         self.assertEqual(next(g for g in issue["groups"] if g["id"] == "W01")["tag"], "AI整理")
         counts = next(i for i in index["issues"] if i["number"] == 2)["counts"]
-        self.assertEqual((counts["wantsEvidence"], counts["wantsAiSummary"]), (6, 1))
+        self.assertEqual((counts["wantsEvidence"], counts["wantsAiSummary"]), (6, 12))
 
     def test_cell_with_ai_summary_and_another_tag(self):
         self.edit("| `[AI模擬]` 安全通行，不會撞到 |", "| `[AI模擬]` `[AI整理]` 安全通行，不會撞到 |")

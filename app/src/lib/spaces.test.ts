@@ -30,7 +30,7 @@ describe('issuesBySpace', () => {
 describe('solutionsBySpace', () => {
   it('sidewalk: every solution of both issues, by issue number then solution ID', () => {
     const list = solutionsBySpace([trashcans, trees], 'sidewalk')
-    expect(pairs(list)).toEqual(['#1 A', '#1 B', '#1 C', '#1 D', '#1 E', '#2 A', '#2 B', '#2 C', '#2 D'])
+    expect(pairs(list)).toEqual(['#1 A', '#1 B', '#1 C', '#1 D', '#1 E', '#2 A', '#2 B', '#2 C', '#2 D', '#2 E'])
     expect(list.find((x) => x.issueNumber === 2 && x.solution.id === 'A')?.solution.summary).toBe(
       trashcans.solutions[0].summary,
     )
@@ -72,7 +72,7 @@ describe('stakeholdersBySpace', () => {
         issueNumber: 1,
         stakeholders: [
           'O01', 'O06', 'O07', 'O12', 'O14', 'O16', 'O17', 'O18', 'O20', 'O21',
-          'I01', 'I05', 'I06', 'I07', 'I15', 'I16', 'I17', 'I18', 'I19',
+          'I01', 'I05', 'I06', 'I07', 'I15', 'I16', 'I17', 'I18', 'I19', 'I20',
         ],
       },
     ])

@@ -14,12 +14,12 @@
       "updated": "2026-10-18",
       "counts": {
         "stakeholdersO": 14,
-        "stakeholdersI": 12,
-        "stories": 55,
-        "conflicts": 7,
+        "stakeholdersI": 14,
+        "stories": 65,
+        "conflicts": 8,
         "solutions": 5,
         "wantsEvidence": 7,
-        "wantsAiSummary": 0
+        "wantsAiSummary": 17
       }
     },
     {
@@ -36,12 +36,12 @@
       "updated": "2026-10-18",
       "counts": {
         "stakeholdersO": 12,
-        "stakeholdersI": 13,
-        "stories": 45,
-        "conflicts": 7,
-        "solutions": 4,
+        "stakeholdersI": 15,
+        "stories": 51,
+        "conflicts": 8,
+        "solutions": 5,
         "wantsEvidence": 6,
-        "wantsAiSummary": 0
+        "wantsAiSummary": 11
       }
     },
     {
@@ -478,7 +478,7 @@
     },
     {
       "id": "I17",
-      "name": "自行車騎士",
+      "name": "機車與自行車騎士",
       "path": "mov",
       "focus": [],
       "issues": [
@@ -515,6 +515,46 @@
       "focus": [],
       "issues": [
         1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I21",
+      "name": "公園周邊居民與使用者",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I22",
+      "name": "關心都市生態的市民",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        1
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I23",
+      "name": "YouBike 使用者",
+      "path": "mov",
+      "focus": [],
+      "issues": [
+        2
+      ],
+      "movedTo": null
+    },
+    {
+      "id": "I24",
+      "name": "趕不上垃圾車的上班族與公寓住戶",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        2
       ],
       "movedTo": null
     }

@@ -53,20 +53,23 @@ describe('hasDataBasis', () => {
 })
 
 describe('dataBasedOnly', () => {
-  it('keeps the 6 stories of #2 with a 實證 tag, in file order', () => {
+  it('keeps the 17 stories of #2 with a 實證 or AI整理 tag, in file order', () => {
     expect(ids(dataBasedOnly(trashcans.stories))).toEqual([
-      'O01-US03', 'O03-US04', 'O04-US04', 'O04-US05', 'I01-US04', 'I09-US04',
+      'O01-US03', 'O03-US04', 'O04-US04', 'O04-US05', 'I01-US01', 'I01-US02', 'I01-US04', 'I01-US05',
+      'I01-US06', 'I01-US07', 'I01-US08', 'I07-US01', 'I09-US03', 'I09-US04', 'I10-US01', 'I23-US01', 'I24-US01',
     ])
   })
 
-  it('keeps the 7 stories of #1 with a 實證 tag', () => {
-    expect(dataBasedOnly(trees.stories)).toHaveLength(7)
+  it('keeps the 24 stories of #1 with a 實證 or AI整理 tag', () => {
+    expect(dataBasedOnly(trees.stories)).toHaveLength(24)
     expect(dataBasedOnly(trees.stories).every(hasDataBasis)).toBe(true)
   })
 
   it('keeps AI整理 stories too, in file order', () => {
     expect(ids(dataBasedOnly(withSummary(['O01-US01', 'I13-US02'])))).toEqual([
-      'O01-US01', 'O01-US03', 'O03-US04', 'O04-US04', 'O04-US05', 'I01-US04', 'I09-US04', 'I13-US02',
+      'O01-US01', 'O01-US03', 'O03-US04', 'O04-US04', 'O04-US05', 'I01-US01', 'I01-US02', 'I01-US04', 'I01-US05',
+      'I01-US06', 'I01-US07', 'I01-US08', 'I07-US01', 'I09-US03', 'I09-US04', 'I10-US01', 'I13-US02', 'I23-US01',
+      'I24-US01',
     ])
   })
 
@@ -77,9 +80,12 @@ describe('dataBasedOnly', () => {
 })
 
 describe('dataBasedPickList', () => {
-  it('keeps a pick item when any of its stories has the 實證 tag (#2)', () => {
+  it('keeps a pick item when any of its stories has the 實證 or AI整理 tag (#2)', () => {
     const items = dataBasedPickList(pickList(trashcans), trashcans.stories)
-    expect(items.map((i) => i.key)).toEqual(['W01', 'W04', 'O04-US04'])
+    expect(items.map((i) => i.key)).toEqual([
+      'W01', 'W04', 'O04-US04', 'I01-US01', 'W09', 'I01-US05', 'I01-US06', 'I01-US07', 'I01-US08', 'I07-US01',
+      'I09-US03', 'I10-US01', 'I23-US01', 'I24-US01',
+    ])
   })
 
   it('keeps a pick item when any of its stories has the AI整理 tag', () => {
@@ -88,11 +94,14 @@ describe('dataBasedPickList', () => {
     expect(items.map((i) => i.key)).toContain('W08')
   })
 
-  it('keeps the W groups of the 7 #1 stories', () => {
+  it('keeps the pick items of the 24 data-based #1 stories', () => {
     const items = dataBasedPickList(pickList(trees), trees.stories)
-    expect(items.map((i) => i.key)).toEqual(['W01', 'W02'])
+    expect(items.map((i) => i.key)).toEqual([
+      'W03', 'W04', 'W05', 'W06', 'W01', 'W02', 'W09', 'I01-US02', 'I07-US02', 'I14-US03', 'I17-US03', 'I20-US05',
+      'I20-US06', 'I20-US07', 'I20-US08', 'I21-US01', 'I22-US01',
+    ])
     expect(items.flatMap((i) => i.storyIds).filter((id) => dataBasedOnly(trees.stories).some((s) => s.id === id)))
-      .toHaveLength(7)
+      .toHaveLength(24)
   })
 
   it('ignores unknown story IDs', () => {

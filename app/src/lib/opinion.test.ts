@@ -110,7 +110,7 @@ describe('opinionResult on #2', () => {
     const expected = trashcans.stakeholders.map((s) => s.id).filter((id) => !['O12', 'I06', 'I07', 'I01'].includes(id))
     expect(r.notMentioned).toEqual(expected)
     expect(r.notMentioned[0]).toBe('O01')
-    expect(r.notMentioned.at(-1)).toBe('I13')
+    expect(r.notMentioned.at(-1)).toBe('I24')
   })
 
   it('a story on side A shows side B', () => {
@@ -120,10 +120,10 @@ describe('opinionResult on #2', () => {
   })
 
   it('picked stories on both sides: other stories of both sides, minus the picked ones', () => {
-    // C1 is I01-US01, I10-US01 vs I09-US01.
+    // C1 is I01-US01, I01-US05, I10-US01 vs I09-US01.
     const c = opinionResult(trashcans, ['I01-US01', 'I09-US01'])
     const c1 = c.otherSide.find((o) => o.conflict.id === 'C1')!
-    expect(ids(c1.otherStories)).toEqual(['I10-US01'])
+    expect(ids(c1.otherStories)).toEqual(['I01-US05', 'I10-US01'])
   })
 
   it('leaves out a conflict when every story in it was picked', () => {

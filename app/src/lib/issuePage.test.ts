@@ -66,6 +66,7 @@ describe('pendingBySection', () => {
       '7.2 解法 B：滿溢回報與動態清運',
       '7.3 解法 C：找桶指引與開放資料更新',
       '7.4 解法 D：參與式選址流程',
+      '7.5 解法 E：家用垃圾的彈性收集點（題目外的配套）',
       '資料比對注意事項',
     ])
   })
@@ -104,8 +105,8 @@ describe('storiesByPriority', () => {
   it('groups solution A of #2 in the order M, S, C and leaves out empty groups', () => {
     const a = trashcans.solutions.find((s) => s.id === 'A')!
     expect(ids(storiesByPriority(trashcans, a.stories))).toEqual([
-      ['M', ['O04-US01', 'O04-US02', 'O12-US01', 'I01-US01', 'I01-US04', 'I06-US01', 'I07-US02', 'I09-US04']],
-      ['S', ['O01-US01', 'O01-US03', 'O04-US04', 'I02-US01', 'I07-US01', 'I10-US01', 'I12-US01']],
+      ['M', ['O04-US01', 'O04-US02', 'O12-US01', 'I01-US01', 'I01-US04', 'I01-US05', 'I06-US01', 'I07-US02', 'I09-US04']],
+      ['S', ['O01-US01', 'O01-US03', 'O04-US04', 'I01-US07', 'I02-US01', 'I07-US01', 'I10-US01', 'I12-US01', 'I23-US01']],
       ['C', ['O01-US04', 'O10-US01', 'O11-US01']],
     ])
   })

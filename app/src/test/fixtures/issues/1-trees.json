@@ -125,8 +125,8 @@
     {
       "id": "I01",
       "relation": {
-        "text": "走到車站的路上需要樹蔭",
-        "tag": "AI模擬",
+        "text": "走路與通勤的路上需要樹蔭（「市長，你給我聽好了」資料，約 57 則，關鍵字估算）",
+        "tag": "AI整理",
         "pending": false
       }
     },
@@ -149,8 +149,8 @@
     {
       "id": "I07",
       "relation": {
-        "text": "鋪面不平時推車難走；公園需要樹蔭",
-        "tag": "AI模擬",
+        "text": "公園的遊戲場需要樹蔭（「市長，你給我聽好了」資料，約 25 則，關鍵字估算）；鋪面不平時推車難走",
+        "tag": "AI整理",
         "pending": false
       }
     },
@@ -165,8 +165,8 @@
     {
       "id": "I14",
       "relation": {
-        "text": "採光、落葉、颱風斷枝",
-        "tag": "AI模擬",
+        "text": "修剪方式、樹種帶來的困擾、事前溝通（「市長，你給我聽好了」資料，關鍵字估算，見步驟 4）；採光、颱風斷枝",
+        "tag": "AI整理",
         "pending": false
       }
     },
@@ -189,8 +189,8 @@
     {
       "id": "I17",
       "relation": {
-        "text": "路口等候時曝曬；樹根頂起自行車道（步驟 3 新增）",
-        "tag": "AI模擬",
+        "text": "騎車的路上沒有樹蔭（「市長，你給我聽好了」資料，約 38 則，關鍵字估算）；路口等候時曝曬；樹根頂起自行車道（步驟 3 新增）",
+        "tag": "AI整理",
         "pending": false
       }
     },
@@ -217,6 +217,22 @@
         "tag": "實證",
         "pending": false
       }
+    },
+    {
+      "id": "I21",
+      "relation": {
+        "text": "公園改建或地下工程時，公園裡的大樹可能被移除（由「市長，你給我聽好了」資料發現，約 29 則，關鍵字估算）",
+        "tag": "AI整理",
+        "pending": false
+      }
+    },
+    {
+      "id": "I22",
+      "relation": {
+        "text": "樹被移除時，鳥類與昆蟲也失去棲地（由「市長，你給我聽好了」資料發現，約 111 則，關鍵字估算）",
+        "tag": "AI整理",
+        "pending": false
+      }
     }
   ],
   "inputSources": [
@@ -240,17 +256,19 @@
       "source": "「市長，你給我聽好了」資料",
       "stakeholders": [
         "I01",
-        "I05",
+        "I07",
         "I14",
-        "I18",
-        "I20"
+        "I17",
+        "I20",
+        "I21",
+        "I22"
       ],
       "fit": {
-        "text": "I01、I05、I14、I18、I20 等一般市民",
-        "tag": "AI模擬",
+        "text": "一般市民。本文件依留言內容，把需求放到 I01、I07、I14、I17、I20、I21、I22 等利害關係人之下（見步驟 4 與[附錄](#市長你給我聽好了資料的使用方式)）",
+        "tag": "AI整理",
         "pending": false
       },
-      "note": "只引用件數或摘要，不複製原始留言"
+      "note": "只用件數與改寫的摘要，不引用原始留言。已用於本文件，件數是關鍵字估算"
     },
     {
       "source": "[臺北市陳情系統 1999](https://1999.gov.taipei) 類別資料（倒樹、行道樹修剪等）",
@@ -284,10 +302,11 @@
       "stakeholders": [
         "O17",
         "I20",
+        "I22",
         "O07"
       ],
       "fit": {
-        "text": "O17、I20、O07",
+        "text": "O17、I20、I22、O07",
         "tag": "AI模擬",
         "pending": false
       },
@@ -298,10 +317,11 @@
       "stakeholders": [
         "O05",
         "I14",
-        "I05"
+        "I05",
+        "I21"
       ],
       "fit": {
-        "text": "O05、I14、I05",
+        "text": "O05、I14、I05、I21",
         "tag": "AI模擬",
         "pending": false
       },
@@ -455,7 +475,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "可詢問里辦公處",
+      "source": "可詢問里辦公處；市民留言約 38 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -527,7 +547,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "題目原文的資料缺口：逐年移除紀錄與原因未完整開放",
+      "source": "題目原文的資料缺口：逐年移除紀錄與原因未完整開放；市民留言約 91 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -563,7 +583,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "新工處為人行道與樹穴資料集提供機關",
+      "source": "新工處為人行道與樹穴資料集提供機關；市民留言約 11 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -617,7 +637,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "與 I18-US01（題目原文）同一訴求，另列在公園處之下",
+      "source": "與 I18-US01（題目原文）同一訴求，另列在公園處之下；市民留言約 790 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -635,7 +655,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "與 I20-US01（題目原文）同一訴求，另列在公園處之下",
+      "source": "與 I20-US01（題目原文）同一訴求，另列在公園處之下；市民留言約 11 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -689,7 +709,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": null,
+      "source": "市民留言約 91 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -815,7 +835,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "與 I18-US01（題目原文）同一訴求，另列在護樹團體之下",
+      "source": "與 I18-US01（題目原文）同一訴求，另列在護樹團體之下；市民留言約 790 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -833,7 +853,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "與 I20-US01（題目原文）同一訴求，另列在護樹團體之下",
+      "source": "與 I20-US01（題目原文）同一訴求，另列在護樹團體之下；市民留言約 11 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -851,7 +871,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": null,
+      "source": "市民留言約 38 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -869,7 +889,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": null,
+      "source": "市民留言約 91 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -881,13 +901,13 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "group": null,
+      "group": "W09",
       "soThat": {
         "text": "樹不會因為過度修剪或移植不當而死亡",
         "tag": "AI模擬",
         "pending": false
       },
-      "source": null,
+      "source": "市民留言約 132 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -923,7 +943,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": null,
+      "source": "市民留言約 17 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）",
       "priority": "C",
       "priorityTag": "AI模擬"
     },
@@ -1004,17 +1024,35 @@
       "stakeholder": "I01",
       "want": {
         "text": "從住家到捷運站、公車站的路有連續樹蔭",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
       "group": "W03",
       "soThat": {
         "text": "夏天走路通勤不會太熱",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
-      "source": "可用盛夏中午的現場走查驗證",
+      "source": "「市長，你給我聽好了」資料，約 57 則（關鍵字估算），其中約 25 則也提到天氣熱；也可用盛夏中午的現場走查驗證",
       "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I01-US02",
+      "stakeholder": "I01",
+      "want": {
+        "text": "遮蔭優先種樹，不用遮陽傘等人造設施取代樹",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "經費用在能長久遮蔭的樹上",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 75 則（關鍵字估算），其中約 27 則也提到要種樹",
+      "priority": "S",
       "priorityTag": "AI模擬"
     },
     {
@@ -1031,7 +1069,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "與 I18-US01（題目原文）同一訴求，另列在高齡者之下",
+      "source": "與 I18-US01（題目原文）同一訴求，另列在高齡者之下；「市長，你給我聽好了」資料約 790 則提到補種（關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -1058,7 +1096,7 @@
       "stakeholder": "I06",
       "want": {
         "text": "樹穴與樹根不會讓人行道不平，也不擋住導盲磚",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
       "group": "W06",
@@ -1067,7 +1105,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "可詢問身障團體",
+      "source": "「市長，你給我聽好了」資料，約 11 則（關鍵字估算），主要講樹根讓人行道不平，提到導盲磚的很少；可詢問身障團體",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -1094,7 +1132,7 @@
       "stakeholder": "I07",
       "want": {
         "text": "樹穴與樹根不會讓人行道不平",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
       "group": "W06",
@@ -1103,7 +1141,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "與 I06-US01 同一訴求，另列在家長之下",
+      "source": "與 I06-US01 同一訴求，另列在家長之下；「市長，你給我聽好了」資料，約 11 則（關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -1112,16 +1150,16 @@
       "stakeholder": "I07",
       "want": {
         "text": "公園的遊戲場有樹蔭",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
       "group": null,
       "soThat": {
         "text": "夏天孩子也能出門玩",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
-      "source": "可在公園現場觀察驗證",
+      "source": "「市長，你給我聽好了」資料，約 25 則（關鍵字估算）；也可在公園現場觀察驗證",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -1157,7 +1195,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "步驟 3 追問後新增",
+      "source": "步驟 3 追問後新增；「市長，你給我聽好了」資料約 18 則提到棉絮、落果等困擾，但那是住戶的觀點，見 I14-US03",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -1166,7 +1204,7 @@
       "stakeholder": "I14",
       "want": {
         "text": "種樹、移樹或砍樹前先公告，並讓住戶表達意見",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
       "group": "W04",
@@ -1175,7 +1213,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "可由里辦公處了解",
+      "source": "「市長，你給我聽好了」資料，約 38 則（關鍵字估算）；也可由里辦公處了解",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -1194,6 +1232,42 @@
         "pending": false
       },
       "source": null,
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I14-US03",
+      "stakeholder": "I14",
+      "want": {
+        "text": "選樹種時避開棉絮多、落果多或有異味的樹",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "減少過敏與清掃的困擾",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 18 則（關鍵字估算），其中約 12 則也提到過敏或清掃的困擾",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I14-US04",
+      "stakeholder": "I14",
+      "want": {
+        "text": "修剪由合格的樹藝人員依作業標準執行，不過度修剪",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": "W09",
+      "soThat": {
+        "text": "樹保持健康，也留下樹蔭",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 132 則（關鍵字估算），其中約 23 則也提到樹蔭或樹的健康",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -1247,7 +1321,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "步驟 3 追問後新增",
+      "source": "步驟 3 追問後新增；「市長，你給我聽好了」資料只有約 9 則提到路口等候（關鍵字估算），少於 10 則",
       "priority": "C",
       "priorityTag": "AI模擬"
     },
@@ -1270,6 +1344,24 @@
       "priorityTag": "AI模擬"
     },
     {
+      "id": "I17-US03",
+      "stakeholder": "I17",
+      "want": {
+        "text": "騎車的路線（含自行車道與河濱）有樹蔭",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "夏天騎車不會太熱",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 38 則（關鍵字估算），其中約 20 則也提到天氣熱",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
       "id": "I18-US01",
       "stakeholder": "I18",
       "want": {
@@ -1283,7 +1375,7 @@
         "tag": "實證",
         "pending": false
       },
-      "source": "題目原文（黑客松題目 #1：https://puma.taipei/hackathon#issues ，2026-10-15 存檔）",
+      "source": "題目原文（黑客松題目 #1：https://puma.taipei/hackathon#issues ，2026-10-15 存檔）；「市長，你給我聽好了」資料約 790 則提到補種（關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -1337,7 +1429,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "題目原文（黑客松題目 #1：https://puma.taipei/hackathon#issues ，2026-10-15 存檔）",
+      "source": "題目原文（黑客松題目 #1：https://puma.taipei/hackathon#issues ，2026-10-15 存檔）；「市長，你給我聽好了」資料約 11 則提到計畫保留或移植的樹被砍（關鍵字估算）",
       "priority": "M",
       "priorityTag": "AI模擬"
     },
@@ -1346,7 +1438,7 @@
       "stakeholder": "I20",
       "want": {
         "text": "查得到每棵樹的移除日期、原因與補植地點",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
       "group": "W05",
@@ -1355,7 +1447,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "source": "步驟 3 追問後新增",
+      "source": "步驟 3 追問後新增；「市長，你給我聽好了」資料，約 91 則（關鍵字估算），多數講公開移除的原因，提到日期與補植地點的很少",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -1364,16 +1456,16 @@
       "stakeholder": "I20",
       "want": {
         "text": "移樹、砍樹前先公告，並有表達意見的期間",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
       "group": "W04",
       "soThat": {
         "text": "有機會在樹被砍之前提出意見",
-        "tag": "AI模擬",
+        "tag": "AI整理",
         "pending": false
       },
-      "source": null,
+      "source": "「市長，你給我聽好了」資料，約 38 則（關鍵字估算），其中約 23 則也提到要在砍樹或移樹之前",
       "priority": "S",
       "priorityTag": "AI模擬"
     },
@@ -1392,6 +1484,114 @@
         "pending": false
       },
       "source": "參考新加坡做法後新增（見 6.1）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I20-US05",
+      "stakeholder": "I20",
+      "want": {
+        "text": "移除前由樹木醫生或第三方診斷，並公開診斷結果",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "確認移除有根據，能治療的樹先治療",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 62 則（關鍵字估算），其中約 34 則也提到先治療或要有證據",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I20-US06",
+      "stakeholder": "I20",
+      "want": {
+        "text": "健康的樹不移除；必須移除時，先評估能不能移植",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "留住幾十年才長大的樹",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 651 則（關鍵字估算），其中約 35 則也提到老樹或樹長大要很多年",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I20-US07",
+      "stakeholder": "I20",
+      "want": {
+        "text": "不當砍樹有明確的法規與罰則",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "樹木保護不必每次都靠市民個別爭取",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 28 則（關鍵字估算）",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I20-US08",
+      "stakeholder": "I20",
+      "want": {
+        "text": "移除後的樹穴不封水泥，保留下來並排入補種",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "原來的地方還能種回新樹",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 84 則（關鍵字估算），其中約 21 則也提到沒有補種",
+      "priority": "S",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I21-US01",
+      "stakeholder": "I21",
+      "want": {
+        "text": "公園改建或地下工程前，先保留大樹，並辦說明會聽取意見",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "社區不會因為工程失去公園裡的大樹與樹蔭",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 29 則（關鍵字估算），多數集中在少數幾個個案",
+      "priority": "M",
+      "priorityTag": "AI模擬"
+    },
+    {
+      "id": "I22-US01",
+      "stakeholder": "I22",
+      "want": {
+        "text": "種樹與修剪時，考慮鳥類、昆蟲等動物的棲地",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "group": null,
+      "soThat": {
+        "text": "城市裡的動物也有地方住",
+        "tag": "AI整理",
+        "pending": false
+      },
+      "source": "由「市長，你給我聽好了」資料新增，約 111 則（關鍵字估算），其中約 50 則也提到動物的家或棲地",
       "priority": "S",
       "priorityTag": "AI模擬"
     }
@@ -1476,6 +1676,15 @@
       "stories": [
         "I06-US02",
         "I07-US03"
+      ]
+    },
+    {
+      "id": "W09",
+      "summary": "修剪由合格的樹藝人員依作業標準執行",
+      "tag": "AI模擬",
+      "stories": [
+        "O18-US01",
+        "I14-US04"
       ]
     }
   ],
@@ -1598,6 +1807,8 @@
       ],
       "sideB": [
         "I20-US01",
+        "I20-US06",
+        "I21-US01",
         "O17-US02"
       ],
       "method": {
@@ -1660,6 +1871,30 @@
         "tag": "AI模擬",
         "pending": false
       }
+    },
+    {
+      "id": "C8",
+      "text": {
+        "text": "住戶希望選樹種時避開棉絮多、落果多的樹；關心生態的市民希望選能提供鳥類與昆蟲食物和棲地的樹，而這類樹常會結果",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "sideA": [
+        "I14-US03"
+      ],
+      "sideB": [
+        "I22-US01"
+      ],
+      "method": {
+        "text": "以里為單位的**社區工作坊**（和 C3 一起辦），請植物與生態專業人士說明各樹種的優缺點",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "依地點分開考慮：住家窗前與窄人行道避開落果多、棉絮多的樹；公園與較寬的綠帶保留能提供棲地的樹種",
+        "tag": "AI模擬",
+        "pending": false
+      }
     }
   ],
   "solutions": [
@@ -1670,11 +1905,12 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "summary": "結合行道樹、公園樹木、樹穴、人行道範圍與公園資料，找出「有樹穴但可能沒有樹」的位置與樹蔭較少的路段，產生補植候選清單，並加上淨寬與管線檢查。較窄的人行道，評估在鋪面下用結構土壤或土壤格框擴大樹根空間；和管線單位（O16）一起把地面的管線箱集中到綠帶內（地下管線空間 `utility`）",
+      "summary": "結合行道樹、公園樹木、樹穴、人行道範圍與公園資料，找出「有樹穴但可能沒有樹」的位置與樹蔭較少的路段，產生補植候選清單，並加上淨寬與管線檢查。移除樹後的空樹穴保留下來，列入補植候選，不封水泥；遮蔭以種樹為主，不用人造遮陽設施取代樹。候選地點也包含騎車的路線（自行車道、河濱）。較窄的人行道，評估在鋪面下用結構土壤或土壤格框擴大樹根空間；和管線單位（O16）一起把地面的管線箱集中到綠帶內（地下管線空間 `utility`）",
       "spaces": [
         "sidewalk",
         "park",
-        "utility"
+        "utility",
+        "bike-lane"
       ],
       "stories": [
         "O12-US01",
@@ -1695,12 +1931,15 @@
         "O18-US02",
         "O20-US02",
         "O21-US01",
+        "I01-US02",
         "I05-US02",
         "I07-US02",
         "I15-US01",
         "I16-US01",
         "I17-US01",
-        "I19-US01"
+        "I17-US03",
+        "I19-US01",
+        "I20-US08"
       ]
     },
     {
@@ -1710,7 +1949,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "summary": "工程開工前提供保留樹清單與現場標示；每棵樹的移除日期、原因與補植地點以開放資料公開，和樹木編號對應",
+      "summary": "工程開工前提供保留樹清單與現場標示；每棵樹的移除日期、原因與補植地點以開放資料公開，和樹木編號對應。移除前由樹木醫生或第三方診斷，診斷結果一起公開；健康的樹先評估移植；修剪依公開的作業標準，由合格的樹藝人員執行；不當砍樹的罰則寫清楚",
       "spaces": [
         "sidewalk",
         "park"
@@ -1720,6 +1959,8 @@
         "O15-US01",
         "O17-US02",
         "I20-US01",
+        "I20-US06",
+        "I21-US01",
         "O05-US02",
         "O07-US01",
         "O13-US01",
@@ -1729,7 +1970,10 @@
         "O17-US04",
         "O18-US01",
         "O20-US01",
-        "I20-US02"
+        "I14-US04",
+        "I20-US02",
+        "I20-US05",
+        "I20-US07"
       ]
     },
     {
@@ -1739,7 +1983,7 @@
         "tag": "AI模擬",
         "pending": false
       },
-      "summary": "種樹、移樹、砍樹前在地圖上公告並有意見期間；以里為單位討論樹種與位置；開放社區認養；在解法 A 的補植點舉辦市民種樹活動，由社區團體（O19）一起帶領",
+      "summary": "種樹、移樹、砍樹前在地圖上公告並有意見期間；公園改建或地下工程前辦說明會；以里為單位討論樹種與位置，樹種討論也考慮住戶的困擾（棉絮、落果）與動物的棲地；開放社區認養；在解法 A 的補植點舉辦市民種樹活動，由社區團體（O19）一起帶領",
       "spaces": [
         "sidewalk",
         "park"
@@ -1749,12 +1993,15 @@
         "O17-US03",
         "I14-US01",
         "I18-US02",
+        "I21-US01",
         "O01-US01",
         "O19-US01",
         "O19-US02",
         "I13-US01",
         "I14-US02",
-        "I20-US03"
+        "I14-US03",
+        "I20-US03",
+        "I22-US01"
       ]
     },
     {
@@ -1798,6 +2045,7 @@
       "stories": [
         "O17-US02",
         "I20-US01",
+        "I20-US06",
         "I20-US04"
       ]
     }
@@ -1860,8 +2108,18 @@
     },
     {
       "section": "6.3 成效衡量",
+      "text": "【待補：需要新工處、公園處的資料或現場走查】",
+      "context": "移除樹後被封起、沒有補種的樹穴數"
+    },
+    {
+      "section": "6.3 成效衡量",
       "text": "【待補：公園處與各工程單位】",
       "context": "工程中誤砍或未依計畫保留的件數"
+    },
+    {
+      "section": "6.3 成效衡量",
+      "text": "【待補：公園處的診斷與移除紀錄】",
+      "context": "移除前有樹木醫生或第三方診斷、並公開結果的比例"
     },
     {
       "section": "6.3 成效衡量",
@@ -1957,6 +2215,11 @@
       "section": "7.2 解法 B：保留樹清單與移除紀錄公開",
       "text": "【待補：法務確認】",
       "context": "相關法規"
+    },
+    {
+      "section": "7.2 解法 B：保留樹清單與移除紀錄公開",
+      "text": "【待補：樹木醫生的人數與診斷費用】",
+      "context": "其他顧慮"
     },
     {
       "section": "7.2 解法 B：保留樹清單與移除紀錄公開",

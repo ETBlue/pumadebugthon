@@ -170,6 +170,7 @@ New file `analysis/stakeholders.csv` (UTF-8 with BOM):
 | 特別關注 | Zero or more of: 高齡, 身心障礙, 兒童與照顧者, 外籍, 經濟弱勢. Separated by 「、」. |
 | 議題 | Issue numbers, for example `1 2 5`. Filled by a script. |
 | 備註 | For a moved ID: 「已改為 I12」 |
+| 新增日期 | The date the ID was added to this file, `YYYY-MM-DD`. A new stakeholder gets today's date. The date never changes, also when the row is moved or renamed. Used for the app's "recent" lists. In `index.json` it is `added`. Added 2026-10-18; the first values come from git history (the first commit where the ID is in this file). |
 
 Rules:
 - An ID is never reused.
@@ -224,6 +225,8 @@ Two levels of tags:
 - **Issue:** a line under the title of each `issue-analysis.md`, using codes: 「空間類型：`sidewalk`、`arcade`、…」.
 - **Solution:** 6.1 gets a 空間類型 column, using codes. Each solution lists the spaces it uses.
 
+6.1 also has a 新增日期 column, right after 空間類型: the date the solution was added to 6.1, `YYYY-MM-DD`. A new solution gets today's date. In the issue JSON it is `added`. The 構想 table in 6.1 has no date. Added 2026-10-18; the first values come from git history (the first commit where the code is in 6.1).
+
 Rules:
 - Every space type of a solution must also be in its issue's list.
 - The Markdown uses codes, never names. A rename changes only `space-types.csv`, not the issue files. The app shows the names.
@@ -256,13 +259,14 @@ Rules:
 - every path prefix has a name in `path-labels.csv`
 - the 議題 column matches the issue files
 - every space type code is in `space-types.csv`, and each solution's space types are in its issue's list
+- 新增日期 exists in `stakeholders.csv` and in 6.1, and each value is a `YYYY-MM-DD` date that is not after today
 
 ## 6. Build script
 
 `analysis/build_json.py`:
 - Reads every issue folder that has an `issue-analysis.md`, plus `stakeholders.csv` and `path-labels.csv`.
 - Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types) and `app/public/data/issues/<folder>.json`.
-- Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型), 6.2.
+- Reads these sections: title, 空間類型 line, 1.1, 1.2, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2.
 - Adds per-issue counts for the home page cards (section 3.1), including `wantsEvidence` and `wantsAiSummary` (stories whose 我想要… cell is `[實證]` or `[AI整理]`), and the update date from `git log -1 --format=%cs -- <folder>`.
 - Keeps each tag in its own field, for example `{ "text": "…", "tag": "AI模擬" }`. A 【待補】 cell has `"tag": null` and `"pending": true`.
 - Collects every 【待補…】 item in the issue file, including items inside longer text (for example 「【待補：法務確認】」 in step 7), with its section, for the 待補清單.

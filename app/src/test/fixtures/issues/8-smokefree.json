@@ -1441,6 +1441,7 @@
         "park",
         "mrt-exit"
       ],
+      "added": "2026-10-18",
       "stories": [
         "O05-US01",
         "O12-US01",
@@ -1468,6 +1469,7 @@
         "park",
         "mrt-exit"
       ],
+      "added": "2026-10-18",
       "stories": [
         "O22-US02",
         "I01-US01",
@@ -1494,6 +1496,7 @@
         "park",
         "mrt-exit"
       ],
+      "added": "2026-10-18",
       "stories": [
         "O22-US01",
         "O23-US01",
@@ -1526,6 +1529,7 @@
         "park",
         "mrt-exit"
       ],
+      "added": "2026-10-18",
       "stories": [
         "O22-US01",
         "O01-US01",
@@ -1553,6 +1557,7 @@
         "indoor",
         "arcade"
       ],
+      "added": "2026-10-18",
       "stories": [
         "I26-US01",
         "O24-US01",

@@ -96,5 +96,15 @@ class SyncStakeholdersTest(unittest.TestCase):
         self.assertEqual(self.csv_bytes(), before)
 
 
+    def test_keeps_date_column(self):
+        # 新增日期 is the last column. The script changes 議題 only.
+        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,,,2026-10-18")
+        code, out = self.run_sync()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.csv_bytes(), self.original)
+        header = self.original.decode("utf-8-sig").splitlines()[0].split(",")
+        self.assertEqual(header[-2:], ["備註", "新增日期"])
+
+
 if __name__ == "__main__":
     unittest.main()

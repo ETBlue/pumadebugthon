@@ -27,7 +27,7 @@ In other text it stays as written; check_analysis.py checks that it exists.
 Markdown inside cells (for example **bold** and [links](...)) stays as written
 in the Cell text and in other text fields. The app renders it.
 """
-import csv, glob, json, os, re, subprocess, sys
+import csv, datetime, glob, json, os, re, subprocess, sys
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -98,6 +98,19 @@ def read_csv(analysis_dir, name, columns):
         if None in r or any(r[c] is None for c in columns):
             raise ReadError(name, f"row {i}: wrong number of cells")
     return rows
+
+
+def check_date(value, section_name, where):
+    """A 新增日期 value: a real date written YYYY-MM-DD. Otherwise a ReadError.
+    (check_analysis.py also checks that the date is not in the future.)"""
+    value = value.strip()
+    try:
+        if not re.fullmatch(r"\d{4}-\d\d-\d\d", value):
+            raise ValueError
+        datetime.date.fromisoformat(value)
+    except ValueError:
+        raise ReadError(section_name, f"{where}: 新增日期 「{value}」 must be a date written YYYY-MM-DD")
+    return value
 
 
 def git_updated(folder):
@@ -297,7 +310,7 @@ def parse_issue(text, space_codes):
 
     # 6.1 solutions
     solutions = []
-    for r in table_rows(common.tables(section(text, "### 6.1", "6.1")), "6.1", ["代號", "解法", "空間類型", "一句話說明"]):
+    for r in table_rows(common.tables(section(text, "### 6.1", "6.1")), "6.1", ["代號", "解法", "空間類型", "新增日期", "一句話說明"]):
         sol, codes = r["代號"], re.findall(r"`([^`]+)`", r["空間類型"])
         if not codes:
             raise ReadError("6.1", f"solution {sol}: no space code")
@@ -307,7 +320,8 @@ def parse_issue(text, space_codes):
             if code not in spaces:
                 raise ReadError("6.1", f"solution {sol}: space code {code} is not in the issue's 空間類型 line")
         solutions.append({"id": sol, "name": cell(r["解法"], "6.1", sol), "summary": r["一句話說明"],
-                          "spaces": codes, "stories": []})
+                          "spaces": codes, "added": check_date(r["新增日期"], "6.1", f"solution {sol}"),
+                          "stories": []})
     no_duplicates([s["id"] for s in solutions], "6.1", "solution")
     by_sol = {s["id"]: s for s in solutions}
     in_62 = []
@@ -354,7 +368,7 @@ def build(analysis_dir):
     space_codes = {r["代碼"] for r in space_rows}
     label_rows = read_csv(analysis_dir, "path-labels.csv", ["分類路徑", "名稱"])
     stake_rows = read_csv(analysis_dir, "stakeholders.csv",
-                          ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "議題", "備註"])
+                          ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "議題", "備註", "新增日期"])
     index_issues, issue_files = [], {}
     for i, row in enumerate(issues_csv, start=2):
         if not re.fullmatch(r"\d+", row["編號"].strip()):
@@ -409,6 +423,7 @@ def build(analysis_dir):
             "focus": [x.strip() for x in focus.split("、")] if focus else [],
             "issues": [] if moved_to else [int(x) for x in issues],
             "movedTo": moved_to,
+            "added": check_date(r["新增日期"], "stakeholders.csv", sid),
         })
 
     index = {

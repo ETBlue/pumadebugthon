@@ -196,6 +196,21 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(src["fit"]["tag"], "AI模擬")
         self.assertEqual(len(self.issue["inputSources"]), 11)
 
+    def test_stakeholder_added_date(self):
+        # 新增日期 in stakeholders.csv becomes "added" (YYYY-MM-DD), also for moved IDs.
+        by_id = {s["id"]: s for s in self.index["stakeholders"]}
+        self.assertEqual(by_id["O01"]["added"], "2026-10-18")
+        self.assertEqual(by_id["O02"]["added"], "2026-10-18")
+        for s in self.index["stakeholders"]:
+            self.assertRegex(s["added"], r"^\d{4}-\d\d-\d\d$")
+            self.assertEqual(list(s), ["id", "name", "path", "focus", "issues", "movedTo", "added"])
+
+    def test_solution_added_date(self):
+        # 新增日期 in 6.1 becomes "added".
+        added = {s["id"]: s["added"] for s in self.issue["solutions"]}
+        self.assertEqual(added, {"A": "2026-10-16", "B": "2026-10-16", "C": "2026-10-16",
+                                 "D": "2026-10-16", "E": "2026-10-18"})
+
     def test_updated_is_date_or_null(self):
         for i in [self.issue] + self.index["issues"]:
             u = i["updated"]
@@ -318,6 +333,19 @@ class BuildJsonErrorTest(unittest.TestCase):
     def test_bad_issue_value_in_csv(self):
         self.edit("I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,1、2、8,", "stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:")
+
+    def test_bad_stakeholder_date(self):
+        self.edit("I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,1 2 8,,2026/10/18", "stakeholders.csv")
+        self.assertFails("stakeholders.csv: I05:", "新增日期")
+
+    def test_missing_stakeholder_date_column(self):
+        self.edit("議題,備註,新增日期", "議題,備註,日期", "stakeholders.csv")
+        self.assertFails("stakeholders.csv: header: no column 新增日期")
+
+    def test_bad_solution_date(self):
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 2026-10-16 |",
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 10/16 |")
+        self.assertFails("2-trashcans: 6.1:", "solution D", "新增日期")
 
     def test_missing_csv_file(self):
         os.remove(os.path.join(self.dir, "space-types.csv"))

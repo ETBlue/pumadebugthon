@@ -3,7 +3,8 @@
 
 /** A tag on analysis text (see analysis/method.md, section 標記).
  * 實證: a person can check the source, or a person checked the AI summary.
- * AI整理: AI summarized it from real data, with counts; not checked by a person yet.
+ * AI整理: AI summarized it from a real source (the citizen data, with counts, or
+ *   a news report); not checked by a person yet.
  * AI模擬: AI made it up as a likely view; no data behind it.
  * null means no tag (for example a 【待補】 cell). */
 export type Tag = '實證' | 'AI整理' | 'AI模擬' | null
@@ -81,6 +82,9 @@ export interface Stakeholder {
   issues: number[]
   /** The new ID when this ID was moved (備註 「已改為 I12」), else null. */
   movedTo: string | null
+  /** 新增日期: the date the ID was added to stakeholders.csv (YYYY-MM-DD).
+   * For the "recent" lists. Moved IDs keep their date. */
+  added: string
 }
 
 /** A row of analysis/space-types.csv. */
@@ -169,6 +173,8 @@ export interface Solution {
   summary: string
   /** Space type codes. */
   spaces: string[]
+  /** 新增日期: the date the solution was added to 6.1 (YYYY-MM-DD). */
+  added: string
   /** Story IDs from the 涵蓋的 Must and 涵蓋的 Should / Could columns of 6.2. */
   stories: string[]
 }

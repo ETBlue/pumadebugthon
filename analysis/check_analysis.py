@@ -1,5 +1,5 @@
 """Check that an issue-analysis.md and its user-stories.csv match. Usage: python3 -I analysis/check_analysis.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv"""
-import csv, glob, os, re, sys, unicodedata
+import csv, datetime, glob, os, re, sys, unicodedata
 from collections import Counter, defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
@@ -8,6 +8,22 @@ from analysis_common import (CROSS_REF, SEPARATOR, TAG_NAMES, TAG_RE, TAGS, cros
                              step1_tables, step4_ids, tables, without_cross_refs)
 
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
+# 新增日期: the date a stakeholder (stakeholders.csv) or a solution (6.1) was added.
+DATE_COL = "新增日期"
+
+
+def date_problem(value):
+    """Why a 新增日期 value is wrong, or None. It must be a real YYYY-MM-DD date
+    and not after today (the date when the check runs)."""
+    if not re.fullmatch(r"\d{4}-\d\d-\d\d", value):
+        return f"{value!r} is not YYYY-MM-DD"
+    try:
+        d = datetime.date.fromisoformat(value)
+    except ValueError:
+        return f"{value} is not a real date"
+    if d > datetime.date.today():
+        return f"{value} is in the future (today is {datetime.date.today().isoformat()})"
+    return None
 
 
 def step1_rows(t):
@@ -302,6 +318,14 @@ def main(md_path, csv_path):
             if new_id not in known: err(f"編號異動紀錄: new ID {new_id} (from {old_id}) is not in {'step 4' if story else 'step 1'}")
             if old_id in known: err(f"編號異動紀錄: old ID {old_id} is still in {'step 4' if story else 'step 1'}")
 
+    # 12b. stakeholders.csv has a 新增日期 column; every row has a valid date
+    if shared and DATE_COL not in shared[0]:
+        err(f"stakeholders.csv: no {DATE_COL} column")
+    else:
+        for r in shared:
+            why = date_problem((r.get(DATE_COL) or "").strip())
+            if why: err(f"stakeholders.csv: {r['利害關係人編號']} {DATE_COL} {why}")
+
     # 13. every prefix of every active path has a label
     labels = {r["分類路徑"] for r in read_csv("path-labels.csv")}
     for r in shared:
@@ -345,6 +369,14 @@ def main(md_path, csv_path):
     # 16. 6.1 has a 空間類型 column; each code is known and in the issue's list
     sec61 = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0] if "### 6.1" in text else ""
     hdr61 = next((cells(l) for l in sec61.splitlines() if l.startswith("| 代號 ")), None)
+    if not hdr61 or DATE_COL not in hdr61: err(f"6.1: no {DATE_COL} column")
+    else:
+        dcol = hdr61.index(DATE_COL)
+        for line in sec61.splitlines():
+            if not re.match(r"^\| [A-Z] \|", line): continue
+            c = cells(line)
+            why = date_problem(c[dcol] if len(c) > dcol else "")
+            if why: err(f"6.1 solution {c[0]}: {DATE_COL} {why}")
     if not hdr61 or "空間類型" not in hdr61: err("6.1: no 空間類型 column")
     else:
         col = hdr61.index("空間類型")

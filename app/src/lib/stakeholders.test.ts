@@ -79,7 +79,7 @@ describe('buildTree', () => {
       organizations: ['gov', 'soe', 'ind', 'acd', 'edu', 'ngo', 'cmt'],
       individuals: ['res', 'mov', 'vis', 'wrk'],
     })
-    const base = { name: '', focus: [], issues: [1], movedTo: null }
+    const base = { name: '', focus: [], issues: [1], movedTo: null, added: '2026-10-18' }
     const list: Stakeholder[] = [
       { ...base, id: 'O01', path: 'zzz' },
       { ...base, id: 'O02', path: 'aaa' },
@@ -176,7 +176,7 @@ describe('resolveId', () => {
   })
 
   it('follows a chain of moves and stops on a loop', () => {
-    const base = { name: '', path: null, focus: [], issues: [] }
+    const base = { name: '', path: null, focus: [], issues: [], added: '2026-10-18' }
     const list: Stakeholder[] = [
       { ...base, id: 'O01', movedTo: 'O02' },
       { ...base, id: 'O02', movedTo: 'I01' },
@@ -201,7 +201,7 @@ describe('filterStakeholders', () => {
   })
 
   it('leaves out a moved ID even when it matches the other filters', () => {
-    const moved: Stakeholder = { id: 'O99', name: '', path: null, focus: ['高齡'], issues: [1, 2], movedTo: 'I05' }
+    const moved: Stakeholder = { id: 'O99', name: '', path: null, focus: ['高齡'], issues: [1, 2], movedTo: 'I05', added: '2026-10-18' }
     expect(filterStakeholders([moved], { crossIssueOnly: true, focus: ['高齡'] })).toEqual([])
   })
 
@@ -265,7 +265,7 @@ describe('alsoInIssues', () => {
   })
 
   it('returns issue numbers in order', () => {
-    const s: Stakeholder = { id: 'I50', name: '', path: 'res', focus: [], issues: [5, 2, 1], movedTo: null }
+    const s: Stakeholder = { id: 'I50', name: '', path: 'res', focus: [], issues: [5, 2, 1], movedTo: null, added: '2026-10-18' }
     expect(alsoInIssues([s], 'I50', 2, [1, 2, 5])).toEqual([1, 5])
   })
 })

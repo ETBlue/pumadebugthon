@@ -75,6 +75,10 @@ describe('index.json', () => {
     expect(i12?.issues).toContain(2)
   })
 
+  it('has an added date (YYYY-MM-DD) for every stakeholder', () => {
+    for (const s of index.stakeholders) expect(s.added, s.id).toMatch(/^\d{4}-\d\d-\d\d$/)
+  })
+
   it('has a label for every path prefix, and known space codes', () => {
     for (const s of index.stakeholders) {
       if (s.path === null) continue
@@ -149,6 +153,7 @@ describe('issue files', () => {
         for (const sol of issue.solutions) {
           for (const id of sol.stories) expect(storyIds.has(id), sol.id).toBe(true)
           for (const code of sol.spaces) expect(issue.spaces).toContain(code)
+          expect(sol.added, sol.id).toMatch(/^\d{4}-\d\d-\d\d$/)
           expectCell(sol.name)
         }
       })

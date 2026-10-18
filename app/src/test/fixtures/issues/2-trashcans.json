@@ -1628,6 +1628,7 @@
         "sidewalk",
         "mrt-exit"
       ],
+      "added": "2026-10-16",
       "stories": [
         "O04-US01",
         "O04-US02",
@@ -1665,6 +1666,7 @@
         "mrt-exit",
         "park"
       ],
+      "added": "2026-10-16",
       "stories": [
         "O04-US02",
         "I01-US02",
@@ -1697,6 +1699,7 @@
         "park",
         "arcade"
       ],
+      "added": "2026-10-16",
       "stories": [
         "I01-US01",
         "O06-US01",
@@ -1723,6 +1726,7 @@
         "arcade",
         "park"
       ],
+      "added": "2026-10-16",
       "stories": [
         "O04-US01",
         "O05-US01",
@@ -1748,6 +1752,7 @@
         "sidewalk",
         "park"
       ],
+      "added": "2026-10-18",
       "stories": [
         "O04-US02",
         "I24-US01",

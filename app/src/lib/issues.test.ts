@@ -8,7 +8,7 @@ import {
 const index = indexJson as IndexFile
 
 const person = (id: string, issues: number[], extra: Partial<Stakeholder> = {}): Stakeholder => ({
-  id, name: id, path: 'res', focus: [], issues, movedTo: null, ...extra,
+  id, name: id, path: 'res', focus: [], issues, movedTo: null, added: '2026-10-18', ...extra,
 })
 
 describe('availableIssues', () => {

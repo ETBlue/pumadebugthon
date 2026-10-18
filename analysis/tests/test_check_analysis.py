@@ -293,5 +293,56 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
 
+    # 新增日期 (owner decision 2026-10-18): stakeholders.csv and each 6.1 table
+    # have a date column for the app's "recent" lists. YYYY-MM-DD, not in the future.
+    SOL_D = "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 2026-10-16 |"
+
+    def test_stakeholders_csv_has_date_column(self):
+        with open(os.path.join(self.dir, "stakeholders.csv"), encoding="utf-8-sig") as f:
+            header = f.readline().strip().split(",")
+        self.assertEqual(header[-2:], ["備註", "新增日期"])
+
+    def test_stakeholders_csv_without_date_column_fails(self):
+        path = os.path.join(self.dir, "stakeholders.csv")
+        with open(path, encoding="utf-8-sig") as f:
+            lines = f.read().splitlines()
+        with open(path, "w", encoding="utf-8-sig", newline="") as f:
+            f.write("".join(l.rsplit(",", 1)[0] + "\n" for l in lines))
+        self.assertFails("stakeholders.csv", "新增日期")
+
+    def test_stakeholders_csv_bad_date_fails(self):
+        for wrong in ("2026/10/18", "", "2026-13-01"):
+            with self.subTest(wrong=wrong):
+                self.tearDown(); self.setUp()
+                self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", f"I05,高齡者,res,高齡,1 2 8,,{wrong}")
+                self.assertFails("stakeholders.csv: I05 新增日期")
+
+    def test_stakeholders_csv_future_date_fails(self):
+        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,1 2 8,,2999-01-01")
+        self.assertFails("stakeholders.csv: I05 新增日期 2999-01-01", "future")
+
+    def test_solution_date_passes(self):
+        with open(self.md, encoding="utf-8") as f:
+            self.assertIn(self.SOL_D, f.read())
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_solution_without_date_column_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| 代號 | 解法 | 空間類型 | 新增日期 | 一句話說明 |\n|---|---|---|---|---|",
+                  "| 代號 | 解法 | 空間類型 | 一句話說明 |\n|---|---|---|---|")
+        self.assertFails("6.1: no 新增日期 column")
+
+    def test_solution_bad_date_fails(self):
+        for wrong in ("2026-10", "—", "2026-02-30"):
+            with self.subTest(wrong=wrong):
+                self.tearDown(); self.setUp()
+                self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_D, self.SOL_D.replace("2026-10-16", wrong))
+                self.assertFails("6.1 solution D: 新增日期")
+
+    def test_solution_future_date_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_D, self.SOL_D.replace("2026-10-16", "2999-01-01"))
+        self.assertFails("6.1 solution D: 新增日期 2999-01-01", "future")
+
+
 if __name__ == "__main__":
     unittest.main()

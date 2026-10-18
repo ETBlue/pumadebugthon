@@ -4,7 +4,6 @@ import { t } from '@/i18n/zh-TW'
 import { isFullWidth } from '@/lib/layout'
 import { Footer } from './Footer'
 import { Header } from './Header'
-import { Notice } from './Notice'
 import { containerClass } from './styles'
 
 // With hash URLs, href="#main" would change the route. Move focus instead.
@@ -15,7 +14,7 @@ function skipToMain(e: MouseEvent<HTMLAnchorElement>) {
   main?.scrollIntoView()
 }
 
-/** Page frame: skip link, header, notice, main and footer. children
+/** Page frame: skip link, header, main and footer. children
  * replace the route outlet, for the error page. A route with
  * handle.fullWidth (the home page) gets a full-width main and places its
  * own centered column. */
@@ -36,12 +35,7 @@ export function Layout({ children }: { children?: ReactNode }) {
         tabIndex={-1}
         className={`flex-1 focus:outline-none ${fullWidth && !children ? '' : `${containerClass} py-6`}`}
       >
-        <div className={fullWidth && !children ? `${containerClass} pt-6` : ''}>
-          <Notice />
-        </div>
-        <div className="mt-6">
-          {children ?? <Outlet />}
-        </div>
+        {children ?? <Outlet />}
       </main>
       <Footer container={containerClass} />
       <ScrollRestoration />

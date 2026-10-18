@@ -23,8 +23,6 @@
     --color-ring: var(--ring);
     --color-link: var(--link);
     --color-hero-foreground: var(--hero-foreground);
-    --color-notice: var(--notice);
-    --color-notice-border: var(--notice-border);
     --color-tag-evidence: var(--tag-evidence);
     --color-tag-summary: var(--tag-summary);
     --color-tag-simulated: var(--tag-simulated);
@@ -94,9 +92,6 @@
        5.38 on base3, 4.73 on base2. */
     --ring: #1d6aa0;
     --link: #1d6aa0;
-    /* The notice box: base2, with a yellow edge (decoration only). */
-    --notice: #eee8d5;
-    --notice-border: #b58900;
     /* Tag badge text and border (design 3.5). The text is always shown.
        實證: adjusted green (#859900 is 2.97 on base3): 5.46 on base3, 4.80 on base2.
        AI整理: adjusted blue, the same as --link.
@@ -155,8 +150,6 @@
        5.45 on base03, 4.72 on base02. */
     --ring: #4ea3df;
     --link: #4ea3df;
-    --notice: #073642;
-    --notice-border: #b58900;
     /* 實證: adjusted green (#859900 is 4.06 on base02): 5.46 on base03, 4.73 on base02.
        AI整理: adjusted blue, the same as --link.
        AI模擬: adjusted orange (#cb4b16 is 3.26 on base03): 5.44 on base03, 4.71 on base02. */

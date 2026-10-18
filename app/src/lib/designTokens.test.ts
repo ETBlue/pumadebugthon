@@ -54,5 +54,10 @@ for (const [name, selector] of [['light', ':root'], ['dark', '.dark']] as const)
     it('hero text passes AA on every hero color', () => {
       for (const bg of heroBgs) expect(contrastRatio(tk['hero-foreground'], bg)).toBeGreaterThanOrEqual(TEXT)
     })
+
+    it('has no tokens of the removed notice box', () => {
+      expect(tk.notice).toBeUndefined()
+      expect(tk['notice-border']).toBeUndefined()
+    })
   })
 }

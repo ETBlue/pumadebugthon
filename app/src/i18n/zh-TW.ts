@@ -31,7 +31,7 @@ export const t = {
     disclaimerHeading: '免責聲明',
     personal: '這是一位參加者個人用 AI 協助製作的作品，與主辦單位和臺北市政府沒有關係，也不代表他們的立場。',
     simulated: '的內容由 AI 推想，不是真實訪談，也不是真實市民的話。',
-    summary: '的內容由 AI 整理，還沒有經過真人查核。',
+    summary: '的內容由 AI 從真實資料或新聞報導整理，還沒有經過真人查核。資料的件數是估計。',
     dataHeading: '下載資料',
     dataIntro: '本站使用的資料，歡迎在授權範圍內再利用。',
     json: 'JSON（本站讀取的檔案）',
@@ -76,15 +76,6 @@ export const t = {
    * name stays the same, and aria-pressed says if dark is on. */
   theme: {
     dark: '深色模式',
-  },
-  /** Design 3.5: shown on every page. */
-  notice: {
-    label: '說明',
-    personal: '這是一位個人參加者用 AI 協助製作的作品，與主辦單位無關，也不代表主辦單位或市府的立場。',
-    aiBefore: '標記',
-    aiAfter: '的內容由 AI 推想，不是真實訪談，也不是真實市民的話。',
-    summaryBefore: '標記',
-    summaryAfter: '的內容由 AI 從真實資料或新聞報導整理，還沒有經過真人查核。資料的件數是估計。',
   },
   /** Tag badges (design 3.5). */
   tags: {

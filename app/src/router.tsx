@@ -17,7 +17,7 @@ export const router = createHashRouter([
     path: '/',
     element: <Layout />,
     // A page that breaks shows a short message inside the page frame, so the
-    // header and the notice stay. No stack trace.
+    // header and the footer stay. No stack trace.
     errorElement: (
       <Layout>
         <RouteError />

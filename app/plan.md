@@ -312,4 +312,5 @@ ETBlue's notes for the UI are in `human-inputs.md`. Part 1 is U1. Part 2 is U2.
 1. Test first: `recentIssues`, `recentStakeholders`, `recentSolutions` in `src/lib/recent.ts`. Sort by date, newest first, then by ID, highest first. Never by a count. An item with no date goes last.
 2. Home page: hero and the three blocks (design 3.1), each with a link to its list page. Remove the old issue and stakeholder sections from the home page.
 3. `#/solutions`: the solution list (design 3.9).
-4. Check: keyboard only, 375 px and 1280 px, both themes, `npm test`, `npm run build`.
+4. `#/wants`: the 訴求 list (design 3.9), added by ETBlue on 2026-10-18. The header link 訴求 goes there.
+5. Check: keyboard only, 375 px and 1280 px, both themes, `npm test`, `npm run build`.

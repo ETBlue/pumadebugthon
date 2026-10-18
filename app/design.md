@@ -38,9 +38,9 @@ Building the tool also tests the analysis format. Parts that are hard to read by
 
 URL: `#/`. The home page is short. It has a hero and three blocks. The full lists are on their own pages (section 3.9).
 
-**Hero.** The app name (h1), the subtitle 「在提案之前，先看見各方利害關係人的關注」, and one or two sentences about what the app does and who it is for.
+**Hero.** The app name (h1), the subtitle 「在提案之前，先看見各方利害關係人的關注」, and two short paragraphs: what the app does, and who it is for (citizens, civil servants, civic tech communities). The notice (3.5) stays above the hero, in the page layout. A short line under the hero says the lists are by date, not ranked by number.
 
-**Three blocks.** Each block shows a few recent items and ends with a link to its list page.
+**Three blocks.** Each block is a section with an h2. It shows the 5 most recent items and ends with a link to its list page (「看全部議題」, 「看全部利害關係人」, 「看全部解法」).
 
 | Block | Items | Date used | Link to |
 |---|---|---|---|
@@ -48,7 +48,17 @@ URL: `#/`. The home page is short. It has a hero and three blocks. The full list
 | 最近加入分析的族群 | Active stakeholders (moved IDs left out) | `added` (新增日期 in `stakeholders.csv`) | `#/stakeholders` |
 | 最近分析出的解法 | Solutions of every analyzed issue | `added` (新增日期 in 6.1) | `#/solutions` |
 
-Sort rule for all three blocks: by date, newest first. Items with the same date are sorted by ID, highest first (issue number; stakeholder ID; for solutions the issue number, then the solution letter). **Never sorted by a count.** An item without a date (for example an issue with no git history) goes last. The blocks are built in part 2 (plan Phase U).
+Each item shows:
+
+| Block | Item |
+|---|---|
+| 最近更新的議題 | 「#8 無菸城市」 (link to the issue), 更新日期, the space types (links to the space pages) |
+| 最近加入分析的族群 | The name (link to the stakeholder page), the ID, the 特別關注 badges, the issues it appears in (links), 加入日期 |
+| 最近分析出的解法 | 「#8 E」 and the name with its tag, the one-line summary, 新增日期, a link to the issue's 解法 tab |
+
+Sort rule for all three blocks: by date, newest first. Items with the same date are sorted by ID, highest first (issue number; stakeholder ID, the reverse of the usual ID order, so I comes before O and I28 before I27; for solutions the issue number, then the solution letter). **Never sorted by a count.** An item without a date (for example an issue with no git history) goes last. The sort functions are `recentIssues`, `recentStakeholders` and `recentSolutions` in `src/lib/recent.ts`.
+
+Old links to the stakeholder filter on the home page (`#/?cross=1`, shared on Discord) go to `#/stakeholders?cross=1`.
 
 ### 3.2 Issue page
 
@@ -133,7 +143,7 @@ On every page. A `<header>` landmark with:
 |---|---|---|
 | 議題 | Analyzed issues (`available: true`) | `#/issues` |
 | 利害關係人 | Active stakeholders (moved IDs left out) | `#/stakeholders` |
-| 訴求 | 訴求 of every analyzed issue: each W group once, plus each story with no W group (section 4.1), summed over the issues | `#/issues` for now (there is no 訴求 list page yet) |
+| 訴求 | 訴求 of every analyzed issue: each W group once, plus each story with no W group (section 4.1), summed over the issues | `#/wants` |
 | 解法 | Solutions of every analyzed issue, summed | `#/solutions` |
 
 - the theme toggle on the right (section 3.10)
@@ -190,7 +200,23 @@ Moved IDs (with 「已改為 …」) are not listed.
 
 The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an issue card can link to it.
 
-**`#/solutions`: 解法列表.** Every solution of every analyzed issue, grouped by issue, in issue number order, then letter order. Each shows its name, one-line summary, space types, and a link to the issue's 解法 tab. Never sorted by a count. Filled in part 2; part 1 shows a short 「製作中」 page.
+**`#/solutions`: 解法列表.** Every solution of every analyzed issue, grouped by issue (an h2 per issue), in issue number order, then letter order. Never sorted by a count.
+
+| Part | Design |
+|---|---|
+| Each solution | 「#2 A」 and the name with its tag, the one-line summary, space types (links), 新增日期, the number of stories it covers as plain text (for example 「21 則」), and a link to the issue's 解法 tab |
+| Filters | Space type and issue, both as toggle chips. Several picked chips in one filter: a solution matches ANY of them. Nothing picked: all. A status line says how many solutions match. |
+| Logic | `solutionGroups` and `solutionSpaceOptions` in `src/lib/solutionList.ts` |
+
+**`#/wants`: 訴求列表.** Every 訴求 of every analyzed issue: the same items as the opinion check pick list (section 4.1), grouped by issue (an h2 per issue), in pick list order. The header link 訴求 goes here.
+
+| Part | Design |
+|---|---|
+| Each item | The tag badge and the label, as a link to the opinion check with this item picked (`#/issues/<n>/opinion?pick=<key>`), then the key (for example W08) and the number of stories as plain text |
+| Search | A search box, the same match as the opinion check (`filterPickList`). A status line says how many items match. |
+| Filter | 「只看有資料根據」 (3.5), in the URL as `?evidence=1`. The link to the opinion check keeps it. With the filter on, each item also says how many of its stories have a data basis. |
+| Order | Issue number, then pick list order. Never by a count. |
+| Logic | `wantGroups` and `opinionPickTo` in `src/lib/wants.ts` |
 
 ### 3.10 Theme
 
@@ -365,7 +391,7 @@ app/
     lib/                pure functions: opinion check, cross-issue lookups, filters
     types.ts            types for the JSON
     i18n/zh-TW.ts       all UI strings. Components never contain UI text directly.
-    pages/              Home, Issues, Stakeholders, Solutions (list pages), Issue (with the 5 tabs), Stakeholder, Space
+    pages/              Home, Issues, Stakeholders, Solutions, Wants (list pages), Issue (with the 5 tabs), Stakeholder, Space
     components/         TagBadge, Notice, StakeholderTree, StoryCard, ...
     components/ui/      shadcn/ui parts, copied into the repo and editable
 ```
@@ -425,3 +451,4 @@ Required by the hackathon rules:
 11. The home page has a hero and three blocks: 最近更新的議題, 最近加入分析的族群, 最近分析出的解法. Each is sorted by date, newest first, then by ID, highest first. Never by a count. The issue list and the stakeholder list move to their own pages (`#/issues`, `#/stakeholders`), and solutions get a list page (`#/solutions`). (ETBlue, 2026-10-18)
 12. The theme is Solarized Light, with Solarized Dark as a toggle. Colors are design tokens. AA contrast comes first: a Solarized color that fails is replaced by a darker or lighter shade of the same hue. (ETBlue, 2026-10-18)
 13. The header shows the app name, 議題, 利害關係人, 訴求 and 解法 with counts, and the theme toggle. The footer shows the GitHub link, the licenses, a disclaimer and links to the app's own data files (JSON and CSV). The government open datasets stay in each issue's appendix, not in the footer. (ETBlue, 2026-10-18)
+14. 訴求 gets a list page `#/wants`: the opinion check pick items of every analyzed issue, grouped by issue, with search and the 「只看有資料根據」 filter. Each item links to the opinion check with that item picked. The header link 訴求 goes there. (ETBlue, 2026-10-18)

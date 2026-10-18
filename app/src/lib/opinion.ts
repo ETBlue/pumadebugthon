@@ -10,6 +10,9 @@ export interface PickItem {
   /** The group summary, or the 我想要… text of the story. Can hold Markdown. */
   label: string
   storyIds: string[]
+  /** Plain text for search (design 4.1): the label and the 我想要… of every
+   * story in the item, without Markdown, joined with new lines. */
+  searchText: string
 }
 
 export interface OtherSide {
@@ -22,7 +25,8 @@ export interface OtherSide {
 export interface OpinionResult {
   /** 同樣想要的人: the picked stories, in the order of the issue file. */
   same: Story[]
-  /** 可能有不同意見的人: conflicts with a picked story on one side. */
+  /** 可能有不同意見的人: conflicts with a picked story on one side, and at
+   * least one story that is not picked. */
   otherSide: OtherSide[]
   /** 相關解法: solutions that list a picked story. */
   solutions: Solution[]
@@ -35,26 +39,29 @@ export interface OpinionResult {
  * A W group appears once, at the place of its first story. */
 export function pickList(issue: IssueFile): PickItem[] {
   const groups = new Map(issue.groups.map((g) => [g.id, g]))
+  const byId = new Map(issue.stories.map((s) => [s.id, s]))
   const seen = new Set<string>()
   const items: PickItem[] = []
   for (const s of issue.stories) {
     const g = s.group === null ? undefined : groups.get(s.group)
     if (!g) {
-      items.push({ key: s.id, label: s.want.text, storyIds: [s.id] })
+      items.push({ key: s.id, label: s.want.text, storyIds: [s.id], searchText: stripMarkdown(s.want.text) })
     } else if (!seen.has(g.id)) {
       seen.add(g.id)
-      items.push({ key: g.id, label: g.summary, storyIds: [...g.stories] })
+      const wants = g.stories.flatMap((id) => byId.get(id)?.want.text ?? [])
+      const searchText = [g.summary, ...wants].map(stripMarkdown).join('\n')
+      items.push({ key: g.id, label: g.summary, storyIds: [...g.stories], searchText })
     }
   }
   return items
 }
 
-/** Items whose label (without Markdown) contains the query. The query is
+/** Items whose searchText contains the query. The query is
  * trimmed. Latin letters match in any case. An empty query returns all. */
 export function filterPickList(items: PickItem[], query: string): PickItem[] {
   const q = query.trim().toLowerCase()
   if (q === '') return items
-  return items.filter((i) => stripMarkdown(i.label).toLowerCase().includes(q))
+  return items.filter((i) => i.searchText.toLowerCase().includes(q))
 }
 
 /** The result of the opinion check for the picked story IDs. Unknown IDs are
@@ -72,6 +79,9 @@ export function opinionResult(issue: IssueFile, storyIds: string[]): OpinionResu
     const onB = c.sideB.some((id) => picked.has(id))
     if (!onA && !onB) continue
     const other = [...(onA ? c.sideB : []), ...(onB ? c.sideA : [])].filter((id) => !picked.has(id))
+    // When every story of the conflict was picked, nobody is on the other
+    // side, so the conflict is left out.
+    if (other.length === 0) continue
     otherSide.push({ conflict: c, otherStories: stories(other) })
   }
 

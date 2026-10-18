@@ -20,15 +20,22 @@ describe('pickList', () => {
   })
 
   it('uses the group summary and all group stories for a W group', () => {
-    expect(items.find((i) => i.key === 'W08')).toEqual({
+    expect(items.find((i) => i.key === 'W08')).toMatchObject({
       key: 'W08', label: '清潔箱不擋住人行道', storyIds: ['O12-US01', 'I06-US01', 'I07-US02'],
     })
   })
 
   it('uses the 我想要… text for a story without a group', () => {
     expect(items.find((i) => i.key === 'I09-US01')).toEqual({
-      key: 'I09-US01', label: '清潔箱不要放在我家門口', storyIds: ['I09-US01'],
+      key: 'I09-US01', label: '清潔箱不要放在我家門口', storyIds: ['I09-US01'], searchText: '清潔箱不要放在我家門口',
     })
+  })
+
+  it('searchText of a W group has the summary and the 我想要… of every story in it', () => {
+    const w08 = items.find((i) => i.key === 'W08')!
+    expect(w08.searchText).toContain('清潔箱不擋住人行道')
+    expect(w08.searchText).toContain('清潔箱設置點先確認人行道淨寬與管線位置')
+    expect(w08.searchText).toContain('清潔箱不要擋住人行道與導盲磚')
   })
 
   it('keeps the order of the stories in the issue file', () => {
@@ -38,9 +45,9 @@ describe('pickList', () => {
 
 describe('filterPickList', () => {
   const items: PickItem[] = [
-    { key: 'W01', label: '清潔箱不擋住人行道', storyIds: ['I06-US01'] },
-    { key: 'I01-US01', label: '開放資料提供 API', storyIds: ['I01-US01'] },
-    { key: 'I02-US01', label: '見 [**市府網站**](https://example.org)', storyIds: ['I02-US01'] },
+    { key: 'W01', label: '清潔箱不擋住人行道', storyIds: ['I06-US01'], searchText: '清潔箱不擋住人行道\n不擋住導盲磚' },
+    { key: 'I01-US01', label: '開放資料提供 API', storyIds: ['I01-US01'], searchText: '開放資料提供 API' },
+    { key: 'I02-US01', label: '見 [**市府網站**](https://example.org)', storyIds: ['I02-US01'], searchText: '見 市府網站' },
   ]
 
   it('returns all items for an empty or blank query', () => {
@@ -59,6 +66,14 @@ describe('filterPickList', () => {
   it('matches the text without Markdown, not the URL', () => {
     expect(filterPickList(items, '市府網站').map((i) => i.key)).toEqual(['I02-US01'])
     expect(filterPickList(items, 'example')).toEqual([])
+  })
+
+  it('matches searchText, not only the label', () => {
+    expect(filterPickList(items, '導盲磚').map((i) => i.key)).toEqual(['W01'])
+  })
+
+  it('finds W08 in #2 with 導盲磚, a word only in a story of the group', () => {
+    expect(filterPickList(pickList(trashcans), '導盲磚').map((i) => i.key)).toEqual(['W08'])
   })
 
   it('finds W08 in #2 with 人行道', () => {
@@ -103,6 +118,20 @@ describe('opinionResult on #2', () => {
     const c = opinionResult(trashcans, ['I01-US01', 'I09-US01'])
     const c1 = c.otherSide.find((o) => o.conflict.id === 'C1')!
     expect(ids(c1.otherStories)).toEqual(['I10-US01'])
+  })
+
+  it('leaves out a conflict when every story in it was picked', () => {
+    // C4 is O09-US01 vs O04-US01.
+    const c = opinionResult(trashcans, ['O09-US01', 'O04-US01'])
+    expect(c.otherSide.map((o) => o.conflict.id)).not.toContain('C4')
+    expect(c.otherSide.every((o) => o.otherStories.length > 0)).toBe(true)
+  })
+
+  it('notMentioned is in ID order even when the issue lists stakeholders out of order', () => {
+    const shuffled: IssueFile = { ...trashcans, stakeholders: [...trashcans.stakeholders].reverse() }
+    const r2 = opinionResult(shuffled, w08.storyIds)
+    expect(r2.notMentioned).toEqual(r.notMentioned)
+    expect(r2.notMentioned.slice(0, 3)).toEqual(['O01', 'O03', 'O04'])
   })
 
   it('ignores unknown story IDs and returns empty parts for an empty pick', () => {

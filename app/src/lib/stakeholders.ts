@@ -36,7 +36,8 @@ export interface StakeholderTree {
 export interface StakeholderFilter {
   /** Keep only stakeholders in 2 or more issues. */
   crossIssueOnly: boolean
-  /** Keep only stakeholders that have every one of these 特別關注 values. */
+  /** Keep only stakeholders that have at least one of these 特別關注 values.
+   * An empty list keeps all. */
   focus: string[]
 }
 
@@ -62,7 +63,19 @@ function storyTotalOf(counts: StoryCountsByStakeholder, id: string): number {
   return (counts.get(id) ?? []).reduce((sum, e) => sum + e.stories.length, 0)
 }
 
+/** Order of the first path levels (design 5.2). Unknown first levels go
+ * after these, by code. Deeper levels are in code order. */
+export const FIRST_LEVEL_ORDER = {
+  organizations: ['gov', 'soe', 'ind', 'acd', 'ngo', 'cmt'],
+  individuals: ['res', 'mov', 'vis', 'wrk'],
+} as const
+
 const byPath = (a: TreeNode, b: TreeNode) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0)
+
+function byFirstLevel(order: readonly string[]) {
+  const rank = (p: string) => (order.includes(p) ? order.indexOf(p) : order.length)
+  return (a: TreeNode, b: TreeNode) => rank(a.path) - rank(b.path) || byPath(a, b)
+}
 
 function finish(node: TreeNode, counts: StoryCountsByStakeholder): number {
   node.children.sort(byPath)
@@ -72,8 +85,9 @@ function finish(node: TreeNode, counts: StoryCountsByStakeholder): number {
   return node.storyTotal
 }
 
-/** The stakeholder list as a tree (design 3.1). Moved IDs and stakeholders
- * without a path are left out. Story totals come from counts: pass the
+/** The stakeholder list as a tree (design 3.1). First levels are in the order
+ * of FIRST_LEVEL_ORDER, deeper levels by path, stakeholders by ID. Moved IDs
+ * and stakeholders without a path are left out. Story totals come from counts: pass the
  * result of storyCountsByStakeholder for the issues to count. */
 export function buildTree(
   stakeholders: Stakeholder[],
@@ -100,10 +114,9 @@ export function buildTree(
     else node(s.path.split('-')[0], 'I').stakeholders.push(s)
   }
 
-  for (const list of [roots.O, roots.I]) {
-    list.sort(byPath)
-    for (const n of list) finish(n, counts)
-  }
+  roots.O.sort(byFirstLevel(FIRST_LEVEL_ORDER.organizations))
+  roots.I.sort(byFirstLevel(FIRST_LEVEL_ORDER.individuals))
+  for (const n of [...roots.O, ...roots.I]) finish(n, counts)
   return { organizations: roots.O, individuals: roots.I }
 }
 
@@ -128,10 +141,13 @@ export function resolveId(stakeholders: Stakeholder[], id: string): string | nul
   return null
 }
 
-/** The stakeholders that pass the filter, in the order of the input list. */
+/** The active stakeholders that pass the filter, in the order of the input
+ * list. Moved IDs are always left out. */
 export function filterStakeholders(list: Stakeholder[], filter: StakeholderFilter): Stakeholder[] {
   return list.filter(
     (s) =>
-      (!filter.crossIssueOnly || s.issues.length >= 2) && filter.focus.every((f) => s.focus.includes(f)),
+      s.movedTo === null &&
+      (!filter.crossIssueOnly || s.issues.length >= 2) &&
+      (filter.focus.length === 0 || filter.focus.some((f) => s.focus.includes(f))),
   )
 }

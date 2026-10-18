@@ -1,9 +1,16 @@
 // Space type lookups (design 3.2 「使用相同空間的議題」 and 3.6).
 import type { AvailableIssueSummary, IndexFile, IssueFile, Solution } from '@/types'
+import { compareIds } from './ids'
 
 export interface SpaceSolution {
   issueNumber: number
   solution: Solution
+}
+
+export interface SpaceStakeholders {
+  issueNumber: number
+  /** Stakeholder IDs, in ID order. */
+  stakeholders: string[]
 }
 
 export interface SameSpace {
@@ -45,4 +52,18 @@ export function sameSpaceIssues(index: IndexFile, issueNumber: number): SameSpac
       issues: all.filter((i) => i.number !== issueNumber && i.spaces.includes(code)).map((i) => i.number),
     }))
     .filter((s) => s.issues.length > 0)
+}
+
+/** Design 3.6: per issue (by number), the stakeholders of the stories of every
+ * solution that uses the space type, in ID order. Issues with no such
+ * solution are left out. */
+export function stakeholdersBySpace(issues: IssueFile[], code: string): SpaceStakeholders[] {
+  return [...issues]
+    .sort((a, b) => a.number - b.number)
+    .map((issue) => {
+      const storyIds = new Set(issue.solutions.filter((s) => s.spaces.includes(code)).flatMap((s) => s.stories))
+      const ids = new Set(issue.stories.filter((s) => storyIds.has(s.id)).map((s) => s.stakeholder))
+      return { issueNumber: issue.number, stakeholders: [...ids].sort(compareIds) }
+    })
+    .filter((x) => x.stakeholders.length > 0)
 }

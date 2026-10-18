@@ -4,7 +4,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Stakeholder } from '@/types'
 import {
-  buildTree, filterStakeholders, resolveId, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
+  buildTree, FIRST_LEVEL_ORDER, filterStakeholders, resolveId, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
 } from './stakeholders'
 
 const index = indexJson as IndexFile
@@ -66,16 +66,36 @@ describe('buildTree', () => {
   })
 
   it('orders nodes by path and stakeholders by ID', () => {
-    expect(tree.organizations.map((n) => n.path)).toEqual(['acd', 'cmt', 'gov', 'ind', 'ngo', 'soe'])
+    expect(tree.organizations.map((n) => n.path)).toEqual(['gov', 'soe', 'ind', 'acd', 'ngo', 'cmt'])
     expect(find(tree.organizations, 'gov-local-taipei')!.children.map((c) => c.path)).toEqual([
       'gov-local-taipei-epb', 'gov-local-taipei-li', 'gov-local-taipei-pwd', 'gov-local-taipei-rdec', 'gov-local-taipei-udd',
     ])
     expect(find(tree.organizations, 'ngo-environment')!.stakeholders.map((s) => s.id)).toEqual(['O08', 'O17'])
   })
 
+  it('uses the first-level order of FIRST_LEVEL_ORDER; unknown first levels go last, by code', () => {
+    expect(FIRST_LEVEL_ORDER).toEqual({
+      organizations: ['gov', 'soe', 'ind', 'acd', 'ngo', 'cmt'],
+      individuals: ['res', 'mov', 'vis', 'wrk'],
+    })
+    const base = { name: '', focus: [], issues: [1], movedTo: null }
+    const list: Stakeholder[] = [
+      { ...base, id: 'O01', path: 'zzz' },
+      { ...base, id: 'O02', path: 'aaa' },
+      { ...base, id: 'O03', path: 'cmt' },
+      { ...base, id: 'O04', path: 'gov' },
+      { ...base, id: 'I01', path: 'abc' },
+      { ...base, id: 'I02', path: 'wrk' },
+      { ...base, id: 'I03', path: 'res' },
+    ]
+    const t = buildTree(list, {}, new Map())
+    expect(t.organizations.map((n) => n.path)).toEqual(['gov', 'cmt', 'aaa', 'zzz'])
+    expect(t.individuals.map((n) => n.path)).toEqual(['res', 'wrk', 'abc'])
+  })
+
   it('groups I stakeholders by the first level only', () => {
     expect(tree.individuals.map((n) => [n.path, n.label])).toEqual([
-      ['mov', '用路人'], ['res', '居民'], ['vis', '遊客'], ['wrk', '工作者'],
+      ['res', '居民'], ['mov', '用路人'], ['vis', '遊客'], ['wrk', '工作者'],
     ])
     for (const n of tree.individuals) expect(n.children).toEqual([])
     expect(tree.individuals.find((n) => n.path === 'wrk')!.stakeholders.map((s) => s.id)).toEqual([
@@ -173,8 +193,15 @@ describe('resolveId', () => {
 describe('filterStakeholders', () => {
   const list = index.stakeholders
 
-  it('returns every stakeholder with no filter on', () => {
-    expect(filterStakeholders(list, { crossIssueOnly: false, focus: [] })).toEqual(list)
+  it('returns every active stakeholder with no filter on; moved IDs are left out', () => {
+    const all = filterStakeholders(list, { crossIssueOnly: false, focus: [] })
+    expect(all.map((s) => s.id)).not.toContain('O02')
+    expect(all).toEqual(list.filter((s) => s.id !== 'O02'))
+  })
+
+  it('leaves out a moved ID even when it matches the other filters', () => {
+    const moved: Stakeholder = { id: 'O99', name: '', path: null, focus: ['高齡'], issues: [1, 2], movedTo: 'I05' }
+    expect(filterStakeholders([moved], { crossIssueOnly: true, focus: ['高齡'] })).toEqual([])
   })
 
   it('crossIssueOnly keeps only stakeholders with 2 or more issues', () => {
@@ -183,10 +210,12 @@ describe('filterStakeholders', () => {
     expect(ids).not.toContain('O02')
   })
 
-  it('focus keeps stakeholders that have every selected focus tag', () => {
+  it('focus keeps stakeholders that have any selected focus tag', () => {
     expect(filterStakeholders(list, { crossIssueOnly: false, focus: ['高齡'] }).map((s) => s.id)).toEqual(['I05', 'I11'])
-    expect(filterStakeholders(list, { crossIssueOnly: false, focus: ['高齡', '經濟弱勢'] }).map((s) => s.id)).toEqual(['I11'])
-    expect(filterStakeholders(list, { crossIssueOnly: false, focus: ['高齡', '身心障礙'] })).toEqual([])
+    expect(filterStakeholders(list, { crossIssueOnly: false, focus: ['高齡', '身心障礙'] }).map((s) => s.id)).toEqual([
+      'I05', 'I06', 'I11',
+    ])
+    expect(filterStakeholders(list, { crossIssueOnly: false, focus: ['經濟弱勢'] }).map((s) => s.id)).toEqual(['I11', 'I19'])
   })
 
   it('both filters together', () => {

@@ -3,7 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile } from '@/types'
-import { issuesBySpace, sameSpaceIssues, solutionsBySpace } from './spaces'
+import { issuesBySpace, sameSpaceIssues, solutionsBySpace, stakeholdersBySpace } from './spaces'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
@@ -59,5 +59,24 @@ describe('sameSpaceIssues', () => {
     expect(sameSpaceIssues(only2, 2)).toEqual([])
     expect(sameSpaceIssues(index, 3)).toEqual([])
     expect(sameSpaceIssues(index, 99)).toEqual([])
+  })
+})
+
+describe('stakeholdersBySpace', () => {
+  it('utility: only #1, the stakeholders of the stories of #1 A and D, in ID order', () => {
+    expect(stakeholdersBySpace([trashcans, trees], 'utility')).toEqual([
+      {
+        issueNumber: 1,
+        stakeholders: [
+          'O01', 'O06', 'O07', 'O12', 'O14', 'O16', 'O17', 'O18', 'O20', 'O21',
+          'I01', 'I05', 'I06', 'I07', 'I15', 'I16', 'I17', 'I18', 'I19',
+        ],
+      },
+    ])
+  })
+
+  it('sidewalk: an entry for each issue, by issue number; unused code: none', () => {
+    expect(stakeholdersBySpace([trashcans, trees], 'sidewalk').map((x) => x.issueNumber)).toEqual([1, 2])
+    expect(stakeholdersBySpace([trashcans, trees], 'parking')).toEqual([])
   })
 })

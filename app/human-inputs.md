@@ -17,4 +17,4 @@ raw ideas:
   * "最近更新的議題", showing latest updated issues, with a link guiding users to the issue list page
   * "最近加入分析的族群", showing latest added stakeholders, with a link guiding users to the stakeholder list page
   * "最近分析出的解法", showing latest formed solutions, with a link guiding users to the solution list page
-* the global page footer should include GitHub link, license info, disclaimer, and links to the open data used by the app
+* the global page footer should include GitHub link, license info, disclaimer, and links to the open data used by the app (the json/csv files in the issue analysis folders)

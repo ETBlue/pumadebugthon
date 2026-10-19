@@ -1,6 +1,6 @@
 # Design: policy issue browser
 
-Status: approved by ETBlue (2026-10-18). Updated 2026-10-20 for the needs-based pages: sections 3.2, 3.3, 3.12 and the new sections 3.14–3.19, decisions 34–42. Open questions are in section 14.
+Status: approved by ETBlue (2026-10-18). Updated 2026-10-20 for the needs-based pages: sections 3.2, 3.3, 3.12 and the new sections 3.14–3.19, decisions 34–42. Updated again 2026-10-20 with ETBlue's answers to the open questions: decisions 43–57 (no want page and no need page; solutions get their own path `#/solutions/<n>-<code>`). Section 14 has no open questions now.
 Source of the idea: [human-inputs.md](human-inputs.md). When the two files differ, `human-inputs.md` is the one that counts.
 
 ## 1. Problem
@@ -30,7 +30,7 @@ Building the tool also tests the analysis format. Parts that are hard to read by
 | Cross-issue view | Yes. Stakeholders use global IDs across all issues. |
 | Space types | Each issue and each solution has space type tags (for example 人行道), from a fixed list. Issues and solutions that use the same space can be viewed together. |
 | Theme | Design tokens (CSS variables) in `src/index.css`. Solarized Light is the default; Solarized Dark is the other theme. A toggle in the header switches them (section 3.10). Text and UI parts must pass WCAG AA contrast, so some Solarized colors use a darker or lighter shade of the same hue. |
-| Names | The app says 「解法」 everywhere, never 「提案」. 「訴求」 is a thing a stakeholder wants: one per W group, plus one per story with no W group (the same items as the opinion check pick list, section 4.1). 「需求」 is what a stakeholder gets (the 以便… cell). In an issue it is one per N group (相同需求群組), plus one per story with no N group: the rows of step 5.2 (`needs` in the issue JSON). This changed on 2026-10-20 (open question Q1); before, it was one per story. |
+| Names | The app says 「解法」 everywhere, never 「提案」. 「訴求」 is a thing a stakeholder wants: one per W group, plus one per story with no W group (the same items as the opinion check pick list, section 4.1). 「需求」 is what a stakeholder gets (the 以便… cell). In an issue it is one per N group (相同需求群組), plus one per story with no N group: the rows of step 5.2 (`needs` in the issue JSON). This changed on 2026-10-20 (decision 43); before, it was one per story. |
 
 ## 3. Screens
 
@@ -83,9 +83,9 @@ URL: `#/issues/<n>` (the 總覽 tab) and `#/issues/<n>/<tab>`. The issue page ha
 | 解法 | `#/issues/2/solutions` | 解法 5 |
 
 Rules for the tab labels:
-- The counts come from `issueTabCounts` in `src/lib/tabCounts.ts`. 訴求 is `wantCount` (the opinion check pick items, 4.1). 衝突 is the number of conflicts (C1, C2…). 需求 is `needCount` (the rows of step 5.2, `needs` in the issue JSON; see open question Q1). 解法 is the number of solutions.
+- The counts come from `issueTabCounts` in `src/lib/tabCounts.ts`. 訴求 is `wantCount` (the opinion check pick items, 4.1). 衝突 is the number of conflicts (C1, C2…). 需求 is `needCount` (the rows of step 5.2, `needs` in the issue JSON; decision 43). 解法 is the number of solutions.
 - A count is a plain number, also in the accessible name (「訴求 39・衝突 9」). It is not a score.
-- The counts are the totals of the issue. They do not change when a filter is on (3.14, open question Q7).
+- The counts are the totals of the issue. They do not change when a filter is on (3.14, decision 49).
 - On a phone the tab list wraps onto two rows. It never scrolls sideways.
 
 Above the tabs: the h1 (「#2 找回消失的垃圾桶」), the space types and the update date, as before.
@@ -102,15 +102,15 @@ Above the tabs: the h1 (「#2 找回消失的垃圾桶」), the space types and 
 | N group (`N01`) | The 需求 tab, scrolled to the need: `#/issues/2/needs?focus=N01` |
 | Stakeholder (`I05`) | The stakeholder page |
 | Conflict (`C9`) | The 訴求 tab, scrolled to the conflict: `#/issues/2/wants?focus=C9` |
-| Solution (`解法 E`) | The solution page |
+| Solution (`解法 E`) | The solution page (`#/solutions/2-E`, 3.12) |
 | Another issue (`#8 解法 B`, `#1 C7`, `#1 N03`, `#8 I06-US01`) | The same kind of target in that issue. The other issue's file is not needed, because every target is built from the IDs. |
 
 Issue links keep the 「只看有資料根據」 filter (`?evidence=1`). A reference that cannot be read stays plain text.
 
 **訴求** (decision 38: 衝突 and the opinion check are in this tab). From top to bottom:
 1. The stakeholder filter menu (3.14) and the 「只看有資料根據」 toggle.
-2. 「訴求與意見健檢」 (h3). One line: 「訴求是利害關係人心中的解法，還沒有評估。選一個和你的想法相近的訴求，看看誰也想要、誰可能有不同意見。」 Then the opinion check (section 4): the search box, the pick list and the result. The pick list is the list of wants of the issue. Each item now also shows:
-   - the stakeholders of its stories, as links to each stakeholder's want page (3.16), in ID order
+2. 「訴求與意見健檢」 (h3). One line: 「訴求是利害關係人心中的解法，還沒有評估。選一個和你的想法相近的訴求，看看誰也想要、誰可能有不同意見。」 Then the opinion check (section 4): the search box, the pick list and the result. The pick list is the list of wants of the issue. Each item has the element ID `focus-<want key>` (3.16), so a link can point to it. Each item now also shows:
+   - the stakeholders of its stories, in ID order, as links to each stakeholder's 訴求 tab (`#/stakeholders/<id>/wants`). There is no want page (decision 45).
    - 「有衝突：C1、C6」 when a story of the item is on a side of a conflict. Each code links to `?focus=C1`.
 3. 「衝突」 (h3, element ID `focus-conflicts`). Each conflict (element ID `focus-C1`), in file order:
    - the conflict text with its tag
@@ -124,11 +124,11 @@ With a stakeholder picked in the menu, the tab shows only the wants with a story
 **需求.** From top to bottom:
 1. The stakeholder filter menu and the 「只看有資料根據」 toggle. On this tab the data filter keeps a need when at least one of its stories has a `[實證]` or `[AI整理]` 以便… cell (the same rule as the old `#/needs` page, decision 22).
 2. One line: 「需求是利害關係人得到的好處（以便…）。需求之間不會衝突。優先順序（MoSCoW）是這些利害關係人有多需要它，不是利害關係人之間的排名。」
-3. The needs, grouped by priority in the fixed order 必須有, 應該有, 可以有, 這次不做 (an h3 per group, empty groups left out). Inside a group: the order of step 5.2 (file order). Never sorted by a count. Each need (element ID `focus-<id>`) shows:
+3. The needs, grouped by priority in the fixed order 必須有, 應該有, 可以有, 這次不做 (an h3 per group, empty groups left out). Inside a group: the order of step 5.2 (file order). Never sorted by a count. Each need (element ID `focus-<need key>`, 3.16) shows:
    - the summary with its tag. An N group uses the group's summary and tag (`needGroups`). A need with no group uses the 以便… cell of its story.
    - the need ID in small text (「N01」 or 「I24-US01」)
    - the priority label with its tag, and 「理由」 (`reason`) with its tag
-   - 「誰需要」: the stakeholders of its stories, in ID order, as links to each stakeholder's need page (3.17)
+   - 「誰需要」: the stakeholders of its stories, in ID order, as links to each stakeholder's 需求 tab (`#/stakeholders/<id>/needs`). There is no need page (decision 45).
    - 「相關故事（9 則）」: a Collapsible with the stories (story ID link, stakeholder, 我想要… with its tag)
    - 「涵蓋的解法」: the solutions whose `needs.must` or `needs.shouldCould` lists the need, as links. When none: 「尚未有解法涵蓋」 (for a 這次不做 need: 「這次不做，所以沒有解法涵蓋」).
    - 「出現在衝突」: the conflicts that list the need in `needsA` or `needsB`, as links to the 訴求 tab (`?focus=C1`)
@@ -151,7 +151,7 @@ With a stakeholder picked, the tab shows only the solutions that cover at least 
 | `#/issues/<n>/conflicts` | `#/issues/<n>/wants?focus=conflicts` |
 | `#/issues/<n>/stakeholders` | `#/issues/<n>?focus=stakeholders` |
 
-**The `?focus=` parameter** (open question Q11). Hash URLs use the `#` for the route, so a page cannot use a second `#` to jump to a part of the page. Instead, `?focus=<value>` names the part. After the tab content has loaded, the page scrolls to the element `focus-<value>` and moves keyboard focus to it (the element has `tabIndex={-1}` and a visible focus outline). An unknown value does nothing. The values are checked by `focusElementId` in `src/lib/focus.ts`: `conflicts`, `stakeholders`, a conflict ID (`C1`), an N group (`N01`) or a story ID (a need with no group).
+**The `?focus=` parameter** (decision 53). Hash URLs use the `#` for the route, so a page cannot use a second `#` to jump to a part of the page. Instead, `?focus=<value>` names the part. After the tab content has loaded, the page scrolls to the element `focus-<value>` and moves keyboard focus to it (the element has `tabIndex={-1}` and a visible focus outline). An unknown value does nothing. The values are checked by `focusElementId` in `src/lib/focus.ts`: `conflicts`, `stakeholders`, a conflict ID (`C1`), a W group (`W08`, a want on the 訴求 tab), an N group (`N01`, a need on the 需求 tab) or a story ID (a want or a need with no group). A link to one want or one need uses this parameter (decision 57).
 
 **Kept across tabs:** the tab change keeps `?evidence=1` and `?stakeholder=` (`keptSearch` in `src/lib/stakeholderFilter.ts`). It drops `pick` and `focus`.
 
@@ -169,8 +169,8 @@ URL: `#/stakeholders/<id>` (the 總覽 tab) and `#/stakeholders/<id>/<tab>`, for
 The page covers every analyzed issue the stakeholder is in. Each tab has one h2 per issue (「#2 找回消失的垃圾桶」, a link to the issue), in issue number order.
 
 Rules for the tab labels:
-- The counts come from `stakeholderTabCounts` in `src/lib/tabCounts.ts`. They are summed over the issues, because they count items (wants, conflicts, needs, solutions), not priorities (open question Q6). The rule 「never summed across issues」 in 3.4 is about priority counts, and it still holds.
-- 訴求: the different want keys of its stories (3.16), per issue. 衝突: the conflicts with one of its stories on a side. 需求: the different need keys of its stories (3.17). 解法: the solutions that cover at least one of its needs.
+- The counts come from `stakeholderTabCounts` in `src/lib/tabCounts.ts`. They are summed over the issues, because they count items (wants, conflicts, needs, solutions), not priorities (decision 48). The rule 「never summed across issues」 in 3.4 is about priority counts, and it still holds.
+- 訴求: the different want keys of its stories (3.16), per issue. 衝突: the conflicts with one of its stories on a side. 需求: the different need keys of its stories (3.16). 解法: the solutions that cover at least one of its needs.
 - Example I06: #1 has wants W06, W08, need N08, conflicts C1, C7, solution D. #2 has W08, W11, needs N07, N08, conflict C6, solutions A, C. #8 has W07, need I06-US01, conflict C3, solution A. So: 訴求 5・衝突 4, 需求 4, 解法 4.
 
 Layout: the stakeholder menu (3.14) is on the left from the `lg` breakpoint, and above the tabs on smaller screens.
@@ -181,19 +181,19 @@ Above the tabs: the h1 (the name), the ID, 分類路徑 (as names), 特別關注
 - 與本題的關係 (with its tag)
 - the priority counts of its stories, with the legend (3.4)
 - its input sources (1.2)
-- 「使用者故事」: its stories as `StoryCard`s. The story ID links to the story page (3.15). Each card also has the links 「訴求」 and 「需求」 to its want page and need page.
+- 「使用者故事」: its stories as `StoryCard`s. The story ID links to the story page (3.15). Each card also has the links 「訴求」 and 「需求」 to its want and its need on the issue's tabs (`#/issues/<n>/wants?focus=<want key>`, `#/issues/<n>/needs?focus=<need key>`, decision 57).
 
 **訴求.** Per issue:
-- its wants, in the order of the issue's pick list. Each shows the want text with its tag (a link to its want page, 3.16), 「同樣想要的人」 (the other stakeholders of the W group, links to their want page with the same key), 「有衝突：C6」, and a link 「到 #2 做意見健檢」 (`#/issues/2/wants?pick=<key>`).
+- its wants, in the order of the issue's pick list. Each shows the want text with its tag (a link to the want on the issue's 訴求 tab, `?focus=<want key>`), 「同樣想要的人」 (the other stakeholders of the W group, links to their stakeholder page's 訴求 tab), 「有衝突：C6」, and a link 「到 #2 做意見健檢」 (`#/issues/2/wants?pick=<key>`).
 - 「衝突」 (h3): its conflicts, each with the other side's stories, 雙方的需求, 以需求為本的解方 and the method, as on the issue's 訴求 tab (3.2).
 
-**需求.** Per issue: its needs, grouped by priority (必須有, 應該有, 可以有, 這次不做). Each shows the summary with its tag (a link to its need page, 3.17), its own 以便… texts when they differ from the group summary, 「同樣需要的人」 (the other stakeholders of the N group, links to their need page), and the solutions that cover it, or 「尚未有解法涵蓋」.
+**需求.** Per issue: its needs, grouped by priority (必須有, 應該有, 可以有, 這次不做). Each shows the summary with its tag (a link to the need on the issue's 需求 tab, `?focus=<need key>`), its own 以便… texts when they differ from the group summary, 「同樣需要的人」 (the other stakeholders of the N group, links to their stakeholder page's 需求 tab), and the solutions that cover it, or 「尚未有解法涵蓋」.
 
 **解法.** Per issue:
 - the solutions that cover at least one of its needs, as compact `SolutionCard`s, each with 「涵蓋的需求：」 and the stakeholder's needs it covers
 - 「尚未有解法涵蓋的需求」: its needs that no solution covers. This replaces 「沒有解法涵蓋的故事」.
 
-**Moved IDs.** A moved ID (for example `#/stakeholders/O02`, also with a tab or a sub-page) redirects to the new ID with the rest of the path kept, plus `?from=O02` for the note. On a story sub-page, a story ID that starts with the old ID gets the new ID (`O02-US01` → `I12-US01`). Any other story ID is kept, and the page shows "not found" when it does not exist.
+**Moved IDs.** A moved ID (for example `#/stakeholders/O02`, also with a tab or a story page) redirects to the new ID with the rest of the path kept, plus `?from=O02` for the note. On a story sub-page, a story ID that starts with the old ID gets the new ID (`O02-US01` → `I12-US01`). Any other story ID is kept, and the page shows "not found" when it does not exist.
 
 The 「只看有資料根據」 toggle works on every tab, with the same rules as the issue page.
 
@@ -264,10 +264,11 @@ A link looks active (bold and underlined) on its list page and on the pages unde
 | Page | Active link |
 |---|---|
 | `#/issues`, `#/issues/<n>`, `#/issues/<n>/<tab>` (also the issue's own 解法 tab `#/issues/<n>/solutions`) | 議題 |
-| `#/issues/<n>/solutions/<code>` and its tabs `#/issues/<n>/solutions/<code>/<tab>` (one solution's page, 3.12) | 解法 |
-| `#/stakeholders`, `#/stakeholders/<id>`, its tabs and its story, want and need pages (`#/stakeholders/<id>/…`, 3.15–3.17) | 利害關係人 |
-| `#/solutions` and the pages under it (also `#/solutions/cross/<code>`, 3.18) | 解法 |
+| `#/stakeholders`, `#/stakeholders/<id>`, its tabs and its story pages (`#/stakeholders/<id>/stories/…`, 3.15) | 利害關係人 |
+| `#/solutions` and the solution pages under it: `#/solutions/2-A`, `#/solutions/X-A` and their tabs (3.12, 3.18). Also the old `#/issues/<n>/solutions/<code>…`, which redirects there. | 解法 |
 | `#/`, `#/about`, `#/spaces/<code>`, unknown pages (also the old `#/wants` and `#/needs`) | none |
+
+Solution pages are under 解法, not 議題, because a solution path is under `#/solutions` now (decision 56).
 
 The active link has `aria-current="page"` only on the list page itself. On a page under it, the link has `aria-current="true"`.
 
@@ -337,7 +338,7 @@ The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an
 
 | Part | Design |
 |---|---|
-| Each solution | 「#2 A」 and the name with its tag, the one-line summary, space types (links), 新增日期, the number of needs it covers as plain text (for example 「涵蓋 9 個需求」; open question Q12, before 2026-10-20 it was the number of stories). The code and name are a link to the solution page (3.12). |
+| Each solution | 「#2 A」 and the name with its tag, the one-line summary, space types (links), 新增日期, the number of needs it covers as plain text (for example 「涵蓋 9 個需求」; decision 54, before 2026-10-20 it was the number of stories). The code and name are a link to the solution page (3.12). |
 | Filters | Space type and issue, both as toggle chips. Several picked chips in one filter: a solution matches ANY of them. Nothing picked: all. A status line says how many solutions match. |
 | Logic | `solutionGroups` and `solutionSpaceOptions` in `src/lib/solutionList.ts` |
 
@@ -349,7 +350,7 @@ The list pages `#/wants` (訴求列表) and `#/needs` (需求列表) were remove
 |---|---|---|
 | `IssueCard` (`src/components/IssueCard.tsx`) | `#/issues`: a box with all the fields in the issue table above, with 資料根據 and the 特別關注族群 line. Props: `shared`, `headingLevel`. | Home 「最近更新的議題」 and the space page: the title link, 更新日期 and 空間類型, in a smaller box (decision 26) |
 | `SolutionCard` (`src/components/SolutionCard.tsx`) | `#/solutions`: the code and name, the summary, 空間類型, 新增日期 and the story count. Prop: `spaceTypes`. | Home 「最近分析出的解法」, the space page, the stakeholder page and the opinion check result: the code and name, and the one-line summary |
-| `StakeholderCard` (`src/components/StakeholderCard.tsx`) | `#/stakeholders` and the 「利害關係人」 section of the issue's 總覽 tab: the name link, the ID, the 特別關注 badges, then one line per issue with the story counts by priority. Prop: `entries` (from `storyCountsByStakeholder`). | Home 「最近加入分析的族群」 (with 出現的議題 and 加入日期 as `children`), the solution page's 利害關係人 tab, the want and need pages (「同樣想要的人」, 「同樣需要的人」), the space page (both lists) and the opinion check 「這個意見沒有直接提到的人」: the name link, the ID and the 特別關注 badges. `children` add 「也出現在 #1」 (`AlsoInLine`) or, on the space page's shared list, the issue numbers. |
+| `StakeholderCard` (`src/components/StakeholderCard.tsx`) | `#/stakeholders` and the 「利害關係人」 section of the issue's 總覽 tab: the name link, the ID, the 特別關注 badges, then one line per issue with the story counts by priority. Prop: `entries` (from `storyCountsByStakeholder`). | Home 「最近加入分析的族群」 (with 出現的議題 and 加入日期 as `children`), the solution page's 利害關係人 tab, the stakeholder page's 訴求 and 需求 tabs (「同樣想要的人」, 「同樣需要的人」), the space page (both lists) and the opinion check 「這個意見沒有直接提到的人」: the name link, the ID and the 特別關注 badges. `children` add 「也出現在 #1」 (`AlsoInLine`) or, on the space page's shared list, the issue numbers. |
 
 Every card is a box. `detailed` uses `rounded-lg border p-4` (`StakeholderCard` uses `p-3` on a phone, because the tree has many cards). `compact` uses `rounded-md border p-3`, the same box for all three cards, so the home blocks look alike. An issue that is 製作中 has a dashed border in both variants. Compact cards are stacked with a gap (`space-y-3`), not split by lines. Inline issue links inside a sentence or a field are references, not lists, so they stay plain links: the 「議題」 field on the stakeholder page and 「同空間的其他議題」 on the 總覽 tab. The same rule applies to stakeholders: the members of a W group (solution page, stakeholder page) and the 特別關注族群 rows on the 總覽 tab stay plain links.
 
@@ -382,20 +383,27 @@ On every page, the text 「市政 debug 松參加者作品・展示用 MVP」 (`
 
 ### 3.12 Solution page
 
-URL: `#/issues/<n>/solutions/<code>` (the 總覽 tab) and `#/issues/<n>/solutions/<code>/<tab>`, for example `#/issues/2/solutions/A/needs`. One page per solution, because the content of a solution can be long (ETBlue, `human-inputs.md`). Page title: 「#2 A 清潔箱佈建建議地圖 · 解法 · 市政提案小幫手」. The page has three tabs (ETBlue, 2026-10-20, decision 36):
+URL: `#/solutions/<n>-<code>` (the 總覽 tab) and `#/solutions/<n>-<code>/<tab>`, for example `#/solutions/2-A/needs` (ETBlue, 2026-10-20, decision 56). Solutions have their own path, not a path under the issue, because solutions and issues are many-to-many: a cross-issue solution combines solutions of several issues. A cross-issue solution uses the same path format and the same page: `#/solutions/X-A` (3.18). One page per solution, because the content of a solution can be long (ETBlue, `human-inputs.md`). Page title: 「#2 A 清潔箱佈建建議地圖 · 解法 · 市政提案小幫手」. The page has three tabs (ETBlue, 2026-10-20, decision 36):
 
 | Tab | URL | Tab label (example #2 A) |
 |---|---|---|
-| 總覽 | `#/issues/2/solutions/A` | 總覽 |
-| 需求 | `#/issues/2/solutions/A/needs` | 需求　涵蓋 9・未涵蓋 12 |
-| 利害關係人 | `#/issues/2/solutions/A/stakeholders` | 利害關係人　涵蓋 14・未涵蓋 13 |
+| 總覽 | `#/solutions/2-A` | 總覽 |
+| 需求 | `#/solutions/2-A/needs` | 需求　涵蓋 9・未涵蓋 12 |
+| 利害關係人 | `#/solutions/2-A/stakeholders` | 利害關係人　涵蓋 14・未涵蓋 13 |
 
-Definitions (`solutionTabCounts` in `src/lib/tabCounts.ts`, open question Q8):
+**The path segment** (`parseSolutionSlug` in `src/lib/entityPaths.ts`):
+- `<issue number>-<code>`, for example `2-A`: the solution A of issue #2. The code is the solution code of 6.1 (letters only).
+- `X-<letter>`, for example `X-A`: a cross-issue solution. `X-A` is the code as `cross-issue.json` writes it.
+- Anything else shows the "not found" message.
+
+**Old URLs.** `#/issues/<n>/solutions/<code>` and `#/issues/<n>/solutions/<code>/<tab>` (shared on Discord) redirect with `replace` to `#/solutions/<n>-<code>` and `#/solutions/<n>-<code>/<tab>`. The query (for example `?evidence=1`) is kept. The issue's own 解法 tab `#/issues/<n>/solutions` does not change.
+
+Definitions (`solutionTabCounts` in `src/lib/tabCounts.ts`, decision 50):
 - A need is **covered** when its ID is in `needs.must` or `needs.shouldCould` of the solution (step 6.2). Every other need of the issue (`needs` in the issue JSON) is **not covered**, also a 這次不做 need.
 - A stakeholder of the issue is **covered** when at least one of its needs is covered. Every other stakeholder of the issue (step 1) is **not covered**.
 - The counts are plain numbers. There is no percent and no bar, because a ratio would look like a score. A solution does not need to cover every need.
 
-Above the tabs, on every tab: the breadcrumb (首頁 › #2 找回消失的垃圾桶 › 解法 › A, in a `<nav>`), the h1 (「#2 A」 and the name with its tag), the one-line summary, the space types (links) and 新增日期.
+Above the tabs, on every tab: the breadcrumb (首頁 › 解法 › #2 A, in a `<nav>`; 解法 links to `#/solutions`), the h1 (「#2 A」 and the name with its tag), the line 「議題：#2 找回消失的垃圾桶」 (a link to the issue), the one-line summary, the space types (links) and 新增日期.
 
 **總覽**, in this order:
 
@@ -407,25 +415,25 @@ Above the tabs, on every tab: the breadcrumb (首頁 › #2 找回消失的垃�
 | 成效衡量 | As before | 6.3 |
 | 資源、法規、隱私與風險 | As before | step 7 |
 | 題目或研究中的構想 | As before | 6.1 構想 table |
-| 跨議題解法 | Only when the solution is part of a cross-issue solution (3.18): its code and name as a link | `cross-issue.json` |
+| 跨議題解法 | Only when the solution is in the `parts` of a cross-issue solution (3.18): its code and name as a link (`#/solutions/X-A`) | `cross-issue.json` |
 | 待補 | As before | `pending` |
 | 更多 | Links to the issue's 解法 tab and to `#/solutions` | |
 
 The old part 「涵蓋的使用者故事」 moves into the 需求 tab, under each need.
 
 **需求.** The 「只看有資料根據」 toggle, then two h3 parts:
-- 「涵蓋的需求」: grouped by the need's priority (必須有, 應該有, 可以有). Each need shows its summary with its tag, its ID, its stakeholders (links to their need page, 3.17) and, in a Collapsible, its stories (story ID links).
+- 「涵蓋的需求」: grouped by the need's priority (必須有, 應該有, 可以有). Each need shows its summary with its tag, its ID (a link to the need on the issue's 需求 tab, `?focus=<need key>`), its stakeholders (links to their stakeholder page's 需求 tab) and, in a Collapsible, its stories (story ID links).
 - 「未涵蓋的需求」: grouped by priority (必須有, 應該有, 可以有, 這次不做). Each need also shows 「由其他解法涵蓋：B、C」 (links) or 「沒有任何解法涵蓋」. One line under the heading: 「一個解法不需要涵蓋所有需求。未涵蓋的需求，可能由其他解法涵蓋。」
 
 **利害關係人.** Two h3 parts, each in ID order, never by count:
-- 「涵蓋的利害關係人」: a compact `StakeholderCard` per stakeholder (with the 「也出現在」 mark, 4.2). Under it: 「涵蓋的需求」 and, when there are any, 「未涵蓋的需求」 of that stakeholder (summary links to its need page).
+- 「涵蓋的利害關係人」: a compact `StakeholderCard` per stakeholder (with the 「也出現在」 mark, 4.2). Under it: 「涵蓋的需求」 and, when there are any, 「未涵蓋的需求」 of that stakeholder (the summary links to the need on the issue's 需求 tab, `?focus=<need key>`).
 - 「未涵蓋的利害關係人」: a compact `StakeholderCard` per stakeholder, with its needs and the other solutions that cover each one.
 
 Rules:
 - Every mention of a solution links to its page (as before). The link text is the code and the name. The link keeps `?evidence=1`.
 - A tab change keeps `?evidence=1`.
-- An unknown issue, an issue with no analysis, an unknown code or an unknown tab shows a short message with links (the issue's 解法 tab, `#/solutions`, the home page).
-- The logic is in `src/lib/solutionPage.ts`: the existing functions, plus `solutionNeedCoverage`, `solutionStakeholderCoverage`, `solutionWayOutConflicts`, `parseSolutionTab`, `solutionTabPath`. Nothing is sorted by a count.
+- An unknown path segment, an unknown issue, an issue with no analysis, an unknown code or an unknown tab shows a short message with links (the issue's 解法 tab when the issue is known, `#/solutions`, the home page).
+- The logic is in `src/lib/solutionPage.ts`: the existing functions, plus `solutionNeedCoverage`, `solutionStakeholderCoverage`, `solutionWayOutConflicts`. The paths are in `src/lib/entityPaths.ts`: `parseSolutionSlug`, `parseSolutionTab`, `solutionPath`, `crossSolutionPath`, `legacySolutionPath`. Nothing is sorted by a count.
 
 ### 3.13 About page
 
@@ -453,7 +461,7 @@ The full stakeholder list is a menu next to the content of the issue page and th
 | Landmark | `<nav aria-label="依利害關係人篩選">` | `<nav aria-label="切換利害關係人">` |
 
 Rules:
-- One stakeholder at a time (open question Q5). The items are links, not toggle buttons, so each filter has a URL that can be shared, and the back button works.
+- One stakeholder at a time (decision 47). The items are links, not toggle buttons, so each filter has a URL that can be shared, and the back button works.
 - Two groups with a visible label: 組織 (O) and 個人 (I). Each group is a list in ID order (`compareIds`). Never sorted by a count. The menu shows no counts.
 - Each item: the ID and the name, for example 「I06 身心障礙者（視障、輪椅使用者）」. Long names wrap.
 - The current item is bold, with a bar on the left. It does not depend on color only.
@@ -465,7 +473,7 @@ Rules:
 
 ### 3.15 Story page
 
-URL: `#/stakeholders/<id>/stories/<n>/<storyId>`, for example `#/stakeholders/I06/stories/2/I06-US01` (ETBlue, 2026-10-20, decision 37). Story IDs are only unique inside one issue, so the URL has the issue number (open question Q4). Page title: 「#2 I06-US01 · 身心障礙者（視障、輪椅使用者） · 市政提案小幫手」.
+URL: `#/stakeholders/<id>/stories/<n>/<storyId>`, for example `#/stakeholders/I06/stories/2/I06-US01` (ETBlue, 2026-10-20, decisions 37 and 46). Story IDs are only unique inside one issue, so the URL keeps the issue number. Page title: 「#2 I06-US01 · 身心障礙者（視障、輪椅使用者） · 市政提案小幫手」.
 
 | Part | Content |
 |---|---|
@@ -473,129 +481,132 @@ URL: `#/stakeholders/<id>/stories/<n>/<storyId>`, for example `#/stakeholders/I0
 | h1 | 「#2 I06-US01」 |
 | The story | 身為 <stakeholder name>（link），我想要…（with its tag），以便…（with its tag）, as three labeled lines, so each tag stays next to its text |
 | Fields | 來源, 優先順序 (the priority of its need, with its tag and the legend, 3.4), the issue (link) |
-| 訴求 | A link to its want page (3.16). When the story is in a W group: 「相同訴求群組 W08：<summary>」 and the other stakeholders (links to their want page) |
-| 需求 | A link to its need page (3.17). When the story is in an N group: 「相同需求群組 N07：<summary>」 and the other stakeholders (links to their need page) |
+| 訴求 | A link to its want on the issue's 訴求 tab (`#/issues/2/wants?focus=<want key>`). When the story is in a W group: 「相同訴求群組 W08：<summary>」 and the other stakeholders (links to their stakeholder page's 訴求 tab) |
+| 需求 | A link to its need on the issue's 需求 tab (`#/issues/2/needs?focus=<need key>`). When the story is in an N group: 「相同需求群組 N07：<summary>」 and the other stakeholders (links to their stakeholder page's 需求 tab) |
 | 衝突 | The conflicts with this story on a side: the other side's stories, 雙方的需求, 以需求為本的解方 |
 | 解法 | The solutions that cover its need, as compact `SolutionCard`s |
 | 更多 | 「到 #2 做意見健檢」 (`#/issues/2/wants?pick=<want key>`) and the stakeholder page |
 
 Rules:
-- Every story ID shown in the app links to its story page (open question Q13): in `StoryCard`, in the conflict sides, in the need lists and in the opinion check result.
+- Every story ID shown in the app links to its story page (decision 55): in `StoryCard`, in the conflict sides, in the need lists and in the opinion check result.
 - When the story belongs to another stakeholder (the part of the ID before 「-」), the page redirects to the right stakeholder.
 - An unknown issue, an issue with no analysis, or an unknown story shows a short message with links to the stakeholder page and the issue.
 - The logic is `findStory` and `storyView` in `src/lib/storyPage.ts`. The paths are in `src/lib/entityPaths.ts`.
 
-### 3.16 Want page (訴求)
+### 3.16 Wants and needs: keys and links (no own pages)
 
-URL: `#/stakeholders/<id>/wants/<n>/<key>`, for example `#/stakeholders/I06/wants/2/W08`. A want is what this stakeholder wants in this issue (decision 37).
+Wants and needs have no page of their own (ETBlue, 2026-10-20, decision 45). ETBlue removed them from the list of entities with unique URLs in `human-inputs.md`. The list is now: issue; stakeholder → user story; solution. Wants show inside the 訴求 tabs, and needs show inside the 需求 tabs, of the issue page (3.2) and the stakeholder page (3.3).
 
-**The key** (open question Q3) is the same key as the opinion check pick list (4.1, `storyPickKey`):
-- the W group ID, when the story is in a W group. Several stories of one stakeholder in the same W group are one want, with one page.
-- else the story ID.
-- A story ID of a story that is in a W group redirects to the W group key.
-- A W group with no story of this stakeholder shows "not found", with a link to the stakeholder's 訴求 tab.
+**The keys.** The tabs still need one key per want and per need, to group the stories, to count them, and for the stakeholder filter:
 
-| Part | Content |
-|---|---|
-| Breadcrumb | 首頁 › 利害關係人 › I06 身心障礙者… › 訴求 (link to the 訴求 tab) › #2 W08 |
-| Label and h1 | A small line 「I06 身心障礙者（視障、輪椅使用者）在 #2 的訴求」, then the h1: the W group summary, or the 我想要… of the story, with its tag |
-| One line | 「訴求是利害關係人心中的解法，還沒有評估。解法以需求為本，所以訴求不一定會被採用。」 |
-| 這位利害關係人的故事 | Its stories in this want, as `StoryCard`s, each with a link to its need page |
-| 同樣想要的人 | The other stakeholders of the W group, in ID order. Each links to its own want page with the same key. Compact `StakeholderCard`s with the 「也出現在」 mark |
-| 可能有不同意見的人 | The conflicts with one of its stories on a side: the other side's stories, 雙方的需求, 以需求為本的解方 (with solution links), and the method (「備案：審議方法」 when there is a way out) |
-| 相關解法 | The solutions that cover the need of one of its stories |
-| 更多 | 「到 #2 做意見健檢」 (`#/issues/2/wants?pick=W08`), the stakeholder's 訴求 tab |
+| | Key | Example |
+|---|---|---|
+| Want (訴求) | The W group ID when the story is in a W group, else the story ID. The same key as the opinion check pick list (4.1, `storyPickKey`). | `W08`, `I24-US01` |
+| Need (需求) | The N group ID (`needGroup` of the story) when the story is in an N group, else the story ID. The same ID as the row of step 5.2 (`needs[].id`). | `N01`, `I06-US01` |
 
-Page title: 「訴求 #2 W08 · 身心障礙者（視障、輪椅使用者） · 市政提案小幫手」. The logic is `findWant` and `wantView` in `src/lib/wantList.ts`.
+Several stories of one stakeholder with the same key are one want or one need. For example I01 has 5 stories in #2 N01, so N01 counts once for I01.
 
-### 3.17 Need page (需求)
+**Links** (decision 57). A link to one want or one need goes to the issue's tab, with `?focus=<key>`:
+- a want: `#/issues/<n>/wants?focus=<want key>`, for example `#/issues/2/wants?focus=W08`
+- a need: `#/issues/<n>/needs?focus=<need key>`, for example `#/issues/2/needs?focus=N07`
 
-URL: `#/stakeholders/<id>/needs/<n>/<key>`, for example `#/stakeholders/I06/needs/2/N07` (decision 37).
+The tab scrolls to the item and moves keyboard focus to it (3.2). A link to a stakeholder in a want or need list (「同樣想要的人」, 「誰需要」) goes to that stakeholder's page, on the same tab (`#/stakeholders/I06/wants` or `…/needs`). The links are made by `wantFocusPath` and `needFocusPath` in `src/lib/entityPaths.ts`.
 
-**The key** (open question Q3):
-- the N group ID (`needGroup` of the story), when the story is in an N group. Several stories of one stakeholder in the same N group are one need, with one page. For example I01 has 5 stories in #2 N01.
-- else the story ID. This is the same ID as the row of step 5.2 (`needs[].id`).
-- A story ID of a story that is in an N group redirects to the N group key.
-- An N group with no story of this stakeholder shows "not found", with a link to the stakeholder's 需求 tab.
+The draft URLs `#/stakeholders/<id>/wants/<n>/<key>` and `#/stakeholders/<id>/needs/<n>/<key>` were never published. They have no route, so they show the not-found page.
 
-| Part | Content |
-|---|---|
-| Breadcrumb | 首頁 › 利害關係人 › I06 身心障礙者… › 需求 (link to the 需求 tab) › #2 N07 |
-| Label and h1 | A small line 「I06 身心障礙者（視障、輪椅使用者）在 #2 的需求」, then the h1: the N group summary, or the 以便… of the story, with its tag |
-| 這位利害關係人的說法 | Its own 以便… texts, each with its tag, when the need is an N group. They can be a little different from the group summary. |
-| 優先順序 | The priority label with its tag, and 理由 (`reason`) with its tag. The legend (3.4). The line: 「優先順序是這些利害關係人有多需要它，不是利害關係人之間的排名。」 |
-| 這位利害關係人的故事 | Its stories with this need, as `StoryCard`s, each with a link to its want page |
-| 同樣需要的人 | The other stakeholders of the N group, in ID order, each a link to its own need page with the same key. Compact `StakeholderCard`s |
-| 涵蓋這個需求的解法 | The solutions whose `needs.must` or `needs.shouldCould` lists the key, as compact `SolutionCard`s. When none: 「尚未有解法涵蓋」 |
-| 出現在衝突 | The conflicts that list the key in `needsA` or `needsB`, with the 以需求為本的解方 |
-| 更多 | 「在 #2 的需求列表中查看」 (`#/issues/2/needs?focus=N07`), the stakeholder's 需求 tab |
+### 3.17 (Removed: need page)
 
-Page title: 「需求 #2 N07 · 身心障礙者（視障、輪椅使用者） · 市政提案小幫手」. The logic is `findNeed` and `needView` in `src/lib/needs.ts`.
+The need page was removed on 2026-10-20 (decision 45). See 3.16.
 
 ### 3.18 Cross-issue solutions
 
-ETBlue wants the cross-issue solutions in the app (`human-inputs.md`, decision 39). Another agent writes them in `analysis/cross-issue/`. **The data shape is not decided yet.** It is an input to Task N11 in `plan.md`. This section says where they show. Details may change when the data exists.
+ETBlue wants the cross-issue solutions in the app (`human-inputs.md`, decision 39). A cross-issue solution combines solutions of several issues. It has the same page shape and the same URL format as an issue solution (3.12, decision 56): `#/solutions/X-A`, `#/solutions/X-A/needs`, `#/solutions/X-A/stakeholders`.
 
-Draft data: `app/public/data/cross-issue.json`, written by `build_json.py`. A draft shape, only to plan the UI:
+**Data.** The source is `analysis/cross-issue/cross-issue-analysis.md`. `analysis/scripts/build_json.py` reads it (with the rules of `check_cross_issue.py`) and writes `cross-issue.json` next to `index.json` (`app/public/data/cross-issue.json`). Without the Markdown file, there is no JSON file. The full field list is in the docstring of `build_json.py`. A reference to an ID of one issue is `{ "issue": n, "id": "…" }`; `issue` is null for the file's own `X-N` IDs. The fields the app uses:
 
 ```
-{ "solutions": [ {
-    "code": "X1",                       // never reused, like 5.8
-    "name": Cell, "summary": string,
-    "issues": [1, 2, 8],
-    "combines": [ { "issue": 1, "solution": "D" }, { "issue": 2, "solution": "D" } ],
-    "needs": [ { "issue": 2, "need": "N06" } ],
-    "stakeholders": ["O05", "I09"],
-    "spaces": ["sidewalk"], "added": "2026-10-21",
-    "pending": [Pending]
-} ] }
+{ "title": string, "updated": "2026-10-20", "issues": [1, 2, 8], "spaces": [code],
+  "needGroups": [ { "id": "X-N01", "tag", "summary": string,
+                    "needs": [ { "issue": 1, "id": "N05", "priority": "M" } ],
+                    "stories": [ { "issue", "id" } ], "stakeholders": [id],
+                    "priority": "M" | null, "priorityTag", "prioritiesDiffer": bool, "reason": Cell } ],
+  "conflicts": [ { "id": "X-C1", "text": Cell, "issueConflicts": [ { "issue", "id": "C7" } ],
+                   "sideA", "sideB": [ { "issue", "id": story ID } ],
+                   "needsA", "needsB": [ { "issue" | null, "id" } ],
+                   "wayOut": Cell, "wayOutSolutions": ["X-B"], "method": Cell, "result": Cell } ],
+  "solutions": [ { "code": "X-A", "name": string, "tag", "summary": string,
+                   "parts": [ { "issue": 1, "code": "C" } ], "spaces": [code], "added": "2026-10-20",
+                   "needs": { "must": [ { "issue", "id" } ], "shouldCould": [ { "issue", "id" } ],
+                              "crossIssue": ["X-N01"] },
+                   "measures": [ { "indicator", "baseline": Cell, "source", "from": [ { "issue", "code" } ], "isNew": bool } ],
+                   "detail": { "owner", "laws", "privacy", "risks": Cell } } ],
+  "solutionFocus": [ { "tag": "高齡", "solutions": ["X-A"], "note": Cell } ],
+  "pending": [ { "text", "section" } ] }
 ```
 
-Where they show:
+Today the file has 5 solutions (X-A to X-E), 7 X-N groups and 2 conflicts (X-C1, X-C2), over issues #1, #2 and #8. `name` and `tag` are two fields; the app shows them as one Cell. The other fields (`summary` of the file, `sharedStakeholders`, `repeatedNeeds`, `focusGroups`) are not shown in this phase.
+
+**The page.** The same frame as 3.12. The differences:
+
+| Part | Cross-issue solution |
+|---|---|
+| Breadcrumb, h1, title | 首頁 › 解法 › X-A. The h1 is 「X-A」 and the name with its tag. Page title: 「X-A <name> · 解法 · 市政提案小幫手」. |
+| Line under the h1 | 「跨議題解法・議題：#1、#2、#8」, each issue a link. The issues are the ones in `parts`. Then the summary, the space types and 新增日期. |
+| Covered needs | An issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue`. |
+| Not covered needs | Every other need of the issues in `parts`. |
+| Covered stakeholders | A stakeholder with at least one covered need, in any of these issues. Each stakeholder is listed once, in ID order. |
+| Tab counts | The same rules as 3.12, summed over the issues. They count needs and stakeholders, not priorities (decision 48). |
+| 需求 tab | One h3 per issue (「#2 找回消失的垃圾桶」, in issue number order), then the covered and the not covered needs of that issue as in 3.12. Before them, 「跨議題的共同需求」: each X-N group in `needs.crossIssue`, with its summary and tag, its priority (or 「各議題的優先順序不同」 when `prioritiesDiffer`), its reason, and its issue needs as links (`#/issues/<n>/needs?focus=<id>`). An X-N group has no page and no link. |
+| 利害關係人 tab | As in 3.12. Under each stakeholder, its needs are split by issue. |
+| 總覽 | 合併的解法 (each item of `parts`, as a link `#/solutions/<n>-<code>` with the issue and the name), 解開的衝突 (each cross-issue conflict whose `wayOutSolutions` lists this code: the text, the two sides with story links, 雙方的需求, 以需求為本的解方, and the issue conflicts in `issueConflicts` as links `#/issues/<n>/wants?focus=C7`), 特別關注族群 (each `solutionFocus` item that lists this code: the group and its note), 成效衡量 (`measures`: the indicator, the baseline with its tag, the source, the issue solutions in `from` as links, and 「新指標」 when `isNew`), 主責單位、法規、隱私與風險 (`detail`), and 更多 (link to `#/solutions`). |
+| 待補 | No own list. The `pending` list of the file is per section, not per solution. The 【待補】 text shows inside each cell. |
+
+The page needs the issue files of the issues in `parts`. It loads them like the issue page does.
+
+**Where else they show:**
 
 | Place | What |
 |---|---|
-| `#/solutions` | A first group 「跨議題解法」 (h2), before the per-issue groups (open question Q9). Each card shows the code and name, the summary, and the issues (「#1、#2、#8」). The issue filter matches a cross-issue solution when one of its issues is picked. |
-| `#/solutions/cross/<code>` | Its own page. Under `#/solutions`, so the header link 解法 is active with no change to `activeNavItem`. It shows the name with its tag, the summary, the issues (links), 「合併的解法」 (links to each solution page), the needs per issue (links to each issue's 需求 tab, `?focus=`), the stakeholders (compact cards), the space types and the 待補 items. If the data has enough fields, it gets the same tabs as a solution page. |
-| Issue 解法 tab | A box 「本議題也在跨議題解法中」 with links to each cross-issue solution that lists the issue |
-| Solution page 總覽 | 「跨議題解法」 with a link, when the solution is in `combines` |
-| Home block 「最近分析出的解法」 | Included when the item has `added` (open question Q9) |
-| Header count 解法 | Includes the cross-issue solutions, because the header link goes to the list that shows them (open question Q9) |
+| `#/solutions` | A first group 「跨議題解法」 (h2), before the per-issue groups (decision 51). Each card shows the code and name, the summary, and the issues (「#1、#2、#8」). The issue filter matches a cross-issue solution when one of its issues is picked. |
+| Issue 解法 tab | A box 「本議題也在跨議題解法中」 with links to each cross-issue solution that has the issue in `parts` |
+| Solution page 總覽 | 「跨議題解法」 with a link, when the solution is in `parts` (3.12) |
+| Home block 「最近分析出的解法」 | Included, because each item has `added` (decision 51) |
+| Header count 解法 | Includes the cross-issue solutions, because the header link goes to the list that shows them (decision 51) |
 
-When the file does not exist, all these parts are hidden and nothing breaks. `useCrossIssue()` in `src/data.ts` returns null for a missing file.
+When the file does not exist, all these parts are hidden and nothing breaks. `useCrossIssue()` in `src/data.ts` returns null for a missing file. `#/solutions/X-A` then shows the "not found" message.
 
 ### 3.19 Routes
 
-Every page and its tabs. New routes are marked 「new」.
+Every page and its tabs (decisions 45, 46, 56).
 
 | URL | Page | Tabs |
 |---|---|---|
 | `#/` | Home (3.1) | — |
 | `#/issues` | Issue list (3.9) | — |
-| `#/issues/<n>`, `#/issues/<n>/<tab>` | Issue (3.2) | 總覽 · 訴求 · 需求 · 解法 (`wants`, `needs`, `solutions`; new: `wants`, `needs`) |
-| `#/issues/<n>/solutions/<code>`, `…/<code>/<tab>` | Solution (3.12) | 總覽 · 需求 · 利害關係人 (`needs`, `stakeholders`; new) |
+| `#/issues/<n>`, `#/issues/<n>/<tab>` | Issue (3.2) | 總覽 · 訴求 · 需求 · 解法 (`wants`, `needs`, `solutions`) |
 | `#/stakeholders` | Stakeholder list (3.9) | — |
-| `#/stakeholders/<id>`, `#/stakeholders/<id>/<tab>` | Stakeholder (3.3) | 總覽 · 訴求 · 需求 · 解法 (`wants`, `needs`, `solutions`; new) |
-| `#/stakeholders/<id>/stories/<n>/<storyId>` | Story (3.15), new | — |
-| `#/stakeholders/<id>/wants/<n>/<key>` | Want (3.16), new | — |
-| `#/stakeholders/<id>/needs/<n>/<key>` | Need (3.17), new | — |
+| `#/stakeholders/<id>`, `#/stakeholders/<id>/<tab>` | Stakeholder (3.3) | 總覽 · 訴求 · 需求 · 解法 (`wants`, `needs`, `solutions`) |
+| `#/stakeholders/<id>/stories/<n>/<storyId>` | Story (3.15) | — |
 | `#/solutions` | Solution list (3.9) | — |
-| `#/solutions/cross/<code>` | Cross-issue solution (3.18), new | to be decided with the data |
+| `#/solutions/<n>-<code>`, `…/<tab>` (for example `#/solutions/2-A`) | Solution (3.12) | 總覽 · 需求 · 利害關係人 (`needs`, `stakeholders`) |
+| `#/solutions/X-<letter>`, `…/<tab>` (for example `#/solutions/X-A`) | Cross-issue solution (3.12, 3.18) | 總覽 · 需求 · 利害關係人 (`needs`, `stakeholders`) |
 | `#/spaces/<code>` | Space (3.6) | — |
 | `#/about` | About (3.13) | — |
 
-Query parameters: `evidence=1` (3.5), `stakeholder=<id>` (3.14), `pick=<key>` (4), `focus=<value>` (3.2), `from=<old id>` (3.3), `cross=1` and the list filters (3.9).
+Query parameters: `evidence=1` (3.5), `stakeholder=<id>` (3.14), `pick=<key>` (4), `focus=<value>` (3.2, 3.16), `from=<old id>` (3.3), `cross=1` and the list filters (3.9).
 
 Old URLs:
 
 | Old URL | Now |
 |---|---|
 | `#/issues/<n>/opinion`, `…/conflicts`, `…/stakeholders` | Redirect (3.2) |
+| `#/issues/<n>/solutions/<code>`, `#/issues/<n>/solutions/<code>/<tab>` | Redirect to `#/solutions/<n>-<code>` and `#/solutions/<n>-<code>/<tab>`, query kept (3.12) |
 | `#/stakeholders/<moved id>/…` | Redirect to the new ID, rest of the path kept (3.3) |
 | `#/?cross=1` | `#/stakeholders?cross=1` (3.1) |
 | `#/wants`, `#/needs` | Not found (decisions 31, 40) |
+| `#/stakeholders/<id>/wants/<n>/<key>`, `…/needs/<n>/<key>`, `#/solutions/cross/<code>` | Not found. These were draft URLs and were never published (decisions 45, 56). |
 
-The URL segments `stories`, `wants` and `needs` under a stakeholder are both tab names and sub-page names. The router tells them apart by the number of segments: `#/stakeholders/I06/wants` is the tab, `#/stakeholders/I06/wants/2/W08` is a want page. `#/stakeholders/I06/stories` (no tab with this name) shows the 總覽 tab's "tab not found" message.
+Under a stakeholder, the segment `stories` is only a sub-page name. `#/stakeholders/I06/stories` (no tab with this name) shows the "tab not found" message. `#/stakeholders/I06/wants` and `…/needs` are tabs.
 
 ## 4. Opinion check
 
@@ -746,7 +757,7 @@ Rules:
 
 ### 5.8 Solution codes
 
-- A solution code (A, B…) is never reused in an issue, also when a solution is removed or merged. So a shared link such as `#/issues/2/solutions/A` keeps working, the same as stakeholder IDs (5.1) and space codes (5.3).
+- A solution code (A, B…) is never reused in an issue, also when a solution is removed or merged. So a shared link such as `#/solutions/2-A` (and the old `#/issues/2/solutions/A`, which redirects) keeps working, the same as stakeholder IDs (5.1) and space codes (5.3).
 - Each solution in 6.1 has its own step 7 section, `### 7.n 解法 X：…`, with a 項目 | 內容 table, and one row in the 總覽 table (`### 7.n 總覽`). The 總覽 table has the columns 代號, 解法, 成本, 可行性, 主要風險, 主責單位. 代號 is the code only, for example 「A」. 解法 is the row tag and a short name, for example 「`[AI模擬]` 佈建建議地圖」. The row tag is for every cell of the row. `check_analysis.py` checks both.
 - A 6.3 row lists one or more codes in its 解法 cell, separated by 「、」, for example `A、D`.
 - A row of the 6.1 構想 table belongs to a solution when its 本文件的處理 cell names it as 「解法 X」, for example 「併入解法 B」.
@@ -774,7 +785,7 @@ app/
     lib/                pure functions: opinion check, cross-issue lookups, filters
     types.ts            types for the JSON
     i18n/zh-TW.ts       all UI strings. Components never contain UI text directly.
-    pages/              Home, Issues, Stakeholders, Solutions (list pages), About, Issue (4 tabs), Stakeholder (4 tabs), Solution (3 tabs), StakeholderStory, StakeholderWant, StakeholderNeed, CrossSolution, Space
+    pages/              Home, Issues, Stakeholders, Solutions (list pages), About, Issue (4 tabs), Stakeholder (4 tabs), Solution (3 tabs, for issue and cross-issue solutions), StakeholderStory, Space
     components/         TagBadge, Watermark, StakeholderList, StoryCard, IssueCard, SolutionCard, StakeholderCard, ...
     components/ui/      shadcn/ui parts, copied into the repo and editable
 ```
@@ -792,7 +803,7 @@ The UI only shows the results of the functions in `src/lib/`.
 - Vitest for the space lookups: issues and solutions per space type, and 「使用相同空間的議題」.
 - Vitest for the 分析摘要 links (`src/lib/summary.ts`): each kind of reference, references to another issue, and that every reference in the fixtures has a link.
 - Cross-issue tests start when a second issue exists.
-- Vitest for the needs-based pages (2026-10-20), on the #1, #2 and #8 fixtures: the tab counts (#2: 訴求 39, 衝突 9, 需求 21, 解法 5; I06: 訴求 5, 衝突 4, 需求 4, 解法 4; #2 A: needs 9 / 12, stakeholders 14 / 13), the want and need keys and their redirects, the stakeholder filter, the old tab redirects, `?focus=` values, and every 分析摘要 reference (also N groups) has a link.
+- Vitest for the needs-based pages (2026-10-20), on the #1, #2 and #8 fixtures: the tab counts (#2: 訴求 39, 衝突 9, 需求 21, 解法 5; I06: 訴求 5, 衝突 4, 需求 4, 解法 4; #2 A: needs 9 / 12, stakeholders 14 / 13), the want and need keys, the stakeholder filter, the old tab redirects, the solution paths (`#/solutions/2-A`, `#/solutions/X-A`) and the old solution redirects, `?focus=` values, and every 分析摘要 reference (also N groups) has a link.
 
 ## 9. Deploy
 
@@ -840,8 +851,8 @@ Required by the hackathon rules:
 15. The home page hero is full width, with a background of colors and a simple pattern made from the Solarized tokens (no photos or image files). It changes with the theme, and its text passes AA in both themes. The three home blocks are 3 columns from the `lg` breakpoint and 1 column below it (3.1). (ETBlue, 2026-10-18)
 16. The notice box at the top of every page is removed. The footer keeps the full disclaimer, and every content cell keeps its tag badge (3.5, 3.8). The footer gets a link 「市政 debug 松活動頁面」 to https://puma.taipei/hackathon in 專案連結, next to the disclaimer (3.8). (ETBlue, 2026-10-18)
 17. Every page has a watermark 「市政 debug 松參加者作品・展示用 MVP」: light, at an angle, repeated over the whole window, also when printing. It does not block clicks and is hidden from screen readers. Text under it still passes AA in both themes, so some text tokens became slightly darker (light) or lighter (dark) (3.10, 3.11). (ETBlue, 2026-10-18)
-18. Each solution has its own page, `#/issues/<n>/solutions/<code>`, because its content can be long. It shows the covered stories, W groups, stakeholders, conflicts, measures, the step 7 details and the 待補 items of the solution. Every mention of a solution links to it. A solution code is never reused in an issue, so the links keep working (3.12, 5.8). (ETBlue, `human-inputs.md`, 2026-10-18)
-19. A header link also looks active on the pages under its list page, for example 議題 on `#/issues/2/overview` and 利害關係人 on `#/stakeholders/I12`. One solution's page `#/issues/<n>/solutions/<code>` makes 解法 active, not 議題. `aria-current` is `page` on the list page and `true` on a page under it (3.7). (2026-10-19)
+18. Each solution has its own page, `#/issues/<n>/solutions/<code>`, because its content can be long. It shows the covered stories, W groups, stakeholders, conflicts, measures, the step 7 details and the 待補 items of the solution. Every mention of a solution links to it. A solution code is never reused in an issue, so the links keep working (3.12, 5.8). (ETBlue, `human-inputs.md`, 2026-10-18) The URL is now `#/solutions/<n>-<code>` (decision 56); the old URL redirects.
+19. A header link also looks active on the pages under its list page, for example 議題 on `#/issues/2/overview` and 利害關係人 on `#/stakeholders/I12`. One solution's page `#/issues/<n>/solutions/<code>` makes 解法 active, not 議題. `aria-current` is `page` on the list page and `true` on a page under it (3.7). (2026-10-19) The solution page is now under `#/solutions` (decision 56).
 20. 資料根據 shows each issue's story cells by tag: the 我想要… and the 以便… cell of every story, in the fixed order 實證, AI整理, AI模擬, 待補. It is on the issue card (`#/issues`) and the 總覽 tab, as text with counts, the 實證 percent next to the counts, and a small stacked bar. It replaces the old field that counted only the 我想要… cell. Issues are never sorted, ranked or filtered by it, and the home page does not show it. One explanation line says it is the make-up of the data sources, not the importance or quality of the issue, and that organization stories are `[AI模擬]` until a real interview, so it never reaches 100%. One percent is not shown alone: it looks like a score and can mislead. For example #8 has 39 `[AI整理]` cells that no person has checked yet, so a single number would hide what is behind it (3.9). (ETBlue, 2026-10-19)
 21. Every list of 議題 and 解法 uses a shared card: `IssueCard` or `SolutionCard`. Each card has two variants, `detailed` (the list pages `#/issues` and `#/solutions`) and `compact` (the home page, the space page, the stakeholder page and the opinion check). `SolutionSummary` is removed (3.9). (ETBlue, `human-inputs.md`, 2026-10-19)
 22. The header gets 需求 with a count, between 訴求 and 解法. A 需求 is the 以便… cell of one story: one per story, with no merging. It gets a list page `#/needs`, built like `#/wants`, with search and the 「只看有資料根據」 filter. On this page the filter looks at the 以便… cell only. 訴求 stays the opinion check pick list (3.7, 3.9). (ETBlue, `human-inputs.md`, 2026-10-19)
@@ -859,29 +870,45 @@ Required by the hackathon rules:
 34. The issue page and the stakeholder page have the same four tabs: 總覽, 訴求 (with the count of wants and the count of conflicts), 需求 (with a count) and 解法 (with a count). The old issue tabs 你的意見, 利害關係人 and 衝突 are removed, and their old URLs redirect (3.2, 3.3). (ETBlue, `human-inputs.md`, 2026-10-20)
 35. The stakeholder is the main entity. On the issue page and the stakeholder page, the full stakeholder list is a menu that filters the stories, wants and needs by stakeholder (3.14). (ETBlue, 2026-10-20)
 36. The solution page has three tabs: 總覽, 需求 (covered and not covered count) and 利害關係人 (covered and not covered count) (3.12). (ETBlue, `human-inputs.md`, 2026-10-20)
-37. A story, a want (訴求, 我想要…) and a need (需求, 以便…) each have their own URL, under the stakeholder: `#/stakeholders/<id>/stories/…`, `…/wants/…`, `…/needs/…` (3.15–3.17, 3.19). (ETBlue, `human-inputs.md`, 2026-10-20)
+37. A story, a want (訴求, 我想要…) and a need (需求, 以便…) each have their own URL, under the stakeholder: `#/stakeholders/<id>/stories/…`, `…/wants/…`, `…/needs/…` (3.15–3.17, 3.19). (ETBlue, `human-inputs.md`, 2026-10-20) Decision 45 replaces the want and need parts: only the story keeps its own URL.
 38. 衝突 and the opinion check (意見健檢) are in the 訴求 tab, because conflicts happen between wants. The stakeholder list of an issue is in the 總覽 tab (3.2). (ETBlue, 2026-10-20)
-39. Cross-issue solutions are shown in the app: on `#/solutions`, on their own page `#/solutions/cross/<code>`, and next to the issues and solutions they combine. The data comes later from `analysis/cross-issue/` (3.18). (ETBlue, `human-inputs.md`, 2026-10-20)
+39. Cross-issue solutions are shown in the app: on `#/solutions`, on their own page, and next to the issues and solutions they combine. The data comes from `analysis/cross-issue/` (3.18). (ETBlue, `human-inputs.md`, 2026-10-20) The draft URL `#/solutions/cross/<code>` is replaced by `#/solutions/X-A` (decision 56).
 40. The pages `#/wants` and `#/needs` stay removed (decision 31). `wantCount` and `needCount` in `src/lib/counts.ts` are used for the 訴求 and 需求 tab labels (3.2). (ETBlue, 2026-10-20)
 41. The app's test fixtures are refreshed from the new needs-based JSON before any page work. The tests that fail after the refresh are fixed first, and `summaryRefTo` links N group references (and W group references) in the 分析摘要 (3.2, `plan.md` Task N1). (ETBlue, 2026-10-20)
 42. The app is renamed from 「提案小幫手」 to 「市政提案小幫手」. The name is in the header, the footer text and every page title. It must still fit in the header at 360 px wide (3.7). (ETBlue, `human-inputs.md`, 2026-10-20)
 
-## 14. Open questions (2026-10-20)
+43. The 需求 count counts the rows of step 5.2 (`needs` in the issue JSON): each N group once, plus each story with no N group. #2 has 21. This is how 訴求 counts W groups, and it is the list the 需求 tab shows. `needCount` changes with it (2, 3.2). (Q1; ETBlue, 2026-10-20)
+44. The 「衝突」 count in the 訴求 tab label is the number of conflicts (C1, C2…), because the tab lists them. On the stakeholder page it is the number of conflicts with one of its stories on a side (3.2, 3.3). (Q2; ETBlue, 2026-10-20)
+45. Wants and needs have no page of their own. ETBlue removed them from the entities with unique URLs in `human-inputs.md` (now: issue; stakeholder → user story; solution). They show only inside the 訴求 and 需求 tabs of the issue page and the stakeholder page. The want key and the need key stay, for grouping, for the counts and for the stakeholder filter. The draft sections 3.16 (want page) and 3.17 (need page), their routes and `findWant` / `findNeed` / `wantView` / `needView` are removed. This replaces the want and need parts of decision 37 (3.16). (Q3; ETBlue, 2026-10-20)
+46. The story URL keeps the issue number: `#/stakeholders/<id>/stories/<n>/<storyId>`, because story IDs are unique only inside one issue (3.15). (Q4; ETBlue, 2026-10-20)
+47. The stakeholder menu has single choice, with links (`?stakeholder=I06`), so links can be shared and work with the back button. On the issue page it shows on 訴求, 需求 and 解法. On the stakeholder page it lists all active stakeholders and switches the page (3.14). (Q5; ETBlue, 2026-10-20)
+48. The tab counts of the stakeholder page are summed over the issues, because they count items, not priorities. Inside each tab, the content is split by issue (3.3). (Q6; ETBlue, 2026-10-20)
+49. The tab counts do not change when a filter is on. They are the totals. A status line says what the filter shows (3.2, 3.14). (Q7; ETBlue, 2026-10-20)
+50. On the solution page, 「not covered」 means every other need of the issue, also 這次不做 needs, grouped by priority, each with the other solutions that cover it. A stakeholder is covered when at least one of its needs is covered (3.12). (Q8; ETBlue, 2026-10-20)
+51. Cross-issue solutions are the first group on `#/solutions`. They are included in the header 解法 count, and in the home block 「最近分析出的解法」 because they have a date. Their URL is in decision 56 (3.18). (Q9; ETBlue, 2026-10-20)
+52. Issues in the old format (`format: "stories"`, no `needs`): no issue uses it now. The app keeps the type, and the 需求 tab shows a short note 「本議題使用舊格式，沒有需求列表」 instead of a fallback (3.2). (Q10; ETBlue, 2026-10-20)
+53. A link to a part of a tab uses `?focus=<value>`, because the hash router uses the `#`. The page scrolls to the part and moves keyboard focus to it (3.2). (Q11; ETBlue, 2026-10-20)
+54. `#/solutions` shows the number of covered needs (「涵蓋 9 個需求」), not the number of covered stories, because step 6.2 now maps solutions to needs (3.9). (Q12; ETBlue, 2026-10-20)
+55. Every story ID in the app links to its story page, like solutions (3.15). (Q13; ETBlue, 2026-10-20)
+56. Solutions get their own path, because solutions and issues are many-to-many: a cross-issue solution combines several issues. An issue solution is `#/solutions/<n>-<code>` (for example `#/solutions/2-A`). A cross-issue solution uses the same format with its own code (for example `#/solutions/X-A`) and the same page shape. Tabs are `#/solutions/2-A/<tab>`. The old URLs `#/issues/<n>/solutions/<code>[/<tab>]` redirect to the new ones, with the tab and the query kept. The draft `#/solutions/cross/<code>` is not used. Solution pages are under the header link 解法, not 議題. This replaces the URL part of decisions 18, 19 and 39 (3.7, 3.12, 3.18, 3.19). (ETBlue, 2026-10-20)
+57. A link to one want or one need goes to the issue's 訴求 or 需求 tab with `?focus=<key>` (for example `#/issues/2/wants?focus=W08`, `#/issues/2/needs?focus=N07`). A link to a stakeholder in a want or need list goes to that stakeholder's page on the same tab (`#/stakeholders/I06/wants`). This is the simplest rule: it uses the `?focus=` parameter that already exists, and needs no new page (3.16). (ETBlue, 2026-10-20)
 
-The owner's decisions 34–41 leave these points open. Each has a recommendation. The design above follows the recommendation until ETBlue decides.
+## 14. Open questions
 
-| # | Question | Recommendation | Where |
-|---|---|---|---|
-| Q1 | What does the 需求 count count? Today `needCount` counts one per story (52 for #2). | Count the rows of step 5.2 (`needs`): each N group once, plus each story with no N group. 21 for #2. This is how 訴求 counts W groups, and it is the list the 需求 tab shows. `needCount` changes, and the 「Names」 row in section 2 changes with it. | 2, 3.2 |
-| Q2 | Is the 「衝突」 count in the 訴求 tab label the number of conflicts, or the number of wants that are in a conflict? | The number of conflicts (C1, C2…), because the tab lists them. On the stakeholder page: the conflicts with one of its stories on a side. | 3.2, 3.3 |
-| Q3 | What is one want or one need of a stakeholder? | The want key is the W group ID, or the story ID with no W group. The need key is the N group ID, or the story ID with no N group. Several stories of one stakeholder with the same key are one page. A story ID with a group redirects to the group key. | 3.16, 3.17 |
-| Q4 | The URL shape of story, want and need pages. | `#/stakeholders/<id>/<stories｜wants｜needs>/<issue number>/<key>`. The issue number is needed because story, W and N IDs are only unique inside one issue. | 3.15–3.19 |
-| Q5 | Single or multiple choice in the stakeholder menu? | Single choice, with links (`?stakeholder=I06`). Links can be shared and work with the back button. On the issue page the menu shows on 訴求, 需求 and 解法 (總覽 already lists the stakeholders). On the stakeholder page it lists all 51 active stakeholders and switches the page. | 3.14 |
-| Q6 | The stakeholder page covers several issues. Are its tab counts per issue or summed? | Summed, because they count items, not priorities. Inside each tab, the content is split by issue. | 3.3 |
-| Q7 | Do the tab counts change when a filter is on? | No. They are the totals. A status line says what the filter shows. | 3.2, 3.14 |
-| Q8 | On the solution page, what is 「not covered」? | Every other need of the issue, also 這次不做 needs, grouped by priority, each with the other solutions that cover it. A stakeholder is covered when at least one of its needs is covered; the page shows which of its needs are covered and which are not. | 3.12 |
-| Q9 | Cross-issue solutions: place, URL, counts. | The first group on `#/solutions`; URL `#/solutions/cross/<code>`; included in the header 解法 count and in the home block when they have a date. All of it waits for the data shape. | 3.18 |
-| Q10 | Issues in the old format (`format: "stories"`, no `needs`)? | No issue uses it now. The app keeps the type, but the 需求 tab and the need pages show a short note 「本議題使用舊格式，沒有需求列表」 instead of a fallback. | 3.2 |
-| Q11 | How to link to a part of a tab (a conflict, a need)? | `?focus=<value>`, because the hash router uses the `#`. The page scrolls to the part and moves keyboard focus to it. | 3.2 |
-| Q12 | `#/solutions` shows the number of covered stories (「21 則」). | Show the number of covered needs instead (「涵蓋 9 個需求」), because step 6.2 now maps solutions to needs. | 3.9 |
-| Q13 | Do story IDs become links everywhere? | Yes, like solutions: every story ID links to its story page. | 3.15 |
+None now. ETBlue answered Q1–Q13 on 2026-10-20:
+
+| Question | Decision |
+|---|---|
+| Q1 What the 需求 count counts | 43 |
+| Q2 What the 衝突 count counts | 44 |
+| Q3 One want or one need of a stakeholder | 45 (no want page and no need page) |
+| Q4 URL of story, want and need pages | 46 (only the story page is kept) |
+| Q5 Single or multiple choice in the stakeholder menu | 47 |
+| Q6 Stakeholder tab counts per issue or summed | 48 |
+| Q7 Tab counts with a filter on | 49 |
+| Q8 「Not covered」 on the solution page | 50 |
+| Q9 Cross-issue solutions: place, URL, counts | 51 and 56 |
+| Q10 Issues in the old format | 52 |
+| Q11 Links to a part of a tab | 53 |
+| Q12 The number on `#/solutions` | 54 |
+| Q13 Story IDs as links | 55 |

@@ -24,14 +24,21 @@ const tn = t.need
 
 /** A summary cell as a link to the need on the issue's 需求 tab (?focus=,
  * decision 57). The tag badge stays outside the link, next to the text. A
- * 【待補】 summary is gray, with no tag. The link keeps ?evidence=1. */
-export function NeedSummaryLink({ summary, issueNumber, needKey }: { summary: Cell; issueNumber: number; needKey: string }) {
+ * 【待補】 summary is gray, with no tag. The link keeps ?evidence=1. With
+ * keepStakeholder, it also keeps ?stakeholder= (design 3.14). Use it only
+ * in a list where the 需求 tab with that filter shows the need. */
+export function NeedSummaryLink({ summary, issueNumber, needKey, keepStakeholder = false }: {
+  summary: Cell
+  issueNumber: number
+  needKey: string
+  keepStakeholder?: boolean
+}) {
   const [params] = useSearchParams()
   return (
     <>
       {!summary.pending && summary.tag && <TagBadge kind={summary.tag} className="mr-1.5" />}
       <Link
-        to={needFocusPath(issueNumber, needKey, isDataBasisFilterOn(params))}
+        to={needFocusPath(issueNumber, needKey, keepStakeholder ? params : isDataBasisFilterOn(params))}
         className={cn(linkClass, summary.pending && 'text-muted-foreground')}
       >
         {stripMarkdown(summary.text)}

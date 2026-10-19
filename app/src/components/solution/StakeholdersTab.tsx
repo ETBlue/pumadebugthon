@@ -46,7 +46,7 @@ function NotCoveredList({ items, issueNumber }: { items: NotCoveredNeed[]; issue
                 {tp.otherSolutions}
                 {item.otherSolutions.map((sol, i) => (
                   <span key={sol.id}>
-                    {i > 0 && '、'}
+                    {i > 0 && t.listSeparator}
                     <SolutionTitleLink solution={sol} issueNumber={issueNumber} />
                   </span>
                 ))}

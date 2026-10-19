@@ -59,10 +59,12 @@ function NeedPart({ id, title, needs, issueNumber }: { id: string; title: string
       <ul className="mt-1 space-y-2 text-sm">
         {needs.map((n) => (
           <li key={n.need.id} className="min-w-0 border-l-2 pl-3">
-            <p><NeedSummaryLink summary={n.summary} issueNumber={issueNumber} needKey={n.need.id} /></p>
+            {/* The tab shows only the needs of the picked stakeholder, and the
+                需求 tab with the same filter shows them too, so the link keeps it. */}
+            <p><NeedSummaryLink summary={n.summary} issueNumber={issueNumber} needKey={n.need.id} keepStakeholder /></p>
             <p className="mt-0.5 text-muted-foreground">
               {ts.needStakeholders}
-              <span className="font-mono">{n.stakeholders.join('、')}</span>
+              <span className="font-mono">{n.stakeholders.join(t.listSeparator)}</span>
             </p>
           </li>
         ))}
@@ -136,7 +138,7 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
                     <ul aria-labelledby={`${key}-wayout`} className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
                       {item.wayOutConflicts.map((c) => (
                         <li key={c.id}>
-                          <Link to={conflictFocusPath(n, c.id, dataBasedOnly)} className={cn(linkClass, 'font-mono')}>
+                          <Link to={conflictFocusPath(n, c.id, params)} className={cn(linkClass, 'font-mono')}>
                             {c.id}
                           </Link>
                         </li>

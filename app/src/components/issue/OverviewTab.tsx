@@ -59,7 +59,7 @@ export function OverviewTab(props: IssueTabProps) {
                         return (
                           <span key={ref}>
                             {target ? <Link to={target} className={linkClass}>{ref}</Link> : <span>{ref}</span>}
-                            {i < item.refs.length - 1 && to.summaryRefSeparator}
+                            {i < item.refs.length - 1 && t.listSeparator}
                           </span>
                         )
                       })}
@@ -124,7 +124,7 @@ export function OverviewTab(props: IssueTabProps) {
                       {g.stakeholders.map((s, i) => (
                         <span key={s.id}>
                           <Link to={`/stakeholders/${s.id}`} className={linkClass}>{to.focusStakeholderLink(s.id, s.name)}</Link>
-                          {i < g.stakeholders.length - 1 && '、'}
+                          {i < g.stakeholders.length - 1 && t.listSeparator}
                         </span>
                       ))}
                     </span>

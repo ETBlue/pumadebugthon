@@ -50,7 +50,9 @@ export interface SolutionsTabItem {
   /** true when the solution covers needs of the shown stakeholder, but the
    * data filter hides all of them. */
   emptyByData: boolean
-  /** 解開的衝突: the conflicts whose wayOutSolutions lists the solution, in file order. */
+  /** 解開的衝突: the conflicts whose wayOutSolutions lists the solution, in
+   * file order. With a stakeholder picked, only the conflicts that the 訴求
+   * tab shows with the same stakeholder (conflictsForStakeholder). */
   wayOutConflicts: Conflict[]
 }
 
@@ -60,6 +62,9 @@ export interface SolutionsTabItem {
 export function solutionsTabView(issue: IssueFile, stakeholder: string | null, dataBased: boolean): SolutionsTabItem[] {
   const out: SolutionsTabItem[] = []
   const solutions = [...issue.solutions].sort((a, b) => a.id.localeCompare(b.id))
+  // The conflict links keep ?stakeholder=, so list only the conflicts that
+  // the 訴求 tab shows with that filter.
+  const conflicts = conflictsForStakeholder(issue.conflicts, stakeholder)
   for (const solution of solutions) {
     const covered = solutionNeedCoverage(issue, solution).covered
     const own = needsForStakeholder(covered, stakeholder)
@@ -71,7 +76,7 @@ export function solutionsTabView(issue: IssueFile, stakeholder: string | null, d
       shouldCould: shown.filter((n) => n.part === 'shouldCould'),
       otherNeeds: stakeholder === null ? 0 : covered.length - own.length,
       emptyByData: own.length > 0 && shown.length === 0,
-      wayOutConflicts: issue.conflicts.filter((c) => c.wayOutSolutions.includes(solution.id)),
+      wayOutConflicts: conflicts.filter((c) => c.wayOutSolutions.includes(solution.id)),
     })
   }
   return out

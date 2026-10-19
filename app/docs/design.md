@@ -142,7 +142,7 @@ With a stakeholder picked, the tab shows only the needs with a story of that sta
 - 「解開的衝突」: the conflicts whose `wayOutSolutions` lists this solution, as links to `?focus=C1` on the 訴求 tab. Left out when there are none.
 - the cross-issue box (3.18) when the solution is part of a cross-issue solution
 
-With a stakeholder picked, the tab shows only the solutions that cover at least one need of that stakeholder. In each solution, the needs list shows only that stakeholder's needs, with one line 「這個解法還涵蓋其他 6 個需求」 that links to the solution's 需求 tab.
+With a stakeholder picked, the tab shows only the solutions that cover at least one need of that stakeholder. In each solution, the needs list shows only that stakeholder's needs, with one line 「這個解法還涵蓋其他 6 個需求」 that links to the solution's 需求 tab. 「解開的衝突」 shows only the conflicts with a story of that stakeholder on either side (the ones the 訴求 tab shows with the same filter). The need links and the conflict links keep `?stakeholder=` and `?evidence=1` (3.14).
 
 **Old tab URLs** (shared on Discord) redirect with `replace`, so the back button does not loop. The logic is `legacyIssueTab` in `src/lib/issuePage.ts`.
 

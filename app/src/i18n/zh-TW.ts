@@ -8,6 +8,8 @@ export const t = {
   appSubtitle: '在提案之前，先看見各方利害關係人的關注',
   /** Between the parts of the page <title>. */
   titleSeparator: ' · ',
+  /** Between the items of a short inline list, for example 「#1、#2、#8」. */
+  listSeparator: '、',
   layout: {
     skipLink: '跳到主要內容',
     /** For screen readers, after a link that opens a new tab. */
@@ -220,7 +222,6 @@ export const t = {
     summaryIntro:
       '整理本議題難以取捨的決定、可能的爭議、受影響較大的弱勢族群、法規上的障礙，以及相依事項與現行政策的關係。摘要不加入新的事實，每一項都列出它來自哪些故事、衝突或解法。大部分是 AI 的判斷。',
     summaryRefs: '相關：',
-    summaryRefSeparator: '、',
     countsHeading: '數量',
     stakeholders: '利害關係人',
     stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,
@@ -253,7 +254,6 @@ export const t = {
     pendingIntro: '這些地方還需要真人提供資訊。',
     pendingNone: '這個議題沒有待補的項目。',
     noSection: '其他',
-    issueLink: (n: number) => `#${n}`,
     /** The last section of the tab: the issue's stakeholders (decision 38). */
     stakeholdersHeading: '利害關係人',
   },
@@ -321,7 +321,6 @@ export const t = {
     searchHint: '輸入文字，篩選下面的清單。',
     matchCount: (n: number, total: number) => `符合 ${n} 項（共 ${total} 項）`,
     noMatch: '沒有符合的項目。請換一個詞再試。',
-    storyCount: (n: number) => `${n} 則故事`,
     unknownPick: '找不到網址裡選的項目。請從清單重新選一次。',
     resultHeading: '結果',
     picked: '你選的是：',
@@ -652,7 +651,6 @@ export const t = {
     groupNeeds: '各議題的需求',
     /** Above the needs of an issue that is not in parts (design 3.18). */
     notInPartsNote: '這個議題沒有解法被合併進來。這裡只列出透過「跨議題的共同需求」涵蓋的需求。',
-    issuesIntro: '下面依議題列出涵蓋和未涵蓋的需求。',
   },
   /** One conflict (ConflictView, design 3.2). */
   conflict: {

@@ -255,7 +255,7 @@ export function CrossOverviewTab({ data, index, issues, solution: sol }: {
                     <Field label={tx.measureFrom}>
                       {m.from.map((f, j) => (
                         <span key={`${f.issue}-${f.code}`}>
-                          {j > 0 && '、'}
+                          {j > 0 && t.listSeparator}
                           <Link to={{ pathname: solutionPath(f.issue, f.code), search }} className={cn(linkClass, 'font-mono')}>
                             {t.solutionId(f.issue, f.code)}
                           </Link>

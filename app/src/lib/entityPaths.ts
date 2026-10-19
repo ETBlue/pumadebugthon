@@ -54,9 +54,20 @@ export function keyStoryPath(issueNumber: number, key: string): string | null {
 
 /** A link to one part of an issue tab with ?focus=<value> (design 3.2,
  * decision 53), for example { pathname: "/issues/2", search: "?focus=stakeholders" }.
- * With dataBasedOnly, the search also has evidence=1. */
-export function issueFocusPath(issueNumber: number, tab: IssueTab, value: string, dataBasedOnly = false): PathTarget {
-  const params = withDataBasisFilter(new URLSearchParams({ [FOCUS_PARAM]: value }), dataBasedOnly)
+ * The last argument is either dataBasedOnly (adds evidence=1), or the
+ * params of the current URL: then evidence and stakeholder are kept, the
+ * same as a tab change (keptSearch), and pick and the old focus are dropped. */
+export function issueFocusPath(
+  issueNumber: number,
+  tab: IssueTab,
+  value: string,
+  filters: boolean | URLSearchParams = false,
+): PathTarget {
+  const params =
+    typeof filters === 'boolean'
+      ? withDataBasisFilter(new URLSearchParams({ [FOCUS_PARAM]: value }), filters)
+      : new URLSearchParams(keptSearch(filters))
+  if (typeof filters !== 'boolean') params.set(FOCUS_PARAM, value)
   return { pathname: tabPath(issueNumber, tab), search: `?${params.toString()}` }
 }
 
@@ -70,10 +81,7 @@ export function conflictFocusPath(
   conflictId: string,
   filters: boolean | URLSearchParams = false,
 ): PathTarget {
-  if (typeof filters === 'boolean') return issueFocusPath(issueNumber, 'wants', conflictId, filters)
-  const params = new URLSearchParams(keptSearch(filters))
-  params.set(FOCUS_PARAM, conflictId)
-  return { pathname: tabPath(issueNumber, 'wants'), search: `?${params.toString()}` }
+  return issueFocusPath(issueNumber, 'wants', conflictId, filters)
 }
 
 /** A link to one want on the issue's 訴求 tab, for example
@@ -85,9 +93,9 @@ export function wantFocusPath(issueNumber: number, key: string, dataBasedOnly = 
 
 /** A link to one need on the issue's 需求 tab, for example
  * { pathname: "/issues/2/needs", search: "?focus=N07" } (decision 57).
- * With dataBasedOnly, the search also has evidence=1. */
-export function needFocusPath(issueNumber: number, key: string, dataBasedOnly = false): PathTarget {
-  return issueFocusPath(issueNumber, 'needs', key, dataBasedOnly)
+ * The last argument works as in issueFocusPath. */
+export function needFocusPath(issueNumber: number, key: string, filters: boolean | URLSearchParams = false): PathTarget {
+  return issueFocusPath(issueNumber, 'needs', key, filters)
 }
 
 /** The solution tab of the URL segment. No segment is the overview. An

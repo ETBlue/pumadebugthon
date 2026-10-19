@@ -9,6 +9,7 @@ import { t } from '@/i18n/zh-TW'
 import { crossIssueNumbers } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { crossSolutionPath } from '@/lib/entityPaths'
+import { tabPath } from '@/lib/issuePage'
 import type { CrossSolution, SpaceType } from '@/types'
 
 const tx = t.crossIssue
@@ -29,14 +30,17 @@ export function CrossSolutionLink({ solution: sol }: { solution: CrossSolution }
   )
 }
 
-/** The issues of a cross-issue solution as links: 「#1、#2、#8」. */
+/** The issues of a cross-issue solution as links: 「#1、#2、#8」. The links
+ * keep the 「只看有資料根據」 setting. */
 export function CrossIssueLinks({ solution }: { solution: CrossSolution }) {
+  const [params] = useSearchParams()
+  const search = dataBasisFilterSearch(params)
   return (
     <>
       {crossIssueNumbers(solution).map((n, i) => (
         <span key={n}>
-          {i > 0 && '、'}
-          <Link to={`/issues/${n}`} className={linkClass}>{tx.issueLink(n)}</Link>
+          {i > 0 && t.listSeparator}
+          <Link to={{ pathname: tabPath(n, 'overview'), search }} className={linkClass}>{tx.issueLink(n)}</Link>
         </span>
       ))}
     </>

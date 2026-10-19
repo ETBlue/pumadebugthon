@@ -80,6 +80,17 @@ describe('needsTabView', () => {
 })
 
 describe('solutionsTabView', () => {
+  it('with a stakeholder, lists only the 解開的衝突 that the 訴求 tab shows (#2, I06 and I02)', () => {
+    // Solution A is the way out of C1, C2, C6, C7 and C9. Only C6 has a
+    // story of I06, so with ?stakeholder=I06 only C6 is on the 訴求 tab.
+    const all = solutionsTabView(trashcans, null, false).find((s) => s.solution.id === 'A')!
+    expect(all.wayOutConflicts.map((c) => c.id)).toEqual(['C1', 'C2', 'C6', 'C7', 'C9'])
+    const i06 = solutionsTabView(trashcans, 'I06', false).find((s) => s.solution.id === 'A')!
+    expect(i06.wayOutConflicts.map((c) => c.id)).toEqual(['C6'])
+    // No conflict of #2 has a story of I02.
+    for (const item of solutionsTabView(trashcans, 'I02', false)) expect(item.wayOutConflicts).toEqual([])
+  })
+
   it('shows every solution of #2 in letter order, with the needs in the two parts of 6.2', () => {
     const view = solutionsTabView(trashcans, null, false)
     expect(view.map((s) => s.solution.id)).toEqual(['A', 'B', 'C', 'D', 'E'])

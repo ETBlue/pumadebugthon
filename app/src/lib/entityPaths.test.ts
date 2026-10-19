@@ -70,6 +70,14 @@ describe('wantFocusPath and needFocusPath', () => {
     expect(wantFocusPath(2, 'W08', true).search).toBe('?focus=W08&evidence=1')
     expect(needFocusPath(2, 'N07', true).search).toBe('?focus=N07&evidence=1')
   })
+
+  it('needFocusPath with the URL params keeps evidence and stakeholder, like a tab change', () => {
+    const params = new URLSearchParams('stakeholder=I06&evidence=1&focus=C6')
+    expect(needFocusPath(2, 'N06', params)).toEqual({
+      pathname: '/issues/2/needs',
+      search: '?evidence=1&stakeholder=I06&focus=N06',
+    })
+  })
 })
 
 describe('issueFocusPath and conflictFocusPath', () => {

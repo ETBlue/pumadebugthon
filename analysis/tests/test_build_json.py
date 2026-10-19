@@ -538,15 +538,15 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 分析摘要:", "難以取捨的決定、可能的爭議")
 
     def test_summary_unknown_local_ref(self):
-        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "C99、"))
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 D、N05", "C99、N05"))
         self.assertFails("2-trashcans: 分析摘要:", "選址討論的速度與代表性", "C99")
 
     def test_summary_bad_ref(self):
-        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "C5，"))
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 D、N05", "解法 D，N05"))
         self.assertFails("2-trashcans: 分析摘要:", "選址討論的速度與代表性", "is not a reference")
 
     def test_summary_cross_ref_not_in_other_issue(self):
-        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "#8 解法 Z、"))
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 D、N05", "#8 解法 Z、N05"))
         self.assertFails("2-trashcans: 分析摘要:", "#8 解法 Z")
 
     def test_summary_row_without_tag(self):
@@ -769,8 +769,6 @@ class BuildJsonErrorTest(unittest.TestCase):
                "`[AI模擬]` 店門口與花台保持乾淨，不必替客人收拾垃圾 | N02 | 可詢問商圈發展協會；市民留言約 118 則提到同樣訴求"
                "（「市長，你給我聽好了」資料，關鍵字估算） | `[AI模擬]` S |")
         self.edit(row, row.replace("[AI模擬]", "[AI整理]"))
-        # The story priority is the priority of its need (N02), so the 5.2 row changes too.
-        self.edit("| `[AI模擬]` S | `[AI模擬]` 店家、捷運公司", "| `[AI整理]` S | `[AI模擬]` 店家、捷運公司")
         self.edit("| `[AI模擬]` W01 |", "| `[AI整理]` W01 |")
         code, out = run_build(self.dir, self.out)
         self.assertEqual(code, 0, out)
@@ -786,7 +784,6 @@ class BuildJsonErrorTest(unittest.TestCase):
         counts = next(i for i in index["issues"] if i["number"] == 2)["counts"]
         # O01-US01 had AI模擬 in both cells. Now both are AI整理.
         self.assertEqual(counts["cells"], {"evidence": 8, "aiSummary": 25, "aiSimulated": 70, "pending": 1})
-        self.assertEqual(next(n for n in issue["needs"] if n["id"] == "N02")["priorityTag"], "AI整理")
 
     # ---------- the needs-based format ----------
     def test_story_priority_differs_from_need(self):

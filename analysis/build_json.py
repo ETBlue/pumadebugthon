@@ -455,7 +455,8 @@ def parse_needs(text, stories):
         key = s["needGroup"] or s["id"]
         if key not in by_need:
             raise ReadError("5.2", f"the need of {s['id']} ({key}) has no row")
-        if (s["priority"], s["priorityTag"]) != (by_need[key]["priority"], by_need[key]["priorityTag"]):
+        # The letter must match. The tag of each story's priority cell is kept as written.
+        if s["priority"] != by_need[key]["priority"]:
             raise ReadError("步驟 4", f"{s['id']}: 優先順序 is not the priority of its need {key} in 5.2")
     return groups, needs
 

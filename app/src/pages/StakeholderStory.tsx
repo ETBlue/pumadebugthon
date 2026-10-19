@@ -1,20 +1,31 @@
+import { useId, type ReactNode } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
+import { CellText } from '@/components/CellText'
+import { ConflictView } from '@/components/ConflictView'
 import { LoadState } from '@/components/LoadState'
+import { Markdown } from '@/components/Markdown'
 import { PageTitle } from '@/components/PageTitle'
+import { PriorityLegend } from '@/components/PriorityCounts'
+import { SolutionCard } from '@/components/SolutionCard'
 import { linkClass } from '@/components/styles'
+import { TagBadge } from '@/components/TagBadge'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { movedStakeholderTarget, stakeholderTabPath, storyPath } from '@/lib/entityPaths'
+import {
+  movedStakeholderTarget, needFocusPath, stakeholderTabPath, wantFocusPath, type StakeholderTab,
+} from '@/lib/entityPaths'
 import { findIssue, tabPath } from '@/lib/issuePage'
-import { findStory } from '@/lib/storyPage'
-import { resolveId } from '@/lib/stakeholders'
-import type { AvailableIssueSummary, IndexFile, Stakeholder, Story } from '@/types'
+import { opinionPickTo } from '@/lib/opinion'
+import { priorityLabel } from '@/lib/priority'
+import { findStory, storyRedirectPath, storyView, type StoryGroup, type StoryView } from '@/lib/storyPage'
+import { resolveId, stakeholderName } from '@/lib/stakeholders'
+import type { AvailableIssueSummary, Group, IndexFile, IssueFile, NeedGroup, Stakeholder } from '@/types'
 
 const ts = t.storyPage
 
 /** Story page (design 3.15): #/stakeholders/:id/stories/:number/:storyId.
- * For now (plan Task N3) it shows the breadcrumb and the h1. Task N8 adds
- * the parts of the story. */
+ * The breadcrumb, the h1, the story, its fields, then 訴求, 需求, 衝突,
+ * 解法 and 更多. */
 export default function StakeholderStory() {
   const index = useIndex()
   const { id = '', number = '', storyId = '' } = useParams()
@@ -47,22 +58,38 @@ function StoryLoader({ index, summary, stakeholder, id, storyId }: {
   if (issue.status !== 'ready') return <LoadState state={issue} />
   const result = findStory(issue.data, id, storyId)
   if (result.kind === 'redirect') {
-    // The story belongs to another stakeholder (the part of the ID before 「-」).
-    return <Navigate replace to={{ pathname: storyPath(summary.number, storyId), search }} />
+    // The story belongs to another stakeholder. The target uses the
+    // stakeholder in the data, not the part of the ID before 「-」. It is
+    // null when it would be this same page; then the page shows "not found".
+    const target = storyRedirectPath(index.stakeholders, summary.number, id, storyId, result.stakeholderId)
+    if (target !== null) return <Navigate replace to={{ pathname: target, search }} />
   }
-  if (result.kind === 'notFound' || stakeholder === null) {
+  if (result.kind !== 'found' || stakeholder === null) {
     return <NotFound number={String(summary.number)} storyId={storyId} stakeholder={stakeholder} issue={summary} />
   }
-  return <StoryContent index={index} summary={summary} stakeholder={stakeholder} story={result.story} />
+  return (
+    <StoryContent
+      index={index}
+      issue={issue.data}
+      summary={summary}
+      stakeholder={stakeholder}
+      view={storyView(issue.data, result.story)}
+    />
+  )
 }
 
-function StoryContent({ summary, stakeholder: s, story }: {
+function StoryContent({ index, issue, summary, stakeholder: s, view }: {
   index: IndexFile
+  issue: IssueFile
   summary: AvailableIssueSummary
   stakeholder: Stakeholder
-  story: Story
+  view: StoryView
 }) {
-  const title = ts.title(summary.number, story.id)
+  const { story } = view
+  const n = summary.number
+  const title = ts.title(n, story.id)
+  const row = 'flex flex-col gap-0.5 sm:flex-row sm:gap-3'
+  const label = 'shrink-0 text-muted-foreground sm:w-20'
   return (
     <>
       <PageTitle parts={[title, s.name]} />
@@ -80,7 +107,182 @@ function StoryContent({ summary, stakeholder: s, story }: {
         </ol>
       </nav>
       <h1 className="mt-4 text-2xl font-bold md:text-3xl font-mono">{title}</h1>
+
+      <Section heading={ts.storyHeading}>
+        {/* Three labeled lines, so each tag stays next to its own text. */}
+        <dl className="mt-2 space-y-2 rounded-lg border p-3 md:p-4">
+          <div className={row}>
+            <dt className={label}>{ts.asA}</dt>
+            <dd className="min-w-0">
+              <Link to={stakeholderTabPath(s.id, 'overview')} className={linkClass}>{s.name}</Link>
+              <span className="ml-1.5 font-mono text-sm text-muted-foreground">{s.id}</span>
+            </dd>
+          </div>
+          <div className={row}>
+            <dt className={label}>{ts.want}</dt>
+            <dd className="min-w-0"><CellText cell={story.want} /></dd>
+          </div>
+          <div className={row}>
+            <dt className={label}>{ts.soThat}</dt>
+            <dd className="min-w-0"><CellText cell={story.soThat} /></dd>
+          </div>
+        </dl>
+        <dl className="mt-3 space-y-2 text-sm">
+          {story.source !== null && (
+            <div className={row}>
+              <dt className={label}>{ts.source}</dt>
+              {/* A long URL in the source can break anywhere, so a narrow screen never scrolls sideways. */}
+              <dd className="min-w-0 wrap-anywhere"><Markdown text={story.source} /></dd>
+            </div>
+          )}
+          <div className={row}>
+            <dt className={label}>{ts.priority}</dt>
+            <dd className="min-w-0">
+              <TagBadge kind={story.priorityTag} className="mr-1.5" />
+              {priorityLabel(story.priority)}
+              <span className="mt-1 block text-muted-foreground">{ts.priorityNote}</span>
+              <span className="mt-1 block"><PriorityLegend /></span>
+            </dd>
+          </div>
+          <div className={row}>
+            <dt className={label}>{ts.issue}</dt>
+            <dd className="min-w-0">
+              <Link to={tabPath(n, 'overview')} className={linkClass}>{t.issueCard.numberTitle(n, summary.title)}</Link>
+            </dd>
+          </div>
+        </dl>
+      </Section>
+
+      <Section heading={ts.wantHeading}>
+        <p className="mt-2">
+          <Link to={wantFocusPath(n, view.wantKey)} className={linkClass}>{ts.wantLink(n, view.wantKey)}</Link>
+        </p>
+        <GroupPart
+          group={view.wantGroup}
+          groupLabel={ts.wantGroup}
+          othersLabel={ts.wantOthers}
+          othersNone={ts.wantOthersNone}
+          noGroup={ts.wantNoGroup}
+          tab="wants"
+          stakeholders={index.stakeholders}
+        />
+      </Section>
+
+      <Section heading={ts.needHeading}>
+        <p className="mt-2">
+          <Link to={needFocusPath(n, view.needKey)} className={linkClass}>{ts.needLink(n, view.needKey)}</Link>
+        </p>
+        <GroupPart
+          group={view.needGroup}
+          groupLabel={ts.needGroup}
+          othersLabel={ts.needOthers}
+          othersNone={ts.needOthersNone}
+          noGroup={ts.needNoGroup}
+          tab="needs"
+          stakeholders={index.stakeholders}
+        />
+      </Section>
+
+      <Section heading={ts.conflictsHeading}>
+        {view.conflicts.length === 0 ? (
+          <p className="mt-2 text-muted-foreground">{ts.conflictsNone}</p>
+        ) : (
+          <ul className="mt-2 space-y-4">
+            {view.conflicts.map((c) => (
+              <li key={c.view.conflict.id}>
+                <ConflictView
+                  view={c.view}
+                  issue={issue}
+                  stakeholders={index.stakeholders}
+                  headingLevel={3}
+                  otherStories={c.otherStories}
+                  focusTarget={false}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+
+      <Section heading={ts.solutionsHeading}>
+        {view.solutions.length === 0 ? (
+          <p className="mt-2 text-muted-foreground">
+            {story.priority === 'W' ? ts.solutionsWontDo : ts.solutionsNone}
+          </p>
+        ) : (
+          <>
+            <p className="mt-2 text-sm text-muted-foreground">{ts.solutionsIntro}</p>
+            <ul className="mt-2 space-y-2">
+              {view.solutions.map((sol) => (
+                <li key={sol.id}><SolutionCard variant="compact" solution={sol} issueNumber={n} /></li>
+              ))}
+            </ul>
+          </>
+        )}
+      </Section>
+
+      <Section heading={ts.moreHeading}>
+        <ul className="mt-2 space-y-1">
+          <li><Link to={opinionPickTo(n, view.wantKey, false)} className={linkClass}>{ts.pickLink(n)}</Link></li>
+          <li>
+            <Link to={stakeholderTabPath(s.id, 'overview')} className={linkClass}>{ts.stakeholderLink(s.id, s.name)}</Link>
+          </li>
+        </ul>
+      </Section>
     </>
+  )
+}
+
+/** One part of the story page, with its h2. */
+function Section({ heading, children }: { heading: string; children: ReactNode }) {
+  const id = useId()
+  return (
+    <section aria-labelledby={id} className="mt-8">
+      <h2 id={id} className="text-xl font-semibold">{heading}</h2>
+      {children}
+    </section>
+  )
+}
+
+/** The W group or the N group of the story: 「相同訴求群組 W08：<summary>」
+ * and the other stakeholders, as links to their page on the same tab
+ * (design 3.15, 3.16). A story in no group gets a short line instead. */
+function GroupPart({ group, groupLabel, othersLabel, othersNone, noGroup, tab, stakeholders }: {
+  group: StoryGroup<Group | NeedGroup> | null
+  groupLabel: (id: string) => string
+  othersLabel: string
+  othersNone: string
+  noGroup: string
+  tab: StakeholderTab
+  stakeholders: Stakeholder[]
+}) {
+  if (group === null) return <p className="mt-2 text-sm text-muted-foreground">{noGroup}</p>
+  const { group: g, others } = group
+  return (
+    <dl className="mt-2 space-y-2 text-sm">
+      <div>
+        <dt className="inline text-muted-foreground">{groupLabel(g.id)}</dt>
+        <dd className="inline"><CellText cell={{ text: g.summary, tag: g.tag, pending: false }} /></dd>
+      </div>
+      <div>
+        <dt className="text-muted-foreground">{othersLabel}</dt>
+        <dd className="mt-1">
+          {others.length === 0 ? (
+            othersNone
+          ) : (
+            <ul className="flex flex-wrap gap-x-3 gap-y-1">
+              {others.map((id) => (
+                <li key={id}>
+                  <Link to={stakeholderTabPath(id, tab)} className={linkClass}>
+                    <span className="font-mono">{id}</span> {stakeholderName(stakeholders, id)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </dd>
+      </div>
+    </dl>
   )
 }
 

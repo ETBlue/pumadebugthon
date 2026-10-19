@@ -1,7 +1,9 @@
 // The story page (design 3.15).
-import type { Group, IssueFile, Need, NeedGroup, Solution, Story } from '@/types'
+import type { Group, IssueFile, Need, NeedGroup, Solution, Stakeholder, Story } from '@/types'
+import { storyPath } from './entityPaths'
 import { compareIds } from './ids'
 import { needKey as needKeyOf } from './needs'
+import { resolveId } from './stakeholders'
 import { conflictView, wantKey, type ConflictView } from './wantList'
 
 /** The result of findStory. */
@@ -18,6 +20,28 @@ export function findStory(issue: IssueFile | null, stakeholderId: string, storyI
   if (!story) return { kind: 'notFound' }
   if (story.stakeholder !== stakeholderId) return { kind: 'redirect', stakeholderId: story.stakeholder }
   return { kind: 'found', story }
+}
+
+/** The path for the redirect of findStory: the story page under the
+ * stakeholder of the story in the data (storyStakeholder), not under the
+ * part of the story ID before 「-」. A moved stakeholder ID goes to its new
+ * ID. null when that is the current stakeholder (currentId): a redirect
+ * there would load the same page again and again, so the page shows "not
+ * found" instead. */
+export function storyRedirectPath(
+  stakeholders: Stakeholder[],
+  issueNumber: number,
+  currentId: string,
+  storyId: string,
+  storyStakeholder: string,
+): string | null {
+  const target = resolveId(stakeholders, storyStakeholder) ?? storyStakeholder
+  if (target === currentId) return null
+  // storyPath puts the story under the part of its ID before 「-」. Here the
+  // stakeholder can differ from that part, so put target in its place.
+  const parts = storyPath(issueNumber, storyId).split('/')
+  parts[2] = target
+  return parts.join('/')
 }
 
 /** A W group or an N group of the story, with the other stakeholders. */

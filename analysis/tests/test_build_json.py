@@ -437,11 +437,11 @@ class BuildJsonOutputTest(unittest.TestCase):
                 self.assertEqual(list(i), ["item", "text", "refs"])
 
     def test_summary_item(self):
-        self.assertEqual(self.summary_item("可能的爭議", "誰負責清理"), {
-            "item": "誰負責清理",
-            "text": {"text": "店家希望不要預設由店家清理清潔箱；住戶與便利商店店員希望周邊保持乾淨。",
+        self.assertEqual(self.summary_item("可能的爭議", "選址討論的速度與代表性"), {
+            "item": "選址討論的速度與代表性",
+            "text": {"text": "解法 D 的里民討論會讓設置變慢；常出席的人聲音比較大；討論結果如果不被採用，可能傷害信任。",
                      "tag": "AI模擬", "pending": False},
-            "refs": ["C5", "O01-US02", "I09-US02", "I12-US01"]})
+            "refs": ["解法 D", "N05", "O05-US01"]})
 
     def test_summary_pending_row(self):
         item = self.summary_item("受影響較大的弱勢族群", "呼吸道疾病（尚未納入）")
@@ -524,7 +524,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
 
     # ---------- 分析摘要 ----------
-    SUMMARY_ROW = "| 誰負責清理 | `[AI模擬]` 店家希望不要預設由店家清理清潔箱；住戶與便利商店店員希望周邊保持乾淨。 | C5、O01-US02、I09-US02、I12-US01 |"
+    SUMMARY_ROW = ("| 選址討論的速度與代表性 | `[AI模擬]` 解法 D 的里民討論會讓設置變慢；常出席的人聲音比較大；"
+                   "討論結果如果不被採用，可能傷害信任。 | 解法 D、N05、O05-US01 |")
 
     def test_summary_missing(self):
         self.edit("## 分析摘要\n", "## 摘要\n")
@@ -538,11 +539,11 @@ class BuildJsonErrorTest(unittest.TestCase):
 
     def test_summary_unknown_local_ref(self):
         self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "C99、"))
-        self.assertFails("2-trashcans: 分析摘要:", "誰負責清理", "C99")
+        self.assertFails("2-trashcans: 分析摘要:", "選址討論的速度與代表性", "C99")
 
     def test_summary_bad_ref(self):
         self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "C5，"))
-        self.assertFails("2-trashcans: 分析摘要:", "誰負責清理", "is not a reference")
+        self.assertFails("2-trashcans: 分析摘要:", "選址討論的速度與代表性", "is not a reference")
 
     def test_summary_cross_ref_not_in_other_issue(self):
         self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "#8 解法 Z、"))
@@ -550,7 +551,7 @@ class BuildJsonErrorTest(unittest.TestCase):
 
     def test_summary_row_without_tag(self):
         self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("`[AI模擬]` ", ""))
-        self.assertFails("2-trashcans: 分析摘要:", "誰負責清理", "tag")
+        self.assertFails("2-trashcans: 分析摘要:", "選址討論的速度與代表性", "tag")
 
     FOCUS_FOREIGN = "| 外籍 | I03、I04 | — |"
 
@@ -619,8 +620,8 @@ class BuildJsonErrorTest(unittest.TestCase):
 
     def test_two_tables_with_step_4_header(self):
         self.edit("\n### 相同訴求群組\n",
-                  "\n| 故事編號 | 身為… | 我想要… | 相同訴求編號 | 以便… | 來源 | 優先順序 |\n"
-                  "|---|---|---|---|---|---|---|\n\n### 相同訴求群組\n")
+                  "\n| 故事編號 | 身為… | 我想要… | 相同訴求編號 | 以便… | 相同需求編號 | 來源 | 優先順序 |\n"
+                  "|---|---|---|---|---|---|---|---|\n\n### 相同訴求群組\n")
         self.assertFails("2-trashcans: 步驟 4:", "2 tables")
 
     def test_cell_with_two_tags(self):
@@ -672,25 +673,36 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.edit("`[AI模擬]` I11-US01 vs I09-US01", "`[AI模擬]` I11-US01、I09-US01")
         code, out = run_build(self.dir, self.out)
         self.assertEqual(code, 1, out)
-        self.assertIn("2-trashcans: 5.4", out)
+        self.assertIn("2-trashcans: 6.4", out)
         self.assertIn("C7", out)
         self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
 
     def test_cross_issue_reference_in_conflict(self):
-        # 5.4 相關故事 holds stories of this issue only.
+        # 6.4 相關故事 holds stories of this issue only.
         self.edit("`[AI模擬]` I11-US01 vs I09-US01", "`[AI模擬]` I11-US01 vs I09-US01、#1 I06-US02")
-        self.assertFails("2-trashcans: 5.4", "C7", "#1 I06-US02")
+        self.assertFails("2-trashcans: 6.4", "C7", "#1 I06-US02")
+
+    def test_cross_issue_reference_in_old_format_conflict(self):
+        # In the old format (#8), the conflicts are in 5.4.
+        path = os.path.join(self.dir, "8-smokefree", "issue-analysis.md")
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        m = re.search(r"^\| C1 \| .*? \| `\[AI模擬\]` ([OI]\d\d-US\d\d)", text, re.M)
+        self.assertIsNotNone(m)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text[:m.start(1)] + "#1 I06-US02、" + text[m.start(1):])
+        self.assertFails("8-smokefree: 5.4", "C1", "#1 I06-US02")
 
     def test_cross_issue_reference_in_group(self):
         self.edit("| O12-US01、I06-US01、I07-US02 |", "| O12-US01、I06-US01、I07-US02、#1 I06-US02 |")
         self.assertFails("2-trashcans: 相同訴求群組", "#1 I06-US02")
 
     def test_cross_issue_reference_in_6_2(self):
-        self.edit("| D | 參與式選址流程 | `[AI模擬]` O04-US01", "| D | 參與式選址流程 | `[AI模擬]` #1 O01-US01、O04-US01")
+        self.edit("| D | 參與式選址流程 | `[AI模擬]` N04", "| D | 參與式選址流程 | `[AI模擬]` #1 O01-US01、N04")
         self.assertFails("2-trashcans: 6.2", "#1 O01-US01")
 
     def test_missing_section(self):
-        self.edit("### 6.2 解法與故事對照", "### 解法與故事對照")
+        self.edit("### 6.2 解法與需求對照", "### 解法與需求對照")
         code, out = run_build(self.dir, self.out)
         self.assertEqual(code, 1, out)
         self.assertIn("2-trashcans: 6.2", out)
@@ -754,9 +766,11 @@ class BuildJsonErrorTest(unittest.TestCase):
     def test_ai_summary_tag(self):
         # [AI整理] is the third source tag. JSON writes it without brackets.
         row = ("| O01-US01 | 商圈店家與攤商 | `[AI模擬]` 商圈有足夠的清潔箱 | — | "
-               "`[AI模擬]` 客人不會把垃圾放在店門口或花台 | 可詢問商圈發展協會；市民留言約 118 則提到同樣訴求"
+               "`[AI模擬]` 店門口與花台保持乾淨，不必替客人收拾垃圾 | N02 | 可詢問商圈發展協會；市民留言約 118 則提到同樣訴求"
                "（「市長，你給我聽好了」資料，關鍵字估算） | `[AI模擬]` S |")
         self.edit(row, row.replace("[AI模擬]", "[AI整理]"))
+        # The story priority is the priority of its need (N02), so the 5.2 row changes too.
+        self.edit("| `[AI模擬]` S | `[AI模擬]` 店家、捷運公司", "| `[AI整理]` S | `[AI模擬]` 店家、捷運公司")
         self.edit("| `[AI模擬]` W01 |", "| `[AI整理]` W01 |")
         code, out = run_build(self.dir, self.out)
         self.assertEqual(code, 0, out)
@@ -771,7 +785,29 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertEqual(next(g for g in issue["groups"] if g["id"] == "W01")["tag"], "AI整理")
         counts = next(i for i in index["issues"] if i["number"] == 2)["counts"]
         # O01-US01 had AI模擬 in both cells. Now both are AI整理.
-        self.assertEqual(counts["cells"], {"evidence": 10, "aiSummary": 23, "aiSimulated": 70, "pending": 1})
+        self.assertEqual(counts["cells"], {"evidence": 8, "aiSummary": 25, "aiSimulated": 70, "pending": 1})
+        self.assertEqual(next(n for n in issue["needs"] if n["id"] == "N02")["priorityTag"], "AI整理")
+
+    # ---------- the needs-based format ----------
+    def test_story_priority_differs_from_need(self):
+        self.edit("（關鍵字估算） | `[AI模擬]` M |\n| I01-US04 |", "（關鍵字估算） | `[AI模擬]` S |\n| I01-US04 |")
+        self.assertFails("2-trashcans: 步驟 4:", "I01-US03", "N01")
+
+    def test_need_group_with_one_story(self):
+        self.edit("| `[AI模擬]` 安全通行，不會撞到 | N07 |", "| `[AI模擬]` 安全通行，不會撞到 | N11 |")
+        self.assertFails("2-trashcans:", "N11")
+
+    def test_6_2_unknown_need(self):
+        self.edit("| C | 找桶指引與開放資料 | `[AI模擬]` N01 |", "| C | 找桶指引與開放資料 | `[AI模擬]` N01、N99 |")
+        self.assertFails("2-trashcans: 6.2:", "N99")
+
+    def test_way_out_without_code_or_not_found(self):
+        self.edit("| `[AI模擬]` 未找到：本文件的解法沒有處理源頭減量", "| `[AI模擬]` 本文件的解法沒有處理源頭減量")
+        self.assertFails("2-trashcans: 6.4:", "C3", "未找到")
+
+    def test_conflict_need_not_in_5_2(self):
+        self.edit("| N01 vs O08-US02 |", "| N01 vs N99 |")
+        self.assertFails("2-trashcans: 6.4:", "C3", "N99")
 
     def test_cell_with_ai_summary_and_another_tag(self):
         self.edit("| `[AI模擬]` 安全通行，不會撞到 |", "| `[AI模擬]` `[AI整理]` 安全通行，不會撞到 |")

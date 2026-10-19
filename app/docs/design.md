@@ -555,7 +555,7 @@ Today the file has 5 solutions (X-A to X-E), 7 X-N groups and 2 conflicts (X-C1,
 |---|---|
 | Breadcrumb, h1, title | 首頁 › 解法 › X-A. The h1 is 「X-A」 and the name with its tag. Page title: 「X-A <name> · 解法 · 市政提案小幫手」. |
 | Line under the h1 | 「跨議題解法・議題：#1、#2、#8」, each issue a link. The issues are the ones in `parts`. Then the summary, the space types and 新增日期. |
-| Covered needs | An issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue`. |
+| Covered needs | An issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue` (decision 60). |
 | Not covered needs | Every other need of the issues in `parts`. |
 | Covered stakeholders | A stakeholder with at least one covered need, in any of these issues. Each stakeholder is listed once, in ID order. |
 | Tab counts | The same rules as 3.12, summed over the issues. They count needs and stakeholders, not priorities (decision 48). |
@@ -571,12 +571,12 @@ The page needs the issue files of the issues in `parts`. It loads them like the 
 | Place | What |
 |---|---|
 | `#/solutions` | A first group 「跨議題解法」 (h2), before the per-issue groups (decision 51). Each card shows the code and name, the summary, and the issues (「#1、#2、#8」). The issue filter matches a cross-issue solution when one of its issues is picked. |
-| Issue 解法 tab | A box 「本議題也在跨議題解法中」 with links to each cross-issue solution that has the issue in `parts` |
+| Issue 解法 tab | A box 「本議題也在跨議題解法中」 with links to each cross-issue solution that has the issue in `parts`, and the issue's solutions that it combines. The box is above the 「只看有資料根據」 toggle. |
 | Solution page 總覽 | 「跨議題解法」 with a link, when the solution is in `parts` (3.12) |
-| Home block 「最近分析出的解法」 | Included, because each item has `added` (decision 51) |
+| Home block 「最近分析出的解法」 | Included, because each item has `added` (decision 51). On the same date, the cross-issue solutions come before the issue solutions. |
 | Header count 解法 | Includes the cross-issue solutions, because the header link goes to the list that shows them (decision 51) |
 
-When the file does not exist, all these parts are hidden and nothing breaks. `useCrossIssue()` in `src/data.ts` returns null for a missing file. `#/solutions/X-A` then shows the "not found" message.
+When the file does not exist, all these parts are hidden and nothing breaks. `useCrossIssue()` in `src/data.ts` returns null for a missing file. `#/solutions/X-A` then shows the "not found" message. The about page lists `cross-issue.json` with the other JSON files when it exists. `vite.config.ts` checks at build time if `public/data/cross-issue.json` exists (CI builds the data before the app). Without the file, the app does not ask for it, so the browser console shows no 404. If the file is missing on the server anyway, a 404 also counts as no file.
 
 ### 3.19 Routes
 
@@ -897,6 +897,7 @@ Required by the hackathon rules:
 57. A link to one want or one need goes to the issue's 訴求 or 需求 tab with `?focus=<key>` (for example `#/issues/2/wants?focus=W08`, `#/issues/2/needs?focus=N07`). A link to a stakeholder in a want or need list goes to that stakeholder's page on the same tab (`#/stakeholders/I06/wants`). This is the simplest rule: it uses the `?focus=` parameter that already exists, and needs no new page (3.16). (ETBlue, 2026-10-20)
 58. On the issue page, the stakeholder menu is inside the content of the 訴求, 需求 and 解法 tabs, after the tab list. The keyboard order is: tabs, then the menu, then the content. The reason: the 總覽 tab has no menu, and a wrapper around the tabs would build the tabs again on each tab change, so the keyboard focus would be lost. On the stakeholder page the menu is on every tab, so it stays before the tabs (3.3, 3.14). (Coordinator, after the N4 review, 2026-10-20)
 59. On the stakeholder page's 解法 tab, the 「只看有資料根據」 filter hides a need with no data basis (`dataBasedNeeds`), and hides a solution that has no need left. A conflict link in a filtered list keeps `?stakeholder=` and `?evidence=1` (3.3, 3.14). (Coordinator, after the N4 review, 2026-10-20)
+60. On a cross-issue solution page, an issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue`. 「Not covered」 means every other need of the issues in `parts`. A stakeholder is covered when at least one of its needs, in any of these issues, is covered (3.18). (ETBlue, 2026-10-20)
 
 ## 14. Open questions
 

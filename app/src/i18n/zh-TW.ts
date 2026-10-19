@@ -610,6 +610,48 @@ export const t = {
     storyCount: (n: number) => `${n} 則故事`,
     pickLink: (n: number) => `到 #${n} 做意見健檢`,
   },
+  /** Cross-issue solutions (design 3.18): the page #/solutions/X-A and the
+   * other places that show them. */
+  crossIssue: {
+    notFoundBody: (code: string) => `沒有代號為 ${code} 的跨議題解法。網址可能打錯了。`,
+    /** The line under the h1: 「跨議題解法・議題：#1、#2、#8」. */
+    issueLine: '跨議題解法・議題：',
+    issueLink: (n: number) => `#${n}`,
+    /** #/solutions: the first group, and the issues on a card. */
+    groupHeading: '跨議題解法',
+    groupIntro: '合併了幾個議題的解法，一起處理這些議題共同的需求。',
+    cardIssues: '議題',
+    /** The box on the issue's 解法 tab. */
+    issueBoxHeading: '本議題也在跨議題解法中',
+    issueBoxParts: (codes: string[]) => `合併了本議題的解法 ${codes.join('、')}`,
+    /** The part on the 總覽 tab of an issue solution. */
+    solutionPartHeading: '跨議題解法',
+    solutionPartIntro: '這個解法也是這些跨議題解法的一部分。',
+    /** The 總覽 tab of a cross-issue solution. */
+    partsHeading: '合併的解法',
+    partsIntro: '這個跨議題解法合併了下面各議題的解法。',
+    wayOutIntro: '這些跨議題衝突的「以需求為本的解方」用到這個解法。',
+    wayOutSolutions: '相關的跨議題解法',
+    issueConflicts: '各議題的衝突',
+    focusHeading: '特別關注族群',
+    focusNone: '分析裡沒有針對這個解法的特別關注族群說明。',
+    measureFrom: '來自',
+    measureNew: '新指標',
+    detailHeading: '主責單位、法規、隱私與風險',
+    owner: '主責單位',
+    laws: '法規',
+    privacy: '隱私',
+    risks: '風險',
+    /** The 需求 tab. */
+    groupsHeading: '跨議題的共同需求',
+    groupsIntro: '同一個需求出現在幾個議題。這個解法涵蓋這些群組，所以群組裡各議題的需求都算被涵蓋。',
+    groupsNone: '這個解法沒有涵蓋跨議題的共同需求群組。',
+    groupPriority: '優先順序',
+    prioritiesDiffer: '各議題的優先順序不同',
+    groupReason: '理由',
+    groupNeeds: '各議題的需求',
+    issuesIntro: '下面依議題列出涵蓋和未涵蓋的需求。',
+  },
   /** One conflict (ConflictView, design 3.2). */
   conflict: {
     sideA: '一方',

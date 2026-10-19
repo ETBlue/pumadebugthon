@@ -361,7 +361,8 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
 |---|---|
 | N1, N2a, N2b, N2c, N2d, N3, N4, N5, N6, N7, N8, N9 | Done, merged into `main` |
 | N10 | Done. It also did the follow-ups from the reviews of N4–N9: the story list of a need follows 「只看有資料根據」, unused code removed, two-line tab labels on phones (design 3.2), design decisions 58 and 59, and the fixtures refreshed with issue #9 |
-| N11, N12 | Not started |
+| N11 | Done: cross-issue solutions (design 3.18, decision 60) |
+| N12 | Not started |
 
 ### Task N1: refresh the fixtures and fix the broken tests (test first for `summary.ts`)
 

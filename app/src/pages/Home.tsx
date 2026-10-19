@@ -5,12 +5,13 @@ import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { IssueCard } from '@/components/IssueCard'
 import { SolutionCard } from '@/components/SolutionCard'
+import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
 import { StakeholderCard } from '@/components/StakeholderCard'
 import { containerClass, linkClass } from '@/components/styles'
-import { useIndex, useIssues } from '@/data'
+import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { availableIssues } from '@/lib/issues'
-import { homeRedirect, recentIssues, recentSolutions, recentStakeholders } from '@/lib/recent'
+import { homeRedirect, recentIssues, recentSolutionItems, recentStakeholders, type RecentSolution } from '@/lib/recent'
 import type { IndexFile } from '@/types'
 
 const th = t.home
@@ -73,6 +74,7 @@ function Block({ id, heading, allTo, allLabel, children }: {
 function HomeBlocks({ index }: { index: IndexFile }) {
   const folders = useMemo(() => availableIssues(index).map((i) => i.folder), [index])
   const issueFiles = useIssues(folders)
+  const cross = useCrossIssue()
   const issues = recentIssues(index.issues, BLOCK_SIZE)
   const stakeholders = recentStakeholders(index.stakeholders, BLOCK_SIZE)
 
@@ -124,8 +126,14 @@ function HomeBlocks({ index }: { index: IndexFile }) {
         <Block id="recent-solutions" heading={th.solutionsHeading} allTo="/solutions" allLabel={th.solutionsAll}>
           {issueFiles.status !== 'ready' ? (
             <LoadState state={issueFiles} />
+          ) : cross.status === 'loading' ? (
+            <LoadState state={cross} />
           ) : (
-            <RecentSolutionList solutions={recentSolutions(issueFiles.data, BLOCK_SIZE)} />
+            // The cross-issue solutions are included because they have a date
+            // (decision 51). A cross-issue file that fails to load is left out.
+            <RecentSolutionList
+              solutions={recentSolutionItems(issueFiles.data, cross.status === 'ready' ? cross.data : null, BLOCK_SIZE)}
+            />
           )}
         </Block>
       </div>
@@ -133,19 +141,28 @@ function HomeBlocks({ index }: { index: IndexFile }) {
   )
 }
 
-function RecentSolutionList({ solutions }: { solutions: ReturnType<typeof recentSolutions> }) {
+function RecentSolutionList({ solutions }: { solutions: RecentSolution[] }) {
   if (solutions.length === 0) return <p>{th.solutionsNone}</p>
+  const added = (date: string) => (
+    <dl className="mt-1 text-sm">
+      <Field label={th.solutionAdded}><time dateTime={date}>{date}</time></Field>
+    </dl>
+  )
   return (
     <ul className="space-y-3">
-      {solutions.map(({ issueNumber: n, solution: sol }) => (
-        <li key={`${n}-${sol.id}`}>
-          <SolutionCard variant="compact" solution={sol} issueNumber={n} showIssue>
-            <dl className="mt-1 text-sm">
-              <Field label={th.solutionAdded}><time dateTime={sol.added}>{sol.added}</time></Field>
-            </dl>
-          </SolutionCard>
-        </li>
-      ))}
+      {solutions.map((item) =>
+        item.kind === 'cross' ? (
+          <li key={item.solution.code}>
+            <CrossSolutionCard solution={item.solution}>{added(item.solution.added)}</CrossSolutionCard>
+          </li>
+        ) : (
+          <li key={`${item.issueNumber}-${item.solution.id}`}>
+            <SolutionCard variant="compact" solution={item.solution} issueNumber={item.issueNumber} showIssue>
+              {added(item.solution.added)}
+            </SolutionCard>
+          </li>
+        ),
+      )}
     </ul>
   )
 }

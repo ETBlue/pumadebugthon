@@ -3,7 +3,7 @@ import { AUTHOR_POSTS, CONTENT_LICENSE_URL, EVENT_URL, LICENSE_URL, METHOD_URL, 
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { linkClass } from '@/components/styles'
-import { useIndex } from '@/data'
+import { useCrossIssueOrNull, useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { dataFileLinks, type DataFileLink } from '@/lib/dataFiles'
 
@@ -36,11 +36,13 @@ function FileList({ label, links }: { label: string; links: DataFileLink[] }) {
   )
 }
 
-/** The app's own data files (design 3.13). The list comes from index.json. */
+/** The app's own data files (design 3.13). The list comes from index.json,
+ * plus cross-issue.json when it exists. */
 function DataFiles() {
   const index = useIndex()
+  const cross = useCrossIssueOrNull()
   if (index.status !== 'ready') return <LoadState state={index} />
-  const links = dataFileLinks(index.data, import.meta.env.BASE_URL, REPO_URL)
+  const links = dataFileLinks(index.data, import.meta.env.BASE_URL, REPO_URL, cross !== null)
   return (
     <>
       <FileList label={ta.json} links={links.json} />

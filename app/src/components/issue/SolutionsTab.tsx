@@ -4,9 +4,12 @@ import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggl
 import { Markdown } from '@/components/Markdown'
 import { NeedSummaryLink } from '@/components/NeedItem'
 import { SolutionTitleLink } from '@/components/SolutionCard'
+import { CrossSolutionLink } from '@/components/solution/CrossSolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { linkClass } from '@/components/styles'
+import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
+import { crossSolutionsOfIssue } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { conflictFocusPath, solutionPath } from '@/lib/entityPaths'
 import { solutionsTabView } from '@/lib/issueTabs'
@@ -18,6 +21,31 @@ import { useIssueStakeholder } from './useIssueStakeholder'
 
 const ts = t.solutionsTab
 const tm = t.stakeholderMenu
+const tx = t.crossIssue
+
+/** The box 「本議題也在跨議題解法中」 (design 3.18): each cross-issue solution
+ * with this issue in parts, in code order, and the issue solutions it
+ * combines. Nothing without cross-issue.json or without such a solution. */
+function CrossIssueBox({ issueNumber }: { issueNumber: number }) {
+  const cross = useCrossIssueOrNull()
+  const list = crossSolutionsOfIssue(cross, issueNumber)
+  if (list.length === 0) return null
+  return (
+    <aside aria-labelledby="issue-cross-solutions" className="mb-6 rounded-lg border bg-muted/40 p-3 md:p-4">
+      <h3 id="issue-cross-solutions" className="font-semibold">{tx.issueBoxHeading}</h3>
+      <ul className="mt-2 space-y-2 text-sm">
+        {list.map((sol) => (
+          <li key={sol.code}>
+            <CrossSolutionLink solution={sol} />
+            <span className="block text-muted-foreground">
+              {tx.issueBoxParts(sol.parts.filter((p) => p.issue === issueNumber).map((p) => p.code))}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  )
+}
 
 /** One part of 涵蓋的需求 (必須有, or 應該有、可以有): each need with its
  * summary (a link to the need on the 需求 tab) and its stakeholders as plain
@@ -61,6 +89,7 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
       current={stakeholder}
       shown={stakeholder === null ? undefined : tm.shownSolutions(view.length)}
     >
+      <CrossIssueBox issueNumber={n} />
       <DataBasisToggle className="mb-6" />
       {view.length === 0 && <p className="text-muted-foreground">{ts.noneForStakeholder}</p>}
       <ul className="space-y-6">

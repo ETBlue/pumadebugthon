@@ -7,7 +7,9 @@ import { Field } from '@/components/Field'
 import { Markdown } from '@/components/Markdown'
 import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
+import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
+import { crossSolutionsOfSolution } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { conflictFocusPath, issueFocusPath, stakeholderTabPath } from '@/lib/entityPaths'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
@@ -15,6 +17,7 @@ import { solutionGroupCoverage, solutionRelatedConflicts, solutionWayOutConflict
 import { stakeholderName } from '@/lib/stakeholders'
 import type { ConflictView as ConflictData } from '@/lib/wantList'
 import type { IndexFile, IssueFile, Solution } from '@/types'
+import { CrossSolutionLink } from './CrossSolutionCard'
 import { PartEmpty, SolutionPart } from './Parts'
 
 const tp = t.solutionPage
@@ -55,7 +58,8 @@ export function WayOutConflicts({ views, issue, index }: { views: ConflictData[]
 
 /** The 總覽 tab of an issue solution (design 3.12), in this order: 解開的衝突,
  * 相關的衝突, 涵蓋的相同訴求群組, 成效衡量, 資源、法規、隱私與風險,
- * 題目或研究中的構想, 待補, 更多. The 跨議題解法 part comes with Task N11. */
+ * 題目或研究中的構想, 跨議題解法 (only when the solution is in the parts of
+ * a cross-issue solution, design 3.18), 待補, 更多. */
 export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile; issue: IssueFile; solution: Solution }) {
   const n = issue.number
   const [params] = useSearchParams()
@@ -66,6 +70,7 @@ export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile;
   const related = useMemo(() => solutionRelatedConflicts(issue, sol), [issue, sol])
   const groups = useMemo(() => solutionGroupCoverage(issue, sol), [issue, sol])
   const pending = pendingBySection(sol.pending)
+  const crossList = crossSolutionsOfSolution(useCrossIssueOrNull(), n, sol.id)
 
   return (
     <div className="space-y-10">
@@ -189,6 +194,20 @@ export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile;
                     <dd><CellText cell={idea.handling} /></dd>
                   </div>
                 </dl>
+              </li>
+            ))}
+          </ul>
+        </SolutionPart>
+      )}
+
+      {crossList.length > 0 && (
+        <SolutionPart id="solution-cross" title={t.crossIssue.solutionPartHeading}>
+          <p className="text-sm text-muted-foreground">{t.crossIssue.solutionPartIntro}</p>
+          <ul className="mt-3 space-y-3">
+            {crossList.map((x) => (
+              <li key={x.code} className="rounded-md border p-3">
+                <p className="font-medium"><CrossSolutionLink solution={x} /></p>
+                <p className="mt-1 text-sm"><Markdown text={x.summary} /></p>
               </li>
             ))}
           </ul>

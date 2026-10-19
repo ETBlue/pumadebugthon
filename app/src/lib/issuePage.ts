@@ -1,8 +1,7 @@
 // Lookups for the issue page (design 3.2).
 // Order is always the order of the issue file. Nothing here sorts by a count.
-import type { IndexFile, IssueFile, IssueSummary, Pending, Priority, Story } from '@/types'
+import type { IndexFile, IssueSummary, Pending } from '@/types'
 import { FOCUS_PARAM } from './focus'
-import { PRIORITIES } from './priority'
 
 /** The tabs of the issue page, in display order (design 3.2). The first one
  * is the default. */
@@ -95,18 +94,3 @@ export function pendingBySection(pending: Pending[]): PendingGroup[] {
   return groups
 }
 
-export interface PriorityGroup {
-  priority: Priority
-  stories: Story[]
-}
-
-/** The stories of storyIds grouped by priority, in the order M, S, C, W.
- * Stories keep the order of storyIds. Groups with no story and unknown IDs
- * are left out. */
-export function storiesByPriority(issue: IssueFile, storyIds: string[]): PriorityGroup[] {
-  const byId = new Map(issue.stories.map((s) => [s.id, s]))
-  const stories = storyIds.flatMap((id) => byId.get(id) ?? [])
-  return PRIORITIES.map((priority) => ({ priority, stories: stories.filter((s) => s.priority === priority) })).filter(
-    (g) => g.stories.length > 0,
-  )
-}

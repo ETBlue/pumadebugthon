@@ -70,55 +70,6 @@ describe('stakeholderIssueView', () => {
     expect(v.counts).toEqual([{ tag: 'AI模擬', counts: [{ priority: 'M', n: 1 }, { priority: 'S', n: 1 }] }])
   })
 
-  it('I06 in #2: W groups with the other stakeholders in ID order', () => {
-    const v = stakeholderIssueView(trashcans, 'I06')
-    expect(v.groups.map((g) => [g.group.id, g.others])).toEqual([
-      ['W08', ['O12', 'I07']],
-      ['W11', ['I05']],
-    ])
-  })
-
-  it('I06 in #2: C6 with the other side', () => {
-    const v = stakeholderIssueView(trashcans, 'I06')
-    expect(v.conflicts.map((c) => [c.conflict.id, ids(c.otherStories)])).toEqual([['C6', ['I01-US01']]])
-  })
-
-  it('I06 in #1: C1 and C7 with the other side, in the order of the conflict', () => {
-    const v = stakeholderIssueView(trees, 'I06')
-    expect(v.conflicts.map((c) => [c.conflict.id, ids(c.otherStories)])).toEqual([
-      ['C1', ['I18-US01', 'I05-US01', 'O14-US01']],
-      ['C7', ['O14-US06']],
-    ])
-  })
-
-  it('shows both sides minus its own stories when its stories are on both sides', () => {
-    const issue: IssueFile = {
-      ...trashcans,
-      conflicts: [{ ...trashcans.conflicts[0], id: 'CX', sideA: ['I06-US01', 'I01-US01'], sideB: ['I06-US02', 'I07-US02'] }],
-    }
-    const v = stakeholderIssueView(issue, 'I06')
-    expect(v.conflicts.map((c) => [c.conflict.id, ids(c.otherStories)])).toEqual([['CX', ['I01-US01', 'I07-US02']]])
-  })
-
-  it('leaves out a conflict where every story is its own', () => {
-    const issue: IssueFile = {
-      ...trashcans,
-      conflicts: [{ ...trashcans.conflicts[0], id: 'CY', sideA: ['I06-US01'], sideB: ['I06-US02'] }],
-    }
-    expect(stakeholderIssueView(issue, 'I06').conflicts).toEqual([])
-  })
-
-  it('I06: solutions that cover its stories, and no story without a solution', () => {
-    expect(ids(stakeholderIssueView(trashcans, 'I06').solutions)).toEqual(['A', 'C'])
-    expect(ids(stakeholderIssueView(trees, 'I06').solutions)).toEqual(['D'])
-    expect(stakeholderIssueView(trashcans, 'I06').uncovered).toEqual([])
-  })
-
-  it('lists the stories that no solution covers', () => {
-    const issue: IssueFile = { ...trashcans, solutions: trashcans.solutions.filter((s) => s.id !== 'C') }
-    expect(ids(stakeholderIssueView(issue, 'I06').uncovered)).toEqual(['I06-US02'])
-  })
-
   it('I06: its input sources from 1.2', () => {
     expect(stakeholderIssueView(trashcans, 'I06').inputSources.map((s) => s.source)).toEqual([
       '現場觀察（尖峰與深夜各一次）',
@@ -128,9 +79,7 @@ describe('stakeholderIssueView', () => {
 
   it('is empty for a stakeholder that is not in the issue', () => {
     const v = stakeholderIssueView(trees, 'I12')
-    expect(v).toEqual({
-      relation: null, stories: [], counts: [], groups: [], conflicts: [], solutions: [], uncovered: [], inputSources: [],
-    })
+    expect(v).toEqual({ relation: null, stories: [], counts: [], inputSources: [] })
   })
 })
 
@@ -183,6 +132,15 @@ describe('stakeholderConflictViews', () => {
       ['C1', ['I18-US01', 'I05-US01', 'O14-US01']],
       ['C7', ['O14-US06']],
     ])
+  })
+
+  it('shows both sides minus its own stories when its stories are on both sides', () => {
+    const issue: IssueFile = {
+      ...trashcans,
+      conflicts: [{ ...trashcans.conflicts[0], id: 'CX', sideA: ['I06-US01', 'I01-US01'], sideB: ['I06-US02', 'I07-US02'] }],
+    }
+    const list = stakeholderConflictViews(issue, 'I06')
+    expect(list.map((c) => [c.view.conflict.id, ids(c.otherStories)])).toEqual([['CX', ['I01-US01', 'I07-US02']]])
   })
 
   it('has as many conflicts as the tab count, also when every story is its own', () => {

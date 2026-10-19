@@ -4,7 +4,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Stakeholder } from '@/types'
 import {
-  alsoInIssues, alsoInLabel, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, findStakeholder, issueStakeholders, resolveId, stakeholderName, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
+  alsoInIssues, alsoInLabel, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, findStakeholder, issueStakeholders, resolveId, stakeholderName, storyCountsByStakeholder, type TreeNode,
 } from './stakeholders'
 
 const index = indexJson as IndexFile
@@ -145,20 +145,6 @@ describe('buildTree', () => {
   it('does not depend on the order of the input list', () => {
     const t = buildTree([...index.stakeholders].reverse(), index.pathLabels, counts)
     expect(t).toEqual(tree)
-  })
-})
-
-describe('storiesWithoutSolution', () => {
-  it('returns [] for a stakeholder whose stories are all covered', () => {
-    expect(storiesWithoutSolution(trashcans, 'I06')).toEqual([])
-  })
-
-  it('returns the stories that no solution covers', () => {
-    expect(storiesWithoutSolution(trashcans, 'O09').map((s) => s.id)).toEqual(['O09-US01'])
-  })
-
-  it('returns [] for a stakeholder that is not in the issue', () => {
-    expect(storiesWithoutSolution(trashcans, 'O21')).toEqual([])
   })
 })
 

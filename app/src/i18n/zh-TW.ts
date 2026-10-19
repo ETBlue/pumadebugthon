@@ -211,10 +211,6 @@ export const t = {
       needs: (n: number) => `需求 ${n}`,
       solutions: (n: number) => `解法 ${n}`,
     },
-    /** The 利害關係人 section at the end of the 總覽 tab (decision 38). */
-    stakeholdersHeading: '利害關係人',
-    /** A tab whose content is not made yet. */
-    tabComing: '這個分頁的內容還在製作中。',
   },
   overview: {
     /** 分析摘要 (design 3.2, decision 29): the first section of the tab. */
@@ -526,7 +522,6 @@ export const t = {
     pendingHeading: '待補',
     pendingIntro: '這個解法還需要真人提供這些資訊。',
     pendingNone: '這個解法沒有待補的項目。',
-    pendingIn: (section: string) => `位置：${section}`,
     moreHeading: '更多',
   },
   spacePage: {

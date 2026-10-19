@@ -3,7 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Pending } from '@/types'
 import {
-  findIssue, ISSUE_TABS, legacyIssueTab, legacyIssueTabTarget, parseIssueNumber, parseTab, pendingBySection, storiesByPriority, tabPath,
+  findIssue, ISSUE_TABS, legacyIssueTab, legacyIssueTabTarget, parseIssueNumber, parseTab, pendingBySection, tabPath,
 } from './issuePage'
 
 const index = indexJson as IndexFile
@@ -155,32 +155,5 @@ describe('pendingBySection', () => {
 
   it('returns [] for no items', () => {
     expect(pendingBySection([])).toEqual([])
-  })
-})
-
-describe('storiesByPriority', () => {
-  const ids = (groups: ReturnType<typeof storiesByPriority>) =>
-    groups.map((g) => [g.priority, g.stories.map((s) => s.id)])
-
-  it('groups solution A of #2 in the order M, S and leaves out the empty C and W groups', () => {
-    // A covers the Must needs N01, N04, N05, N07, O04-US02, O12-US01 and the
-    // Should needs N02, O04-US04, I01-US09 (6.2 of #2). Stories keep the order of a.stories.
-    const a = trashcans.solutions.find((s) => s.id === 'A')!
-    expect(ids(storiesByPriority(trashcans, a.stories))).toEqual([
-      ['M', [
-        'I01-US01', 'I01-US03', 'I01-US04', 'I01-US05', 'I01-US06', 'I02-US01', 'I07-US01', 'I08-US01', 'I10-US01',
-        'O04-US01', 'O04-US03', 'I01-US07', 'O05-US01', 'I09-US04', 'I09-US05', 'I06-US01', 'I07-US02', 'O04-US02', 'O12-US01',
-      ]],
-      ['S', ['O01-US01', 'O01-US02', 'O01-US03', 'O01-US04', 'O10-US01', 'O11-US01', 'I12-US01', 'O04-US04', 'I01-US09']],
-    ])
-  })
-
-  it('has a W group when a W story is listed, and ignores unknown IDs', () => {
-    const groups = storiesByPriority(trashcans, ['O09-US01', 'X99-US01', 'I06-US01'])
-    expect(ids(groups)).toEqual([['M', ['I06-US01']], ['W', ['O09-US01']]])
-  })
-
-  it('returns [] for no stories', () => {
-    expect(storiesByPriority(trashcans, [])).toEqual([])
   })
 })

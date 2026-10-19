@@ -2,9 +2,7 @@
 // The paths are in entityPaths.ts (solutionPath).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
 import type { Conflict, Group, IssueFile, Priority, Solution } from '@/types'
-import { dataBasedOnly } from './dataBasis'
 import { compareIds } from './ids'
-import { storiesByPriority, type PriorityGroup } from './issuePage'
 import { stripMarkdown } from './markdown'
 import { dataBasedNeeds, issueNeeds, needsOfStakeholder, type NeedItem, type NeedSolution } from './needs'
 import { PRIORITIES } from './priority'
@@ -20,18 +18,6 @@ export function findSolution(issue: IssueFile, code: string | undefined): Soluti
 /** 「#2 A 名稱」 as plain text, for the page title and link names. */
 export function solutionTitle(issueNumber: number, solution: Solution): string {
   return `#${issueNumber} ${solution.id} ${stripMarkdown(solution.name.text)}`
-}
-
-/** The covered stories grouped by priority (M, S, C, W). With dataBased, only
- * the stories whose 我想要… or 以便… has the 實證 or AI整理 tag. */
-export function solutionStoryGroups(issue: IssueFile, solution: Solution, dataBased: boolean): PriorityGroup[] {
-  const ids = dataBased
-    ? (() => {
-        const keep = new Set(dataBasedOnly(issue.stories).map((s) => s.id))
-        return solution.stories.filter((id) => keep.has(id))
-      })()
-    : solution.stories
-  return storiesByPriority(issue, ids)
 }
 
 export interface GroupCoverage {
@@ -59,12 +45,6 @@ export function solutionGroupCoverage(issue: IssueFile, solution: Solution): Gro
       stakeholders: [...new Set(group.stories.map((id) => id.split('-')[0]))].sort(compareIds),
     }]
   })
-}
-
-/** The stakeholders of the covered stories, each once, in ID order. */
-export function solutionStakeholders(issue: IssueFile, solution: Solution): string[] {
-  const byId = new Map(issue.stories.map((s) => [s.id, s.stakeholder]))
-  return [...new Set(solution.stories.map((id) => byId.get(id) ?? id.split('-')[0]))].sort(compareIds)
 }
 
 export interface SolutionConflict {

@@ -121,12 +121,6 @@ export function buildTree(
   return { organizations: roots.O, individuals: roots.I }
 }
 
-/** The stories of a stakeholder in an issue that no solution lists. */
-export function storiesWithoutSolution(issue: IssueFile, stakeholderId: string): Story[] {
-  const covered = new Set(issue.solutions.flatMap((sol) => sol.stories))
-  return issue.stories.filter((s) => s.stakeholder === stakeholderId && !covered.has(s.id))
-}
-
 /** The ID to show for id: the new ID for a moved ID (following each move),
  * the same ID for an active one, null for an unknown ID or a loop. */
 export function resolveId(stakeholders: Stakeholder[], id: string): string | null {

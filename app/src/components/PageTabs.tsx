@@ -71,8 +71,3 @@ export function PageTabs<T extends string>({
     </Tabs>
   )
 }
-
-/** The short note on a tab whose content is not made yet. */
-export function TabComing({ text }: { text: string }) {
-  return <p className="text-muted-foreground">{text}</p>
-}

@@ -7,8 +7,6 @@ import {
   findSolution,
   solutionConflicts,
   solutionGroupCoverage,
-  solutionStakeholders,
-  solutionStoryGroups,
   solutionNeedCoverage,
   solutionStakeholderCoverage,
   solutionTitle,
@@ -45,24 +43,6 @@ describe('solutionTitle', () => {
   })
 })
 
-describe('solutionStoryGroups', () => {
-  it('groups the covered stories by priority, M first', () => {
-    const groups = solutionStoryGroups(trashcans, sol(trashcans, 'A'), false)
-    expect(groups.map((g) => g.priority)).toEqual(['M', 'S', 'C'].filter((p) => groups.some((g) => g.priority === p)))
-    expect(groups[0].priority).toBe('M')
-    expect(groups[0].stories.map((s) => s.id)).toContain('I06-US01')
-    expect(groups.flatMap((g) => g.stories)).toHaveLength(sol(trashcans, 'A').stories.length)
-  })
-
-  it('with the data basis filter, keeps only stories with 實證 or AI整理', () => {
-    const all = solutionStoryGroups(trashcans, sol(trashcans, 'A'), false).flatMap((g) => g.stories)
-    const kept = solutionStoryGroups(trashcans, sol(trashcans, 'A'), true).flatMap((g) => g.stories)
-    expect(kept.length).toBeGreaterThan(0)
-    expect(kept.length).toBeLessThan(all.length)
-    for (const s of kept) expect([s.want.tag, s.soThat.tag].some((t) => t === '實證' || t === 'AI整理')).toBe(true)
-  })
-})
-
 describe('solutionGroupCoverage', () => {
   it('lists the W groups with a covered story: 全部 or 部分, in file order', () => {
     const groups = solutionGroupCoverage(trashcans, sol(trashcans, 'A'))
@@ -83,15 +63,6 @@ describe('solutionGroupCoverage', () => {
 
   it('is empty for a solution that covers no W group (#8 E)', () => {
     expect(solutionGroupCoverage(smokefree, sol(smokefree, 'E'))).toEqual([])
-  })
-})
-
-describe('solutionStakeholders', () => {
-  it('lists the stakeholders of the covered stories once each, in ID order', () => {
-    // E covers N01 (I01, I02, I07, I08, I10), O04-US02 and I24-US01 (6.2 of #2).
-    expect(solutionStakeholders(trashcans, sol(trashcans, 'E'))).toEqual(['O04', 'I01', 'I02', 'I07', 'I08', 'I10', 'I24'])
-    const a = solutionStakeholders(trashcans, sol(trashcans, 'A'))
-    expect(a).toEqual(['O01', 'O04', 'O05', 'O10', 'O11', 'O12', 'I01', 'I02', 'I06', 'I07', 'I08', 'I09', 'I10', 'I12'])
   })
 })
 

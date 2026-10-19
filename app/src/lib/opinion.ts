@@ -106,16 +106,9 @@ export function opinionResult(issue: IssueFile, storyIds: string[]): OpinionResu
   return { same, otherSide, solutions, notMentioned }
 }
 
-/** The opinion check pick key of the story: its W group (for example "W08"),
- * or the story ID when it has no group in the group table. The same keys as
- * pickList. */
-export function storyPickKey(issue: IssueFile, story: Story): string {
-  return story.group !== null && issue.groups.some((g) => g.id === story.group) ? story.group : story.id
-}
-
 /** The link to the opinion check of the issue with this item picked, for
- * example #/issues/2/opinion?pick=W08. Keeps ?evidence=1 when the filter is on. */
+ * example #/issues/2/wants?pick=W08. Keeps ?evidence=1 when the filter is on. */
 export function opinionPickTo(issueNumber: number, key: string, dataBasedOnly: boolean): { pathname: string; search: string } {
   const params = withDataBasisFilter(new URLSearchParams({ pick: key }), dataBasedOnly)
-  return { pathname: tabPath(issueNumber, 'opinion'), search: `?${params.toString()}` }
+  return { pathname: tabPath(issueNumber, 'wants'), search: `?${params.toString()}` }
 }

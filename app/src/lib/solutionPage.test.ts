@@ -7,7 +7,6 @@ import {
   findSolution,
   solutionConflicts,
   solutionGroupCoverage,
-  solutionPath,
   solutionStakeholders,
   solutionStoryGroups,
   solutionNeedCoverage,
@@ -20,13 +19,6 @@ const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
 const sol = (issue: IssueFile, code: string) => issue.solutions.find((s) => s.id === code) as Solution
-
-describe('solutionPath', () => {
-  it('is under the issue, for example /issues/2/solutions/A', () => {
-    expect(solutionPath(2, 'A')).toBe('/issues/2/solutions/A')
-    expect(solutionPath(8, 'E')).toBe('/issues/8/solutions/E')
-  })
-})
 
 describe('findSolution', () => {
   it('finds a solution by its code', () => {

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { PageTabs, TabComing } from '@/components/PageTabs'
 import { CellText } from '@/components/CellText'
 import { DataBasisEmpty, DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
@@ -16,12 +17,16 @@ import { TagBadge } from '@/components/TagBadge'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
+import {
+  issueFocusPath, parseSolutionSlug, parseSolutionTab, SOLUTION_TABS, solutionPath, type SolutionTab,
+} from '@/lib/entityPaths'
 import { findIssue, pendingBySection, tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import { priorityLabel } from '@/lib/priority'
 import {
   findSolution, solutionConflicts, solutionGroupCoverage, solutionStakeholders, solutionStoryGroups, solutionTitle,
 } from '@/lib/solutionPage'
+import { solutionTabCounts } from '@/lib/tabCounts'
 import { findStakeholder, stakeholderName } from '@/lib/stakeholders'
 import type { AvailableIssueSummary, IndexFile, IssueFile, Solution as SolutionType } from '@/types'
 
@@ -46,22 +51,28 @@ function NotFound({ title, body, issueNumber }: { title: string; body: string; i
   )
 }
 
-/** Solution page: #/issues/:number/solutions/:code. One solution with
- * everything the analysis says about it. */
+/** Solution page (design 3.12): #/solutions/:slug/:tab?, for example
+ * #/solutions/2-A/needs. One solution with everything the analysis says
+ * about it. The old #/issues/<n>/solutions/<code> redirects here (router). */
 export default function Solution() {
   const index = useIndex()
-  const { number } = useParams()
+  const { slug = '' } = useParams()
   if (index.status !== 'ready') return <LoadState state={index} />
-  const found = findIssue(index.data, number)
+  const parsed = parseSolutionSlug(slug)
+  // A cross-issue solution (X-A) comes with Task N11 of plan.md. Until then
+  // it shows the "not found" message.
+  if (parsed === null || parsed.kind === 'cross') {
+    return <NotFound title={tp.notFoundTitle} body={tp.slugNotFoundBody(slug)} />
+  }
+  const found = findIssue(index.data, String(parsed.issueNumber))
   if (found.kind !== 'available') {
     return <NotFound title={tp.issueNotFoundTitle} body={tp.issueNotFoundBody} />
   }
-  return <SolutionLoader index={index.data} summary={found.issue} />
+  return <SolutionLoader index={index.data} summary={found.issue} code={parsed.code} />
 }
 
-function SolutionLoader({ index, summary }: { index: IndexFile; summary: AvailableIssueSummary }) {
+function SolutionLoader({ index, summary, code }: { index: IndexFile; summary: AvailableIssueSummary; code: string }) {
   const issue = useIssue(summary.folder)
-  const { code = '' } = useParams()
   if (issue.status !== 'ready') return <LoadState state={issue} />
   const solution = findSolution(issue.data, code)
   if (!solution) {
@@ -87,27 +98,23 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
   const n = issue.number
   const [params] = useSearchParams()
   const search = dataBasisFilterSearch(params)
-  const [dataBasedOnly] = useDataBasisFilter()
-  const available = useMemo(() => availableIssues(index).map((i) => i.number), [index])
-  const name = (id: string) => stakeholderName(index.stakeholders, id)
   const issueTitle = t.issueCard.numberTitle(n, issue.title)
-  const storyGroups = solutionStoryGroups(issue, sol, dataBasedOnly)
-  const groups = solutionGroupCoverage(issue, sol)
-  const stakeholders = solutionStakeholders(issue, sol)
-  const conflicts = solutionConflicts(issue, sol)
-  const pending = pendingBySection(sol.pending)
-  const tabTo = (tab: 'solutions' | 'conflicts') => ({ pathname: tabPath(n, tab), search })
+  const solutionsTabTo = { pathname: tabPath(n, 'solutions'), search }
+  const tab = parseSolutionTab(useParams().tab)
+  const counts = useMemo(() => solutionTabCounts(issue, sol), [issue, sol])
+  const tabLabel = (name: SolutionTab) =>
+    name === 'overview' ? tp.tabs.overview : tp.tabLabels[name](counts[name].covered, counts[name].notCovered)
 
   return (
     <>
-      <PageTitle parts={[solutionTitle(n, sol), tp.titlePart]} />
+      <PageTitle parts={[solutionTitle(n, sol), tab && tab !== 'overview' ? tp.tabs[tab] : null, tp.titlePart]} />
       <nav aria-label={tp.breadcrumb}>
         <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
           <li><Link to="/" className={linkClass}>{tp.home}</Link></li>
           <li aria-hidden="true" className="text-muted-foreground">›</li>
           <li><Link to={{ pathname: tabPath(n, 'overview'), search }} className={linkClass}>{issueTitle}</Link></li>
           <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li><Link to={tabTo('solutions')} className={linkClass}>{tp.solutions}</Link></li>
+          <li><Link to={solutionsTabTo} className={linkClass}>{tp.solutions}</Link></li>
           <li aria-hidden="true" className="text-muted-foreground">›</li>
           <li aria-current="page" className="font-mono">{sol.id}</li>
         </ol>
@@ -125,193 +132,226 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
         <Field label={tp.added}><time dateTime={sol.added}>{sol.added}</time></Field>
       </dl>
 
-      <div className="mt-8 space-y-10">
-        <Part id="solution-stories" title={tp.storiesHeading}>
-          <DataBasisToggle className="mb-4" />
-          {sol.stories.length === 0 ? (
-            <Empty>{tp.storiesNone}</Empty>
-          ) : storyGroups.length === 0 ? (
-            <DataBasisEmpty />
-          ) : (
-            storyGroups.map((g) => (
-              <section key={g.priority} aria-labelledby={`solution-stories-${g.priority}`} className="mt-4 first:mt-0">
-                <h3 id={`solution-stories-${g.priority}`} className="font-semibold">{priorityLabel(g.priority)}</h3>
-                <StoryList stories={g.stories} stakeholders={index.stakeholders} />
-              </section>
-            ))
-          )}
-        </Part>
+      <PageTabs
+        label={tp.tabsLabel}
+        tabs={SOLUTION_TABS}
+        current={tab}
+        nameOf={(name) => tp.tabs[name]}
+        labelOf={tabLabel}
+        pathOf={(name) => solutionPath(n, sol.id, name)}
+        notFound={tp.tabNotFound}
+        overviewPath={solutionPath(n, sol.id)}
+        overviewLink={tp.goToOverview}
+      >
+        {(name) => (name === 'overview' ? <OverviewParts index={index} issue={issue} solution={sol} /> : <TabComing text={tp.tabComing} />)}
+      </PageTabs>
+    </>
+  )
+}
 
-        <Part id="solution-groups" title={tp.groupsHeading}>
-          {groups.length === 0 ? (
-            <Empty>{tp.groupsNone}</Empty>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">{tp.groupsIntro}</p>
-              <ul className="mt-3 space-y-3">
-                {groups.map(({ group: g, full, covered, stakeholders: members }) => (
-                  <li key={g.id} className="rounded-md border p-3">
-                    <p>
-                      <span className="mr-2 font-mono font-semibold">{g.id}</span>
-                      {g.tag && <TagBadge kind={g.tag} className="mr-1.5" />}
-                      <Markdown text={g.summary} />
-                    </p>
-                    <p className="mt-1 text-sm">
-                      <span className="font-semibold">{full ? tp.groupFull : tp.groupPartial}</span>
-                      {!full && <span className="ml-2 text-muted-foreground">{tp.groupCovered(covered)}</span>}
-                    </p>
-                    <div className="mt-1 text-sm">
-                      <span className="text-muted-foreground">{tp.groupMembers}</span>
-                      <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-                        {members.map((id) => (
-                          <li key={id}><Link to={`/stakeholders/${id}`} className={linkClass}>{name(id)}</Link></li>
-                        ))}
-                      </ul>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </Part>
+/** For now (plan Task N3) the 總覽 tab has the old page content. Task N9
+ * moves the parts into the three tabs. */
+function OverviewParts({ index, issue, solution: sol }: { index: IndexFile; issue: IssueFile; solution: SolutionType }) {
+  const n = issue.number
+  const [params] = useSearchParams()
+  const search = dataBasisFilterSearch(params)
+  const [dataBasedOnly] = useDataBasisFilter()
+  const available = useMemo(() => availableIssues(index).map((i) => i.number), [index])
+  const name = (id: string) => stakeholderName(index.stakeholders, id)
+  const storyGroups = solutionStoryGroups(issue, sol, dataBasedOnly)
+  const groups = solutionGroupCoverage(issue, sol)
+  const stakeholders = solutionStakeholders(issue, sol)
+  const conflicts = solutionConflicts(issue, sol)
+  const pending = pendingBySection(sol.pending)
+  const solutionsTabTo = { pathname: tabPath(n, 'solutions'), search }
 
-        <Part id="solution-stakeholders" title={tp.stakeholdersHeading}>
-          {stakeholders.length === 0 ? (
-            <Empty>{tp.stakeholdersNone}</Empty>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">{tp.stakeholdersIntro}</p>
-              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
-                {stakeholders.map((id) => (
-                  <li key={id}>
-                    <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
-                      <AlsoInLine index={index} id={id} issueNumber={n} available={available} />
-                    </StakeholderCard>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-        </Part>
+  return (
+    <div className="space-y-10">
+      <Part id="solution-stories" title={tp.storiesHeading}>
+        <DataBasisToggle className="mb-4" />
+        {sol.stories.length === 0 ? (
+          <Empty>{tp.storiesNone}</Empty>
+        ) : storyGroups.length === 0 ? (
+          <DataBasisEmpty />
+        ) : (
+          storyGroups.map((g) => (
+            <section key={g.priority} aria-labelledby={`solution-stories-${g.priority}`} className="mt-4 first:mt-0">
+              <h3 id={`solution-stories-${g.priority}`} className="font-semibold">{priorityLabel(g.priority)}</h3>
+              <StoryList stories={g.stories} stakeholders={index.stakeholders} />
+            </section>
+          ))
+        )}
+      </Part>
 
-        <Part id="solution-conflicts" title={tp.conflictsHeading}>
-          {conflicts.length === 0 ? (
-            <Empty>{tp.conflictsNone}</Empty>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">{tp.conflictsIntro}</p>
-              <ul className="mt-3 space-y-3">
-                {conflicts.map(({ conflict: c, covered }) => (
-                  <li key={c.id} className="rounded-md border p-3">
-                    <p>
-                      <span className="mr-2 font-mono font-semibold">{c.id}</span>
-                      <CellText cell={c.text} />
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">{tp.conflictCovered(covered)}</p>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3">
-                <Link to={tabTo('conflicts')} className={linkClass}>{tp.conflictsLink(n)}</Link>
-              </p>
-            </>
-          )}
-        </Part>
-
-        <Part id="solution-measures" title={tp.measuresHeading}>
-          {sol.measures.length === 0 ? (
-            <Empty>{tp.measuresNone}</Empty>
-          ) : (
-            <ul className="space-y-3">
-              {sol.measures.map((m, i) => (
-                <li key={i} className="rounded-md border p-3">
-                  <h3 className="font-medium"><Markdown text={m.metric} /></h3>
-                  <dl className="mt-2 space-y-1.5 text-sm">
-                    <Field label={tp.baseline}><CellText cell={m.baseline} /></Field>
-                    <Field label={tp.source}><Markdown text={m.source} /></Field>
-                  </dl>
+      <Part id="solution-groups" title={tp.groupsHeading}>
+        {groups.length === 0 ? (
+          <Empty>{tp.groupsNone}</Empty>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">{tp.groupsIntro}</p>
+            <ul className="mt-3 space-y-3">
+              {groups.map(({ group: g, full, covered, stakeholders: members }) => (
+                <li key={g.id} className="rounded-md border p-3">
+                  <p>
+                    <span className="mr-2 font-mono font-semibold">{g.id}</span>
+                    {g.tag && <TagBadge kind={g.tag} className="mr-1.5" />}
+                    <Markdown text={g.summary} />
+                  </p>
+                  <p className="mt-1 text-sm">
+                    <span className="font-semibold">{full ? tp.groupFull : tp.groupPartial}</span>
+                    {!full && <span className="ml-2 text-muted-foreground">{tp.groupCovered(covered)}</span>}
+                  </p>
+                  <div className="mt-1 text-sm">
+                    <span className="text-muted-foreground">{tp.groupMembers}</span>
+                    <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                      {members.map((id) => (
+                        <li key={id}><Link to={`/stakeholders/${id}`} className={linkClass}>{name(id)}</Link></li>
+                      ))}
+                    </ul>
+                  </div>
                 </li>
               ))}
             </ul>
-          )}
-        </Part>
+          </>
+        )}
+      </Part>
 
-        <Part id="solution-detail" title={tp.detailHeading}>
-          <p className="text-sm text-muted-foreground">{tp.detailIntro}</p>
-          <section aria-labelledby="solution-overview" className="mt-4 rounded-md border p-3">
-            <h3 id="solution-overview" className="font-semibold">{tp.overviewHeading}</h3>
-            <dl className="mt-2 space-y-1.5">
-              <Field label={tp.cost}><CellText cell={sol.overview.cost} /></Field>
-              <Field label={tp.feasibility}><CellText cell={sol.overview.feasibility} /></Field>
-              <Field label={tp.risk}><CellText cell={sol.overview.risk} /></Field>
-              <Field label={tp.owner}><CellText cell={sol.overview.owner} /></Field>
-            </dl>
-          </section>
-          <dl className="mt-4 space-y-4">
-            {sol.detail.map((r) => (
-              <div key={r.item}>
-                <dt className="font-semibold">{r.item}</dt>
-                <dd className="mt-1 leading-relaxed"><CellText cell={r.content} /></dd>
+      <Part id="solution-stakeholders" title={tp.stakeholdersHeading}>
+        {stakeholders.length === 0 ? (
+          <Empty>{tp.stakeholdersNone}</Empty>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">{tp.stakeholdersIntro}</p>
+            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+              {stakeholders.map((id) => (
+                <li key={id}>
+                  <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
+                    <AlsoInLine index={index} id={id} issueNumber={n} available={available} />
+                  </StakeholderCard>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </Part>
+
+      <Part id="solution-conflicts" title={tp.conflictsHeading}>
+        {conflicts.length === 0 ? (
+          <Empty>{tp.conflictsNone}</Empty>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">{tp.conflictsIntro}</p>
+            <ul className="mt-3 space-y-3">
+              {conflicts.map(({ conflict: c, covered }) => (
+                <li key={c.id} className="rounded-md border p-3">
+                  <p>
+                    <span className="mr-2 font-mono font-semibold">{c.id}</span>
+                    <CellText cell={c.text} />
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">{tp.conflictCovered(covered)}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3">
+              <Link to={issueFocusPath(n, 'wants', 'conflicts', dataBasedOnly)} className={linkClass}>{tp.conflictsLink(n)}</Link>
+            </p>
+          </>
+        )}
+      </Part>
+
+      <Part id="solution-measures" title={tp.measuresHeading}>
+        {sol.measures.length === 0 ? (
+          <Empty>{tp.measuresNone}</Empty>
+        ) : (
+          <ul className="space-y-3">
+            {sol.measures.map((m, i) => (
+              <li key={i} className="rounded-md border p-3">
+                <h3 className="font-medium"><Markdown text={m.metric} /></h3>
+                <dl className="mt-2 space-y-1.5 text-sm">
+                  <Field label={tp.baseline}><CellText cell={m.baseline} /></Field>
+                  <Field label={tp.source}><Markdown text={m.source} /></Field>
+                </dl>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Part>
+
+      <Part id="solution-detail" title={tp.detailHeading}>
+        <p className="text-sm text-muted-foreground">{tp.detailIntro}</p>
+        <section aria-labelledby="solution-overview" className="mt-4 rounded-md border p-3">
+          <h3 id="solution-overview" className="font-semibold">{tp.overviewHeading}</h3>
+          <dl className="mt-2 space-y-1.5">
+            <Field label={tp.cost}><CellText cell={sol.overview.cost} /></Field>
+            <Field label={tp.feasibility}><CellText cell={sol.overview.feasibility} /></Field>
+            <Field label={tp.risk}><CellText cell={sol.overview.risk} /></Field>
+            <Field label={tp.owner}><CellText cell={sol.overview.owner} /></Field>
+          </dl>
+        </section>
+        <dl className="mt-4 space-y-4">
+          {sol.detail.map((r) => (
+            <div key={r.item}>
+              <dt className="font-semibold">{r.item}</dt>
+              <dd className="mt-1 leading-relaxed"><CellText cell={r.content} /></dd>
+            </div>
+          ))}
+        </dl>
+      </Part>
+
+      {sol.ideas.length > 0 && (
+        <Part id="solution-ideas" title={tp.ideasHeading}>
+          <p className="text-sm text-muted-foreground">{tp.ideasIntro}</p>
+          <ul className="mt-3 space-y-3">
+            {sol.ideas.map((idea, i) => (
+              <li key={i} className="rounded-md border p-3">
+                <dl className="space-y-2">
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{tp.idea}</dt>
+                    <dd><CellText cell={idea.idea} /></dd>
+                  </div>
+                  <div>
+                    <dt className="text-sm text-muted-foreground">{tp.handling}</dt>
+                    <dd><CellText cell={idea.handling} /></dd>
+                  </div>
+                </dl>
+              </li>
+            ))}
+          </ul>
+        </Part>
+      )}
+
+      <Part id="solution-pending" title={tp.pendingHeading}>
+        {pending.length === 0 ? (
+          <Empty>{tp.pendingNone}</Empty>
+        ) : (
+          <>
+            <p className="text-sm text-muted-foreground">{tp.pendingIntro}</p>
+            {pending.map((g) => (
+              <div key={g.section ?? ''} className="mt-4">
+                <h3 className="font-medium">{g.section ?? t.overview.noSection}</h3>
+                <ul className="mt-1 list-disc space-y-2 pl-5">
+                  {g.items.map((item, i) => (
+                    <li key={i}>
+                      {item.context !== null && (
+                        <span className="block text-sm text-muted-foreground"><Markdown text={item.context} /></span>
+                      )}
+                      <Markdown text={item.text} />
+                    </li>
+                  ))}
+                </ul>
               </div>
             ))}
-          </dl>
-        </Part>
-
-        {sol.ideas.length > 0 && (
-          <Part id="solution-ideas" title={tp.ideasHeading}>
-            <p className="text-sm text-muted-foreground">{tp.ideasIntro}</p>
-            <ul className="mt-3 space-y-3">
-              {sol.ideas.map((idea, i) => (
-                <li key={i} className="rounded-md border p-3">
-                  <dl className="space-y-2">
-                    <div>
-                      <dt className="text-sm text-muted-foreground">{tp.idea}</dt>
-                      <dd><CellText cell={idea.idea} /></dd>
-                    </div>
-                    <div>
-                      <dt className="text-sm text-muted-foreground">{tp.handling}</dt>
-                      <dd><CellText cell={idea.handling} /></dd>
-                    </div>
-                  </dl>
-                </li>
-              ))}
-            </ul>
-          </Part>
+          </>
         )}
+      </Part>
 
-        <Part id="solution-pending" title={tp.pendingHeading}>
-          {pending.length === 0 ? (
-            <Empty>{tp.pendingNone}</Empty>
-          ) : (
-            <>
-              <p className="text-sm text-muted-foreground">{tp.pendingIntro}</p>
-              {pending.map((g) => (
-                <div key={g.section ?? ''} className="mt-4">
-                  <h3 className="font-medium">{g.section ?? t.overview.noSection}</h3>
-                  <ul className="mt-1 list-disc space-y-2 pl-5">
-                    {g.items.map((item, i) => (
-                      <li key={i}>
-                        {item.context !== null && (
-                          <span className="block text-sm text-muted-foreground"><Markdown text={item.context} /></span>
-                        )}
-                        <Markdown text={item.text} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </>
-          )}
-        </Part>
-
-        <nav aria-labelledby="solution-more" className="border-t pt-6">
-          <h2 id="solution-more" className="text-xl font-bold">{tp.moreHeading}</h2>
-          <ul className="mt-3 space-y-1">
-            <li><Link to={tabTo('solutions')} className={linkClass}>{tp.issueSolutionsLink(n)}</Link></li>
-            <li><Link to="/solutions" className={linkClass}>{tp.allSolutionsLink}</Link></li>
-          </ul>
-        </nav>
-      </div>
-    </>
+      <nav aria-labelledby="solution-more" className="border-t pt-6">
+        <h2 id="solution-more" className="text-xl font-bold">{tp.moreHeading}</h2>
+        <ul className="mt-3 space-y-1">
+          <li><Link to={solutionsTabTo} className={linkClass}>{tp.issueSolutionsLink(n)}</Link></li>
+          <li><Link to="/solutions" className={linkClass}>{tp.allSolutionsLink}</Link></li>
+        </ul>
+      </nav>
+    </div>
   )
 }

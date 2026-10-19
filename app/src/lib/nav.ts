@@ -12,13 +12,15 @@ function segments(pathname: string): string[] {
  * The header nav item that the page at `pathname` belongs to, or null.
  * Pass `useLocation().pathname`, so the query string is not part of it.
  * Only whole segments match: "/issuesx" is not 議題.
- * The solution page `/issues/<n>/solutions/<code>` belongs to 解法, not 議題.
- * The issue's own 解法 tab `/issues/<n>/solutions` stays under 議題.
+ * Solution pages (`/solutions/2-A`, `/solutions/X-A` and their tabs) belong
+ * to 解法. So does the old `/issues/<n>/solutions/<code>[/<tab>]`, which
+ * redirects there. The issue's own 解法 tab `/issues/<n>/solutions` stays
+ * under 議題. Story pages `/stakeholders/<id>/stories/…` belong to 利害關係人.
  */
 export function activeNavItem(pathname: string): NavItem | null {
   const parts = segments(pathname)
   const first = parts[0]
-  if (first === 'issues' && parts.length === 4 && parts[2] === 'solutions') return 'solutions'
+  if (first === 'issues' && parts.length >= 4 && parts[2] === 'solutions') return 'solutions'
   return items.find((item) => item === first) ?? null
 }
 

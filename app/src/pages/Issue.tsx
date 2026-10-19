@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, Navigate, useLocation, useParams } from 'react-router'
 import { ConflictsTab } from '@/components/issue/ConflictsTab'
 import { OpinionTab } from '@/components/issue/OpinionTab'
 import { OverviewTab } from '@/components/issue/OverviewTab'
@@ -9,24 +9,62 @@ import type { IssueTabProps } from '@/components/issue/types'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { SpaceLinks } from '@/components/SpaceLinks'
+import { PageTabs, TabComing } from '@/components/PageTabs'
 import { linkClass } from '@/components/styles'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
-import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
-import { findIssue, ISSUE_TABS, parseTab, tabPath, type IssueTab } from '@/lib/issuePage'
+import { findIssue, ISSUE_TABS, legacyIssueTabTarget, parseIssueNumber, parseTab, tabPath, type IssueTab } from '@/lib/issuePage'
+import { issueTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { AvailableIssueSummary, IndexFile } from '@/types'
 
 const ti = t.issue
 
+// For now (plan Task N3) the tabs reuse the old tab parts. Tasks N5 and N6
+// replace them.
+
+/** 總覽: the old overview, then the old 利害關係人 tab as its last section (decision 38). */
+function OverviewWithStakeholders(props: IssueTabProps) {
+  return (
+    <>
+      <OverviewTab {...props} />
+      <section id="focus-stakeholders" tabIndex={-1} aria-labelledby="stakeholders-heading" className="mt-8 outline-none">
+        <h3 id="stakeholders-heading" className="text-lg font-semibold">{ti.stakeholdersHeading}</h3>
+        <div className="mt-2"><StakeholdersTab {...props} /></div>
+      </section>
+    </>
+  )
+}
+
+/** 訴求: the opinion check, then the conflicts (decision 38). */
+function WantsFrame(props: IssueTabProps) {
+  return (
+    <>
+      <OpinionTab {...props} />
+      <section id="focus-conflicts" tabIndex={-1} className="mt-8 outline-none">
+        <ConflictsTab {...props} />
+      </section>
+    </>
+  )
+}
+
+function NeedsFrame() {
+  return <TabComing text={ti.tabComing} />
+}
+
 const TAB_CONTENT: Record<IssueTab, (props: IssueTabProps) => ReactNode> = {
-  overview: OverviewTab,
-  opinion: OpinionTab,
-  stakeholders: StakeholdersTab,
-  conflicts: ConflictsTab,
+  overview: OverviewWithStakeholders,
+  wants: WantsFrame,
+  needs: NeedsFrame,
   solutions: SolutionsTab,
+}
+
+/** The tab label with its count. While the issue loads, the name only. */
+function tabLabel(tab: IssueTab, c: TabCounts | null): string {
+  if (c === null || tab === 'overview') return ti.tabs[tab]
+  if (tab === 'wants') return ti.tabLabels.wants(c.wants, c.conflicts)
+  return ti.tabLabels[tab](c[tab])
 }
 
 function BackHome() {
@@ -37,10 +75,16 @@ function BackHome() {
   )
 }
 
-/** Issue page (design 3.2): #/issues/:number/:tab? with five tabs. */
+/** Issue page (design 3.2): #/issues/:number/:tab? with four tabs. The old
+ * tabs opinion, conflicts and stakeholders redirect (legacyIssueTab). */
 export default function Issue() {
   const index = useIndex()
-  const { number } = useParams()
+  const { number, tab } = useParams()
+  const { search } = useLocation()
+  // The old tab URLs need no data, so they redirect before the index loads.
+  const legacy = parseIssueNumber(number)
+  const target = legacy === null ? null : legacyIssueTabTarget(legacy, tab, search)
+  if (target) return <Navigate replace to={target} />
   if (index.status !== 'ready') return <LoadState state={index} />
 
   const found = findIssue(index.data, number)
@@ -70,20 +114,8 @@ export default function Issue() {
 function IssueContent({ index, summary }: { index: IndexFile; summary: AvailableIssueSummary }) {
   const issue = useIssue(summary.folder)
   const available = useMemo(() => availableIssues(index).map((i) => i.number), [index])
-  const navigate = useNavigate()
   const tab = parseTab(useParams().tab)
-  const [params] = useSearchParams()
-
-  // The tab is in the URL. A new history entry per tab, so the back button
-  // returns to the tab before. activationMode="manual": with automatic
-  // activation, Radix calls onValueChange on mouse down and again on focus,
-  // which adds two history entries. Arrow keys move the focus; Enter or Space
-  // opens the tab.
-  const onTabChange = (value: string) => {
-    const next = parseTab(value)
-    // Keep the 「只看有資料根據」 setting (?evidence=1) when the tab changes.
-    if (next) navigate({ pathname: tabPath(summary.number, next), search: dataBasisFilterSearch(params) }, { preventScrollReset: true })
-  }
+  const counts = useMemo(() => (issue.status === 'ready' ? issueTabCounts(issue.data) : null), [issue])
 
   return (
     <>
@@ -101,37 +133,26 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
         )}
       </dl>
 
-      <Tabs value={tab ?? ''} onValueChange={onTabChange} activationMode="manual" className="mt-6">
-        <TabsList aria-label={ti.tabsLabel} className="h-auto w-full flex-wrap justify-start">
-          {ISSUE_TABS.map((name) => (
-            <TabsTrigger key={name} value={name} className="flex-1 px-2 py-1.5 md:px-3">
-              {ti.tabs[name]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-        {tab === null ? (
-          <div className="mt-4 text-base">
-            <p>{ti.tabNotFound}</p>
-            <p className="mt-3">
-              <Link to={tabPath(summary.number, 'overview')} className={linkClass}>{ti.goToOverview}</Link>
-            </p>
-          </div>
-        ) : (
-          ISSUE_TABS.map((name) => {
-            const Content = TAB_CONTENT[name]
-            return (
-              <TabsContent key={name} value={name} className="mt-4 text-base">
-                <h2 className="sr-only">{ti.tabs[name]}</h2>
-                {issue.status === 'ready' ? (
-                  <Content index={index} summary={summary} issue={issue.data} available={available} />
-                ) : (
-                  <LoadState state={issue} />
-                )}
-              </TabsContent>
-            )
-          })
-        )}
-      </Tabs>
+      <PageTabs
+        label={ti.tabsLabel}
+        tabs={ISSUE_TABS}
+        current={tab}
+        nameOf={(name) => ti.tabs[name]}
+        labelOf={(name) => tabLabel(name, counts)}
+        pathOf={(name) => tabPath(summary.number, name)}
+        notFound={ti.tabNotFound}
+        overviewPath={tabPath(summary.number, 'overview')}
+        overviewLink={ti.goToOverview}
+      >
+        {(name) => {
+          const Content = TAB_CONTENT[name]
+          return issue.status === 'ready' ? (
+            <Content index={index} summary={summary} issue={issue.data} available={available} />
+          ) : (
+            <LoadState state={issue} />
+          )
+        }}
+      </PageTabs>
     </>
   )
 }

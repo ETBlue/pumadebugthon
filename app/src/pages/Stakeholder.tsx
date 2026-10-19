@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react'
 import { useMemo } from 'react'
-import { Link, Navigate, useParams, useSearchParams } from 'react-router'
+import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
 import { DataBasisEmpty, DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
+import { PageTabs, TabComing } from '@/components/PageTabs'
 import { Markdown } from '@/components/Markdown'
 import { PriorityCounts } from '@/components/PriorityCounts'
 import { SolutionCard } from '@/components/SolutionCard'
@@ -17,19 +18,32 @@ import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
 import { dataBasedOnly as onlyDataBased } from '@/lib/dataBasis'
+import {
+  movedStakeholderTarget, parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab,
+} from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import { movedFrom, pathTrail, stakeholderIssueNumbers, stakeholderIssueView } from '@/lib/stakeholderPage'
 import { resolveId, stakeholderName } from '@/lib/stakeholders'
+import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { IndexFile, IssueFile, Stakeholder as StakeholderType } from '@/types'
 
 const tp = t.stakeholderPage
 
-/** Stakeholder page (design 3.3): #/stakeholders/:id. A moved ID sends the
- * reader to the new ID, with ?from=<old ID> for the note 「O02 已改為 I12」. */
+/** The tab label with its count. While the issues load, the name only. */
+function tabLabel(tab: StakeholderTab, c: TabCounts | null): string {
+  if (c === null || tab === 'overview') return tp.tabs[tab]
+  if (tab === 'wants') return tp.tabLabels.wants(c.wants, c.conflicts)
+  return tp.tabLabels[tab](c[tab])
+}
+
+/** Stakeholder page (design 3.3): #/stakeholders/:id/:tab?. A moved ID sends
+ * the reader to the new ID, with the rest of the path kept and
+ * ?from=<old ID> for the note 「O02 已改為 I12」. */
 export default function Stakeholder() {
   const index = useIndex()
   const { id = '' } = useParams()
+  const location = useLocation()
   if (index.status !== 'ready') return <LoadState state={index} />
 
   const resolved = resolveId(index.data.stakeholders, id)
@@ -46,7 +60,8 @@ export default function Stakeholder() {
     )
   }
   if (resolved !== id) {
-    return <Navigate replace to={{ pathname: `/stakeholders/${resolved}`, search: `?from=${encodeURIComponent(id)}` }} />
+    const target = movedStakeholderTarget(location.pathname, location.search, id, resolved)
+    if (target) return <Navigate replace to={target} />
   }
   const stakeholder = index.data.stakeholders.find((s) => s.id === id)!
   return <StakeholderContent key={id} index={index.data} stakeholder={stakeholder} />
@@ -64,6 +79,36 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   const issues = useIssues(folders)
   const trail = pathTrail(s.path, index.pathLabels)
   const [dataBasedOnly] = useDataBasisFilter()
+  const tab = parseStakeholderTab(useParams().tab)
+  const counts = useMemo(
+    () => (issues.status === 'ready' ? stakeholderTabCounts(issues.data, s.id) : null),
+    [issues, s.id],
+  )
+
+  // For now (plan Task N3) the 總覽 tab has the old page content. Task N7
+  // fills the other tabs.
+  const overview =
+    shown.length === 0 ? null : (
+      <>
+        <DataBasisToggle />
+        <div className="mt-8 space-y-10">
+          {issues.status === 'ready' ? (
+            issues.data.map((issue, i) => (
+              <IssueSection
+                key={issue.number}
+                index={index}
+                issue={issue}
+                id={s.id}
+                first={i === 0}
+                dataBasedOnly={dataBasedOnly}
+              />
+            ))
+          ) : (
+            <LoadState state={issues} />
+          )}
+        </div>
+      </>
+    )
 
   return (
     <>
@@ -72,7 +117,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
           {tp.movedNote(from, s.id)}
         </p>
       )}
-      <PageTitle parts={[s.name]} />
+      <PageTitle parts={[s.name, tab && tab !== 'overview' ? tp.tabs[tab] : null]} />
       <h1 className="text-2xl font-bold md:text-3xl">{s.name}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
         <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>
@@ -114,26 +159,19 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         </Field>
       </dl>
 
-      {shown.length > 0 && <DataBasisToggle className="mt-6" />}
-
-      {shown.length > 0 && (
-        <div className="mt-8 space-y-10">
-          {issues.status === 'ready' ? (
-            issues.data.map((issue, i) => (
-              <IssueSection
-                key={issue.number}
-                index={index}
-                issue={issue}
-                id={s.id}
-                first={i === 0}
-                dataBasedOnly={dataBasedOnly}
-              />
-            ))
-          ) : (
-            <LoadState state={issues} />
-          )}
-        </div>
-      )}
+      <PageTabs
+        label={tp.tabsLabel}
+        tabs={STAKEHOLDER_TABS}
+        current={tab}
+        nameOf={(name) => tp.tabs[name]}
+        labelOf={(name) => tabLabel(name, counts)}
+        pathOf={(name) => stakeholderTabPath(s.id, name)}
+        notFound={tp.tabNotFound}
+        overviewPath={stakeholderTabPath(s.id, 'overview')}
+        overviewLink={tp.goToOverview}
+      >
+        {(name) => (name === 'overview' ? overview : <TabComing text={tp.tabComing} />)}
+      </PageTabs>
     </>
   )
 }

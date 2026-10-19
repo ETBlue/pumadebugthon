@@ -3,6 +3,7 @@
 // their own (decision 45). A link to one goes to the issue tab with ?focus=.
 import { withDataBasisFilter } from './dataBasis'
 import { FOCUS_PARAM } from './focus'
+import { parseIssueNumber, tabPath, type IssueTab } from './issuePage'
 
 /** The tabs of the stakeholder page, in display order. The first one is the default. */
 export const STAKEHOLDER_TABS = ['overview', 'wants', 'needs', 'solutions'] as const
@@ -40,23 +41,32 @@ export function storyPath(issueNumber: number, storyId: string): string {
   return `/stakeholders/${storyId.split('-')[0]}/stories/${issueNumber}/${storyId}`
 }
 
-function focusPath(issueNumber: number, tab: 'wants' | 'needs', key: string, dataBasedOnly: boolean): PathTarget {
-  const params = withDataBasisFilter(new URLSearchParams({ [FOCUS_PARAM]: key }), dataBasedOnly)
-  return { pathname: `/issues/${issueNumber}/${tab}`, search: `?${params.toString()}` }
+/** A link to one part of an issue tab with ?focus=<value> (design 3.2,
+ * decision 53), for example { pathname: "/issues/2", search: "?focus=stakeholders" }.
+ * With dataBasedOnly, the search also has evidence=1. */
+export function issueFocusPath(issueNumber: number, tab: IssueTab, value: string, dataBasedOnly = false): PathTarget {
+  const params = withDataBasisFilter(new URLSearchParams({ [FOCUS_PARAM]: value }), dataBasedOnly)
+  return { pathname: tabPath(issueNumber, tab), search: `?${params.toString()}` }
+}
+
+/** A link to one conflict on the issue's 訴求 tab, for example
+ * { pathname: "/issues/2/wants", search: "?focus=C9" } (design 3.2). */
+export function conflictFocusPath(issueNumber: number, conflictId: string, dataBasedOnly = false): PathTarget {
+  return issueFocusPath(issueNumber, 'wants', conflictId, dataBasedOnly)
 }
 
 /** A link to one want on the issue's 訴求 tab, for example
  * { pathname: "/issues/2/wants", search: "?focus=W08" } (decision 57).
  * With dataBasedOnly, the search also has evidence=1. */
 export function wantFocusPath(issueNumber: number, key: string, dataBasedOnly = false): PathTarget {
-  return focusPath(issueNumber, 'wants', key, dataBasedOnly)
+  return issueFocusPath(issueNumber, 'wants', key, dataBasedOnly)
 }
 
 /** A link to one need on the issue's 需求 tab, for example
  * { pathname: "/issues/2/needs", search: "?focus=N07" } (decision 57).
  * With dataBasedOnly, the search also has evidence=1. */
 export function needFocusPath(issueNumber: number, key: string, dataBasedOnly = false): PathTarget {
-  return focusPath(issueNumber, 'needs', key, dataBasedOnly)
+  return issueFocusPath(issueNumber, 'needs', key, dataBasedOnly)
 }
 
 /** The solution tab of the URL segment. No segment is the overview. An
@@ -105,6 +115,20 @@ export function legacySolutionPath(issueNumber: number, code: string, tab?: stri
   return withTab(`/solutions/${issueNumber}-${code}`, tab)
 }
 
+/** The redirect target of an old solution URL, from its segments and its
+ * query (search, "" or "?…", kept as it is). null when the issue number is
+ * not a plain positive number; the page then shows "not found". */
+export function legacySolutionTarget(
+  numberSegment: string | undefined,
+  code: string | undefined,
+  tab: string | undefined,
+  search: string,
+): PathTarget | null {
+  const n = parseIssueNumber(numberSegment)
+  if (n === null || code === undefined) return null
+  return { pathname: legacySolutionPath(n, code, tab), search }
+}
+
 /** The same stakeholder path with newId in place of oldId (design 3.3). On a
  * story page, a story ID that starts with "<oldId>-" gets the new ID. Any
  * other story ID is kept. null when pathname is not a page of oldId. */
@@ -116,4 +140,16 @@ export function movedStakeholderPath(pathname: string, oldId: string, newId: str
     parts[5] = newId + parts[5].slice(oldId.length)
   }
   return parts.join('/')
+}
+
+/** The redirect target for a page of a moved stakeholder ID (design 3.3):
+ * the path of movedStakeholderPath, and the query with from=<old ID> added,
+ * so the page can show the note 「O02 已改為 I12」. Other query values are
+ * kept. null when pathname is not a page of oldId. */
+export function movedStakeholderTarget(pathname: string, search: string, oldId: string, newId: string): PathTarget | null {
+  const path = movedStakeholderPath(pathname, oldId, newId)
+  if (path === null) return null
+  const params = new URLSearchParams(search)
+  params.set('from', oldId)
+  return { pathname: path, search: `?${params.toString()}` }
 }

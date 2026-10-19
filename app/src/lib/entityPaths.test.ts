@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  conflictFocusPath,
   crossSolutionPath,
+  issueFocusPath,
   legacySolutionPath,
+  legacySolutionTarget,
   movedStakeholderPath,
+  movedStakeholderTarget,
   needFocusPath,
   parseSolutionSlug,
   parseSolutionTab,
@@ -64,6 +68,19 @@ describe('wantFocusPath and needFocusPath', () => {
   it('keeps the data filter when it is on', () => {
     expect(wantFocusPath(2, 'W08', true).search).toBe('?focus=W08&evidence=1')
     expect(needFocusPath(2, 'N07', true).search).toBe('?focus=N07&evidence=1')
+  })
+})
+
+describe('issueFocusPath and conflictFocusPath', () => {
+  it('link to a part of an issue tab with ?focus=', () => {
+    expect(issueFocusPath(2, 'overview', 'stakeholders')).toEqual({ pathname: '/issues/2', search: '?focus=stakeholders' })
+    expect(issueFocusPath(2, 'wants', 'conflicts')).toEqual({ pathname: '/issues/2/wants', search: '?focus=conflicts' })
+    expect(conflictFocusPath(2, 'C9')).toEqual({ pathname: '/issues/2/wants', search: '?focus=C9' })
+  })
+
+  it('keeps the data filter when it is on', () => {
+    expect(issueFocusPath(1, 'needs', 'N03', true).search).toBe('?focus=N03&evidence=1')
+    expect(conflictFocusPath(1, 'C7', true)).toEqual({ pathname: '/issues/1/wants', search: '?focus=C7&evidence=1' })
   })
 })
 
@@ -132,6 +149,21 @@ describe('legacySolutionPath', () => {
   })
 })
 
+describe('legacySolutionTarget', () => {
+  it('reads the old URL segments and keeps the query', () => {
+    expect(legacySolutionTarget('2', 'A', undefined, '')).toEqual({ pathname: '/solutions/2-A', search: '' })
+    expect(legacySolutionTarget('2', 'A', 'needs', '?evidence=1')).toEqual({
+      pathname: '/solutions/2-A/needs',
+      search: '?evidence=1',
+    })
+  })
+
+  it('returns null when the issue number is not a plain positive number', () => {
+    expect(legacySolutionTarget('02', 'A', undefined, '')).toBeNull()
+    expect(legacySolutionTarget('x', 'A', undefined, '')).toBeNull()
+  })
+})
+
 describe('movedStakeholderPath', () => {
   it('changes the ID on the page and on a tab', () => {
     expect(movedStakeholderPath('/stakeholders/O02', 'O02', 'I12')).toBe('/stakeholders/I12')
@@ -157,5 +189,36 @@ describe('movedStakeholderPath', () => {
     expect(movedStakeholderPath('/stakeholders/O03/needs', 'O02', 'I12')).toBeNull()
     expect(movedStakeholderPath('/issues/2', 'O02', 'I12')).toBeNull()
     expect(movedStakeholderPath('/stakeholders/O020', 'O02', 'I12')).toBeNull()
+  })
+})
+
+describe('movedStakeholderTarget', () => {
+  it('adds ?from=<old ID> to the new path (design 3.3)', () => {
+    expect(movedStakeholderTarget('/stakeholders/O02', '', 'O02', 'I12')).toEqual({
+      pathname: '/stakeholders/I12',
+      search: '?from=O02',
+    })
+    expect(movedStakeholderTarget('/stakeholders/O02/needs', '', 'O02', 'I12')).toEqual({
+      pathname: '/stakeholders/I12/needs',
+      search: '?from=O02',
+    })
+  })
+
+  it('keeps the other query values', () => {
+    expect(movedStakeholderTarget('/stakeholders/O02/wants', '?evidence=1', 'O02', 'I12')).toEqual({
+      pathname: '/stakeholders/I12/wants',
+      search: '?evidence=1&from=O02',
+    })
+  })
+
+  it('changes the story ID on a story page', () => {
+    expect(movedStakeholderTarget('/stakeholders/O02/stories/2/O02-US01', '', 'O02', 'I12')).toEqual({
+      pathname: '/stakeholders/I12/stories/2/I12-US01',
+      search: '?from=O02',
+    })
+  })
+
+  it('returns null when the path is not a page of the old ID', () => {
+    expect(movedStakeholderTarget('/stakeholders/I12', '', 'O02', 'I12')).toBeNull()
   })
 })

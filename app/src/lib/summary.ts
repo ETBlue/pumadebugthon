@@ -2,9 +2,8 @@
 // Topics keep the fixed order of the issue file. Nothing here sorts by a count.
 import type { IssueFile } from '@/types'
 import { withDataBasisFilter } from './dataBasis'
-import { tabPath } from './issuePage'
-import { solutionPath } from './solutionPage'
-import { opinionPickTo, storyPickKey } from './opinion'
+import { conflictFocusPath, needFocusPath, solutionPath, storyPath } from './entityPaths'
+import { opinionPickTo } from './opinion'
 
 /** The topics of the 分析摘要, in the fixed order. The same list as
  * analysis_common.SUMMARY_TOPICS. */
@@ -50,24 +49,17 @@ export interface RefTarget {
   search: string
 }
 
-/** The 需求 tab with the need in focus, for example /issues/2/needs?focus=N01
- * (design decision 57). The tab comes with Task N3 of plan.md. */
-function needFocusTo(issueNumber: number, key: string, dataBasedOnly: boolean): RefTarget {
-  const params = withDataBasisFilter(new URLSearchParams({ focus: key }), dataBasedOnly)
-  return { pathname: `/issues/${issueNumber}/needs`, search: `?${params.toString()}` }
-}
-
-/** The link of a reference in the summary of issue `issueNumber`.
- * - story: the opinion check with its pick key (its group, or the story), as on 需求.
- * - group: the opinion check with the group picked.
- * - need: the 需求 tab with ?focus= on the N group.
+/** The link of a reference in the summary of issue `issueNumber` (design 3.2).
+ * - story: the story page.
+ * - group (W08): the 訴求 tab with the group picked in the opinion check.
+ * - need (N01): the 需求 tab with ?focus= on the N group.
  * - stakeholder: the stakeholder page.
- * - conflict: the 衝突 tab. solution: the solution page.
- * A reference to another issue goes into that issue: its 衝突 tab, its
- * solution page, its 需求 tab for an N group, or its overview for a story or
- * a group (the other issue's file is not loaded, so the pick key is not known).
- * Issue pages keep the 「只看有資料根據」 filter. null when the reference
- * cannot be read or the ID is not in this issue. */
+ * - conflict: the 訴求 tab with ?focus= on the conflict.
+ * - solution: the solution page (/solutions/2-E).
+ * A reference to another issue gets the same kind of target in that issue.
+ * Every target is built from the IDs, so the other issue's file is not needed.
+ * Issue and solution links keep the 「只看有資料根據」 filter. null when the
+ * reference cannot be read or the ID is not in this issue. */
 export function summaryRefTo(ref: string, issueNumber: number, issue: IssueFile, dataBasedOnly: boolean): RefTarget | null {
   const r = parseSummaryRef(ref)
   if (!r) return null
@@ -76,24 +68,20 @@ export function summaryRefTo(ref: string, issueNumber: number, issue: IssueFile,
     if (r.issue === null && !issue.stakeholders.some((s) => s.id === r.id)) return null
     return { pathname: `/stakeholders/${r.id}`, search: '' }
   }
-  if (r.issue !== null && r.issue !== issueNumber) {
-    if (r.kind === 'solution') return { pathname: solutionPath(r.issue, r.id), search: filter }
-    if (r.kind === 'conflict') return { pathname: tabPath(r.issue, 'conflicts'), search: filter }
-    if (r.kind === 'need') return needFocusTo(r.issue, r.id, dataBasedOnly)
-    return { pathname: tabPath(r.issue, 'overview'), search: filter }
-  }
+  const other = r.issue !== null && r.issue !== issueNumber
+  const n = other ? r.issue! : issueNumber
+  // In this issue, the ID must exist. In another issue it is not checked.
+  const known = (list: { id: string }[]) => other || list.some((x) => x.id === r.id)
   switch (r.kind) {
-    case 'story': {
-      const story = issue.stories.find((s) => s.id === r.id)
-      return story ? opinionPickTo(issueNumber, storyPickKey(issue, story), dataBasedOnly) : null
-    }
+    case 'story':
+      return known(issue.stories) ? { pathname: storyPath(n, r.id), search: '' } : null
     case 'group':
-      return issue.groups.some((g) => g.id === r.id) ? opinionPickTo(issueNumber, r.id, dataBasedOnly) : null
+      return known(issue.groups) ? opinionPickTo(n, r.id, dataBasedOnly) : null
     case 'need':
-      return issue.needGroups.some((g) => g.id === r.id) ? needFocusTo(issueNumber, r.id, dataBasedOnly) : null
+      return known(issue.needGroups) ? needFocusPath(n, r.id, dataBasedOnly) : null
     case 'conflict':
-      return issue.conflicts.some((c) => c.id === r.id) ? { pathname: tabPath(issueNumber, 'conflicts'), search: filter } : null
+      return known(issue.conflicts) ? conflictFocusPath(n, r.id, dataBasedOnly) : null
     case 'solution':
-      return issue.solutions.some((s) => s.id === r.id) ? { pathname: solutionPath(issueNumber, r.id), search: filter } : null
+      return known(issue.solutions) ? { pathname: solutionPath(n, r.id), search: filter } : null
   }
 }

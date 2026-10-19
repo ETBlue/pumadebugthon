@@ -1,4 +1,5 @@
-// Lookups for the solution page #/issues/:number/solutions/:code.
+// Lookups for the solution page #/solutions/<n>-<code> (design 3.12).
+// The paths are in entityPaths.ts (solutionPath).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
 import type { Conflict, Group, IssueFile, Solution } from '@/types'
 import { dataBasedOnly } from './dataBasis'
@@ -7,12 +8,6 @@ import { storiesByPriority, type PriorityGroup } from './issuePage'
 import { stripMarkdown } from './markdown'
 import { issueNeeds, needsOfStakeholder, type NeedItem, type NeedSolution } from './needs'
 import { conflictView, type ConflictView } from './wantList'
-
-/** The URL path of a solution page, for example "/issues/2/solutions/A".
- * A solution code is never reused in an issue, so the path keeps working. */
-export function solutionPath(issueNumber: number, code: string): string {
-  return `/issues/${issueNumber}/solutions/${code}`
-}
 
 /** The solution for the code in the URL: one capital letter, for example "A".
  * null for an unknown or badly written code. */

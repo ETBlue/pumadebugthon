@@ -10,10 +10,18 @@ describe('activeNavItem', () => {
     ['/issues/2/solutions', 'issues'],
     ['/issues/2/solutions/A', 'solutions'],
     ['/issues/2/solutions/A/', 'solutions'],
+    ['/issues/2/solutions/A/needs', 'solutions'],
+    ['/issues/2/wants', 'issues'],
+    ['/issues/2/needs', 'issues'],
     ['/stakeholders', 'stakeholders'],
     ['/stakeholders/I12', 'stakeholders'],
+    ['/stakeholders/I06/needs', 'stakeholders'],
+    ['/stakeholders/I06/stories/2/I06-US01', 'stakeholders'],
     ['/solutions', 'solutions'],
     ['/solutions/x', 'solutions'],
+    ['/solutions/2-A', 'solutions'],
+    ['/solutions/2-A/needs', 'solutions'],
+    ['/solutions/X-A', 'solutions'],
   ] as const)('%s is %s', (path, item) => {
     expect(activeNavItem(path)).toBe(item)
   })
@@ -37,6 +45,7 @@ describe('isNavListPage', () => {
     expect(isNavListPage('/wants')).toBe(false)
     expect(isNavListPage('/issues/2')).toBe(false)
     expect(isNavListPage('/issues/2/solutions/A')).toBe(false)
+    expect(isNavListPage('/solutions/2-A')).toBe(false)
     expect(isNavListPage('/')).toBe(false)
     expect(isNavListPage('/spaces/sidewalk')).toBe(false)
   })

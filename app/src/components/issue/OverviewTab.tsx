@@ -8,6 +8,7 @@ import { Markdown } from '@/components/Markdown'
 import { linkClass } from '@/components/styles'
 import { TagBadge, type TagKind } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
+import { issueFocusPath } from '@/lib/entityPaths'
 import { focusRows } from '@/lib/focusGroups'
 import { spaceTypeNames } from '@/lib/issues'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
@@ -68,15 +69,15 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
         <h3 id="counts-heading" className="text-lg font-semibold">{to.countsHeading}</h3>
         <dl className="mt-2 space-y-1.5">
           <Field label={to.stakeholders}>
-            <Link to={tabTo(n, 'stakeholders')} className={linkClass}>
+            <Link to={issueFocusPath(n, 'overview', 'stakeholders', dataBasedOnly)} className={linkClass}>
               {to.stakeholdersValue(c.stakeholdersO, c.stakeholdersI)}
             </Link>
           </Field>
           <Field label={to.stories}>
-            <Link to={tabTo(n, 'opinion')} className={linkClass}>{to.storiesValue(c.stories)}</Link>
+            <Link to={tabTo(n, 'wants')} className={linkClass}>{to.storiesValue(c.stories)}</Link>
           </Field>
           <Field label={to.conflicts}>
-            <Link to={tabTo(n, 'conflicts')} className={linkClass}>{to.itemsValue(c.conflicts)}</Link>
+            <Link to={issueFocusPath(n, 'wants', 'conflicts', dataBasedOnly)} className={linkClass}>{to.itemsValue(c.conflicts)}</Link>
           </Field>
           <Field label={to.solutions}>
             <Link to={tabTo(n, 'solutions')} className={linkClass}>{to.itemsValue(c.solutions)}</Link>

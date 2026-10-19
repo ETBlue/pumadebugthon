@@ -82,7 +82,7 @@ export function storyView(issue: IssueFile, story: Story): StoryView {
 
   return {
     story,
-    wantKey: wantKey(story),
+    wantKey: wantKey(issue, story),
     needKey,
     wantGroup,
     needGroup,

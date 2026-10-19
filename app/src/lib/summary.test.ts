@@ -31,18 +31,19 @@ describe('parseSummaryRef', () => {
 })
 
 describe('summaryRefTo', () => {
-  it('links a story to the opinion check with its pick key', () => {
-    // I06-US01 is in group W08, so the pick key is the group.
-    expect(summaryRefTo('I06-US01', 2, trashcans, false)).toEqual({ pathname: '/issues/2/opinion', search: '?pick=W08' })
-    // I01-US09 has no group, so the pick key is the story.
+  it('links a story to its story page', () => {
+    expect(summaryRefTo('I06-US01', 2, trashcans, false)).toEqual({
+      pathname: '/stakeholders/I06/stories/2/I06-US01',
+      search: '',
+    })
     expect(summaryRefTo('I01-US09', 2, trashcans, true)).toEqual({
-      pathname: '/issues/2/opinion',
-      search: '?pick=I01-US09&evidence=1',
+      pathname: '/stakeholders/I01/stories/2/I01-US09',
+      search: '',
     })
   })
 
   it('links a group to the opinion check', () => {
-    expect(summaryRefTo('W08', 2, trashcans, false)).toEqual({ pathname: '/issues/2/opinion', search: '?pick=W08' })
+    expect(summaryRefTo('W08', 2, trashcans, false)).toEqual({ pathname: '/issues/2/wants', search: '?pick=W08' })
   })
 
   it('links a W group in each fixture that has one to the opinion check', () => {
@@ -53,7 +54,7 @@ describe('summaryRefTo', () => {
     expect(wRefs(smokefree)).toEqual([])
     expect(wRefs(trashcans)).toEqual(['W08'])
     for (const ref of wRefs(trashcans)) {
-      expect(summaryRefTo(ref, 2, trashcans, false)).toEqual({ pathname: '/issues/2/opinion', search: `?pick=${ref}` })
+      expect(summaryRefTo(ref, 2, trashcans, false)).toEqual({ pathname: '/issues/2/wants', search: `?pick=${ref}` })
     }
   })
 
@@ -73,15 +74,25 @@ describe('summaryRefTo', () => {
     expect(summaryRefTo('I05', 2, trashcans, true)).toEqual({ pathname: '/stakeholders/I05', search: '' })
   })
 
-  it('links a conflict to the 衝突 tab and a solution to its page, keeping the filter', () => {
-    expect(summaryRefTo('C9', 2, trashcans, false)).toEqual({ pathname: '/issues/2/conflicts', search: '' })
-    expect(summaryRefTo('解法 E', 2, trashcans, true)).toEqual({ pathname: '/issues/2/solutions/E', search: '?evidence=1' })
+  it('links a conflict to the 訴求 tab with ?focus= and a solution to its page, keeping the filter', () => {
+    expect(summaryRefTo('C9', 2, trashcans, false)).toEqual({ pathname: '/issues/2/wants', search: '?focus=C9' })
+    expect(summaryRefTo('C9', 2, trashcans, true)).toEqual({ pathname: '/issues/2/wants', search: '?focus=C9&evidence=1' })
+    expect(summaryRefTo('解法 E', 2, trashcans, false)).toEqual({ pathname: '/solutions/2-E', search: '' })
+    expect(summaryRefTo('解法 E', 2, trashcans, true)).toEqual({ pathname: '/solutions/2-E', search: '?evidence=1' })
   })
 
   it('links a reference to another issue into that issue', () => {
-    expect(summaryRefTo('#8 解法 B', 2, trashcans, false)).toEqual({ pathname: '/issues/8/solutions/B', search: '' })
-    expect(summaryRefTo('#1 C7', 2, trashcans, false)).toEqual({ pathname: '/issues/1/conflicts', search: '' })
-    expect(summaryRefTo('#1 I06-US02', 2, trashcans, false)).toEqual({ pathname: '/issues/1', search: '' })
+    expect(summaryRefTo('#8 解法 B', 2, trashcans, false)).toEqual({ pathname: '/solutions/8-B', search: '' })
+    expect(summaryRefTo('#1 C7', 2, trashcans, false)).toEqual({ pathname: '/issues/1/wants', search: '?focus=C7' })
+    expect(summaryRefTo('#1 I06-US02', 2, trashcans, false)).toEqual({
+      pathname: '/stakeholders/I06/stories/1/I06-US02',
+      search: '',
+    })
+    expect(summaryRefTo('#8 I06-US01', 2, trashcans, false)).toEqual({
+      pathname: '/stakeholders/I06/stories/8/I06-US01',
+      search: '',
+    })
+    expect(summaryRefTo('#1 W08', 2, trashcans, true)).toEqual({ pathname: '/issues/1/wants', search: '?pick=W08&evidence=1' })
     expect(summaryRefTo('#8 I25', 2, trashcans, false)).toEqual({ pathname: '/stakeholders/I25', search: '' })
     expect(summaryRefTo('#1 N03', 2, trashcans, false)).toEqual({ pathname: '/issues/1/needs', search: '?focus=N03' })
     expect(summaryRefTo('#1 N03', 2, trashcans, true)).toEqual({ pathname: '/issues/1/needs', search: '?focus=N03&evidence=1' })

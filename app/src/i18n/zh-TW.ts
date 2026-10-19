@@ -191,13 +191,24 @@ export const t = {
     updated: '更新日期',
     backHome: '回到首頁',
     goToOverview: '回到總覽',
+    /** The tab names, also for the page title (design 3.2). */
     tabs: {
       overview: '總覽',
-      opinion: '你的意見',
-      stakeholders: '利害關係人',
-      conflicts: '衝突',
+      wants: '訴求',
+      needs: '需求',
       solutions: '解法',
     },
+    /** The tab labels with the counts of the issue (issueTabCounts). A count
+     * is a plain number, not a score. */
+    tabLabels: {
+      wants: (wants: number, conflicts: number) => `訴求 ${wants}・衝突 ${conflicts}`,
+      needs: (n: number) => `需求 ${n}`,
+      solutions: (n: number) => `解法 ${n}`,
+    },
+    /** The 利害關係人 section at the end of the 總覽 tab (decision 38). */
+    stakeholdersHeading: '利害關係人',
+    /** A tab whose content is not made yet. */
+    tabComing: '這個分頁的內容還在製作中。',
   },
   overview: {
     /** 分析摘要 (design 3.2, decision 29): the first section of the tab. */
@@ -330,9 +341,56 @@ export const t = {
     inputSourcesNone: '分析裡沒有為這位利害關係人列出輸入來源。',
     inputFit: '適合的利害關係人：',
     inputNote: '注意事項：',
+    /** The tabs (design 3.3). The names are also for the page title. */
+    tabsLabel: '利害關係人內容',
+    tabs: {
+      overview: '總覽',
+      wants: '訴求',
+      needs: '需求',
+      solutions: '解法',
+    },
+    /** The tab labels with the counts summed over the issues (decision 48). */
+    tabLabels: {
+      wants: (wants: number, conflicts: number) => `訴求 ${wants}・衝突 ${conflicts}`,
+      needs: (n: number) => `需求 ${n}`,
+      solutions: (n: number) => `解法 ${n}`,
+    },
+    tabNotFound: '找不到這個分頁。',
+    goToOverview: '回到總覽',
+    tabComing: '這個分頁的內容還在製作中。',
   },
-  /** The solution page #/issues/:number/solutions/:code. */
+  /** The story page #/stakeholders/:id/stories/:number/:storyId (design 3.15). */
+  storyPage: {
+    breadcrumb: '頁面位置',
+    home: '首頁',
+    stakeholders: '利害關係人',
+    /** The h1 and the last breadcrumb item: 「#2 I06-US01」. */
+    title: (n: number, storyId: string) => `#${n} ${storyId}`,
+    notFoundTitle: '找不到這則使用者故事',
+    notFoundBody: (n: string, storyId: string) => `#${n} 沒有編號 ${storyId} 的使用者故事。網址可能打錯了，或這個議題的分析還在製作中。`,
+    stakeholderLink: (id: string, name: string) => `看 ${id} ${name} 的頁面`,
+    issueLink: (title: string) => `看 ${title}`,
+    backHome: '回到首頁',
+  },
+  /** The solution page #/solutions/<n>-<code> (design 3.12). */
   solutionPage: {
+    /** The tabs (design 3.12). The names are also for the page title. */
+    tabsLabel: '解法內容',
+    tabs: {
+      overview: '總覽',
+      needs: '需求',
+      stakeholders: '利害關係人',
+    },
+    /** The tab labels with the coverage counts (solutionTabCounts). Plain
+     * numbers: no percent, no bar. */
+    tabLabels: {
+      needs: (covered: number, notCovered: number) => `需求　涵蓋 ${covered}・未涵蓋 ${notCovered}`,
+      stakeholders: (covered: number, notCovered: number) => `利害關係人　涵蓋 ${covered}・未涵蓋 ${notCovered}`,
+    },
+    tabNotFound: '找不到這個分頁。',
+    goToOverview: '回到總覽',
+    tabComing: '這個分頁的內容還在製作中。',
+    slugNotFoundBody: (slug: string) => `沒有代號為 ${slug} 的解法。網址可能打錯了。`,
     breadcrumb: '頁面位置',
     home: '首頁',
     solutions: '解法',
@@ -364,7 +422,7 @@ export const t = {
     conflictsIntro: '衝突的一方或另一方，有這個解法涵蓋的故事。',
     conflictsNone: '分析裡沒有和這個解法涵蓋的故事有關的衝突。',
     conflictCovered: (ids: string[]) => `這個解法涵蓋的故事：${ids.join('、')}`,
-    conflictsLink: (n: number) => `到 #${n} 的衝突分頁看雙方的故事與審議方法`,
+    conflictsLink: (n: number) => `到 #${n} 的訴求分頁看衝突雙方的故事與審議方法`,
     measuresHeading: '成效衡量',
     measuresNone: '分析裡沒有這個解法的成效指標。',
     metric: '指標',

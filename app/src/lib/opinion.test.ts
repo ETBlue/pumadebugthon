@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IssueFile } from '@/types'
-import { filterPickList, opinionPickTo, opinionResult, pickList, storyPickKey, type PickItem } from './opinion'
+import { filterPickList, opinionPickTo, opinionResult, pickList, type PickItem } from './opinion'
 
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
@@ -159,28 +159,12 @@ describe('opinionResult on #1', () => {
   })
 })
 
-describe('storyPickKey', () => {
-  it('is the W group of a story in a group, else the story ID, the same keys as the pick list', () => {
-    const keys = new Set(pickList(trashcans).map((i) => i.key))
-    for (const s of trashcans.stories) {
-      const key = storyPickKey(trashcans, s)
-      expect(keys.has(key)).toBe(true)
-      expect(key).toBe(s.group ?? s.id)
-    }
-  })
-
-  it('uses the story ID when its group is not in the group table', () => {
-    const s = { ...trashcans.stories[0], group: 'W99' }
-    expect(storyPickKey(trashcans, s)).toBe(s.id)
-  })
-})
-
 describe('opinionPickTo', () => {
   it('links to the opinion check with the pick', () => {
-    expect(opinionPickTo(2, 'W08', false)).toEqual({ pathname: '/issues/2/opinion', search: '?pick=W08' })
+    expect(opinionPickTo(2, 'W08', false)).toEqual({ pathname: '/issues/2/wants', search: '?pick=W08' })
   })
 
   it('keeps the 只看有資料根據 filter', () => {
-    expect(opinionPickTo(2, 'I09-US01', true)).toEqual({ pathname: '/issues/2/opinion', search: '?pick=I09-US01&evidence=1' })
+    expect(opinionPickTo(2, 'I09-US01', true)).toEqual({ pathname: '/issues/2/wants', search: '?pick=I09-US01&evidence=1' })
   })
 })

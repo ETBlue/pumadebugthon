@@ -3,7 +3,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { IssueFile } from '@/types'
-import { pickList, storyPickKey } from './opinion'
+import { pickList } from './opinion'
 import { conflictView, conflictsForStakeholder, issueWants, wantKey, wantsForStakeholder, wantsOfStakeholder } from './wantList'
 
 const trees = treesJson as IssueFile
@@ -15,18 +15,27 @@ const ids = (list: { id: string }[]) => list.map((x) => x.id)
 describe('wantKey', () => {
   it('is the W group of a story in a group', () => {
     const s = trashcans.stories.find((x) => x.id === 'I06-US01')!
-    expect(wantKey(s)).toBe('W08')
+    expect(wantKey(trashcans, s)).toBe('W08')
   })
 
   it('is the story ID for a story with no group', () => {
     const s = trashcans.stories.find((x) => x.id === 'I09-US01')!
-    expect(wantKey(s)).toBe('I09-US01')
+    expect(wantKey(trashcans, s)).toBe('I09-US01')
   })
 
-  it('is the same as storyPickKey for every story in the fixtures', () => {
+  it('is a key of the pick list for every story in the fixtures', () => {
     for (const issue of [trees, trashcans, smokefree]) {
-      for (const s of issue.stories) expect(wantKey(s)).toBe(storyPickKey(issue, s))
+      const keys = new Set(pickList(issue).map((i) => i.key))
+      for (const s of issue.stories) {
+        expect(keys.has(wantKey(issue, s))).toBe(true)
+        expect(wantKey(issue, s)).toBe(s.group ?? s.id)
+      }
     }
+  })
+
+  it('uses the story ID when its group is not in the group table', () => {
+    const s = { ...trashcans.stories[0], group: 'W99' }
+    expect(wantKey(trashcans, s)).toBe(s.id)
   })
 })
 

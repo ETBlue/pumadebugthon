@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Pending } from '@/types'
-import { findIssue, ISSUE_TABS, parseTab, pendingBySection, storiesByPriority, tabPath } from './issuePage'
+import {
+  findIssue, ISSUE_TABS, legacyIssueTab, legacyIssueTabTarget, parseIssueNumber, parseTab, pendingBySection, storiesByPriority, tabPath,
+} from './issuePage'
 
 const index = indexJson as IndexFile
 const trashcans = trashcansJson as IssueFile
@@ -13,7 +15,7 @@ describe('parseTab', () => {
   })
 
   it('accepts every tab name', () => {
-    expect(ISSUE_TABS).toEqual(['overview', 'opinion', 'stakeholders', 'conflicts', 'solutions'])
+    expect(ISSUE_TABS).toEqual(['overview', 'wants', 'needs', 'solutions'])
     for (const tab of ISSUE_TABS) expect(parseTab(tab)).toBe(tab)
   })
 
@@ -22,16 +24,72 @@ describe('parseTab', () => {
     expect(parseTab('')).toBeNull()
     expect(parseTab('Overview')).toBeNull()
   })
+
+  it('the old tab names are not tabs any more (they redirect)', () => {
+    expect(parseTab('opinion')).toBeNull()
+    expect(parseTab('conflicts')).toBeNull()
+    expect(parseTab('stakeholders')).toBeNull()
+  })
 })
 
 describe('tabPath', () => {
   it('the overview has no tab segment; other tabs have one', () => {
     expect(tabPath(2, 'overview')).toBe('/issues/2')
-    expect(tabPath(2, 'conflicts')).toBe('/issues/2/conflicts')
+    expect(tabPath(2, 'wants')).toBe('/issues/2/wants')
+    expect(tabPath(2, 'needs')).toBe('/issues/2/needs')
   })
 
   it('parseTab reads back every path', () => {
     for (const tab of ISSUE_TABS) expect(parseTab(tabPath(2, tab).split('/')[3])).toBe(tab)
+  })
+})
+
+describe('legacyIssueTab', () => {
+  it('maps each old tab to the new tab and the focus to add (design 3.2)', () => {
+    expect(legacyIssueTab('opinion')).toEqual({ tab: 'wants', focus: null })
+    expect(legacyIssueTab('conflicts')).toEqual({ tab: 'wants', focus: 'conflicts' })
+    expect(legacyIssueTab('stakeholders')).toEqual({ tab: 'overview', focus: 'stakeholders' })
+  })
+
+  it('returns null for a current tab, no tab or an unknown name', () => {
+    for (const tab of ISSUE_TABS) expect(legacyIssueTab(tab)).toBeNull()
+    expect(legacyIssueTab(undefined)).toBeNull()
+    expect(legacyIssueTab('nope')).toBeNull()
+  })
+})
+
+describe('legacyIssueTabTarget', () => {
+  it('opinion keeps the same query', () => {
+    expect(legacyIssueTabTarget(2, 'opinion', '?pick=W08')).toEqual({ pathname: '/issues/2/wants', search: '?pick=W08' })
+    expect(legacyIssueTabTarget(2, 'opinion', '')).toEqual({ pathname: '/issues/2/wants', search: '' })
+  })
+
+  it('conflicts goes to the 訴求 tab with focus=conflicts', () => {
+    expect(legacyIssueTabTarget(2, 'conflicts', '')).toEqual({ pathname: '/issues/2/wants', search: '?focus=conflicts' })
+    expect(legacyIssueTabTarget(2, 'conflicts', '?evidence=1')).toEqual({
+      pathname: '/issues/2/wants',
+      search: '?evidence=1&focus=conflicts',
+    })
+  })
+
+  it('stakeholders goes to the overview with focus=stakeholders', () => {
+    expect(legacyIssueTabTarget(2, 'stakeholders', '')).toEqual({ pathname: '/issues/2', search: '?focus=stakeholders' })
+  })
+
+  it('returns null when the segment is not an old tab', () => {
+    expect(legacyIssueTabTarget(2, 'wants', '')).toBeNull()
+    expect(legacyIssueTabTarget(2, undefined, '')).toBeNull()
+  })
+})
+
+describe('parseIssueNumber', () => {
+  it('reads a plain positive number', () => {
+    expect(parseIssueNumber('2')).toBe(2)
+    expect(parseIssueNumber('12')).toBe(12)
+  })
+
+  it('returns null for anything else', () => {
+    for (const s of [undefined, '', '0', '02', '2.0', '-1', 'x']) expect(parseIssueNumber(s)).toBeNull()
   })
 })
 

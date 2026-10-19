@@ -20,10 +20,11 @@ function stakeholderOfStory(storyId: string): string {
   return storyId.split('-')[0]
 }
 
-/** The want key of a story: its W group (for example "W08"), or the story ID
- * when it has no group. The same key as storyPickKey in opinion.ts (design 3.16). */
-export function wantKey(story: Story): string {
-  return story.group ?? story.id
+/** The want key of a story (design 3.16): its W group (for example "W08"),
+ * or the story ID when it has no group in the group table. These are the
+ * same keys as the opinion check pick list (pickList, design 4.1). */
+export function wantKey(issue: IssueFile, story: Story): string {
+  return story.group !== null && issue.groups.some((g) => g.id === story.group) ? story.group : story.id
 }
 
 /** The wants of an issue, in the order of pickList. */

@@ -1,9 +1,13 @@
 // Lookups for the stakeholder page (design 3.3).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
-import type { Cell, Conflict, Group, InputSource, IssueFile, Solution, Stakeholder, Story } from '@/types'
+import type { Cell, Conflict, Group, IndexFile, InputSource, IssueFile, Solution, Stakeholder, Story } from '@/types'
+import { movedStakeholderTarget, stakeholderTabPath, type PathTarget } from './entityPaths'
 import { compareIds } from './ids'
+import { availableIssues } from './issues'
+import { dataBasedNeeds, needsOfStakeholder, type StakeholderNeedItem } from './needs'
 import { priorityCounts, type TagPriorityCounts } from './priority'
 import { resolveId, storiesWithoutSolution } from './stakeholders'
+import { conflictsForStakeholder, conflictView, type ConflictView } from './wantList'
 
 export interface PathStep {
   /** The prefix, for example "gov-local". */
@@ -98,4 +102,82 @@ export function stakeholderIssueView(issue: IssueFile, id: string): StakeholderI
     uncovered: storiesWithoutSolution(issue, id),
     inputSources: issue.inputSources.filter((src) => src.stakeholders.includes(id)),
   }
+}
+
+/** The IDs in the stakeholder menu of the stakeholder page (design 3.14):
+ * every active stakeholder in at least one available issue. O first, then I,
+ * each in ID order. Never sorted by a count. */
+export function stakeholderMenuIds(index: IndexFile): string[] {
+  const available = new Set(availableIssues(index).map((i) => i.number))
+  return index.stakeholders
+    .filter((s) => s.movedTo === null && s.issues.some((n) => available.has(n)))
+    .map((s) => s.id)
+    .sort(compareIds)
+}
+
+/** The redirect target for a page of a moved stakeholder ID (design 3.3).
+ * Mostly the same as movedStakeholderTarget. When pathname is not a page of
+ * oldId (for example when the URL writes the ID in another way), it goes to
+ * the overview of newId with ?from=<old ID>, so the page never breaks. */
+export function movedStakeholderRedirect(pathname: string, search: string, oldId: string, newId: string): PathTarget {
+  return (
+    movedStakeholderTarget(pathname, search, oldId, newId) ?? {
+      pathname: stakeholderTabPath(newId, 'overview'),
+      search: `?${new URLSearchParams({ from: oldId }).toString()}`,
+    }
+  )
+}
+
+export interface StakeholderConflictView {
+  /** The sides, needs and way out of the conflict (conflictView). */
+  view: ConflictView
+  /** The stories of the side without this stakeholder's stories. When its
+   * stories are on both sides: the stories of both sides that are not its
+   * own. Empty when every story is its own. */
+  otherStories: Story[]
+}
+
+/** The conflicts of the stakeholder page's 訴求 tab (design 3.3): every
+ * conflict with one of its stories on a side, in file order. The list has
+ * the same conflicts as the tab count (conflictsForStakeholder). */
+export function stakeholderConflictViews(issue: IssueFile, id: string): StakeholderConflictView[] {
+  const byId = new Map(issue.stories.map((s) => [s.id, s]))
+  const isOwn = (storyId: string) => (byId.get(storyId)?.stakeholder ?? storyId.split('-')[0]) === id
+  return conflictsForStakeholder(issue.conflicts, id).map((conflict) => {
+    const onA = conflict.sideA.some(isOwn)
+    const onB = conflict.sideB.some(isOwn)
+    // Side A first, then side B, so the order matches the issue's 訴求 tab.
+    const other = [...(onB ? conflict.sideA : []), ...(onA ? conflict.sideB : [])].filter((s) => !isOwn(s))
+    return { view: conflictView(issue, conflict), otherStories: other.flatMap((s) => byId.get(s) ?? []) }
+  })
+}
+
+export interface StakeholderSolution {
+  solution: Solution
+  /** The stakeholder's needs that the solution covers, in the order of step 5.2. */
+  needs: StakeholderNeedItem[]
+}
+
+export interface StakeholderSolutionsView {
+  /** The solutions that cover at least one of its needs, in letter order. */
+  solutions: StakeholderSolution[]
+  /** 「尚未有解法涵蓋的需求」: its needs that no solution covers, in the order of step 5.2. */
+  uncovered: StakeholderNeedItem[]
+}
+
+/** The stakeholder page's 解法 tab for one issue (design 3.3). dataBased:
+ * the 「只看有資料根據」 filter. It keeps only the needs with a data-based
+ * 以便… cell (dataBasedNeeds, the same rule as the 需求 tab), and leaves
+ * out a solution with no need left. */
+export function stakeholderSolutionsView(issue: IssueFile, id: string, dataBased = false): StakeholderSolutionsView {
+  const all = needsOfStakeholder(issue, id)
+  const needs = dataBased ? dataBasedNeeds(all) : all
+  const solutions = issue.solutions
+    .map((solution) => ({
+      solution,
+      needs: needs.filter((n) => n.solutions.some((s) => s.solution.id === solution.id)),
+    }))
+    .filter((s) => s.needs.length > 0)
+    .sort((a, b) => compareIds(a.solution.id, b.solution.id))
+  return { solutions, uncovered: needs.filter((n) => n.solutions.length === 0) }
 }

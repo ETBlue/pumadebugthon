@@ -1,5 +1,7 @@
 // All UI text of the app. Components never contain UI text directly.
 // An English file (src/i18n/en.ts) can copy this shape later.
+import type { TabLabel } from '@/lib/tabLabel'
+
 export const t = {
   appTitle: '市政提案小幫手',
   /** Shown under the h1 on the home page, and in the index.html meta description. */
@@ -207,9 +209,9 @@ export const t = {
     /** The tab labels with the counts of the issue (issueTabCounts). A count
      * is a plain number, not a score. */
     tabLabels: {
-      wants: (wants: number, conflicts: number) => `訴求 ${wants}・衝突 ${conflicts}`,
-      needs: (n: number) => `需求 ${n}`,
-      solutions: (n: number) => `解法 ${n}`,
+      wants: (wants: number, conflicts: number): TabLabel => ({ main: `訴求 ${wants}`, sep: '・', sub: `衝突 ${conflicts}` }),
+      needs: (n: number): TabLabel => ({ main: `需求 ${n}` }),
+      solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
     },
   },
   overview: {
@@ -383,9 +385,9 @@ export const t = {
     },
     /** The tab labels with the counts summed over the issues (decision 48). */
     tabLabels: {
-      wants: (wants: number, conflicts: number) => `訴求 ${wants}・衝突 ${conflicts}`,
-      needs: (n: number) => `需求 ${n}`,
-      solutions: (n: number) => `解法 ${n}`,
+      wants: (wants: number, conflicts: number): TabLabel => ({ main: `訴求 ${wants}`, sep: '・', sub: `衝突 ${conflicts}` }),
+      needs: (n: number): TabLabel => ({ main: `需求 ${n}` }),
+      solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
     },
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',
@@ -446,8 +448,12 @@ export const t = {
     /** The tab labels with the coverage counts (solutionTabCounts). Plain
      * numbers: no percent, no bar. */
     tabLabels: {
-      needs: (covered: number, notCovered: number) => `需求　涵蓋 ${covered}・未涵蓋 ${notCovered}`,
-      stakeholders: (covered: number, notCovered: number) => `利害關係人　涵蓋 ${covered}・未涵蓋 ${notCovered}`,
+      needs: (covered: number, notCovered: number): TabLabel => ({
+        main: '需求', sep: '　', sub: `涵蓋 ${covered}・未涵蓋 ${notCovered}`,
+      }),
+      stakeholders: (covered: number, notCovered: number): TabLabel => ({
+        main: '利害關係人', sep: '　', sub: `涵蓋 ${covered}・未涵蓋 ${notCovered}`,
+      }),
     },
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',

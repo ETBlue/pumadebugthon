@@ -23,13 +23,14 @@ import {
 } from '@/lib/stakeholderPage'
 import { resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
+import type { TabLabel } from '@/lib/tabLabel'
 import type { IndexFile, Stakeholder as StakeholderType } from '@/types'
 
 const tp = t.stakeholderPage
 
 /** The tab label with its count. While the issues load, the name only. */
-function tabLabel(tab: StakeholderTab, c: TabCounts | null): string {
-  if (c === null || tab === 'overview') return tp.tabs[tab]
+function tabLabel(tab: StakeholderTab, c: TabCounts | null): TabLabel {
+  if (c === null || tab === 'overview') return { main: tp.tabs[tab] }
   if (tab === 'wants') return tp.tabLabels.wants(c.wants, c.conflicts)
   return tp.tabLabels[tab](c[tab])
 }

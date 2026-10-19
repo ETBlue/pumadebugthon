@@ -18,6 +18,7 @@ import { parseSolutionSlug, parseSolutionTab, SOLUTION_TABS, solutionPath, type 
 import { findIssue, tabPath } from '@/lib/issuePage'
 import { findSolution, solutionTitle } from '@/lib/solutionPage'
 import { solutionTabCounts } from '@/lib/tabCounts'
+import type { TabLabel } from '@/lib/tabLabel'
 import type { AvailableIssueSummary, IndexFile, IssueFile, Solution as SolutionType } from '@/types'
 
 const tp = t.solutionPage
@@ -78,8 +79,8 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
   const issueTitle = t.issueCard.numberTitle(n, issue.title)
   const tab = parseSolutionTab(useParams().tab)
   const counts = useMemo(() => solutionTabCounts(issue, sol), [issue, sol])
-  const tabLabel = (name: SolutionTab) =>
-    name === 'overview' ? tp.tabs.overview : tp.tabLabels[name](counts[name].covered, counts[name].notCovered)
+  const tabLabel = (name: SolutionTab): TabLabel =>
+    name === 'overview' ? { main: tp.tabs.overview } : tp.tabLabels[name](counts[name].covered, counts[name].notCovered)
 
   return (
     <>

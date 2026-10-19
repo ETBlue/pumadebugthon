@@ -16,6 +16,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { availableIssues } from '@/lib/issues'
 import { findIssue, ISSUE_TABS, legacyIssueTabTarget, parseIssueNumber, parseTab, tabPath, type IssueTab } from '@/lib/issuePage'
 import { issueTabCounts, type TabCounts } from '@/lib/tabCounts'
+import type { TabLabel } from '@/lib/tabLabel'
 import type { AvailableIssueSummary, IndexFile } from '@/types'
 
 const ti = t.issue
@@ -28,8 +29,8 @@ const TAB_CONTENT: Record<IssueTab, (props: IssueTabProps) => ReactNode> = {
 }
 
 /** The tab label with its count. While the issue loads, the name only. */
-function tabLabel(tab: IssueTab, c: TabCounts | null): string {
-  if (c === null || tab === 'overview') return ti.tabs[tab]
+function tabLabel(tab: IssueTab, c: TabCounts | null): TabLabel {
+  if (c === null || tab === 'overview') return { main: ti.tabs[tab] }
   if (tab === 'wants') return ti.tabLabels.wants(c.wants, c.conflicts)
   return ti.tabLabels[tab](c[tab])
 }

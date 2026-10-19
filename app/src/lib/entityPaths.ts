@@ -42,6 +42,16 @@ export function storyPath(issueNumber: number, storyId: string): string {
   return `/stakeholders/${storyId.split('-')[0]}/stories/${issueNumber}/${storyId}`
 }
 
+const STORY_ID = /^[OI]\d+-US\d+$/
+
+/** The story page of a want key or a need key, when the key is a story ID
+ * (a want or need with no group, for example "I01-US09"). null for a group
+ * key (W08, N07) or any other value. Every story ID links to its story page
+ * (decision 55). */
+export function keyStoryPath(issueNumber: number, key: string): string | null {
+  return STORY_ID.test(key) ? storyPath(issueNumber, key) : null
+}
+
 /** A link to one part of an issue tab with ?focus=<value> (design 3.2,
  * decision 53), for example { pathname: "/issues/2", search: "?focus=stakeholders" }.
  * With dataBasedOnly, the search also has evidence=1. */

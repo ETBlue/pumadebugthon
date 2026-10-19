@@ -73,8 +73,8 @@ export const t = {
     solutionsNone: '沒有符合的解法。請減少篩選條件再試。',
     solutionSpaces: '空間類型',
     solutionAdded: '新增日期',
-    solutionStories: '涵蓋的使用者故事',
-    solutionStoriesValue: (n: number) => `${n} 則`,
+    /** The number of needs a solution covers, as plain text (decision 54). */
+    solutionNeeds: (n: number) => `涵蓋 ${n} 個需求`,
     issueOption: (n: number, title: string) => `#${n} ${title}`,
     issueHeading: (n: number, title: string) => `#${n} ${title}`,
   },

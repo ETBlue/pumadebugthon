@@ -18,6 +18,7 @@ import { Heading, type HeadingLevel } from './Heading'
 import { SolutionTitleLink } from './SolutionCard'
 import { focusTargetClass, linkClass } from './styles'
 import { TagBadge } from './TagBadge'
+import { ItemKey } from './ItemKey'
 
 const tn = t.need
 
@@ -120,7 +121,9 @@ export function NeedItem({
           <CellText cell={summary} />
         )}
       </Heading>
-      {has('id') && <p className="mt-0.5 font-mono text-xs text-muted-foreground">{need.id}</p>}
+      {has('id') && (
+        <p className="mt-0.5 text-xs text-muted-foreground"><ItemKey issueNumber={issueNumber} value={need.id} /></p>
+      )}
 
       <dl className="mt-2 space-y-1.5 text-sm">
         {has('priority') && (

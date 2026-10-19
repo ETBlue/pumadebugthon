@@ -38,3 +38,13 @@ export function solutionSpaceOptions(spaceTypes: SpaceType[], issues: IssueFile[
   const used = new Set(issues.flatMap((i) => i.solutions.flatMap((s) => s.spaces)))
   return spaceTypes.filter((s) => used.has(s.code))
 }
+
+/** The number of needs the solution covers, for 「涵蓋 9 個需求」 on
+ * #/solutions (decision 54): the rows of step 5.2 that it lists in
+ * needs.must or needs.shouldCould. The same number as the covered count of
+ * the solution page's 需求 tab. null in the old format (needs is null). */
+export function coveredNeedCount(issue: IssueFile, solution: Solution): number | null {
+  const needs = solution.needs
+  if (needs === null) return null
+  return issue.needs.filter((n) => needs.must.includes(n.id) || needs.shouldCould.includes(n.id)).length
+}

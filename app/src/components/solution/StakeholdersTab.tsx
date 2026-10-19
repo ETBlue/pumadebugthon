@@ -14,6 +14,7 @@ import {
 import { findStakeholder } from '@/lib/stakeholders'
 import type { IndexFile, IssueFile, Solution } from '@/types'
 import { PartEmpty } from './Parts'
+import { ItemKey } from '@/components/ItemKey'
 
 const tp = t.solutionPage
 
@@ -23,7 +24,7 @@ function CoveredList({ items, issueNumber }: { items: CoveredNeed[]; issueNumber
       {items.map((item) => (
         <li key={item.need.id}>
           <NeedSummaryLink summary={item.summary} issueNumber={issueNumber} needKey={item.need.id} />
-          <span className="ml-2 font-mono text-xs text-muted-foreground">{item.need.id}</span>
+          <ItemKey issueNumber={issueNumber} value={item.need.id} className="ml-2 text-xs" muted />
         </li>
       ))}
     </ul>
@@ -36,7 +37,7 @@ function NotCoveredList({ items, issueNumber }: { items: NotCoveredNeed[]; issue
       {items.map((item) => (
         <li key={item.need.id}>
           <NeedSummaryLink summary={item.summary} issueNumber={issueNumber} needKey={item.need.id} />
-          <span className="ml-2 font-mono text-xs text-muted-foreground">{item.need.id}</span>
+          <ItemKey issueNumber={issueNumber} value={item.need.id} className="ml-2 text-xs" muted />
           <p className="mt-0.5 text-muted-foreground">
             {item.otherSolutions.length === 0 ? (
               tp.otherSolutionsNone

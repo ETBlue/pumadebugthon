@@ -17,6 +17,7 @@ import { pickSearch } from '@/lib/wantsTab'
 import type { Story } from '@/types'
 import { AlsoIn, AlsoInLine } from './AlsoIn'
 import type { IssueTabProps } from './types'
+import { ItemKey } from '@/components/ItemKey'
 
 const to = t.opinion
 const tw = t.wantsTab
@@ -120,7 +121,7 @@ export function OpinionTab(props: IssueTabProps & { wants: WantData[]; filtered:
             {to.resultHeading}
             <span className="mt-1 block text-base font-normal">
               {to.picked}
-              <span className="mx-1 font-mono">{picked.key}</span>
+              <ItemKey issueNumber={summary.number} value={picked.key} className="mx-1" />
               <PickLabel item={picked} />
             </span>
           </h4>

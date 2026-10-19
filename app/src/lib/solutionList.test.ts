@@ -3,13 +3,16 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
-import { solutionGroups, solutionSpaceOptions } from './solutionList'
+import { coveredNeedCount, solutionGroups, solutionSpaceOptions } from './solutionList'
+import { solutionTabCounts } from './tabCounts'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
+const policy = policyJson as IssueFile
 const all = [smokefree, trees, trashcans]
 
 const shape = (groups: ReturnType<typeof solutionGroups>) =>
@@ -55,5 +58,23 @@ describe('solutionSpaceOptions', () => {
     expect(new Set(codes)).toEqual(used)
     const order = index.spaceTypes.map((s) => s.code).filter((c) => used.has(c))
     expect(codes).toEqual(order)
+  })
+})
+
+describe('coveredNeedCount', () => {
+  it('#2 A covers 9 needs (6.2 of #2: Must and Should / Could)', () => {
+    expect(coveredNeedCount(trashcans, trashcans.solutions[0])).toBe(9)
+  })
+
+  it('is the same number as the covered count of the solution page tab, for every solution', () => {
+    for (const issue of [trees, trashcans, smokefree, policy]) {
+      for (const sol of issue.solutions) {
+        expect(coveredNeedCount(issue, sol)).toBe(solutionTabCounts(issue, sol).needs.covered)
+      }
+    }
+  })
+
+  it('is null for a solution with no need list (the old format)', () => {
+    expect(coveredNeedCount(trashcans, { ...trashcans.solutions[0], needs: null })).toBeNull()
   })
 })

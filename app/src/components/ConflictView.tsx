@@ -11,6 +11,7 @@ import { NeedPriority, NeedSummaryLink } from './NeedItem'
 import { SolutionTitleLink } from './SolutionCard'
 import { StoryList } from './StoryList'
 import { focusTargetClass } from './styles'
+import { ItemKey } from './ItemKey'
 
 const tc = t.conflict
 
@@ -57,7 +58,7 @@ export function ConflictView({
           {list.map((need) => (
             <li key={need.id}>
               <NeedSummaryLink summary={needSummaryOf(issue, need)} issueNumber={n} needKey={need.id} />
-              <span className="ml-2 font-mono text-xs text-muted-foreground">{need.id}</span>
+              <ItemKey issueNumber={n} value={need.id} className="ml-2 text-xs" muted />
               <span className="mt-0.5 block text-sm"><NeedPriority need={need} /></span>
             </li>
           ))}

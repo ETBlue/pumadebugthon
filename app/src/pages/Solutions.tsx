@@ -9,7 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { availableIssues } from '@/lib/issues'
-import { solutionGroups, solutionSpaceOptions } from '@/lib/solutionList'
+import { coveredNeedCount, solutionGroups, solutionSpaceOptions } from '@/lib/solutionList'
 import type { IndexFile } from '@/types'
 
 const tl = t.lists
@@ -71,6 +71,7 @@ function SolutionList({ index }: { index: IndexFile }) {
   const total = solutionGroups(issues.data, { spaces: [], issues: [] }).reduce((n, g) => n + g.solutions.length, 0)
   const groups = solutionGroups(issues.data, { spaces, issues: issueKeys.map(Number) })
   const shown = groups.reduce((n, g) => n + g.solutions.length, 0)
+  const byNumber = new Map(issues.data.map((i) => [i.number, i]))
 
   return (
     <>
@@ -102,6 +103,7 @@ function SolutionList({ index }: { index: IndexFile }) {
                       issueNumber={g.issueNumber}
                       showIssue
                       spaceTypes={index.spaceTypes}
+                      coveredNeeds={coveredNeedCount(byNumber.get(g.issueNumber)!, sol)}
                     />
                   </li>
                 ))}

@@ -46,17 +46,22 @@ interface CommonProps {
 
 /** The props of SolutionCard. Each variant has its own props.
  * - detailed: the solution list (#/solutions). Needs spaceTypes for the
- *   space type links.
+ *   space type links and coveredNeeds for 「涵蓋 9 個需求」.
  * - compact: short lists (home page, space page, stakeholder page, opinion
  *   check). */
 export type SolutionCardProps =
-  | (CommonProps & { variant: 'detailed'; spaceTypes: SpaceType[] })
+  | (CommonProps & {
+      variant: 'detailed'
+      spaceTypes: SpaceType[]
+      /** The number of needs it covers (coveredNeedCount). null: not shown. */
+      coveredNeeds: number | null
+    })
   | (CommonProps & { variant: 'compact' })
 
 /** One solution in a list (design 3.9). Both variants show the tag, the code
  * and name as a link to the solution page, and the one-line summary. The
- * detailed variant also shows 空間類型, 新增日期 and the number of stories
- * it covers. children come last. */
+ * detailed variant also shows 空間類型, 新增日期 and the number of needs it
+ * covers (decision 54). children come last. */
 export function SolutionCard(props: SolutionCardProps) {
   const { solution: sol, issueNumber, showIssue = false, children } = props
   return (
@@ -71,8 +76,10 @@ export function SolutionCard(props: SolutionCardProps) {
             <Field label={tl.solutionSpaces}><SpaceLinks spaceTypes={props.spaceTypes} codes={sol.spaces} /></Field>
           )}
           {sol.added && <Field label={tl.solutionAdded}><time dateTime={sol.added}>{sol.added}</time></Field>}
-          <Field label={tl.solutionStories}>{tl.solutionStoriesValue(sol.stories.length)}</Field>
         </dl>
+      )}
+      {props.variant === 'detailed' && props.coveredNeeds !== null && (
+        <p className="mt-1 text-sm">{tl.solutionNeeds(props.coveredNeeds)}</p>
       )}
       {children}
     </div>

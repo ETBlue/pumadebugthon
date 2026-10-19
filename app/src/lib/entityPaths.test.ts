@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   conflictFocusPath,
+  keyStoryPath,
   crossSolutionPath,
   issueFocusPath,
   legacySolutionPath,
@@ -232,5 +233,16 @@ describe('movedStakeholderTarget', () => {
 
   it('returns null when the path is not a page of the old ID', () => {
     expect(movedStakeholderTarget('/stakeholders/I12', '', 'O02', 'I12')).toBeNull()
+  })
+})
+
+describe('keyStoryPath', () => {
+  it('links a want or need key that is a story ID to the story page (decision 55)', () => {
+    expect(keyStoryPath(2, 'I01-US09')).toBe('/stakeholders/I01/stories/2/I01-US09')
+    expect(keyStoryPath(9, 'O25-US01')).toBe('/stakeholders/O25/stories/9/O25-US01')
+  })
+
+  it('is null for a group key or anything else', () => {
+    for (const key of ['W08', 'N07', 'C1', 'X-N01', 'I01', 'i01-us09', 'I01-US', '']) expect(keyStoryPath(2, key)).toBeNull()
   })
 })

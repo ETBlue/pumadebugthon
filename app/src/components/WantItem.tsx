@@ -15,6 +15,7 @@ import { Heading, type HeadingLevel } from './Heading'
 import { PickLabel } from './PickLabel'
 import { focusTargetClass, linkClass } from './styles'
 import { TagBadge } from './TagBadge'
+import { ItemKey } from './ItemKey'
 
 const tw = t.want
 
@@ -100,7 +101,7 @@ export function WantItem({
       <Heading level={headingLevel} id={headingId} className="font-semibold">{label}</Heading>
       {has('key') && (
         <p className="mt-0.5 text-xs text-muted-foreground">
-          <span className="font-mono">{item.key}</span>
+          <ItemKey issueNumber={issueNumber} value={item.key} />
           {' · '}
           {tw.storyCount(item.storyIds.length)}
         </p>

@@ -77,7 +77,7 @@ Five tabs. 總覽 opens first.
 
 | Tab | Content |
 |---|---|
-| 總覽 | 「分析摘要」 comes first (decision 29): the 5 topics of the issue file's `## 分析摘要` section, in the fixed order (難以取捨的決定, 可能的爭議, 受影響較大的弱勢族群, 法規上的障礙, 相依事項與現行政策的關係), each as a heading with its items. One line explains the section. Each item shows its 項目, the 說明 with its tag badge (a 【待補】 item in the dashed box), and 「相關：」 with its references as links: a story goes to the opinion check with its pick key (its W group or the story, as on `#/needs`), a W group to the opinion check, a stakeholder to `#/stakeholders/<id>`, a conflict to the 衝突 tab, a solution to `#/issues/<n>/solutions/<code>`. A reference to another issue (「#8 解法 B」) goes to that issue: its solution page, its 衝突 tab, or its overview for a story or a group. Issue links keep the 「只看有資料根據」 filter. A reference that cannot be read stays plain text. The logic is in `src/lib/summary.ts`. Then: title, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「資料根據」: the same breakdown as on the issue card (3.9), with the full explanation line under it. 「特別關注族群」 (decision 25): one row for each of the 6 groups, always in the fixed order 高齡, 身心障礙, 呼吸道疾病, 兒童與照顧者, 外籍, 經濟弱勢, never by count. A row with stakeholders shows the stakeholders as links (ID and name, to `#/stakeholders/<id>`), the number of their stories in this issue (a story counts once, also when its stakeholder is in two groups, for example I11), a small 資料根據 bar of those stories' cells (the `CellBasis` parts and colors, without the totals and the 實證 percent), and the 說明 cell with its tag when it is not 「—」. A group with no stakeholder shows 「本議題尚未納入」 and its 【待補】 item, in a dashed box: easy to see, but not alarming. One line explains the section: 「列出 6 類特別關注族群在本議題的利害關係人與故事。尚未納入的族群，需要由真人判斷是否應該納入。」 The logic is in `src/lib/focusGroups.ts`. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
+| 總覽 | 「分析摘要」 comes first (decision 29): the 5 topics of the issue file's `## 分析摘要` section, in the fixed order (難以取捨的決定, 可能的爭議, 受影響較大的弱勢族群, 法規上的障礙, 相依事項與現行政策的關係), each as a heading with its items. One line explains the section. Each item shows its 項目, the 說明 with its tag badge (a 【待補】 item in the dashed box), and 「相關：」 with its references as links: a story goes to the opinion check with its pick key (its W group or the story, `storyPickKey`), a W group to the opinion check, a stakeholder to `#/stakeholders/<id>`, a conflict to the 衝突 tab, a solution to `#/issues/<n>/solutions/<code>`. A reference to another issue (「#8 解法 B」) goes to that issue: its solution page, its 衝突 tab, or its overview for a story or a group. Issue links keep the 「只看有資料根據」 filter. A reference that cannot be read stays plain text. The logic is in `src/lib/summary.ts`. Then: title, tag legend. Counts: stakeholders (O and I), stories, conflicts, solutions. Each count links to its tab. 「資料根據」: the same breakdown as on the issue card (3.9), with the full explanation line under it. 「特別關注族群」 (decision 25): one row for each of the 6 groups, always in the fixed order 高齡, 身心障礙, 呼吸道疾病, 兒童與照顧者, 外籍, 經濟弱勢, never by count. A row with stakeholders shows the stakeholders as links (ID and name, to `#/stakeholders/<id>`), the number of their stories in this issue (a story counts once, also when its stakeholder is in two groups, for example I11), a small 資料根據 bar of those stories' cells (the `CellBasis` parts and colors, without the totals and the 實證 percent), and the 說明 cell with its tag when it is not 「—」. A group with no stakeholder shows 「本議題尚未納入」 and its 【待補】 item, in a dashed box: easy to see, but not alarming. One line explains the section: 「列出 6 類特別關注族群在本議題的利害關係人與故事。尚未納入的族群，需要由真人判斷是否應該納入。」 The logic is in `src/lib/focusGroups.ts`. 「使用相同空間的議題」: for each space type of this issue, the other issues that use it, for example 「人行道：#1」, with links. 「待補清單」: every 【待補】 item in the issue, with the section it is in, so readers can see what real input is still missing. |
 | 你的意見 | The opinion check (section 4) |
 | 利害關係人 | The same list as the stakeholder list page (section 3.9), limited to this issue. Each row links to the stakeholder page (section 3.3). |
 | 衝突 | C1, C2… Each shows both sides with their stories, the deliberation method, and the simulated result. |
@@ -243,25 +243,7 @@ The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an
 | Filters | Space type and issue, both as toggle chips. Several picked chips in one filter: a solution matches ANY of them. Nothing picked: all. A status line says how many solutions match. |
 | Logic | `solutionGroups` and `solutionSpaceOptions` in `src/lib/solutionList.ts` |
 
-**`#/wants`: 訴求列表.** Every 訴求 of every analyzed issue: the same items as the opinion check pick list (section 4.1), grouped by issue (an h2 per issue), in pick list order. The header link 訴求 goes here.
-
-| Part | Design |
-|---|---|
-| Each item | The tag badge and the label, as a link to the opinion check with this item picked (`#/issues/<n>/opinion?pick=<key>`), then the key (for example W08) and the number of stories as plain text |
-| Search | A search box, the same match as the opinion check (`filterPickList`). A status line says how many items match. |
-| Filter | 「只看有資料根據」 (3.5), in the URL as `?evidence=1`. The link to the opinion check keeps it. With the filter on, each item also says how many of its stories have a data basis. |
-| Order | Issue number, then pick list order. Never by a count. |
-| Logic | `wantGroups` and `opinionPickTo` in `src/lib/wants.ts` |
-
-**`#/needs`: 需求列表.** The 以便… (`soThat`) cell of every story of every analyzed issue, one item per story, grouped by issue (an h2 per issue). A 訴求 is what a stakeholder wants (我想要…); a 需求 is why they want it (以便…). The header link 需求 goes here. The page is built like `#/wants`.
-
-| Part | Design |
-|---|---|
-| Each item | The tag badge and the 以便… text, as a link to the opinion check with the story's pick item picked: its W group, or the story ID when it has no group (`#/issues/<n>/opinion?pick=<key>`). Then the story ID and the stakeholder name, as a link to the stakeholder page. |
-| Search | A search box. It matches the 以便… text without Markdown. A status line says how many items match. |
-| Filter | 「只看有資料根據」 (3.5), in the URL as `?evidence=1`. It keeps a story when its 以便… cell is `[實證]` or `[AI整理]`. The page shows only that cell, so the tag of the 我想要… cell does not count here. The link to the opinion check keeps the filter. |
-| Order | Issue number, then the story order of the issue file. Never by a count. |
-| Logic | `needGroups` and `needPickKey` in `src/lib/needs.ts`, `needCount` in `src/lib/counts.ts` |
+The list pages `#/wants` (訴求列表) and `#/needs` (需求列表) were removed (decision 31). Their old URLs show the not-found page. The opinion check pick links they used stay in `src/lib/opinion.ts`: `opinionPickTo` and `storyPickKey` (the old `needPickKey`). The 分析摘要 links (`src/lib/summary.ts`) use them.
 
 **Shared cards.** Every list of 議題 or 解法 uses one of two shared components. Each has two variants, set with the prop `variant: 'detailed' | 'compact'`. The title is a link to the item's own page. A tag badge stays outside the link.
 
@@ -498,7 +480,7 @@ app/
     lib/                pure functions: opinion check, cross-issue lookups, filters
     types.ts            types for the JSON
     i18n/zh-TW.ts       all UI strings. Components never contain UI text directly.
-    pages/              Home, Issues, Stakeholders, Solutions, Wants, Needs (list pages), Issue (with the 5 tabs), Stakeholder, Space
+    pages/              Home, Issues, Stakeholders, Solutions (list pages), About, Issue (with the 5 tabs), Stakeholder, Space
     components/         TagBadge, Watermark, StakeholderTree, StoryCard, IssueCard, SolutionCard, ...
     components/ui/      shadcn/ui parts, copied into the repo and editable
 ```
@@ -576,3 +558,4 @@ Required by the hackathon rules:
 28. The theme button shows the theme it switches to (moon + 深色模式, or sun + 淺色模式), not a fixed 深色模式 with `aria-pressed`. With the fixed text, the only change was a filled moon and a gray background, so readers thought the button did not work (3.10). (ETBlue, 2026-10-19)
 29. Each issue analysis has a 「分析摘要」 section near the top, after the intro notes and before 題目原文重點 (ETBlue, `human-inputs.md`). It has 5 topics in a fixed order: 難以取捨的決定, 可能的爭議, 受影響較大的弱勢族群, 法規上的障礙, 相依事項與現行政策的關係. Each item has a tag (mostly `[AI模擬]`, or a 【待補】 item) and lists where it comes from (相關編號). The summary adds no new facts. 受影響較大的弱勢族群 follows the 1.3 order and names the groups not included yet. The wording is neutral: each controversy gives the sides in the same way, and a current policy is described as 「與現行政策的關係」. The app shows the summary first on the 總覽 tab (3.2). The section heading 「分析摘要」 is an h3, like the other sections of the tab, so each topic is an h4. The topics are never sorted by the number of items. (ETBlue, 2026-10-19)
 30. The header shows only the app name, 議題, 利害關係人 and 解法 with counts, and the theme button. 訴求 and 需求 are no longer in the header (ETBlue, `human-inputs.md`, information architecture). This replaces the header part of decisions 13 and 22 (3.7). (ETBlue, 2026-10-20)
+31. The pages `#/wants` and `#/needs` are removed, with their routes, page files and list code (`src/lib/wants.ts`, `src/lib/needs.ts`). Their old URLs show the not-found page. The pick link helpers move to `src/lib/opinion.ts`. `wantCount` and `needCount` stay in `src/lib/counts.ts` for the planned 訴求 and 需求 tabs. This replaces decisions 14 and 22 (3.9). (ETBlue, `human-inputs.md`, 2026-10-20)

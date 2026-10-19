@@ -1,5 +1,8 @@
 // The counts in the header (design 3.7). A count is a plain number, not a
 // score. Nothing here sorts.
+// wantCount and needCount are not in the header any more (decision 30). They
+// stay for the 訴求 and 需求 tabs that human-inputs.md plans for the issue
+// and stakeholder pages.
 import type { IndexFile, IssueFile, Story } from '@/types'
 import { availableIssues } from './issues'
 import { pickList } from './opinion'

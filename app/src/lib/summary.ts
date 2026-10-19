@@ -3,9 +3,8 @@
 import type { IssueFile } from '@/types'
 import { withDataBasisFilter } from './dataBasis'
 import { tabPath } from './issuePage'
-import { needPickKey } from './needs'
 import { solutionPath } from './solutionPage'
-import { opinionPickTo } from './wants'
+import { opinionPickTo, storyPickKey } from './opinion'
 
 /** The topics of the 分析摘要, in the fixed order. The same list as
  * analysis_common.SUMMARY_TOPICS. */
@@ -75,7 +74,7 @@ export function summaryRefTo(ref: string, issueNumber: number, issue: IssueFile,
   switch (r.kind) {
     case 'story': {
       const story = issue.stories.find((s) => s.id === r.id)
-      return story ? opinionPickTo(issueNumber, needPickKey(issue, story), dataBasedOnly) : null
+      return story ? opinionPickTo(issueNumber, storyPickKey(issue, story), dataBasedOnly) : null
     }
     case 'group':
       return issue.groups.some((g) => g.id === r.id) ? opinionPickTo(issueNumber, r.id, dataBasedOnly) : null

@@ -3,7 +3,6 @@ import { Layout } from '@/components/Layout'
 import Home from '@/pages/Home'
 import Issue from '@/pages/Issue'
 import Issues from '@/pages/Issues'
-import Needs from '@/pages/Needs'
 import Placeholder from '@/pages/Placeholder'
 import RouteError from '@/pages/RouteError'
 import Solution from '@/pages/Solution'
@@ -11,7 +10,6 @@ import Solutions from '@/pages/Solutions'
 import Space from '@/pages/Space'
 import Stakeholder from '@/pages/Stakeholder'
 import Stakeholders from '@/pages/Stakeholders'
-import Wants from '@/pages/Wants'
 
 // Hash URLs (#/issues/2) work on GitHub Pages without server rewrites.
 export const router = createHashRouter([
@@ -35,9 +33,8 @@ export const router = createHashRouter([
       { path: 'stakeholders', element: <Stakeholders /> },
       { path: 'stakeholders/:id', element: <Stakeholder /> },
       { path: 'solutions', element: <Solutions /> },
-      { path: 'wants', element: <Wants /> },
-      { path: 'needs', element: <Needs /> },
       { path: 'spaces/:code', element: <Space /> },
+      // Unknown pages, also the removed #/wants and #/needs (design 3.7).
       { path: '*', element: <Placeholder /> },
     ],
   },

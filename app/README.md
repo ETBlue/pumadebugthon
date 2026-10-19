@@ -54,7 +54,7 @@
 | `[AI整理]` | 從「市長，你給我聽好了」資料整理的件數與改寫的摘要 | 主辦單位提供給參加者的資料。依活動規則，僅限於此黑客松活動使用。只用件數和改寫的摘要，不引用原始留言，原始檔案不公開，也不辨認任何個人。件數是 AI 用關鍵字比對算出的估計，**還沒有經過真人查核** |
 | `[AI模擬]` | 大部分的使用者故事（「我想要…」「以便…」）、與本題的關係、優先順序、相同訴求群組、衝突與審議的模擬結果、解法、成效衡量的目標、分析摘要的大部分項目 | 由 AI 推想。**不是真實訪談，也不是真實市民的話** |
 | 【待補】 | 需要真人提供的資訊 | 例如局處確認數字、法務確認。每個議題的「待補清單」列出全部項目 |
-| （不標記） | 利害關係人清單、分類路徑、空間類型 | 作者整理的分類，見 [`stakeholders.csv`](../analysis/stakeholders.csv)、[`path-labels.csv`](../analysis/path-labels.csv)、[`space-types.csv`](../analysis/space-types.csv) |
+| （不標記） | 利害關係人清單、分類路徑、空間類型 | 作者整理的分類，見 [`stakeholders.csv`](../analysis/data/stakeholders.csv)、[`path-labels.csv`](../analysis/data/path-labels.csv)、[`space-types.csv`](../analysis/data/space-types.csv) |
 
 表格只是大致的分類，以每個格子上的標記為準。例如少數使用者故事來自題目原文，標記為 `[實證]`；議題列表和議題總覽的「資料根據」列出每個議題的使用者故事格子（「我想要…」和「以便…」）各有幾格標記 `[實證]`、`[AI整理]`、`[AI模擬]` 或 【待補】。這是資料來源的組成，不代表議題的重要性或好壞。網站的「只看有資料根據」會顯示 `[實證]` 和 `[AI整理]` 的內容，只隱藏 `[AI模擬]`。
 
@@ -72,7 +72,7 @@
 | #8 | [臺北市指定吸菸區（data.gov.tw 177504）](https://data.gov.tw/dataset/177504) | 衛生局 |
 | #8 | [臺北市陳情系統類別資料](https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf)（沿用 #2 的計算） | 研究發展考核委員會 |
 
-完整的清單（含提供機關與授權）在 [`analysis/open-data.csv`](../analysis/open-data.csv)。
+完整的清單（含提供機關與授權）在 [`analysis/data/open-data.csv`](../analysis/data/open-data.csv)。
 
 #1 的部分解法參考了新加坡的做法。出處是新加坡政府的網頁與新聞報導，列在 #1 附錄；新聞的內容標記 `[AI整理]`，需要真人查證。這些解法本身仍是 `[AI模擬]`。
 
@@ -101,7 +101,7 @@
 | vitest | 5.0.5 | MIT | 測試 |
 | @types/node、@types/react、@types/react-dom | 22.20.5、19.3.0、19.3.0 | MIT | 型別定義 |
 
-### 資料轉換（`analysis/*.py`）
+### 資料轉換（`analysis/scripts/*.py`）
 
 只用 Python 3 的標準函式庫（csv、json、re、glob、subprocess、unittest 等），沒有其他套件。這些程式檢查議題分析的 Markdown，並轉成網站用的 JSON。
 
@@ -138,7 +138,7 @@
 ### 開放資料（建議）
 
 - 分析結果可以當成開放資料釋出，讓公民科技社群與企業在相似的利害關係人或關注上重複使用。
-- 本作品的 JSON 格式（由 [`analysis/build_json.py`](../analysis/build_json.py) 產生）與共用的利害關係人清單（[`stakeholders.csv`](../analysis/stakeholders.csv)），可以當成這種開放資料格式的第一版草稿。
+- 本作品的 JSON 格式（由 [`analysis/scripts/build_json.py`](../analysis/scripts/build_json.py) 產生）與共用的利害關係人清單（[`stakeholders.csv`](../analysis/data/stakeholders.csv)），可以當成這種開放資料格式的第一版草稿。
 - 這只是建議。格式需要市府與使用者討論後再決定，而且釋出前必須先用真實輸入取代 `[AI模擬]` 的內容。
 
 ### 需要的資料
@@ -175,8 +175,8 @@ cd app && npm ci && npm run data && npm run dev
 測試：
 
 ```
-cd app && npm test        # 網站的測試（Vitest）
-analysis/build_all.sh     # 在 repo 根目錄執行：檢查議題分析並執行 Python 測試
+cd app && npm test             # 網站的測試（Vitest）
+analysis/scripts/build_all.sh     # 在 repo 根目錄執行：檢查議題分析並執行 Python 測試
 ```
 
 建置：`cd app && npm run build`，結果在 `app/dist`。

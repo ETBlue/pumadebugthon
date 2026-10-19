@@ -1,4 +1,4 @@
-"""Tests for analysis/check_cross_issue.py.
+"""Tests for analysis/scripts/check_cross_issue.py.
 
 Each test copies the issue folders, the shared files and the cross-issue
 folder into a temp dir, changes one thing, runs the check as a subprocess,
@@ -8,8 +8,8 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 import os, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCRIPT = os.path.join(ANALYSIS, "check_cross_issue.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "method.md", "open-data.csv", "human-inputs.md")
+SCRIPT = os.path.join(ANALYSIS, "scripts", "check_cross_issue.py")
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "docs/method.md", "data/open-data.csv", "docs/human-inputs.md")
 CROSS = os.path.join("cross-issue", "cross-issue-analysis.md")
 
 
@@ -25,7 +25,8 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.dir = os.path.join(self._tmp.name, "analysis")
         os.makedirs(self.dir)
         for name in SHARED:
-            shutil.copy(os.path.join(ANALYSIS, name), self.dir)
+            os.makedirs(os.path.join(self.dir, os.path.dirname(name)), exist_ok=True)
+            shutil.copy(os.path.join(ANALYSIS, name), os.path.join(self.dir, name))
         for folder in issue_folders() + ["cross-issue"]:
             shutil.copytree(os.path.join(ANALYSIS, folder), os.path.join(self.dir, folder))
         self.md = os.path.join(self.dir, CROSS)

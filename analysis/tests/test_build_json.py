@@ -1,4 +1,4 @@
-"""Tests for analysis/build_json.py.
+"""Tests for analysis/scripts/build_json.py.
 
 The tests copy every issue folder that has an issue-analysis.md, and the
 shared files, into a temp dir and run the
@@ -12,8 +12,8 @@ import importlib.util, json, os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ANALYSIS)
-SCRIPT = os.path.join(ANALYSIS, "build_json.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "open-data.csv")
+SCRIPT = os.path.join(ANALYSIS, "scripts", "build_json.py")
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/open-data.csv")
 ISSUE = "2-trashcans"
 # No issue uses the old format now. This copy of #8 (from before commit
 # 37057a9) tests it. It is read from the working tree, not from HEAD.
@@ -610,7 +610,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 特別關注族群檢查:", "I04")
 
     def test_moved_id_without_space(self):
-        self.edit("已改為 I12", "已改為I 12", "stakeholders.csv")
+        self.edit("已改為 I12", "已改為I 12", "data/stakeholders.csv")
         self.assertFails("stakeholders.csv: O02:")
 
     def test_unknown_story_in_group(self):
@@ -667,23 +667,23 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.1:")
 
     def test_unknown_issue_source(self):
-        self.edit("8,8-smokefree,無菸城市,參加者補充", "8,8-smokefree,無菸城市,其他", "issues.csv")
+        self.edit("8,8-smokefree,無菸城市,參加者補充", "8,8-smokefree,無菸城市,其他", "data/issues.csv")
         self.assertFails("issues.csv: row 8:", "來源", "其他")
 
     def test_missing_issue_source_column(self):
-        self.edit("編號,資料夾,題目,來源", "編號,資料夾,題目,出處", "issues.csv")
+        self.edit("編號,資料夾,題目,來源", "編號,資料夾,題目,出處", "data/issues.csv")
         self.assertFails("issues.csv: header: no column 來源")
 
     def test_bad_issue_value_in_csv(self):
-        self.edit("I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,1、2、8,", "stakeholders.csv")
+        self.edit("I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,1、2、8,", "data/stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:")
 
     def test_bad_stakeholder_date(self):
-        self.edit("I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,1 2 8,,2026/10/18", "stakeholders.csv")
+        self.edit("I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,1 2 8,,2026/10/18", "data/stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:", "新增日期")
 
     def test_missing_stakeholder_date_column(self):
-        self.edit("議題,備註,新增日期", "議題,備註,日期", "stakeholders.csv")
+        self.edit("議題,備註,新增日期", "議題,備註,日期", "data/stakeholders.csv")
         self.assertFails("stakeholders.csv: header: no column 新增日期")
 
     def test_bad_solution_date(self):
@@ -692,15 +692,15 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.1:", "solution D", "新增日期")
 
     def test_open_data_bad_issue_value(self):
-        self.edit("政府資料開放授權條款第 1 版,8\n", "政府資料開放授權條款第 1 版,8、2\n", "open-data.csv")
+        self.edit("政府資料開放授權條款第 1 版,8\n", "政府資料開放授權條款第 1 版,8、2\n", "data/open-data.csv")
         self.assertFails("open-data.csv:", "議題")
 
     def test_open_data_missing_file(self):
-        os.remove(os.path.join(self.dir, "open-data.csv"))
+        os.remove(os.path.join(self.dir, "data", "open-data.csv"))
         self.assertFails("open-data.csv")
 
     def test_missing_csv_file(self):
-        os.remove(os.path.join(self.dir, "space-types.csv"))
+        os.remove(os.path.join(self.dir, "data", "space-types.csv"))
         self.assertFails("space-types.csv")
 
     def test_broken_conflict_row(self):

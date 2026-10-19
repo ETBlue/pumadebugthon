@@ -1,4 +1,4 @@
-"""Tests for analysis/build_csv.py.
+"""Tests for analysis/scripts/build_csv.py.
 
 The script runs as a subprocess on files from the working tree.
 The old format is tested with a fixture in tests/fixtures/old-format.
@@ -7,7 +7,7 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 import csv, os, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCRIPT = os.path.join(ANALYSIS, "build_csv.py")
+SCRIPT = os.path.join(ANALYSIS, "scripts", "build_csv.py")
 ISSUE = "2-trashcans"
 MD = os.path.join(ANALYSIS, ISSUE, "issue-analysis.md")
 CSV = os.path.join(ANALYSIS, ISSUE, "user-stories.csv")

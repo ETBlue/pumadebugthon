@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Run every analysis check and build the app JSON. Stops at the first failure.
 #
-# Usage: analysis/build_all.sh [output dir]   (default: app/public/data)
+# Usage: analysis/scripts/build_all.sh [output dir]   (default: app/public/data)
 # Works from any folder. A relative output dir is read from the folder you run it in.
 #
 # Steps:
@@ -18,7 +18,7 @@ set -euo pipefail
 out="${1:-}"
 if [[ -n "$out" && "$out" != /* ]]; then out="$PWD/$out"; fi
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$root"
 out="${out:-app/public/data}"
 ci="${CI:-}"
@@ -38,8 +38,8 @@ not_committed() {
 }
 
 echo "== 1. sync_stakeholders.py"
-python3 -I analysis/sync_stakeholders.py analysis
-not_committed analysis/stakeholders.csv "sync_stakeholders.py changed it"
+python3 -I analysis/scripts/sync_stakeholders.py analysis
+not_committed analysis/data/stakeholders.csv "sync_stakeholders.py changed it"
 
 echo "== 2. build_csv.py and check_analysis.py for each issue"
 # Column 2 of issues.csv is the folder. Skip the header line.
@@ -48,15 +48,15 @@ while read -r folder; do
   csv="analysis/$folder/user-stories.csv"
   [[ -f "$md" ]] || continue
   echo "-- $folder"
-  python3 -I analysis/build_csv.py "$md" "$csv"
+  python3 -I analysis/scripts/build_csv.py "$md" "$csv"
   not_committed "$csv" "build_csv.py rebuilt it from the step 4 table"
-  python3 -I analysis/check_analysis.py "$md" "$csv"
-done < <(tail -n +2 analysis/issues.csv | cut -d, -f2 | tr -d '\r')
+  python3 -I analysis/scripts/check_analysis.py "$md" "$csv"
+done < <(tail -n +2 analysis/data/issues.csv | cut -d, -f2 | tr -d '\r')
 
 echo "== 3. check_cross_issue.py"
 cross="analysis/cross-issue/cross-issue-analysis.md"
 if [[ -f "$cross" ]]; then
-  python3 -I analysis/check_cross_issue.py "$cross"
+  python3 -I analysis/scripts/check_cross_issue.py "$cross"
 else
   echo "no $cross; skipped"
 fi
@@ -65,6 +65,6 @@ echo "== 4. unit tests"
 python3 -I -m unittest discover -s analysis/tests -t .
 
 echo "== 5. build_json.py -> $out"
-python3 -I analysis/build_json.py analysis "$out"
+python3 -I analysis/scripts/build_json.py analysis "$out"
 
 echo "== all steps passed"

@@ -24,7 +24,7 @@ jobs:
       - name: Check out the full history
         uses: actions/checkout@v7
         with:
-          # build_json.py reads the update dates from git log.
+          # analysis/scripts/build_json.py reads the update dates from git log.
           fetch-depth: 0
 
       - name: Set up Python
@@ -41,7 +41,7 @@ jobs:
 
       - name: Check the analysis and build the JSON data
         # CI=true makes the script fail when a rebuilt file differs from the commit.
-        run: CI=true analysis/build_all.sh app/public/data
+        run: CI=true analysis/scripts/build_all.sh app/public/data
 
       - name: Install app packages
         working-directory: app

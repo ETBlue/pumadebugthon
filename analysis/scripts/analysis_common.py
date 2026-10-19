@@ -34,15 +34,31 @@ Rules:
   or a solution (解法 A). A reference to another issue starts with 「#」, the
   issue number and one space: 「#8 解法 B」, 「#2 C9」 (SUMMARY_REF).
   A 相同需求群組 (N01) is a reference too.
-- Two formats exist (see method.md). The needs-based format has a
+- Two formats exist (see docs/method.md). The needs-based format has a
   "### 相同需求群組" section (needs_format). In it, step 5 gives one MoSCoW
   priority per need, 6.2 maps solutions to needs, and the conflicts are in
   "### 6.4". The old format puts the conflicts in "### 5.4" and the
   priority on each story. All analyzed issues (#1, #2, #8) use the
   needs-based format now. The scripts still read the old format, and
   tests/fixtures/old-format tests it.
+- Folders: the scripts get the analysis folder (the folder with the issue
+  folders). The shared CSV files are in its data/ folder (data_file) and
+  method.md is in its docs/ folder (doc_file).
 """
-import re
+import os, re
+
+DATA_FOLDER = "data"
+DOCS_FOLDER = "docs"
+
+
+def data_file(analysis_dir, name):
+    """The path of a shared CSV file, such as issues.csv: <analysis_dir>/data/<name>."""
+    return os.path.join(analysis_dir, DATA_FOLDER, name)
+
+
+def doc_file(analysis_dir, name):
+    """The path of a shared doc, such as method.md: <analysis_dir>/docs/<name>."""
+    return os.path.join(analysis_dir, DOCS_FOLDER, name)
 
 # The source tags, in display order (see method.md, section 標記):
 # 實證 = a person can check the source, or a person checked the AI summary.

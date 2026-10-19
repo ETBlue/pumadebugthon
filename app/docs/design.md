@@ -117,7 +117,7 @@ Issue links keep the 「只看有資料根據」 filter (`?evidence=1`). A refer
    - 「一方」 and 「另一方」: the stories of each side (`sideA`, `sideB`), each with its stakeholder; the story ID links to the story page
    - 「雙方的需求」: the needs of each side (`needsA`, `needsB`): the summary, the priority label with its tag, and a link to `?focus=<need>` on the 需求 tab
    - 「以需求為本的解方」: the `wayOut` cell with its tag, and the solutions in `wayOutSolutions` as links. When the list is empty, the cell says why (「未找到…」).
-   - the deliberation method and the simulated result. When a way out exists, the method is shown under the heading 「備案：審議方法」, because it is only for places where the way out does not work (`analysis/method.md`). Otherwise the heading is 「審議方法」.
+   - the deliberation method and the simulated result. When a way out exists, the method is shown under the heading 「備案：審議方法」, because it is only for places where the way out does not work (`analysis/docs/method.md`). Otherwise the heading is 「審議方法」.
 
 With a stakeholder picked in the menu, the tab shows only the wants with a story of that stakeholder, and only the conflicts with a story of that stakeholder on either side. The search and the data filter work on top of it.
 
@@ -218,7 +218,7 @@ Rules:
 
 ### 3.5 Tags
 
-- There are three source tags (see `analysis/method.md`):
+- There are three source tags (see `analysis/docs/method.md`):
   - `[實證]`: a source a person can check, or an `[AI整理]` summary that a person checked.
   - `[AI整理]`: AI summarized it from a real source, and no person has checked it yet. There are two kinds of source:
     - the host's citizen data (the 「市長，你給我聽好了」 data), with counts. Only cells with 10 or more messages get this tag. The counts come from keyword matching, so they are estimates.
@@ -291,7 +291,7 @@ On a wide screen the first two parts are side by side, and the link is on its ow
 
 Each list page has its own URL and an h1. The header links to it.
 
-**`#/issues`: 議題列表.** The issues in `analysis/issues.csv`: the 6 host issues with a topic (#1–#6), and #8 (無菸城市), which a participant added. #7 (自由題) has no topic, so it is not listed. The 來源 column of `issues.csv` (`主辦單位` or `參加者補充`) becomes `source` in `index.json`. A card with `參加者補充` shows the note 「非主辦單位題目，由參加者補充」 under its title. An issue without an analysis shows 「製作中」 with no numbers, and cannot be opened. Each analyzed issue card shows:
+**`#/issues`: 議題列表.** The issues in `analysis/data/issues.csv`: the 6 host issues with a topic (#1–#6), and #8 (無菸城市), which a participant added. #7 (自由題) has no topic, so it is not listed. The 來源 column of `issues.csv` (`主辦單位` or `參加者補充`) becomes `source` in `index.json`. A card with `參加者補充` shows the note 「非主辦單位題目，由參加者補充」 under its title. An issue without an analysis shows 「製作中」 with no numbers, and cannot be opened. Each analyzed issue card shows:
 
 | Field | Example (#2) |
 |---|---|
@@ -433,9 +433,9 @@ URL: `#/about`. The h1 and the page title are 「關於本站」 (page title 「
 
 | Part | Content |
 |---|---|
-| 專案連結 | 「市政 debug 松活動頁面」 (https://puma.taipei/hackathon, the official event page; opens in a new tab, `rel="noopener noreferrer"`, with 「（在新分頁開啟）」 for screen readers), GitHub source code, and 「如何閱讀議題分析」 (`analysis/method.md`). The disclaimer in the footer is on the same page, so the event link gives the context and does not suggest that the host approved the app. |
+| 專案連結 | 「市政 debug 松活動頁面」 (https://puma.taipei/hackathon, the official event page; opens in a new tab, `rel="noopener noreferrer"`, with 「（在新分頁開啟）」 for screen readers), GitHub source code, and 「如何閱讀議題分析」 (`analysis/docs/method.md`). The disclaimer in the footer is on the same page, so the event link gives the context and does not suggest that the host approved the app. |
 | 授權 | Code: MIT, link to `LICENSE` on GitHub. Content made by ETBlue: CC BY 4.0, link to `LICENSE-CONTENT.md` on GitHub. A short note: the host's content follows the host's rules, and open data follows each dataset's license. |
-| 下載資料 | The app's own data files, so others can reuse them. This is what `human-inputs.md` means by "the open data used by the app". The JSON the site reads (`data/index.json`, and `data/issues/<folder>.json` for each analyzed issue), as links on the site. The CSV files on GitHub: `analysis/stakeholders.csv`, each analyzed issue's `analysis/<folder>/user-stories.csv`, `space-types.csv`, `path-labels.csv`, `issues.csv`, `open-data.csv`. The list is built from `index.json` (`dataFileLinks` in `src/lib/dataFiles.ts`), so a new issue appears with no code change. One line on the data license: the analysis is CC BY 4.0, with the exceptions in `LICENSE-CONTENT.md` (host content; content made from the host's citizen data is only for this hackathon). |
+| 下載資料 | The app's own data files, so others can reuse them. This is what `human-inputs.md` means by "the open data used by the app". The JSON the site reads (`data/index.json`, and `data/issues/<folder>.json` for each analyzed issue), as links on the site. The CSV files on GitHub: `analysis/data/stakeholders.csv`, each analyzed issue's `analysis/<folder>/user-stories.csv`, `space-types.csv`, `path-labels.csv`, `issues.csv`, `open-data.csv`. The list is built from `index.json` (`dataFileLinks` in `src/lib/dataFiles.ts`), so a new issue appears with no code change. One line on the data license: the analysis is CC BY 4.0, with the exceptions in `LICENSE-CONTENT.md` (host content; content made from the host's citizen data is only for this hackathon). |
 | 作者的相關文章 | The author's blog posts about this work, newest first, each with its title (a link) and date. Today one post: 「台北市政 debug 松議題的模擬分析」, 2026-10-17. The list is `AUTHOR_POSTS` in `src/components/links.ts`. |
 
 The government open datasets (`openData` in `index.json`) are not on this page. Each issue lists them in its appendix.
@@ -625,7 +625,7 @@ The mark links to the stakeholder page. Many marks on one page have the same tex
 
 ### 5.1 Shared stakeholder list
 
-New file `analysis/stakeholders.csv` (UTF-8 with BOM):
+New file `analysis/data/stakeholders.csv` (UTF-8 with BOM):
 
 | Column | Content |
 |---|---|
@@ -646,7 +646,7 @@ Rules:
 
 ### 5.2 Category paths
 
-Codes are joined with `-`. The app shows the names from `analysis/path-labels.csv`, never the codes.
+Codes are joined with `-`. The app shows the names from `analysis/data/path-labels.csv`, never the codes.
 
 | Group | First level | Further levels |
 |---|---|---|
@@ -662,13 +662,13 @@ Codes are joined with `-`. The app shows the names from `analysis/path-labels.cs
 | I | `vis` 遊客 | |
 | I | `wrk` 工作者 | Affected while working in public space |
 
-New file `analysis/path-labels.csv`: columns 分類路徑, 名稱. One row for every path prefix, for example `gov` → 政府, `gov-local` → 地方政府, `gov-local-taipei` → 臺北市, `gov-local-taipei-epb` → 環保局.
+New file `analysis/data/path-labels.csv`: columns 分類路徑, 名稱. One row for every path prefix, for example `gov` → 政府, `gov-local` → 地方政府, `gov-local-taipei` → 臺北市, `gov-local-taipei-epb` → 環保局.
 
 The path is a field, not the ID. Reasons: story IDs stay short (`O04-US05`), and a rename (for example 環保署 → 環境部 in 2023) changes one field, not the public IDs.
 
 ### 5.3 Space types
 
-New file `analysis/space-types.csv`: columns 代碼, 名稱, 分組, 說明. The list is fixed, so the same space is never written two ways. First draft (ETBlue can change it):
+New file `analysis/data/space-types.csv`: columns 代碼, 名稱, 分組, 說明. The list is fixed, so the same space is never written two ways. First draft (ETBlue can change it):
 
 | 分組 | 代碼 | 名稱 |
 |---|---|---|
@@ -719,7 +719,7 @@ Rules:
 
 ### 5.6 Check script
 
-`analysis/check_analysis.py` also checks:
+`analysis/scripts/check_analysis.py` also checks:
 - every step 1 ID exists in `stakeholders.csv`, with the same name, path and 特別關注
 - every path prefix has a name in `path-labels.csv`
 - the 議題 column matches the issue files
@@ -729,7 +729,7 @@ Rules:
 
 ### 5.7 Open data list
 
-New file `analysis/open-data.csv` (UTF-8 with BOM), for the links to open data in the page footer. Added 2026-10-18.
+New file `analysis/data/open-data.csv` (UTF-8 with BOM), for the links to open data in the page footer. Added 2026-10-18.
 
 | Column | Content |
 |---|---|
@@ -753,7 +753,7 @@ Rules:
 
 ## 6. Build script
 
-`analysis/build_json.py`:
+`analysis/scripts/build_json.py`:
 - Reads every issue folder that has an `issue-analysis.md`, plus `stakeholders.csv`, `path-labels.csv`, `space-types.csv` and `open-data.csv`.
 - Writes `app/public/data/index.json` (issue list, shared stakeholders, path labels, space types, open datasets as `openData`) and `app/public/data/issues/<folder>.json`.
 - Reads these sections: title, 空間類型 line, `## 分析摘要` (its 5 `###` topics), 1.1, 1.2, `### 1.n 特別關注族群檢查`, step 4 stories, 相同訴求群組, 5.4 (split 相關故事 on 「vs」 into two sides), 6.1 (with 空間類型 and 新增日期), 6.2, 6.3, each step 7 section `### 7.n 解法 X：…`, and `### 7.n 總覽`.

@@ -1,4 +1,4 @@
-// Load the JSON made by analysis/build_json.py from public/data/.
+// Load the JSON made by analysis/scripts/build_json.py from public/data/.
 import { useEffect, useState } from 'react'
 import { t } from '@/i18n/zh-TW'
 import type { IndexFile, IssueFile } from '@/types'

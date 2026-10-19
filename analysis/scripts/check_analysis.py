@@ -1,10 +1,10 @@
-"""Check that an issue-analysis.md and its user-stories.csv match. Usage: python3 -I analysis/check_analysis.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv"""
+"""Check that an issue-analysis.md and its user-stories.csv match. Usage: python3 -I analysis/scripts/check_analysis.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv"""
 import csv, datetime, glob, os, re, sys, unicodedata
 from collections import Counter, defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from analysis_common import (CONFLICT_HEADER, CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, NEED_GROUP_HEADING,
+from analysis_common import (data_file, doc_file, CONFLICT_HEADER, CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, NEED_GROUP_HEADING,
                              NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
                              SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, WAY_OUT_NONE, conflict_heading, cross_refs,
                              focus_tables, issue_ids, needs_format, parse_ref, section, split_cells as cells, split_focus,
@@ -297,10 +297,10 @@ def main(md_path, csv_path):
     errors = []
     def err(m): errors.append(m)
 
-    # Shared files sit next to the issue folders.
+    # The issue folders are in the analysis folder. The shared CSV files are in its data/ folder.
     analysis_dir = os.path.dirname(os.path.dirname(os.path.abspath(md_path)))
     def read_csv(name):
-        with open(os.path.join(analysis_dir, name), encoding="utf-8-sig", newline="") as f:
+        with open(data_file(analysis_dir, name), encoding="utf-8-sig", newline="") as f:
             return list(csv.DictReader(f))
 
     # The 編號異動紀錄 section lists old IDs on purpose. Old IDs that appear only
@@ -475,17 +475,17 @@ def main(md_path, csv_path):
     heads = {slug(m) for m in re.findall(r"^#{1,6} (.+)$", text, re.M)}
     for a in re.findall(r"\]\(#([^)]+)\)", text):
         if a not in heads: err(f"broken anchor #{a}")
-    # links to the shared reading guide: ../method.md#anchor
-    method_links = re.findall(r"\]\(\.\./method\.md(?:#([^)]*))?\)", text)
+    # links to the shared reading guide: ../docs/method.md#anchor
+    method_links = re.findall(r"\]\(\.\./docs/method\.md(?:#([^)]*))?\)", text)
     if method_links:
-        method_path = os.path.join(analysis_dir, "method.md")
+        method_path = doc_file(analysis_dir, "method.md")
         if not os.path.exists(method_path):
-            err(f"links to ../method.md, but {method_path} does not exist")
+            err(f"links to ../docs/method.md, but {method_path} does not exist")
         else:
             with open(method_path, encoding="utf-8") as f:
                 mheads = {slug(m) for m in re.findall(r"^#{1,6} (.+)$", f.read(), re.M)}
             for a in method_links:
-                if a and a not in mheads: err(f"broken method link ../method.md#{a}")
+                if a and a not in mheads: err(f"broken method link ../docs/method.md#{a}")
 
     # 10. step 1 matches stakeholders.csv
     shared = read_csv("stakeholders.csv")
@@ -711,7 +711,7 @@ def main(md_path, csv_path):
     # "## 附錄" section, up to the next "## " heading.
     OPEN_DATA_HEADER = ["名稱", "網址", "提供機關", "授權", "議題"]
     DATASET_URL = re.compile(r"https://data\.gov\.tw/dataset/\d+|https://data\.taipei/dataset/detail\?id=[0-9a-f-]+")
-    od_path = os.path.join(analysis_dir, "open-data.csv")
+    od_path = data_file(analysis_dir, "open-data.csv")
     if not os.path.exists(od_path):
         err(f"open-data.csv: {od_path} does not exist")
     else:
@@ -864,6 +864,6 @@ def main(md_path, csv_path):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python3 -I analysis/check_analysis.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv")
+        print("Usage: python3 -I analysis/scripts/check_analysis.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv")
         sys.exit(2)
     sys.exit(main(sys.argv[1], sys.argv[2]))

@@ -1,4 +1,4 @@
-"""Tests for the cross-issue part of analysis/build_json.py (cross-issue.json).
+"""Tests for the cross-issue part of analysis/scripts/build_json.py (cross-issue.json).
 
 The tests copy the issue folders, the shared files and the cross-issue folder
 from the working tree into a temp dir and run the script there as a
@@ -8,9 +8,9 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 import json, os, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCRIPT = os.path.join(ANALYSIS, "build_json.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "open-data.csv",
-          "method.md", "human-inputs.md")
+SCRIPT = os.path.join(ANALYSIS, "scripts", "build_json.py")
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/open-data.csv",
+          "docs/method.md", "docs/human-inputs.md")
 CROSS = os.path.join("cross-issue", "cross-issue-analysis.md")
 # The fields of index.json. The cross-issue data must not change them (the app reads them).
 INDEX_KEYS = {"issues", "stakeholders", "pathLabels", "spaceTypes", "openData"}
@@ -20,7 +20,8 @@ def make_copy(root):
     d = os.path.join(root, "analysis")
     os.makedirs(d)
     for name in SHARED:
-        shutil.copy(os.path.join(ANALYSIS, name), d)
+        os.makedirs(os.path.join(d, os.path.dirname(name)), exist_ok=True)
+        shutil.copy(os.path.join(ANALYSIS, name), os.path.join(d, name))
     for n in os.listdir(ANALYSIS):
         if os.path.isfile(os.path.join(ANALYSIS, n, "issue-analysis.md")) or n == "cross-issue":
             shutil.copytree(os.path.join(ANALYSIS, n), os.path.join(d, n))

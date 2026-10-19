@@ -1,4 +1,4 @@
-"""Tests for analysis/sync_stakeholders.py.
+"""Tests for analysis/scripts/sync_stakeholders.py.
 
 Each test copies every issue folder that has an issue-analysis.md, and the shared files, into a temp dir, changes one
 thing, runs the script as a subprocess, and looks at the exit code, the output
@@ -8,8 +8,8 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 import os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCRIPT = os.path.join(ANALYSIS, "sync_stakeholders.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "open-data.csv")
+SCRIPT = os.path.join(ANALYSIS, "scripts", "sync_stakeholders.py")
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/open-data.csv")
 ISSUE = "2-trashcans"
 
 
@@ -21,7 +21,7 @@ def issue_folders():
 
 def next_free_id(group):
     """The next free stakeholder number in group "O" or "I" of stakeholders.csv."""
-    with open(os.path.join(ANALYSIS, "stakeholders.csv"), encoding="utf-8-sig") as f:
+    with open(os.path.join(ANALYSIS, "data", "stakeholders.csv"), encoding="utf-8-sig") as f:
         nums = [int(m.group(1)) for m in re.finditer(rf"^{group}(\d\d),", f.read(), re.M)]
     return f"{group}{max(nums) + 1:02d}"
 
@@ -32,11 +32,12 @@ class SyncStakeholdersTest(unittest.TestCase):
         self.dir = os.path.join(self._tmp.name, "analysis")
         os.makedirs(self.dir)
         for name in SHARED:
-            shutil.copy(os.path.join(ANALYSIS, name), self.dir)
+            os.makedirs(os.path.join(self.dir, os.path.dirname(name)), exist_ok=True)
+            shutil.copy(os.path.join(ANALYSIS, name), os.path.join(self.dir, name))
         for folder in issue_folders():
             shutil.copytree(os.path.join(ANALYSIS, folder), os.path.join(self.dir, folder))
-        self.csv = os.path.join(self.dir, "stakeholders.csv")
-        with open(os.path.join(ANALYSIS, "stakeholders.csv"), "rb") as f:
+        self.csv = os.path.join(self.dir, "data", "stakeholders.csv")
+        with open(os.path.join(ANALYSIS, "data", "stakeholders.csv"), "rb") as f:
             self.original = f.read()
 
     def tearDown(self):
@@ -62,7 +63,7 @@ class SyncStakeholdersTest(unittest.TestCase):
         return p.returncode, p.stdout + p.stderr
 
     def test_puts_back_removed_issue_number(self):
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,,")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,,")
         self.assertNotEqual(self.csv_bytes(), self.original)
         code, out = self.run_sync()
         self.assertEqual(code, 0, out)
@@ -77,7 +78,7 @@ class SyncStakeholdersTest(unittest.TestCase):
         self.assertEqual(self.csv_bytes(), self.original)
 
     def test_moved_row_gets_empty_issue_value(self):
-        self.edit("stakeholders.csv", "O02,便利商店店員,,,,已改為 I12", "O02,便利商店店員,,,2,已改為 I12")
+        self.edit("data/stakeholders.csv", "O02,便利商店店員,,,,已改為 I12", "O02,便利商店店員,,,2,已改為 I12")
         code, out = self.run_sync()
         self.assertEqual(code, 0, out)
         self.assertIn('O02: "2" -> ""', out)
@@ -87,7 +88,7 @@ class SyncStakeholdersTest(unittest.TestCase):
         row = "| I13 | 清潔隊員 | `wrk` | — | `[AI模擬]` 實際清運的人；清潔箱滿不滿會影響他們的路線與工作量 |\n"
         new_id = next_free_id("I")
         self.edit(f"{ISSUE}/issue-analysis.md", row, row + f"| {new_id} | 新的人 | `res` | — | `[AI模擬]` 測試 |\n")
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,,")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,,")
         before = self.csv_bytes()
         code, out = self.run_sync()
         self.assertEqual(code, 1, out)
@@ -98,7 +99,7 @@ class SyncStakeholdersTest(unittest.TestCase):
 
     def test_keeps_date_column(self):
         # 新增日期 is the last column. The script changes 議題 only.
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,,,2026-10-18")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,,,2026-10-18")
         code, out = self.run_sync()
         self.assertEqual(code, 0, out)
         self.assertEqual(self.csv_bytes(), self.original)

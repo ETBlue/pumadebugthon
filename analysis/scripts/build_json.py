@@ -1,6 +1,6 @@
 """Turn the issue analysis Markdown into JSON for the app.
 
-Usage: python3 -I analysis/build_json.py analysis app/public/data
+Usage: python3 -I analysis/scripts/build_json.py analysis app/public/data
 
 Reads issues.csv (編號, 資料夾, 題目, 來源), stakeholders.csv, path-labels.csv, space-types.csv,
 open-data.csv (名稱, 網址, 提供機關, 授權, 議題: the open datasets that the appendices cite), and
@@ -168,7 +168,7 @@ def unique(items):
 
 def read_csv(analysis_dir, name, columns):
     """Rows of a shared CSV file. A missing file or column is a ReadError."""
-    path = os.path.join(analysis_dir, name)
+    path = common.data_file(analysis_dir, name)
     try:
         with open(path, encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
@@ -942,6 +942,6 @@ def main(analysis_dir, out_dir):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python3 -I analysis/build_json.py analysis app/public/data")
+        print("Usage: python3 -I analysis/scripts/build_json.py analysis app/public/data")
         sys.exit(2)
     sys.exit(main(sys.argv[1], sys.argv[2]))

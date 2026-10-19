@@ -1,5 +1,5 @@
 // Refresh the test fixtures in src/test/fixtures/ from the analysis files.
-// Runs analysis/build_json.py into a temp folder, then copies index.json and
+// Runs analysis/scripts/build_json.py into a temp folder, then copies index.json and
 // issues/*.json. Fixture files for issues that are no longer built are removed.
 // Usage (in app/): npm run fixtures
 import { execFileSync } from 'node:child_process'
@@ -14,7 +14,7 @@ const fixtures = join(app, 'src', 'test', 'fixtures')
 const tmp = mkdtempSync(join(tmpdir(), 'fixtures-'))
 
 try {
-  execFileSync('python3', ['-I', join(analysis, 'build_json.py'), analysis, tmp], { stdio: 'inherit' })
+  execFileSync('python3', ['-I', join(analysis, 'scripts', 'build_json.py'), analysis, tmp], { stdio: 'inherit' })
   mkdirSync(join(fixtures, 'issues'), { recursive: true })
   cpSync(join(tmp, 'index.json'), join(fixtures, 'index.json'))
   const built = readdirSync(join(tmp, 'issues')).filter((f) => f.endsWith('.json'))

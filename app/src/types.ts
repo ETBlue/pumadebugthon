@@ -1,7 +1,7 @@
-// Types for the JSON written by analysis/build_json.py.
+// Types for the JSON written by analysis/scripts/build_json.py.
 // build_json.py is the source of truth. When it changes, change these types.
 
-/** A tag on analysis text (see analysis/method.md, section 標記).
+/** A tag on analysis text (see analysis/docs/method.md, section 標記).
  * 實證: a person can check the source, or a person checked the AI summary.
  * AI整理: AI summarized it from a real source (the citizen data, with counts, or
  *   a news report); not checked by a person yet.
@@ -50,7 +50,7 @@ export interface CellCounts {
   pending: number
 }
 
-/** 來源 in analysis/issues.csv: the hackathon host's issue, or an issue a
+/** 來源 in analysis/data/issues.csv: the hackathon host's issue, or an issue a
  * participant added (for example #8). */
 export type IssueSource = '主辦單位' | '參加者補充'
 
@@ -87,7 +87,7 @@ export interface UnavailableIssueSummary extends IssueSummaryBase {
 
 export type IssueSummary = AvailableIssueSummary | UnavailableIssueSummary
 
-/** A row of analysis/stakeholders.csv. */
+/** A row of analysis/data/stakeholders.csv. */
 export interface Stakeholder {
   /** Global ID, for example "O04" or "I06". */
   id: string
@@ -105,7 +105,7 @@ export interface Stakeholder {
   added: string
 }
 
-/** A row of analysis/space-types.csv. */
+/** A row of analysis/data/space-types.csv. */
 export interface SpaceType {
   code: string
   name: string
@@ -113,7 +113,7 @@ export interface SpaceType {
   description: string
 }
 
-/** A row of analysis/open-data.csv: an open dataset that an issue's appendix
+/** A row of analysis/data/open-data.csv: an open dataset that an issue's appendix
  * cites (data.gov.tw or data.taipei). For the footer. */
 export interface OpenDataset {
   /** 名稱 */

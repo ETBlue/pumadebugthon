@@ -21,14 +21,14 @@ describe('dataFileLinks', () => {
   it('lists the CSV files on GitHub: stakeholders, each issue, then the other shared files', () => {
     const blob = `${repo}/blob/main/analysis`
     expect(links.csv).toEqual([
-      { file: 'stakeholders.csv', issue: null, href: `${blob}/stakeholders.csv` },
+      { file: 'stakeholders.csv', issue: null, href: `${blob}/data/stakeholders.csv` },
       { file: 'user-stories.csv', issue: 1, href: `${blob}/1-trees/user-stories.csv` },
       { file: 'user-stories.csv', issue: 2, href: `${blob}/2-trashcans/user-stories.csv` },
       { file: 'user-stories.csv', issue: 8, href: `${blob}/8-smokefree/user-stories.csv` },
-      { file: 'space-types.csv', issue: null, href: `${blob}/space-types.csv` },
-      { file: 'path-labels.csv', issue: null, href: `${blob}/path-labels.csv` },
-      { file: 'issues.csv', issue: null, href: `${blob}/issues.csv` },
-      { file: 'open-data.csv', issue: null, href: `${blob}/open-data.csv` },
+      { file: 'space-types.csv', issue: null, href: `${blob}/data/space-types.csv` },
+      { file: 'path-labels.csv', issue: null, href: `${blob}/data/path-labels.csv` },
+      { file: 'issues.csv', issue: null, href: `${blob}/data/issues.csv` },
+      { file: 'open-data.csv', issue: null, href: `${blob}/data/open-data.csv` },
     ])
   })
 

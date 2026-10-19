@@ -1,4 +1,4 @@
-"""Tests for analysis/analysis_common.py and for the step 1 rule in the three
+"""Tests for analysis/scripts/analysis_common.py and for the step 1 rule in the three
 scripts that use it (check_analysis.py, sync_stakeholders.py, build_json.py).
 
 The tests read the issue files in the working tree. They do not change them.
@@ -13,7 +13,7 @@ OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
 
 
 def load(name):
-    spec = importlib.util.spec_from_file_location(name, os.path.join(ANALYSIS, f"{name}.py"))
+    spec = importlib.util.spec_from_file_location(name, os.path.join(ANALYSIS, "scripts", f"{name}.py"))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -144,7 +144,7 @@ class SameStep1IdsTest(unittest.TestCase):
         cls.check = load("check_analysis")
         cls.sync = load("sync_stakeholders")
         cls.build = load("build_json")
-        with open(os.path.join(ANALYSIS, "space-types.csv"), encoding="utf-8-sig", newline="") as f:
+        with open(os.path.join(ANALYSIS, "data", "space-types.csv"), encoding="utf-8-sig", newline="") as f:
             cls.space_codes = {r["代碼"] for r in csv.DictReader(f)}
 
     def test_same_ids_in_all_three_scripts(self):

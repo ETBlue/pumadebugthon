@@ -1,4 +1,4 @@
-"""Tests for analysis/check_analysis.py.
+"""Tests for analysis/scripts/check_analysis.py.
 
 Each test copies every issue folder that has an issue-analysis.md, and the shared files, into a temp dir, changes one
 thing, runs the check as a subprocess, and looks at the exit code and output.
@@ -7,8 +7,8 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 import os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SCRIPT = os.path.join(ANALYSIS, "check_analysis.py")
-SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "method.md", "open-data.csv")
+SCRIPT = os.path.join(ANALYSIS, "scripts", "check_analysis.py")
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "docs/method.md", "data/open-data.csv")
 ISSUE = "2-trashcans"
 # No issue uses the old format now. This copy of #8 (from before commit 37057a9) tests it.
 OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
@@ -26,7 +26,8 @@ class CheckAnalysisTest(unittest.TestCase):
         self.dir = os.path.join(self._tmp.name, "analysis")
         os.makedirs(self.dir)
         for name in SHARED:
-            shutil.copy(os.path.join(ANALYSIS, name), self.dir)
+            os.makedirs(os.path.join(self.dir, os.path.dirname(name)), exist_ok=True)
+            shutil.copy(os.path.join(ANALYSIS, name), os.path.join(self.dir, name))
         for folder in issue_folders():
             shutil.copytree(os.path.join(ANALYSIS, folder), os.path.join(self.dir, folder))
         self.md = os.path.join(self.dir, ISSUE, "issue-analysis.md")
@@ -66,11 +67,11 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertIn("PASS", out)
 
     def test_step1_name_differs_from_stakeholders_csv(self):
-        self.edit("stakeholders.csv", "I05,高齡者,", "I05,年長者,")
+        self.edit("data/stakeholders.csv", "I05,高齡者,", "I05,年長者,")
         self.assertFails("I05", "年長者")
 
     def test_path_prefix_without_label(self):
-        self.edit("path-labels.csv", "gov-local-taipei-epb,環保局\n", "")
+        self.edit("data/path-labels.csv", "gov-local-taipei-epb,環保局\n", "")
         self.assertFails("gov-local-taipei-epb")
 
     def test_unknown_space_code_in_issue_line(self):
@@ -84,11 +85,11 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("solution D", "parking")
 
     def test_wrong_issue_value(self):
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,2,")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,2,")
         self.assertFails("I05", "議題")
 
     def test_moved_id_must_have_empty_issue_value(self):
-        self.edit("stakeholders.csv", "O02,便利商店店員,,,,已改為 I12", "O02,便利商店店員,,,2,已改為 I12")
+        self.edit("data/stakeholders.csv", "O02,便利商店店員,,,,已改為 I12", "O02,便利商店店員,,,2,已改為 I12")
         self.assertFails("O02", "議題")
 
     def test_step1_header_wrong(self):
@@ -181,8 +182,8 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_broken_method_link(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", "(../method.md#步驟-5依需求排序)", "(../method.md#沒有這一節)")
-        self.assertFails("broken method link ../method.md#沒有這一節")
+        self.edit(f"{ISSUE}/issue-analysis.md", "(../docs/method.md#步驟-5依需求排序)", "(../docs/method.md#沒有這一節)")
+        self.assertFails("broken method link ../docs/method.md#沒有這一節")
 
     def test_pending_in_backticks_is_allowed(self):
         # The step 4 summary names the format in backticks: 「`【待補】` 1 則」.
@@ -341,12 +342,12 @@ class CheckAnalysisTest(unittest.TestCase):
     SOL_D = "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 2026-10-16 |"
 
     def test_stakeholders_csv_has_date_column(self):
-        with open(os.path.join(self.dir, "stakeholders.csv"), encoding="utf-8-sig") as f:
+        with open(os.path.join(self.dir, "data", "stakeholders.csv"), encoding="utf-8-sig") as f:
             header = f.readline().strip().split(",")
         self.assertEqual(header[-2:], ["備註", "新增日期"])
 
     def test_stakeholders_csv_without_date_column_fails(self):
-        path = os.path.join(self.dir, "stakeholders.csv")
+        path = os.path.join(self.dir, "data", "stakeholders.csv")
         with open(path, encoding="utf-8-sig") as f:
             lines = f.read().splitlines()
         with open(path, "w", encoding="utf-8-sig", newline="") as f:
@@ -357,11 +358,11 @@ class CheckAnalysisTest(unittest.TestCase):
         for wrong in ("2026/10/18", "", "2026-13-01"):
             with self.subTest(wrong=wrong):
                 self.tearDown(); self.setUp()
-                self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", f"I05,高齡者,res,高齡,1 2 8,,{wrong}")
+                self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", f"I05,高齡者,res,高齡,1 2 8,,{wrong}")
                 self.assertFails("stakeholders.csv: I05 新增日期")
 
     def test_stakeholders_csv_future_date_fails(self):
-        self.edit("stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,1 2 8,,2999-01-01")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,1 2 8,,2999-01-01")
         self.assertFails("stakeholders.csv: I05 新增日期 2999-01-01", "future")
 
     def test_solution_date_passes(self):
@@ -461,23 +462,23 @@ class CheckAnalysisTest(unittest.TestCase):
                 self.assertEqual(code, 0, out)
 
     def test_appendix_dataset_missing_from_open_data(self):
-        self.edit("open-data.csv", self.SMOKE_ROW, "")
+        self.edit("data/open-data.csv", self.SMOKE_ROW, "")
         self.assertFails("open-data.csv", "https://data.gov.tw/dataset/177504", folder="8-smokefree")
 
     def test_open_data_row_missing_an_issue(self):
-        self.edit("open-data.csv", self.PETITION_ROW, self.PETITION_ROW.replace(",2 8\n", ",2\n"))
+        self.edit("data/open-data.csv", self.PETITION_ROW, self.PETITION_ROW.replace(",2 8\n", ",2\n"))
         self.assertFails("open-data.csv", "cb423c17", folder="8-smokefree")
 
     def test_open_data_row_not_in_appendix(self):
-        self.edit("open-data.csv", self.SMOKE_ROW, self.SMOKE_ROW.replace(",8\n", ",2 8\n"))
+        self.edit("data/open-data.csv", self.SMOKE_ROW, self.SMOKE_ROW.replace(",8\n", ",2 8\n"))
         self.assertFails("open-data.csv", "https://data.gov.tw/dataset/177504", "not in the appendix")
 
     def test_open_data_bad_issue_value(self):
-        self.edit("open-data.csv", self.SMOKE_ROW, self.SMOKE_ROW.replace(",8\n", ",#8\n"))
+        self.edit("data/open-data.csv", self.SMOKE_ROW, self.SMOKE_ROW.replace(",8\n", ",#8\n"))
         self.assertFails("open-data.csv", "議題", folder="8-smokefree")
 
     def test_open_data_file_has_bom_and_header(self):
-        with open(os.path.join(self.dir, "open-data.csv"), "rb") as f:
+        with open(os.path.join(self.dir, "data", "open-data.csv"), "rb") as f:
             raw = f.read()
         self.assertTrue(raw.startswith(b"\xef\xbb\xbf"))
         self.assertEqual(raw[3:].decode("utf-8").splitlines()[0], "名稱,網址,提供機關,授權,議題")

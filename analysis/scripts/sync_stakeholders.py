@@ -1,6 +1,6 @@
 """Fill the 議題 column of stakeholders.csv from the step 1 tables of the issue files.
 
-Usage: python3 -I analysis/sync_stakeholders.py analysis
+Usage: python3 -I analysis/scripts/sync_stakeholders.py analysis
 
 For each issue folder in issues.csv, the script reads <folder>/issue-analysis.md
 and takes the stakeholder IDs from the step 1 tables (the first cell of each
@@ -15,7 +15,7 @@ from collections import defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from analysis_common import step1_ids
+from analysis_common import data_file, step1_ids
 
 ISSUE_COL = "議題"
 ID_COL = "利害關係人編號"
@@ -30,10 +30,10 @@ def to_csv_text(rows):
 
 
 def main(analysis_dir):
-    with open(os.path.join(analysis_dir, "issues.csv"), encoding="utf-8-sig", newline="") as f:
+    with open(data_file(analysis_dir, "issues.csv"), encoding="utf-8-sig", newline="") as f:
         issues = [(int(r["編號"]), r["資料夾"]) for r in csv.DictReader(f)]
 
-    path = os.path.join(analysis_dir, "stakeholders.csv")
+    path = data_file(analysis_dir, "stakeholders.csv")
     with open(path, "rb") as f:
         raw = f.read()
     bom = b"\xef\xbb\xbf" if raw.startswith(b"\xef\xbb\xbf") else b""
@@ -82,6 +82,6 @@ def main(analysis_dir):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python3 -I analysis/sync_stakeholders.py analysis")
+        print("Usage: python3 -I analysis/scripts/sync_stakeholders.py analysis")
         sys.exit(2)
     sys.exit(main(sys.argv[1]))

@@ -3,7 +3,7 @@ A file in the needs-based format (analysis_common.needs_format) has an
 extra 相同需求編號 column in step 4, so its CSV has 12 columns. A file in
 the old format keeps 11 columns. No issue uses the old format now
 (tests/fixtures/old-format tests it).
-Usage: python3 -I analysis/build_csv.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv"""
+Usage: python3 -I analysis/scripts/build_csv.py analysis/2-trashcans/issue-analysis.md analysis/2-trashcans/user-stories.csv"""
 import csv, os, re, sys
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.

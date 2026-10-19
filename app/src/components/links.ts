@@ -2,8 +2,8 @@
 
 export const REPO_URL = 'https://github.com/ETBlue/pumadebugthon'
 
-/** analysis/method.md: how to read the analysis, with the meaning of each tag. */
-export const METHOD_URL = `${REPO_URL}/blob/main/analysis/method.md`
+/** analysis/docs/method.md: how to read the analysis, with the meaning of each tag. */
+export const METHOD_URL = `${REPO_URL}/blob/main/analysis/docs/method.md`
 
 /** The MIT license of the code. */
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`

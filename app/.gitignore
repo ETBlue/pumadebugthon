@@ -1,4 +1,4 @@
 node_modules
 dist
-# Built by analysis/build_all.sh (npm run data). Tests use src/test/fixtures/.
+# Built by analysis/scripts/build_all.sh (npm run data). Tests use src/test/fixtures/.
 public/data/

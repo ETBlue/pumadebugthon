@@ -15,23 +15,23 @@
 - Test first where the task has logic: write the failing test, run it, see it fail, write the code, run it, see it pass.
 - Python: run with `python3 -I`. Tests use `unittest`: `python3 -I -m unittest discover -s analysis/tests -t .` run from the repo root.
 - After any change to an `issue-analysis.md`: run `build_csv.py`, then `check_analysis.py`. Both must pass.
-- Writing in the analysis files: zh-TW, tags inside cells (`[實證]` / `[AI模擬]` in backticks), 【待補】 cells have no tag. See `analysis/ai-inputs.md` → Writing style.
+- Writing in the analysis files: zh-TW, tags inside cells (`[實證]` / `[AI模擬]` in backticks), 【待補】 cells have no tag. See `analysis/docs/ai-inputs.md` → Writing style.
 - **Gates:** a task marked **GATE** stops and waits for ETBlue.
 
 ## Phase A: analysis format and #2 migration
 
 ### Task A1: shared reference files
 
-**Files:** create `analysis/issues.csv`, `analysis/space-types.csv`, `analysis/path-labels.csv`.
+**Files:** create `analysis/data/issues.csv`, `analysis/data/space-types.csv`, `analysis/data/path-labels.csv`.
 
-1. `analysis/issues.csv` (UTF-8 with BOM), columns `編號,資料夾,題目`. Rows #1–#6, titles from `.eventinfo/issues.md` (local, git ignores it):
+1. `analysis/data/issues.csv` (UTF-8 with BOM), columns `編號,資料夾,題目`. Rows #1–#6, titles from `.eventinfo/issues.md` (local, git ignores it):
    `1,1-trees,把三千棵樹種回來` / `2,2-trashcans,找回消失的垃圾桶` / `3,3-mice,鼠患四處跑，衛生安全怎麼辦` / `4,4-neihutraffic,內湖尖峰車流好比停車場` / `5,5-busroutes,公車路網如何即時反應需求` / `6,6-oldbuildings,危老耐震如何查，風險評級怎麼找`
-2. `analysis/space-types.csv`, columns `代碼,名稱,分組,說明`. The 13 rows in design section 5.3. 說明 is one short zh-TW sentence each.
-3. `analysis/path-labels.csv`, columns `分類路徑,名稱`. One row for every prefix used in Task A2, plus the first levels from design 5.2 (`gov`, `gov-central`, `gov-local`, `soe`, `ind`, `acd`, `ngo`, `cmt`, `res`, `mov`, `vis`, `wrk`), plus `gov-local-taipei-council` 臺北市議會 and `gov-central-ly` 立法院.
+2. `analysis/data/space-types.csv`, columns `代碼,名稱,分組,說明`. The 13 rows in design section 5.3. 說明 is one short zh-TW sentence each.
+3. `analysis/data/path-labels.csv`, columns `分類路徑,名稱`. One row for every prefix used in Task A2, plus the first levels from design 5.2 (`gov`, `gov-central`, `gov-local`, `soe`, `ind`, `acd`, `ngo`, `cmt`, `res`, `mov`, `vis`, `wrk`), plus `gov-local-taipei-council` 臺北市議會 and `gov-central-ly` 立法院.
 
 ### Task A2: shared stakeholder list for #2 — **GATE**
 
-**Files:** create `analysis/stakeholders.csv`, columns `利害關係人編號,利害關係人,分類路徑,特別關注,議題,備註`.
+**Files:** create `analysis/data/stakeholders.csv`, columns `利害關係人編號,利害關係人,分類路徑,特別關注,議題,備註`.
 
 Reviewed by ETBlue on 2026-10-18 (O06 renamed, O07 moved to `cmt`):
 
@@ -76,7 +76,7 @@ The gate is passed: ETBlue approved this table and the O03 moves on 2026-10-18. 
 
 ### Task A3: check script, new checks (test first)
 
-**Files:** modify `analysis/check_analysis.py`. Create `analysis/tests/__init__.py`, `analysis/tests/test_check_analysis.py`.
+**Files:** modify `analysis/scripts/check_analysis.py`. Create `analysis/tests/__init__.py`, `analysis/tests/test_check_analysis.py`.
 
 The shared files are found next to the issue folder: `analysis_dir = dirname(dirname(md_path))`.
 
@@ -109,21 +109,21 @@ Tests (copy #2 and its shared files to a temp dir, change one thing, run the che
 6. Add a section 「編號異動紀錄」 before the appendix, as a table: 舊編號, 新編號, 日期, 原因.
 7. Update the counts in the text (step 1 summary, step 4 summary).
 8. Run `build_csv.py` and `check_analysis.py`. Run the unittest suite.
-9. Add a changelog line to `analysis/ai-inputs.md`.
+9. Add a changelog line to `analysis/docs/ai-inputs.md`.
 
 ### Task A5: script to fill the 議題 column
 
-**Files:** create `analysis/sync_stakeholders.py`, test in `analysis/tests/test_sync_stakeholders.py`.
+**Files:** create `analysis/scripts/sync_stakeholders.py`, test in `analysis/tests/test_sync_stakeholders.py`.
 
 It reads every `analysis/*/issue-analysis.md`, finds the step 1 IDs, and rewrites only the 議題 column of `stakeholders.csv` (issue numbers from `issues.csv`, space-separated, sorted). Test: remove `2` from one row in a temp copy → the script puts it back; no other cell changes.
 
 ## Phase B: JSON build
 
-### Task B1: `analysis/build_json.py` (test first)
+### Task B1: `analysis/scripts/build_json.py` (test first)
 
-**Files:** create `analysis/build_json.py`, `analysis/tests/test_build_json.py`.
+**Files:** create `analysis/scripts/build_json.py`, `analysis/tests/test_build_json.py`.
 
-Usage: `python3 -I analysis/build_json.py analysis app/public/data`.
+Usage: `python3 -I analysis/scripts/build_json.py analysis app/public/data`.
 
 Cell shape: `{"text": str, "tag": "實證" | "AI模擬" | null, "pending": bool}`. Tags are removed from `text`. Backticks around tags are removed.
 
@@ -172,7 +172,7 @@ Tests on #2 (numbers after Task A4):
 
 ### Task B2: one command for all checks
 
-**Files:** create `analysis/build_all.sh`: runs `sync_stakeholders.py`, `build_csv.py` + `check_analysis.py` for each issue folder that has an `issue-analysis.md`, the unittest suite, then `build_json.py`. Stops at the first failure.
+**Files:** create `analysis/scripts/build_all.sh`: runs `sync_stakeholders.py`, `build_csv.py` + `check_analysis.py` for each issue folder that has an `issue-analysis.md`, the unittest suite, then `build_json.py`. Stops at the first failure.
 
 ## Phase C: app
 
@@ -267,7 +267,7 @@ Design section 10, including the reuse idea and the `[AI模擬]` warning in 「1
 
 ### Task C15: deploy — **GATE**
 
-**Files:** `.github/workflows/pages.yml`: checkout with `fetch-depth: 0`, set up Python 3 and Node 22, run `analysis/build_all.sh`, `npm ci`, `npm test`, `npm run build` in `app/`, publish `app/dist` with `actions/upload-pages-artifact` and `actions/deploy-pages`.
+**Files:** `.github/workflows/pages.yml`: checkout with `fetch-depth: 0`, set up Python 3 and Node 22, run `analysis/scripts/build_all.sh`, `npm ci`, `npm test`, `npm run build` in `app/`, publish `app/dist` with `actions/upload-pages-artifact` and `actions/deploy-pages`.
 
 **Stop here.** ETBlue turns on Pages (Settings → Pages → Source: GitHub Actions) and decides when to push.
 
@@ -277,9 +277,9 @@ Runs after Phase A, in parallel with Phases B and C.
 
 ### Task D1: #1 analysis — **GATE**
 
-**Files:** create `analysis/1-trees/issue-analysis.md` and `user-stories.csv`. Update `analysis/stakeholders.csv`, `analysis/path-labels.csv`.
+**Files:** create `analysis/1-trees/issue-analysis.md` and `user-stories.csv`. Update `analysis/data/stakeholders.csv`, `analysis/data/path-labels.csv`.
 
-- Follow `analysis/human-inputs.md`, the #2 format and `analysis/ai-inputs.md` → Writing style. Notice at the top.
+- Follow `analysis/docs/human-inputs.md`, the #2 format and `analysis/docs/ai-inputs.md` → Writing style. Notice at the top.
 - Reuse IDs from `stakeholders.csv` for the same stakeholders (for example I06, I07, O05, O12, I09). New stakeholders get the next free number.
 - 空間類型 for the issue and for each solution.
 - Real data: only public files, cited in the appendix. Data go in the scratchpad. No scanning or load testing.
@@ -357,7 +357,7 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–42). The design follows t
 
 **Files:** `src/test/fixtures/index.json`, `src/test/fixtures/issues/1-trees.json`, `2-trashcans.json`, `8-smokefree.json`, `src/types.ts`, `src/types.test.ts`, `src/lib/summary.ts`, `src/lib/summary.test.ts`, and the tests that fail (expected: `types.test` #2 counts, `cellBasis`, `issuePage`, `priority`, `solutionPage` ×4, `spaces`, `summary`; about 11).
 
-1. Run `analysis/build_all.sh <a scratchpad dir>` and copy its `index.json` and the three issue files over the fixtures.
+1. Run `analysis/scripts/build_all.sh <a scratchpad dir>` and copy its `index.json` and the three issue files over the fixtures.
 2. `src/types.ts`: add the new fields, as `build_json.py` writes them (see its docstring):
    - `IssueFile.format: 'needs' | 'stories'`, `IssueFile.needGroups: NeedGroup[]` (`id`, `summary`, `tag`, `stories`), `IssueFile.needs: Need[]` (`id`, `kind: 'group' | 'story'`, `summary`, `stories`, `priority`, `priorityTag`, `reason: Cell`)
    - `Story.needGroup: string | null`
@@ -505,7 +505,7 @@ Design 3.12: the header above the tabs, 總覽 with 解開的衝突, the 需求 
 
 ### Task N11: cross-issue solutions (needs the data from `analysis/cross-issue/`)
 
-**Input:** the cross-issue JSON from the other agent. Before you start, read the real file and its writer in `analysis/build_json.py`. Compare it with the draft shape in design 3.18. If the shape is different, follow the real data and update design 3.18 in the same commit. If the data has no file yet, stop and report.
+**Input:** the cross-issue JSON from the other agent. Before you start, read the real file and its writer in `analysis/scripts/build_json.py`. Compare it with the draft shape in design 3.18. If the shape is different, follow the real data and update design 3.18 in the same commit. If the data has no file yet, stop and report.
 
 **Files:** `src/types.ts` (new `CrossIssueFile` type), `src/data.ts` (`useCrossIssue`, null for a missing file), new `src/lib/crossIssue.ts` (+ test, on a new fixture `src/test/fixtures/cross-issue.json` copied from the real build), new `src/pages/CrossSolution.tsx`, `src/router.tsx` (`solutions/cross/:code`), `src/pages/Solutions.tsx`, `src/components/issue/SolutionsTab.tsx`, `src/components/solution/OverviewTab.tsx`, `src/lib/counts.ts` and `src/lib/recent.ts` (Q9), `src/pages/About.tsx` and `src/lib/dataFiles.ts` (list the new JSON file), `src/i18n/zh-TW.ts` (block `crossIssue`).
 

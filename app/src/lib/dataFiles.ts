@@ -1,5 +1,5 @@
 // Links to the app's own data files, for the about page (design 3.13): the JSON
-// the site reads, and the CSV files in analysis/ on GitHub. The issue files
+// the site reads, and the CSV files in analysis/ on GitHub (the shared ones are in analysis/data/). The issue files
 // come from index.json, so a new issue appears without a code change.
 import type { IndexFile } from '@/types'
 import { availableIssues } from './issues'
@@ -17,7 +17,7 @@ export interface DataFileLink {
 export function dataFileLinks(index: IndexFile, baseUrl: string, repoUrl: string): { json: DataFileLink[]; csv: DataFileLink[] } {
   const issues = availableIssues(index)
   const blob = `${repoUrl}/blob/main/analysis`
-  const shared = (file: string): DataFileLink => ({ file, issue: null, href: `${blob}/${file}` })
+  const shared = (file: string): DataFileLink => ({ file, issue: null, href: `${blob}/data/${file}` })
   return {
     json: [
       { file: 'index.json', issue: null, href: `${baseUrl}data/index.json` },

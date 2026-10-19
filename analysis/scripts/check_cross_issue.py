@@ -1,6 +1,6 @@
 """Check the cross-issue analysis, and read it into structured data.
 
-Usage: python3 -I analysis/check_cross_issue.py analysis/cross-issue/cross-issue-analysis.md
+Usage: python3 -I analysis/scripts/check_cross_issue.py analysis/cross-issue/cross-issue-analysis.md
 
 The file compares the issues that share stakeholders (see method.md,
 跨議題分析). It is in analysis/cross-issue/. The issue files and the shared
@@ -164,7 +164,7 @@ def load_context(analysis_dir):
     """The issues (number -> Issue), the active stakeholders.csv rows (ID -> row)
     and the space codes."""
     def read_csv(name):
-        with open(os.path.join(analysis_dir, name), encoding="utf-8-sig", newline="") as f:
+        with open(common.data_file(analysis_dir, name), encoding="utf-8-sig", newline="") as f:
             return list(csv.DictReader(f))
     issues = {}
     for r in read_csv("issues.csv"):
@@ -721,12 +721,12 @@ def read_cross_issue(text, ctx):
     cross_dir = os.path.join(ctx["dir"], CROSS_FOLDER)
     for target in re.findall(r"\]\((\.\./[^)#]+)(?:#[^)]*)?\)", text):
         if not os.path.exists(os.path.normpath(os.path.join(cross_dir, target))): err(f"broken link {target}")
-    method_path = os.path.join(ctx["dir"], "method.md")
+    method_path = common.doc_file(ctx["dir"], "method.md")
     if os.path.exists(method_path):
         with open(method_path, encoding="utf-8") as f:
             mheads = {slug(m) for m in re.findall(r"^#{1,6} (.+)$", f.read(), re.M)}
-        for a in re.findall(r"\]\(\.\./method\.md#([^)]+)\)", text):
-            if a not in mheads: err(f"broken method link ../method.md#{a}")
+        for a in re.findall(r"\]\(\.\./docs/method\.md#([^)]+)\)", text):
+            if a not in mheads: err(f"broken method link ../docs/method.md#{a}")
 
     # ----- pending items, in file order -----
     pending, current = [], None
@@ -763,6 +763,6 @@ def main(md_path):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python3 -I analysis/check_cross_issue.py analysis/cross-issue/cross-issue-analysis.md")
+        print("Usage: python3 -I analysis/scripts/check_cross_issue.py analysis/cross-issue/cross-issue-analysis.md")
         sys.exit(2)
     sys.exit(main(sys.argv[1]))

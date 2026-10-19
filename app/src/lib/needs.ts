@@ -37,6 +37,13 @@ export interface NeedItem {
   conflicts: Conflict[]
 }
 
+/** The summary of a need with its tag: for an N group, the group's summary
+ * and tag; for a need with no group, the 以便… cell of its story. */
+export function needSummaryOf(issue: IssueFile, need: Need): Cell {
+  const stories = need.stories.flatMap((id) => issue.stories.find((s) => s.id === id) ?? [])
+  return needSummary(issue, need, stories)
+}
+
 function needSummary(issue: IssueFile, need: Need, stories: Story[]): Cell {
   if (need.kind === 'group') {
     const group = issue.needGroups.find((g) => g.id === need.id)

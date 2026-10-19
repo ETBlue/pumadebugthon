@@ -61,3 +61,12 @@ export function menuGroups(ids: string[], stakeholders: Stakeholder[]): MenuGrou
     }))
     .filter((g) => g.items.length > 0)
 }
+
+/** The search part of a link in the menu on the issue page (filter mode):
+ * the kept values of keptSearch, with the filter set to id. null removes the
+ * filter (「全部利害關係人」). pick and focus are dropped. "" when nothing is left. */
+export function stakeholderMenuSearch(params: URLSearchParams, id: string | null): string {
+  const next = withStakeholderFilter(new URLSearchParams(keptSearch(params)), id)
+  const s = next.toString()
+  return s ? `?${s}` : ''
+}

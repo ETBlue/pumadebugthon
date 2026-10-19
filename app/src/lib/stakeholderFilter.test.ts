@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile } from '@/types'
-import { keptSearch, menuGroups, STAKEHOLDER_PARAM, stakeholderFilterOf, withStakeholderFilter } from './stakeholderFilter'
+import {
+  keptSearch, menuGroups, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch, withStakeholderFilter,
+} from './stakeholderFilter'
 
 const index = indexJson as IndexFile
 const trashcans = trashcansJson as IssueFile
@@ -98,5 +100,24 @@ describe('menuGroups', () => {
       ['I01', index.stakeholders.find((s) => s.id === 'I01')?.name],
       ['I99', 'I99'],
     ])
+  })
+})
+
+describe('stakeholderMenuSearch', () => {
+  const search = (current: string, id: string | null) => stakeholderMenuSearch(new URLSearchParams(current), id)
+
+  it('sets the stakeholder and keeps evidence=1', () => {
+    expect(search('', 'I06')).toBe('?stakeholder=I06')
+    expect(search('evidence=1', 'I06')).toBe('?evidence=1&stakeholder=I06')
+    expect(search('evidence=1&stakeholder=I01', 'I06')).toBe('?evidence=1&stakeholder=I06')
+  })
+
+  it('removes the stakeholder for 「全部利害關係人」', () => {
+    expect(search('evidence=1&stakeholder=I06', null)).toBe('?evidence=1')
+    expect(search('stakeholder=I06', null)).toBe('')
+  })
+
+  it('drops pick, focus and any other value', () => {
+    expect(search('pick=W08&focus=C6&from=O02&evidence=1', 'I06')).toBe('?evidence=1&stakeholder=I06')
   })
 })

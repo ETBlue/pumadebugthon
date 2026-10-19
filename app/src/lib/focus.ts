@@ -12,3 +12,13 @@ const FOCUS_VALUE = /^(?:conflicts|stakeholders|C\d+|W\d\d|N\d\d|[OI]\d+-US\d+)$
 export function focusElementId(value: string | null): string | null {
   return value !== null && FOCUS_VALUE.test(value) ? `focus-${value}` : null
 }
+
+/** How long the page waits for the ?focus= element to appear (for example
+ * while the issue file loads). After this time it gives up and does nothing. */
+export const FOCUS_WAIT_MS = 5000
+
+/** The scroll behavior for a ?focus= jump. With prefers-reduced-motion, the
+ * page jumps with no animation. */
+export function focusScrollBehavior(reducedMotion: boolean): 'auto' | 'smooth' {
+  return reducedMotion ? 'auto' : 'smooth'
+}

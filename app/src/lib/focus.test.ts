@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { FOCUS_PARAM, focusElementId } from './focus'
+import { FOCUS_PARAM, FOCUS_WAIT_MS, focusElementId, focusScrollBehavior } from './focus'
 
 describe('focusElementId', () => {
   it('uses the parameter name focus', () => {
@@ -44,5 +44,22 @@ describe('focusElementId', () => {
     ]) {
       expect(focusElementId(v)).toBeNull()
     }
+  })
+})
+
+describe('focusScrollBehavior', () => {
+  it('jumps with no animation when the user asks for reduced motion', () => {
+    expect(focusScrollBehavior(true)).toBe('auto')
+  })
+
+  it('scrolls smoothly otherwise', () => {
+    expect(focusScrollBehavior(false)).toBe('smooth')
+  })
+})
+
+describe('FOCUS_WAIT_MS', () => {
+  it('waits a few seconds at most for the content', () => {
+    expect(FOCUS_WAIT_MS).toBeGreaterThanOrEqual(1000)
+    expect(FOCUS_WAIT_MS).toBeLessThanOrEqual(10000)
   })
 })

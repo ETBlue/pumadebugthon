@@ -9,6 +9,7 @@ import {
   needsByPriority,
   needsForStakeholder,
   needsOfStakeholder,
+  needSummaryOf,
 } from './needs'
 
 const trashcans = trashcansJson as IssueFile
@@ -169,5 +170,26 @@ describe('needsForStakeholder', () => {
     expect(kept.map((i) => i.need.id)).toEqual(needsOfStakeholder(trashcans, 'I01').map((i) => i.need.id))
     expect(kept.map((i) => i.need.id)).toContain('N01')
     expect(kept.map((i) => i.need.id)).toContain('I01-US09')
+  })
+})
+
+describe('needSummaryOf', () => {
+  const need = (issue: IssueFile, id: string) => {
+    const n = issue.needs.find((x) => x.id === id)
+    if (!n) throw new Error(`no need ${id}`)
+    return n
+  }
+
+  it('uses the summary and tag of the N group', () => {
+    const group = trashcans.needGroups.find((g) => g.id === 'N01')!
+    expect(needSummaryOf(trashcans, need(trashcans, 'N01'))).toEqual({ text: group.summary, tag: group.tag, pending: false })
+  })
+
+  it('uses the 以便… cell of the story for a need with no group', () => {
+    expect(needSummaryOf(trashcans, need(trashcans, 'O04-US02'))).toEqual(story(trashcans, 'O04-US02').soThat)
+  })
+
+  it('is the same cell as the summary of issueNeeds', () => {
+    for (const item of issueNeeds(trashcans)) expect(needSummaryOf(trashcans, item.need)).toEqual(item.summary)
   })
 })

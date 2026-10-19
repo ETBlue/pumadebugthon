@@ -120,7 +120,7 @@ def check_needs(text, step4, need_of, err, local_only):
     """The needs-based format (see method.md and analysis_common).
 
     - 相同需求編號 in step 4 is an N ID or 「—」. Every N group has 2 or more
-      stories, and the 「### 相同需求群組」 table lists the same stories and
+      stories from 2 or more stakeholders, and the 「### 相同需求群組」 table lists the same stories and
       stakeholders.
     - The 5.2 table has one row per need: each N group once, and each story
       that is in no group once (by its story ID). A story in a group has no
@@ -140,6 +140,11 @@ def check_needs(text, step4, need_of, err, local_only):
         groups[n].append(r[0])
     for n, ids in groups.items():
         if len(ids) < 2: err(f"{n} has only {len(ids)} story; a 相同需求群組 needs 2 or more stories")
+        # A shared need is held by different stakeholders (ETBlue, 2026-10-20).
+        # One stakeholder's need in several stories is still one need.
+        holders = {i.split("-")[0] for i in ids}
+        if len(ids) >= 2 and len(holders) < 2:
+            err(f"{n} has only 1 stakeholder ({next(iter(holders))}); a 相同需求群組 needs 2 or more stakeholders")
     seen = set()
     for h, rows in tables(section(text, NEED_GROUP_HEADING) or []):
         if h[:3] != ["群組", "以便（摘要）", "故事編號"]: continue

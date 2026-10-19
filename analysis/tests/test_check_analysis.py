@@ -644,6 +644,13 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(self.MD, self.I06_ROW, self.I06_ROW.replace("N07", "N11"))
         self.assertFails("N11 has only 1 story")
 
+    def test_need_group_with_one_stakeholder_fails(self):
+        # Two stories of I06 alone do not make a shared need.
+        self.edit(self.MD, self.I06_ROW, self.I06_ROW.replace("N07", "N11"))
+        row = "| `[AI模擬]` 和其他人一樣可以自己丟垃圾 | N08 |"
+        self.edit(self.MD, row, row.replace("N08", "N11"))
+        self.assertFails("N11 has only 1 stakeholder (I06)")
+
     def test_story_priority_must_be_its_need_priority(self):
         self.edit(self.MD, self.I01_US03_PRIO, self.I01_US03_PRIO.replace("` M |", "` S |"))
         self.assertFails("I01-US03: priority in step 4 is S, but its need N01 is M")

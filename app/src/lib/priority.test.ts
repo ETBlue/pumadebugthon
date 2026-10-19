@@ -7,7 +7,7 @@ const trashcans = trashcansJson as IssueFile
 
 function story(id: string, priority: Story['priority'], priorityTag: Story['priorityTag']): Story {
   const cell = { text: id, tag: 'AI模擬' as const, pending: false }
-  return { id, stakeholder: id.slice(0, 3), want: cell, group: null, soThat: cell, source: null, priority, priorityTag }
+  return { id, stakeholder: id.slice(0, 3), want: cell, group: null, soThat: cell, source: null, priority, priorityTag, needGroup: null }
 }
 
 describe('priorityLabel', () => {
@@ -45,11 +45,11 @@ describe('priorityCounts', () => {
     expect(priorityCounts(stories)[1]).toEqual({ tag: 'AI整理', counts: [{ priority: 'C', n: 1 }] })
   })
 
-  it('counts the I01 stories of #2 (M 4, S 5, all AI模擬)', () => {
+  it('counts the I01 stories of #2 (M 8, S 1, all AI模擬)', () => {
     const i01 = trashcans.stories.filter((s) => s.stakeholder === 'I01')
     expect(i01).toHaveLength(9)
     expect(priorityCounts(i01)).toEqual([
-      { tag: 'AI模擬', counts: [{ priority: 'M', n: 4 }, { priority: 'S', n: 5 }] },
+      { tag: 'AI模擬', counts: [{ priority: 'M', n: 8 }, { priority: 'S', n: 1 }] },
     ])
   })
 })

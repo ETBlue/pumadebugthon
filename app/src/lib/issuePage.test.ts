@@ -62,6 +62,7 @@ describe('pendingBySection', () => {
       '1.3 特別關注族群檢查',
       '步驟 2：初始使用者故事',
       '步驟 4：使用者故事總表',
+      '6.1 候選解法',
       '6.3 成效衡量',
       '7.1 解法 A：清潔箱佈建建議地圖',
       '7.2 解法 B：滿溢回報與動態清運',
@@ -103,12 +104,16 @@ describe('storiesByPriority', () => {
   const ids = (groups: ReturnType<typeof storiesByPriority>) =>
     groups.map((g) => [g.priority, g.stories.map((s) => s.id)])
 
-  it('groups solution A of #2 in the order M, S, C and leaves out empty groups', () => {
+  it('groups solution A of #2 in the order M, S and leaves out the empty C and W groups', () => {
+    // A covers the Must needs N01, N04, N05, N07, O04-US02, O12-US01 and the
+    // Should needs N02, O04-US04, I01-US09 (6.2 of #2). Stories keep the order of a.stories.
     const a = trashcans.solutions.find((s) => s.id === 'A')!
     expect(ids(storiesByPriority(trashcans, a.stories))).toEqual([
-      ['M', ['O04-US01', 'O04-US02', 'O12-US01', 'I01-US01', 'I01-US04', 'I01-US05', 'I06-US01', 'I07-US02', 'I09-US04']],
-      ['S', ['O01-US01', 'O01-US03', 'O04-US04', 'I01-US07', 'I01-US09', 'I02-US01', 'I07-US01', 'I10-US01', 'I12-US01', 'I23-US01']],
-      ['C', ['O01-US04', 'O10-US01', 'O11-US01']],
+      ['M', [
+        'I01-US01', 'I01-US03', 'I01-US04', 'I01-US05', 'I01-US06', 'I02-US01', 'I07-US01', 'I08-US01', 'I10-US01',
+        'O04-US01', 'O04-US03', 'I01-US07', 'O05-US01', 'I09-US04', 'I09-US05', 'I06-US01', 'I07-US02', 'O04-US02', 'O12-US01',
+      ]],
+      ['S', ['O01-US01', 'O01-US02', 'O01-US03', 'O01-US04', 'O10-US01', 'O11-US01', 'I12-US01', 'O04-US04', 'I01-US09']],
     ])
   })
 

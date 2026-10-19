@@ -24,7 +24,7 @@ function stakeholder(id: string, added: string, issues: number[] = [1]): Stakeho
 function solution(id: string, added: string, stories: string[] = []): Solution {
   const cell = { text: '', tag: null, pending: false }
   return {
-    id, name: { text: id, tag: null, pending: false }, summary: '', spaces: [], added, stories,
+    id, name: { text: id, tag: null, pending: false }, summary: '', spaces: [], added, stories, needs: null,
     measures: [], detail: [], overview: { cost: cell, feasibility: cell, risk: cell, owner: cell }, ideas: [], pending: [],
   }
 }

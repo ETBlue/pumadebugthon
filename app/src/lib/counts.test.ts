@@ -33,7 +33,7 @@ describe('solutionCount', () => {
 
 describe('wantCount', () => {
   it('counts each W group once and each story with no W group, summed over the issues', () => {
-    expect(wantCount(issues)).toBe(48 + 39 + 32)
+    expect(wantCount(issues)).toBe(48 + 39 + 33)
   })
 
   it('is the same as the opinion check pick lists', () => {
@@ -45,7 +45,7 @@ describe('wantCount', () => {
       id, stakeholder: id.split('-')[0], group,
       want: { text: id, tag: 'AI模擬', pending: false },
       soThat: { text: '', tag: 'AI模擬', pending: false },
-      source: null, priority: 'M', priorityTag: 'AI模擬',
+      source: null, priority: 'M', priorityTag: 'AI模擬', needGroup: null,
     })
     const issue = {
       ...issues[0],
@@ -60,7 +60,7 @@ describe('wantCount', () => {
 
 describe('needCount', () => {
   it('counts one 需求 per story with a 以便… cell, summed over the issues', () => {
-    expect(needCount(issues)).toBe(66 + 52 + 45)
+    expect(needCount(issues)).toBe(66 + 52 + 46)
   })
 
   it('counts a 【待補】 cell, but not an empty one', () => {
@@ -68,7 +68,7 @@ describe('needCount', () => {
       id, stakeholder: id.split('-')[0], group: 'W01',
       want: { text: id, tag: 'AI模擬', pending: false },
       soThat: { text, tag: pending ? null : 'AI模擬', pending },
-      source: null, priority: 'M', priorityTag: 'AI模擬',
+      source: null, priority: 'M', priorityTag: 'AI模擬', needGroup: null,
     })
     const issue = {
       ...issues[0],

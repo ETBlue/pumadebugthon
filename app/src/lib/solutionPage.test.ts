@@ -70,25 +70,29 @@ describe('solutionGroupCoverage', () => {
     expect(groups.map((g) => [g.group.id, g.full])).toEqual([
       ['W01', true],
       ['W02', true],
+      ['W05', true],
       ['W08', true],
-      ['W10', false],
+      ['W09', false],
+      ['W10', true],
     ])
-    const w10 = groups[3]
-    expect(w10.covered).toEqual(['I02-US01'])
+    // A covers N01, which has I08-US01 but not I01-US02 (that one is in N06).
+    const w09 = groups[4]
+    expect(w09.covered).toEqual(['I08-US01'])
     // The member stakeholders of the whole group, in ID order.
-    expect(w10.stakeholders).toEqual(['I01', 'I02'])
+    expect(w09.stakeholders).toEqual(['I01', 'I08'])
   })
 
-  it('is empty for a solution that covers no W group (#2 E)', () => {
-    expect(solutionGroupCoverage(trashcans, sol(trashcans, 'E'))).toEqual([])
+  it('is empty for a solution that covers no W group (#8 E)', () => {
+    expect(solutionGroupCoverage(smokefree, sol(smokefree, 'E'))).toEqual([])
   })
 })
 
 describe('solutionStakeholders', () => {
   it('lists the stakeholders of the covered stories once each, in ID order', () => {
-    expect(solutionStakeholders(trashcans, sol(trashcans, 'E'))).toEqual(['O04', 'I01', 'I24'])
+    // E covers N01 (I01, I02, I07, I08, I10), O04-US02 and I24-US01 (6.2 of #2).
+    expect(solutionStakeholders(trashcans, sol(trashcans, 'E'))).toEqual(['O04', 'I01', 'I02', 'I07', 'I08', 'I10', 'I24'])
     const a = solutionStakeholders(trashcans, sol(trashcans, 'A'))
-    expect(a).toEqual(['O01', 'O04', 'O10', 'O11', 'O12', 'I01', 'I02', 'I06', 'I07', 'I09', 'I10', 'I12', 'I23'])
+    expect(a).toEqual(['O01', 'O04', 'O05', 'O10', 'O11', 'O12', 'I01', 'I02', 'I06', 'I07', 'I08', 'I09', 'I10', 'I12'])
   })
 })
 
@@ -101,7 +105,7 @@ describe('solutionConflicts', () => {
     expect(c6.covered).toContain('I01-US01')
     expect(c6.covered).toContain('I06-US01')
     expect(c6.covered.indexOf('I01-US01')).toBeLessThan(c6.covered.indexOf('I06-US01'))
-    expect(solutionConflicts(trashcans, sol(trashcans, 'E')).map((c) => c.conflict.id)).toEqual(['C2', 'C8'])
+    expect(solutionConflicts(trashcans, sol(trashcans, 'E')).map((c) => c.conflict.id)).toEqual(['C1', 'C2', 'C3', 'C6', 'C8', 'C9'])
   })
 
   it('works for the other issues', () => {

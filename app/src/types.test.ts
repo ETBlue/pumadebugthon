@@ -51,7 +51,7 @@ describe('index.json', () => {
     const i = index.issues.find((i) => i.number === 2)
     expect(i?.counts).toEqual({
       stakeholdersO: 12, stakeholdersI: 15, stories: 52, conflicts: 9, solutions: 5,
-      cells: { evidence: 10, aiSummary: 21, aiSimulated: 72, pending: 1 },
+      cells: { evidence: 8, aiSummary: 23, aiSimulated: 72, pending: 1 },
     })
   })
 

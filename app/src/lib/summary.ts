@@ -16,7 +16,8 @@ export const SUMMARY_TOPICS = [
   '相依事項與現行政策的關係',
 ] as const
 
-export type SummaryRefKind = 'story' | 'stakeholder' | 'conflict' | 'group' | 'solution'
+/** group: a 相同訴求群組 (W08). need: a 相同需求群組 (N01). */
+export type SummaryRefKind = 'story' | 'stakeholder' | 'conflict' | 'group' | 'need' | 'solution'
 
 /** One reference of a 相關編號 cell. */
 export interface SummaryRef {
@@ -28,9 +29,9 @@ export interface SummaryRef {
 }
 
 // The same format as analysis_common.SUMMARY_REF.
-const REF = /^(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|解法 [A-Z])$/
+const REF = /^(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|N\d\d|解法 [A-Z])$/
 
-/** Read one reference, for example "I01-US09", "C9", "解法 A" or "#8 解法 B".
+/** Read one reference, for example "I01-US09", "C9", "N01", "解法 A" or "#8 解法 B".
  * null when the text is not a reference. */
 export function parseSummaryRef(ref: string): SummaryRef | null {
   const m = REF.exec(ref)
@@ -40,6 +41,7 @@ export function parseSummaryRef(ref: string): SummaryRef | null {
   if (id.startsWith('解法 ')) return { issue, kind: 'solution', id: id.slice(3) }
   if (id.includes('-US')) return { issue, kind: 'story', id }
   if (id[0] === 'O' || id[0] === 'I') return { issue, kind: 'stakeholder', id }
+  if (id[0] === 'N') return { issue, kind: 'need', id }
   return { issue, kind: id[0] === 'C' ? 'conflict' : 'group', id }
 }
 
@@ -48,14 +50,22 @@ export interface RefTarget {
   search: string
 }
 
+/** The 需求 tab with the need in focus, for example /issues/2/needs?focus=N01
+ * (design decision 57). The tab comes with Task N3 of plan.md. */
+function needFocusTo(issueNumber: number, key: string, dataBasedOnly: boolean): RefTarget {
+  const params = withDataBasisFilter(new URLSearchParams({ focus: key }), dataBasedOnly)
+  return { pathname: `/issues/${issueNumber}/needs`, search: `?${params.toString()}` }
+}
+
 /** The link of a reference in the summary of issue `issueNumber`.
  * - story: the opinion check with its pick key (its group, or the story), as on 需求.
  * - group: the opinion check with the group picked.
+ * - need: the 需求 tab with ?focus= on the N group.
  * - stakeholder: the stakeholder page.
  * - conflict: the 衝突 tab. solution: the solution page.
  * A reference to another issue goes into that issue: its 衝突 tab, its
- * solution page, or its overview for a story or a group (the other issue's
- * file is not loaded, so the pick key is not known).
+ * solution page, its 需求 tab for an N group, or its overview for a story or
+ * a group (the other issue's file is not loaded, so the pick key is not known).
  * Issue pages keep the 「只看有資料根據」 filter. null when the reference
  * cannot be read or the ID is not in this issue. */
 export function summaryRefTo(ref: string, issueNumber: number, issue: IssueFile, dataBasedOnly: boolean): RefTarget | null {
@@ -69,6 +79,7 @@ export function summaryRefTo(ref: string, issueNumber: number, issue: IssueFile,
   if (r.issue !== null && r.issue !== issueNumber) {
     if (r.kind === 'solution') return { pathname: solutionPath(r.issue, r.id), search: filter }
     if (r.kind === 'conflict') return { pathname: tabPath(r.issue, 'conflicts'), search: filter }
+    if (r.kind === 'need') return needFocusTo(r.issue, r.id, dataBasedOnly)
     return { pathname: tabPath(r.issue, 'overview'), search: filter }
   }
   switch (r.kind) {
@@ -78,6 +89,8 @@ export function summaryRefTo(ref: string, issueNumber: number, issue: IssueFile,
     }
     case 'group':
       return issue.groups.some((g) => g.id === r.id) ? opinionPickTo(issueNumber, r.id, dataBasedOnly) : null
+    case 'need':
+      return issue.needGroups.some((g) => g.id === r.id) ? needFocusTo(issueNumber, r.id, dataBasedOnly) : null
     case 'conflict':
       return issue.conflicts.some((c) => c.id === r.id) ? { pathname: tabPath(issueNumber, 'conflicts'), search: filter } : null
     case 'solution':

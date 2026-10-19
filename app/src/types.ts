@@ -183,8 +183,12 @@ export interface Story {
   soThat: Cell
   /** 來源. null when the cell is empty or 「—」. */
   source: string | null
+  /** The priority of the story's need (needs format), or of the story itself
+   * (old format). */
   priority: Priority
   priorityTag: PriorityTag
+  /** 相同需求編號, for example "N01", or null. Always null in the old format. */
+  needGroup: string | null
 }
 
 /** A row of the 相同訴求群組 table. */
@@ -198,7 +202,34 @@ export interface Group {
   stories: string[]
 }
 
-/** A row of 5.4. 相關故事 is split on 「 vs 」 into two sides. */
+/** A row of the 相同需求群組 table (needs format only). */
+export interface NeedGroup {
+  /** For example "N01". */
+  id: string
+  /** 以便（摘要） */
+  summary: string
+  tag: Tag
+  /** Story IDs. */
+  stories: string[]
+}
+
+/** A row of 5.2: one need. A need is an N group, or one story in no group. */
+export interface Need {
+  /** "N01" for a group, or the story ID (for example "I06-US01"). */
+  id: string
+  kind: 'group' | 'story'
+  /** 以便（摘要） */
+  summary: string
+  /** Story IDs. */
+  stories: string[]
+  priority: Priority
+  priorityTag: PriorityTag
+  /** 理由 */
+  reason: Cell
+}
+
+/** A row of 6.4 (needs format) or 5.4 (old format). 相關故事 is split on
+ * 「 vs 」 into two sides. */
 export interface Conflict {
   /** For example "C1". */
   id: string
@@ -209,6 +240,13 @@ export interface Conflict {
   method: Cell
   /** 模擬結果 */
   result: Cell
+  /** 雙方的需求, split on 「 vs 」: need IDs. [] in the old format. */
+  needsA: string[]
+  needsB: string[]
+  /** 以需求為本的解方. null in the old format. */
+  wayOut: Cell | null
+  /** The solution codes in wayOut. [] for 「未找到」 and in the old format. */
+  wayOutSolutions: string[]
 }
 
 /** A row of 6.1, with its stories from 6.2. */
@@ -222,8 +260,12 @@ export interface Solution {
   spaces: string[]
   /** 新增日期: the date the solution was added to 6.1 (YYYY-MM-DD). */
   added: string
-  /** Story IDs from the 涵蓋的 Must and 涵蓋的 Should / Could columns of 6.2. */
+  /** The stories whose need the solution covers in 6.2 (needs format), or
+   * the stories of the 6.2 row (old format). */
   stories: string[]
+  /** The need IDs of the 6.2 row: 涵蓋的 Must and 涵蓋的 Should / Could.
+   * null in the old format. */
+  needs: { must: string[]; shouldCould: string[] } | null
   /** 6.3 rows whose 解法 cell lists this solution, in file order. */
   measures: Measure[]
   /** The rows of its step 7 section (「### 7.n 解法 X：…」), in file order. */
@@ -312,6 +354,9 @@ export interface IssueFile {
   title: string
   spaces: string[]
   updated: string | null
+  /** "needs": the needs-based format (has 相同需求群組). "stories": the old
+   * format. #1, #2 and #8 use "needs". */
+  format: 'needs' | 'stories'
   /** 分析摘要: 5 topics, in the fixed order (SUMMARY_TOPICS). The summary
    * adds no new facts; each item lists where it comes from. */
   summary: SummaryTopic[]
@@ -321,6 +366,10 @@ export interface IssueFile {
   focusGroups: FocusGroup[]
   stories: Story[]
   groups: Group[]
+  /** 相同需求群組. [] in the old format. */
+  needGroups: NeedGroup[]
+  /** 5.2: one item per need, in file order. [] in the old format. */
+  needs: Need[]
   conflicts: Conflict[]
   solutions: Solution[]
   pending: Pending[]

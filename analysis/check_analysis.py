@@ -38,7 +38,7 @@ def step1_rows(t):
 
 
 def check_old_priority(text, step4, err, local_only):
-    """The old format (#1 and #8 for now): the 5.2 MoSCoW table lists the
+    """The old format (no issue uses it now): the 5.2 MoSCoW table lists the
     stories per category, and 6.2 maps solutions to stories and W groups."""
     sec5 = text.split("### 5.2", 1)[1].split("### 5.3", 1)[0]
     # Must count claimed in 6.2 summary
@@ -362,7 +362,7 @@ def main(md_path, csv_path):
     if old: err(f"old S IDs remain: {sorted(set(old))}")
 
     # The needs-based format (a 「### 相同需求群組」 section) or the old format.
-    # #1 and #8 still use the old format until a later task moves them.
+    # #1, #2 and #8 use the needs-based format. No issue uses the old format now.
     needs = needs_format(text)
 
     # step 4 table. In the needs-based format, the 相同需求編號 column (after
@@ -662,9 +662,9 @@ def main(md_path, csv_path):
                 for word in ("見下表", "見上表"):
                     if word in v: err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 「{word}」 does not work on the solution page; give the key numbers and name the section of the full table")
 
-    # 17. the 相關故事 of the conflict table (5.4, or 6.4 in the needs-based
-    # format) holds local stories only
-    for h, rows in tables(section(text, conflict_heading(text)) or []):
+    # 17. the 相關故事 of the 5.4 conflict table (old format) holds local
+    # stories only. The needs-based format checks 6.4 in check_conflicts.
+    for h, rows in (tables(section(text, "### 5.4") or []) if not needs else []):
         if "相關故事" in h:
             for c in rows:
                 if len(c) == len(h): local_only(f"5.4 {c[0]}", c[h.index("相關故事")])

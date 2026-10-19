@@ -10,6 +10,8 @@ ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "check_analysis.py")
 SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "method.md", "open-data.csv")
 ISSUE = "2-trashcans"
+# No issue uses the old format now. This copy of #8 (from before commit 37057a9) tests it.
+OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
 
 
 def issue_folders():
@@ -240,7 +242,23 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_cross_issue_reference_in_conflict_stories_cell(self):
         self.edit("1-trees/issue-analysis.md", "`[AI模擬]` O01-US01 vs I01-US01、I16-US01",
                   "`[AI模擬]` O01-US01、#2 O01-US01 vs I01-US01、I16-US01")
-        self.assertFails("5.4", "#2 O01-US01", folder="1-trees")
+        code, out = self.run_check("1-trees")
+        self.assertEqual(code, 1, out)
+        # One error, in 6.4 (the needs-based format).
+        self.assertEqual(out.count("6.4 C4: #2 O01-US01 refers to another issue"), 1, out)
+        self.assertNotIn("5.4", out)
+
+    def test_cross_issue_reference_in_old_format_conflict(self):
+        # In the old format (the fixture in place of #8), the conflicts are in 5.4.
+        path = os.path.join(self.dir, "8-smokefree", "issue-analysis.md")
+        shutil.copy(os.path.join(OLD_FORMAT, "user-stories.csv"), os.path.join(self.dir, "8-smokefree", "user-stories.csv"))
+        with open(os.path.join(OLD_FORMAT, "issue-analysis.md"), encoding="utf-8") as f:
+            text = f.read()
+        m = re.search(r"^\| C1 \| .*? \| `\[AI模擬\]` ([OI]\d\d-US\d\d)", text, re.M)
+        self.assertIsNotNone(m)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text[:m.start(1)] + "#1 I06-US02、" + text[m.start(1):])
+        self.assertFails("5.4 C1: #1 I06-US02 refers to another issue", folder="8-smokefree")
 
     def test_cross_issue_reference_in_6_2_cell(self):
         self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 | `[AI模擬]` N04",
@@ -628,17 +646,26 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
 
-    # ---------- the needs-based format (#2; owner decision 2026-10-20) ----------
+    # ---------- the needs-based format (#1, #2 and #8; owner decision 2026-10-20) ----------
     MD = f"{ISSUE}/issue-analysis.md"
     I06_ROW = "| `[AI模擬]` 安全通行，不會撞到 | N07 | 可詢問身障團體 | `[AI模擬]` M |"
     I01_US03_PRIO = "（關鍵字估算） | `[AI模擬]` M |\n| I01-US04 |"
 
-    def test_old_format_issues_still_pass(self):
+    def test_other_issues_pass_in_needs_format(self):
         for folder in ("1-trees", "8-smokefree"):
             with self.subTest(folder=folder):
                 code, out = self.run_check(folder)
                 self.assertEqual(code, 0, out)
-                self.assertIn("format: old", out)
+                self.assertIn("N groups:", out)
+                self.assertNotIn("format: old", out)
+
+    def test_old_format_still_passes(self):
+        # The fixture takes the place of #8. Its stakeholders are the same as in #8 now.
+        for name in ("issue-analysis.md", "user-stories.csv"):
+            shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(self.dir, "8-smokefree", name))
+        code, out = self.run_check("8-smokefree")
+        self.assertEqual(code, 0, out)
+        self.assertIn("format: old", out)
 
     def test_need_group_with_one_story_fails(self):
         self.edit(self.MD, self.I06_ROW, self.I06_ROW.replace("N07", "N11"))

@@ -8,13 +8,16 @@ shared CSV files or the issue files at the same time; their edits that are
 not committed yet must not change the results of these tests.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import importlib.util, json, os, re, subprocess, sys, tempfile, unittest
+import importlib.util, json, os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ANALYSIS)
 SCRIPT = os.path.join(ANALYSIS, "build_json.py")
 SHARED = ("issues.csv", "stakeholders.csv", "path-labels.csv", "space-types.csv", "open-data.csv")
 ISSUE = "2-trashcans"
+# No issue uses the old format now. This copy of #8 (from before commit
+# 37057a9) tests it. It is read from the working tree, not from HEAD.
+OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
 
 
 def head_issue_folders():
@@ -32,6 +35,12 @@ def make_copy(root):
                          capture_output=True, check=True).stdout
     subprocess.run(["tar", "-x", "-C", root], input=tar, check=True)
     return os.path.join(root, "analysis")
+
+
+def use_old_format(analysis_dir):
+    """Put the old-format fixture in place of the copied 8-smokefree files."""
+    for name in ("issue-analysis.md", "user-stories.csv"):
+        shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(analysis_dir, "8-smokefree", name))
 
 
 def run_build(analysis_dir, out_dir):
@@ -305,17 +314,14 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertIsNone(o0402["group"])
         self.assertIsNone(o0402["source"])
 
-    # ---------- the needs-based format (#2) ----------
+    # ---------- the needs-based format (#1, #2 and #8) ----------
     def test_format(self):
         self.assertEqual(self.issue["format"], "needs")
         for folder in ("1-trees", "8-smokefree"):
             with open(os.path.join(self.out, "issues", f"{folder}.json"), encoding="utf-8") as f:
                 other = json.load(f)
-            self.assertEqual(other["format"], "stories")
-            self.assertEqual((other["needGroups"], other["needs"]), ([], []))
-            self.assertTrue(all(s["needGroup"] is None for s in other["stories"]))
-            self.assertTrue(all(s["needs"] is None for s in other["solutions"]))
-            self.assertTrue(all(c["wayOut"] is None and c["wayOutSolutions"] == [] for c in other["conflicts"]))
+            self.assertEqual(other["format"], "needs", folder)
+            self.assertTrue(other["needGroups"] and other["needs"], folder)
 
     def test_need_groups(self):
         groups = self.issue["needGroups"]
@@ -458,6 +464,34 @@ class BuildJsonOutputTest(unittest.TestCase):
         text = "【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】"
         found = [p for p in self.issue["pending"] if p["text"] == text]
         self.assertEqual([p["section"] for p in found], ["1.3 特別關注族群檢查"])
+
+class BuildJsonOldFormatTest(unittest.TestCase):
+    """Build with the old-format fixture in place of #8 and look at its JSON."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls._tmp = tempfile.TemporaryDirectory()
+        cls.dir = make_copy(cls._tmp.name)
+        use_old_format(cls.dir)
+        out = os.path.join(cls._tmp.name, "out")
+        code, output = run_build(cls.dir, out)
+        if code != 0:
+            raise AssertionError(f"build failed ({code}): {output}")
+        with open(os.path.join(out, "issues", "8-smokefree.json"), encoding="utf-8") as f:
+            cls.old = json.load(f)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._tmp.cleanup()
+
+    def test_format(self):
+        old = self.old
+        self.assertEqual(old["format"], "stories")
+        self.assertEqual((old["needGroups"], old["needs"]), ([], []))
+        self.assertTrue(all(s["needGroup"] is None for s in old["stories"]))
+        self.assertTrue(all(s["needs"] is None for s in old["solutions"]))
+        self.assertTrue(all(c["wayOut"] is None and c["wayOutSolutions"] == [] for c in old["conflicts"]))
+
 
 class BuildJsonUnitTest(unittest.TestCase):
     def setUp(self):
@@ -683,7 +717,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.4", "C7", "#1 I06-US02")
 
     def test_cross_issue_reference_in_old_format_conflict(self):
-        # In the old format (#8), the conflicts are in 5.4.
+        # In the old format (the fixture in place of #8), the conflicts are in 5.4.
+        use_old_format(self.dir)
         path = os.path.join(self.dir, "8-smokefree", "issue-analysis.md")
         with open(path, encoding="utf-8") as f:
             text = f.read()

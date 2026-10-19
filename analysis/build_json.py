@@ -53,8 +53,9 @@ stakeholders.csv. index.json gets focusGaps for each analyzed issue: the
 groups with no stakeholder, in the same order (null for an issue without an
 analysis).
 
-Two formats (analysis_common.needs_format). The needs-based format (#2)
-has a 「### 相同需求群組」 section; #1 and #8 still use the old format. The
+Two formats (analysis_common.needs_format). The needs-based format has a
+「### 相同需求群組」 section; #1, #2 and #8 use it. No issue uses the old
+format now, but the script still reads it (tests/fixtures/old-format). The
 JSON keeps every field of the old format, with the same meaning, so the app
 works with both:
 - format: "needs" or "stories" (the old format).

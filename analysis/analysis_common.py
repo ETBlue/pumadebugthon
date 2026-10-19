@@ -34,11 +34,13 @@ Rules:
   or a solution (解法 A). A reference to another issue starts with 「#」, the
   issue number and one space: 「#8 解法 B」, 「#2 C9」 (SUMMARY_REF).
   A 相同需求群組 (N01) is a reference too.
-- Two formats exist for now (see method.md). The needs-based format has a
+- Two formats exist (see method.md). The needs-based format has a
   "### 相同需求群組" section (needs_format). In it, step 5 gives one MoSCoW
   priority per need, 6.2 maps solutions to needs, and the conflicts are in
   "### 6.4". The old format puts the conflicts in "### 5.4" and the
-  priority on each story. #1 and #8 still use the old format.
+  priority on each story. All analyzed issues (#1, #2, #8) use the
+  needs-based format now. The scripts still read the old format, and
+  tests/fixtures/old-format tests it.
 """
 import re
 

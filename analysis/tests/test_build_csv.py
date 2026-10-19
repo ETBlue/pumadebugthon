@@ -1,6 +1,7 @@
 """Tests for analysis/build_csv.py.
 
 The script runs as a subprocess on files from the working tree.
+The old format is tested with a fixture in tests/fixtures/old-format.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
 import csv, os, subprocess, sys, tempfile, unittest
@@ -10,6 +11,7 @@ SCRIPT = os.path.join(ANALYSIS, "build_csv.py")
 ISSUE = "2-trashcans"
 MD = os.path.join(ANALYSIS, ISSUE, "issue-analysis.md")
 CSV = os.path.join(ANALYSIS, ISSUE, "user-stories.csv")
+OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
 
 
 def run(md, out):
@@ -81,16 +83,24 @@ class BuildCsvTest(unittest.TestCase):
         self.assertEqual(by_id["I01-US03"]["優先順序"], "M")
         self.assertEqual(by_id["I01-US09"]["相同需求編號"], "—")
 
+    def test_other_issues_rebuild_byte_for_byte(self):
+        # #1 and #8 also use the needs-based format: 12 columns.
+        for folder in ("1-trees", "8-smokefree"):
+            with self.subTest(folder=folder):
+                code, output = run(os.path.join(ANALYSIS, folder, "issue-analysis.md"), self.out)
+                self.assertEqual(code, 0, output)
+                with open(self.out, "rb") as a, open(os.path.join(ANALYSIS, folder, "user-stories.csv"), "rb") as b:
+                    self.assertEqual(a.read(), b.read())
+
     def test_old_format_keeps_11_columns(self):
-        # #8 still uses the old format until a later task moves it.
-        md = os.path.join(ANALYSIS, "8-smokefree", "issue-analysis.md")
-        code, output = run(md, self.out)
+        # No issue uses the old format now. The fixture is #8 from before commit 37057a9.
+        code, output = run(os.path.join(OLD_FORMAT, "issue-analysis.md"), self.out)
         self.assertEqual(code, 0, output)
         with open(self.out, encoding="utf-8-sig", newline="") as f:
             header = next(csv.reader(f))
         self.assertEqual(len(header), 11)
         self.assertNotIn("相同需求編號", header)
-        with open(self.out, "rb") as a, open(os.path.join(ANALYSIS, "8-smokefree", "user-stories.csv"), "rb") as b:
+        with open(self.out, "rb") as a, open(os.path.join(OLD_FORMAT, "user-stories.csv"), "rb") as b:
             self.assertEqual(a.read(), b.read())
 
     def test_bare_tag_word_without_brackets_exits_1(self):

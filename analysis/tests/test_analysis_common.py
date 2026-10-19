@@ -7,7 +7,9 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 import csv, importlib.util, os, re, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ISSUES = {"1-trees": 28, "2-trashcans": 27}  # folder -> number of step 1 stakeholders
+ISSUES = {"1-trees": 28, "2-trashcans": 27, "8-smokefree": 21}  # folder -> number of step 1 stakeholders
+# No issue uses the old format now. This copy of #8 (from before commit 37057a9) tests it.
+OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
 
 
 def load(name):
@@ -19,6 +21,12 @@ def load(name):
 
 def read(folder):
     with open(os.path.join(ANALYSIS, folder, "issue-analysis.md"), encoding="utf-8") as f:
+        return f.read()
+
+
+def read_old_format():
+    """The old-format fixture: the #8 file before commit 37057a9 moved it."""
+    with open(os.path.join(OLD_FORMAT, "issue-analysis.md"), encoding="utf-8") as f:
         return f.read()
 
 
@@ -66,17 +74,18 @@ class AnalysisCommonTest(unittest.TestCase):
         self.assertEqual(tuple(name for name, _ in topics), self.common.SUMMARY_TOPICS)
 
     def test_needs_format(self):
-        # #2 uses the needs-based format (a 相同需求群組 section). #1 and #8
-        # still use the old format until a later task moves them.
-        self.assertTrue(self.common.needs_format(read("2-trashcans")))
-        self.assertFalse(self.common.needs_format(read("1-trees")))
-        self.assertFalse(self.common.needs_format(read("8-smokefree")))
-        self.assertEqual(self.common.conflict_heading(read("2-trashcans")), "### 6.4")
-        self.assertEqual(self.common.conflict_heading(read("8-smokefree")), "### 5.4")
+        # #1, #2 and #8 all use the needs-based format (a 相同需求群組 section).
+        for folder in ("1-trees", "2-trashcans", "8-smokefree"):
+            with self.subTest(folder=folder):
+                self.assertTrue(self.common.needs_format(read(folder)))
+                self.assertEqual(self.common.conflict_heading(read(folder)), "### 6.4")
+        # The scripts still read the old format. The fixture is #8 before it moved.
+        self.assertFalse(self.common.needs_format(read_old_format()))
+        self.assertEqual(self.common.conflict_heading(read_old_format()), "### 5.4")
 
     def test_old_format_issue_ids(self):
         # The conflicts of an old-format file are still found in 5.4; it has no needs.
-        ids = self.common.issue_ids(read("8-smokefree"))
+        ids = self.common.issue_ids(read_old_format())
         self.assertIn("C3", ids["conflict"])
         self.assertEqual(ids["need"], set())
 

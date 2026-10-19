@@ -6,7 +6,7 @@ import { t } from '@/i18n/zh-TW'
 import { dataBasisFilterSearch, isDataBasisFilterOn } from '@/lib/dataBasis'
 import { conflictFocusPath, needFocusPath, stakeholderTabPath, storyPath } from '@/lib/entityPaths'
 import { stripMarkdown } from '@/lib/markdown'
-import type { NeedItem as NeedData } from '@/lib/needs'
+import { shownNeedStories, type NeedItem as NeedData } from '@/lib/needs'
 import { priorityLabel } from '@/lib/priority'
 import { stakeholderName } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
@@ -103,6 +103,8 @@ export function NeedItem({
   const solutions = item.solutions.filter((s) => s.solution.id !== otherSolutionsThan)
   const ownTexts = (ownStories ?? []).filter((s) => s.soThat.text !== summary.text)
   const name = (id: string) => stakeholderName(stakeholders, id)
+  // The story list follows 「只看有資料根據」 (?evidence=1) on every page.
+  const shownStories = shownNeedStories(item, isDataBasisFilterOn(params))
   const headingId = useId()
 
   return (
@@ -193,15 +195,15 @@ export function NeedItem({
         )}
       </dl>
 
-      {has('stories') && item.stories.length > 0 && (
+      {has('stories') && shownStories.length > 0 && (
         <Collapsible className="mt-2 text-sm">
           <CollapsibleTrigger className="group flex items-center gap-1 rounded-md py-1 text-left font-medium hover:bg-muted">
             <ChevronRight aria-hidden="true" className="size-4 shrink-0 transition-transform group-data-[state=open]:rotate-90" />
-            {tn.stories(item.stories.length)}
+            {tn.stories(shownStories.length)}
           </CollapsibleTrigger>
           <CollapsibleContent>
             <ul className="mt-1 space-y-2 border-l pl-3">
-              {item.stories.map((s) => (
+              {shownStories.map((s) => (
                 <li key={s.id}>
                   <p className="flex flex-wrap items-baseline gap-x-2">
                     <Link to={storyPath(issueNumber, s.id)} className={cn(linkClass, 'font-mono')}>{s.id}</Link>

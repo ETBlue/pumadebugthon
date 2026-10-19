@@ -10,6 +10,7 @@ import {
   needsForStakeholder,
   needsOfStakeholder,
   needSummaryOf,
+  shownNeedStories,
 } from './needs'
 
 const trashcans = trashcansJson as IssueFile
@@ -191,5 +192,25 @@ describe('needSummaryOf', () => {
 
   it('is the same cell as the summary of issueNeeds', () => {
     for (const item of issueNeeds(trashcans)) expect(needSummaryOf(trashcans, item.need)).toEqual(item.summary)
+  })
+})
+
+describe('shownNeedStories', () => {
+  it('without the filter, gives every story of the need in its order', () => {
+    const n01 = issueNeeds(trashcans).find((i) => i.need.id === 'N01')!
+    expect(shownNeedStories(n01, false)).toEqual(n01.stories)
+  })
+
+  it('with the filter, keeps only the stories with a [實證] or [AI整理] cell, in order', () => {
+    const n01 = issueNeeds(trashcans).find((i) => i.need.id === 'N01')!
+    const kept = shownNeedStories(n01, true)
+    expect(kept.length).toBeGreaterThan(0)
+    expect(kept.length).toBeLessThan(n01.stories.length)
+    const based = (s: Story) => [s.want.tag, s.soThat.tag].some((t) => t === '實證' || t === 'AI整理')
+    expect(kept).toEqual(n01.stories.filter(based))
+  })
+
+  it('with the filter, a need that dataBasedNeeds keeps always has a story left', () => {
+    for (const item of dataBasedNeeds(issueNeeds(trashcans))) expect(shownNeedStories(item, true).length).toBeGreaterThan(0)
   })
 })

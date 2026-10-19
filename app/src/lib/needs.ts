@@ -5,7 +5,7 @@
 // Order is always the file order, the fixed priority order or ID order.
 // Nothing here sorts by a count.
 import type { Cell, Conflict, IssueFile, Need, Priority, Solution, Story } from '@/types'
-import { DATA_BASED_TAGS } from './dataBasis'
+import { DATA_BASED_TAGS, dataBasedOnly } from './dataBasis'
 import { compareIds } from './ids'
 import { PRIORITIES } from './priority'
 
@@ -118,6 +118,14 @@ export function needsOfStakeholder(issue: IssueFile, id: string): StakeholderNee
  * checked. Keeps the order of the list. */
 export function dataBasedNeeds<T extends NeedItem>(items: T[]): T[] {
   return items.filter((i) => i.stories.some((s) => DATA_BASED_TAGS.includes(s.soThat.tag)))
+}
+
+/** The stories in the story list of one need (NeedItem). With the
+ * 「只看有資料根據」 filter on, only the stories with a [實證] or [AI整理]
+ * cell (hasDataBasis), as in every other story list. A need that
+ * dataBasedNeeds keeps always has at least one story left. */
+export function shownNeedStories(item: NeedItem, dataBased: boolean): Story[] {
+  return dataBased ? dataBasedOnly(item.stories) : item.stories
 }
 
 /** The stakeholder filter (design 3.14): with null, every item. With an ID,

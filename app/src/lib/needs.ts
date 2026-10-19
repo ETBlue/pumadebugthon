@@ -4,7 +4,7 @@
 // no findNeed or needView here.
 // Order is always the file order, the fixed priority order or ID order.
 // Nothing here sorts by a count.
-import type { Cell, Conflict, IssueFile, Need, Priority, Solution, Story } from '@/types'
+import type { Cell, Conflict, IssueFile, Need, Priority, PriorityTag, Solution, Story } from '@/types'
 import { DATA_BASED_TAGS, dataBasedOnly } from './dataBasis'
 import { compareIds } from './ids'
 import { PRIORITIES } from './priority'
@@ -54,6 +54,38 @@ function needSummary(issue: IssueFile, need: Need, stories: Story[]): Cell {
   return stories[0]?.soThat ?? { text: need.summary, tag: null, pending: false }
 }
 
+/** The solutions that cover any of the stories, each once, in ID order
+ * (compareIds). A solution covers a story when its needs.must or
+ * needs.shouldCould lists the story's need key: the same source as the
+ * 涵蓋的解法 of a need. In the old format (solution.needs is null), when
+ * solution.stories lists the story. Every 解法 list of a want or a story
+ * comes from here. */
+export function solutionsOfStories(issue: IssueFile, storyIds: readonly string[]): Solution[] {
+  const stories = storyIds.flatMap((id) => issue.stories.find((s) => s.id === id) ?? [])
+  const keys = new Set(stories.map(needKey))
+  const ids = new Set(stories.map((s) => s.id))
+  return issue.solutions
+    .filter((sol) =>
+      sol.needs
+        ? [...sol.needs.must, ...sol.needs.shouldCould].some((k) => keys.has(k))
+        : sol.stories.some((id) => ids.has(id)),
+    )
+    .sort((a, b) => compareIds(a.id, b.id))
+}
+
+export interface StoryPriority {
+  priority: Priority
+  tag: PriorityTag
+}
+
+/** The priority shown for a story (design 3.15): the priority of its need,
+ * with the need's tag. When the need is not found (the old format has no
+ * needs), the story's own priority and tag. */
+export function storyPriority(issue: Pick<IssueFile, 'needs'>, story: Story): StoryPriority {
+  const need = issue.needs.find((n) => n.id === needKey(story))
+  return need ? { priority: need.priority, tag: need.priorityTag } : { priority: story.priority, tag: story.priorityTag }
+}
+
 function needSolutions(issue: IssueFile, id: string): NeedSolution[] {
   const out: NeedSolution[] = []
   for (const solution of issue.solutions) {
@@ -84,14 +116,15 @@ export function issueNeeds(issue: IssueFile): NeedItem[] {
   return issue.needs.map((need) => needItem(issue, need))
 }
 
-export interface NeedPriorityGroup {
+export interface NeedPriorityGroup<T extends NeedItem = NeedItem> {
   priority: Priority
-  items: NeedItem[]
+  items: T[]
 }
 
-/** The items grouped by priority, in the fixed order M, S, C, W. Inside a
- * group, the order of the list it gets. Empty groups are left out. */
-export function needsByPriority(items: NeedItem[]): NeedPriorityGroup[] {
+/** The items grouped by the need's priority, in the fixed order M, S, C, W.
+ * Inside a group, the order of the list it gets. Empty groups are left out.
+ * Every list of needs grouped by priority uses this. */
+export function needsByPriority<T extends NeedItem>(items: T[]): NeedPriorityGroup<T>[] {
   return PRIORITIES.map((priority) => ({ priority, items: items.filter((i) => i.need.priority === priority) })).filter(
     (g) => g.items.length > 0,
   )

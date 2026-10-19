@@ -1,11 +1,13 @@
 // Lookups for the solution page #/solutions/<n>-<code> (design 3.12).
 // The paths are in entityPaths.ts (solutionPath).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
-import type { Conflict, Group, IssueFile, Priority, Solution } from '@/types'
+import type { Conflict, Group, IssueFile, Solution } from '@/types'
 import { compareIds } from './ids'
 import { stripMarkdown } from './markdown'
-import { dataBasedNeeds, issueNeeds, needsOfStakeholder, type NeedItem, type NeedSolution } from './needs'
-import { PRIORITIES } from './priority'
+import {
+  dataBasedNeeds, issueNeeds, needsByPriority, needsOfStakeholder, type NeedItem, type NeedPriorityGroup, type NeedSolution,
+} from './needs'
+import { storyStakeholderOf } from './stories'
 import { conflictView, type ConflictView } from './wantList'
 
 /** The solution for the code in the URL: one capital letter, for example "A".
@@ -35,6 +37,7 @@ export interface GroupCoverage {
  * matches the stories, so the app can work it out from the stories. */
 export function solutionGroupCoverage(issue: IssueFile, solution: Solution): GroupCoverage[] {
   const covered = new Set(solution.stories)
+  const stakeholderOf = storyStakeholderOf(issue)
   return issue.groups.flatMap((group) => {
     const inGroup = group.stories.filter((id) => covered.has(id))
     if (inGroup.length === 0) return []
@@ -42,7 +45,7 @@ export function solutionGroupCoverage(issue: IssueFile, solution: Solution): Gro
       group,
       full: inGroup.length === group.stories.length,
       covered: inGroup,
-      stakeholders: [...new Set(group.stories.map((id) => id.split('-')[0]))].sort(compareIds),
+      stakeholders: [...new Set(group.stories.map(stakeholderOf))].sort(compareIds),
     }]
   })
 }
@@ -161,16 +164,7 @@ export function dataBasedCoverage(coverage: NeedCoverage, on: boolean): NeedCove
   return { covered: dataBasedNeeds(coverage.covered), notCovered: dataBasedNeeds(coverage.notCovered) }
 }
 
-export interface CoveragePriorityGroup<T extends NeedItem> {
-  priority: Priority
-  items: T[]
-}
-
-function byPriority<T extends NeedItem>(items: T[]): CoveragePriorityGroup<T>[] {
-  return PRIORITIES.map((priority) => ({ priority, items: items.filter((i) => i.need.priority === priority) })).filter(
-    (g) => g.items.length > 0,
-  )
-}
+export type CoveragePriorityGroup<T extends NeedItem> = NeedPriorityGroup<T>
 
 /** The 需求 tab (design 3.12): the covered and the not covered needs, each
  * grouped by the need's own priority in the fixed order M, S, C, W. Inside
@@ -179,7 +173,7 @@ export function coverageByPriority(coverage: NeedCoverage): {
   covered: CoveragePriorityGroup<CoveredNeed>[]
   notCovered: CoveragePriorityGroup<NotCoveredNeed>[]
 } {
-  return { covered: byPriority(coverage.covered), notCovered: byPriority(coverage.notCovered) }
+  return { covered: needsByPriority(coverage.covered), notCovered: needsByPriority(coverage.notCovered) }
 }
 
 /** The needs of one stakeholder in one issue. */

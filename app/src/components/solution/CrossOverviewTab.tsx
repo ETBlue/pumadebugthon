@@ -29,7 +29,13 @@ const tc = t.conflict
 
 /** The stories of one side, each with its issue number. With the
  * 「只看有資料根據」 filter on, only the stories with a data basis. */
-function SideStories({ stories, index, dataBasedOnly }: { stories: CrossStory[]; index: IndexFile; dataBasedOnly: boolean }) {
+function SideStories({ stories, index, issues, dataBasedOnly }: {
+  stories: CrossStory[]
+  index: IndexFile
+  /** The issue files, for the priority of each story's need. */
+  issues: IssueFile[]
+  dataBasedOnly: boolean
+}) {
   const shown = dataBasedOnly ? stories.filter((s) => hasDataBasis(s.story)) : stories
   if (dataBasedOnly && shown.length === 0 && stories.length > 0) return <DataBasisEmpty />
   return (
@@ -39,7 +45,7 @@ function SideStories({ stories, index, dataBasedOnly }: { stories: CrossStory[];
           <p className="mb-1 text-xs text-muted-foreground">{tx.issueLink(issueNumber)}</p>
           <StoryCard
             story={story}
-            issueNumber={issueNumber}
+            issue={issues.find((i) => i.number === issueNumber) ?? { number: issueNumber, needs: [] }}
             stakeholderName={stakeholderName(index.stakeholders, story.stakeholder)}
             compact
           />
@@ -83,10 +89,11 @@ function SideNeeds({ label, needs }: { label: string; needs: CrossSideNeed[] }) 
 /** One cross-issue conflict (design 3.18): the text, the two sides with
  * story links, 雙方的需求, 以需求為本的解方, the method, the result and the
  * issue conflicts as links. */
-function CrossConflictCard({ view, data, index, dataBasedOnly }: {
+function CrossConflictCard({ view, data, index, issues, dataBasedOnly }: {
   view: CrossConflictView
   data: CrossIssueFile
   index: IndexFile
+  issues: IssueFile[]
   dataBasedOnly: boolean
 }) {
   const c = view.conflict
@@ -102,11 +109,11 @@ function CrossConflictCard({ view, data, index, dataBasedOnly }: {
       <div className="mt-3 grid gap-4 md:grid-cols-2">
         <section className="min-w-0">
           <Heading level={5} className="font-medium">{tc.sideA}</Heading>
-          <SideStories stories={view.sideA} index={index} dataBasedOnly={dataBasedOnly} />
+          <SideStories stories={view.sideA} index={index} issues={issues} dataBasedOnly={dataBasedOnly} />
         </section>
         <section className="min-w-0">
           <Heading level={5} className="font-medium">{tc.sideB}</Heading>
-          <SideStories stories={view.sideB} index={index} dataBasedOnly={dataBasedOnly} />
+          <SideStories stories={view.sideB} index={index} issues={issues} dataBasedOnly={dataBasedOnly} />
         </section>
       </div>
 
@@ -211,7 +218,7 @@ export function CrossOverviewTab({ data, index, issues, solution: sol }: {
           <ul className="mt-4 space-y-4">
             {wayOut.map((view) => (
               <li key={view.conflict.id}>
-                <CrossConflictCard view={view} data={data} index={index} dataBasedOnly={dataBasedOnly} />
+                <CrossConflictCard view={view} data={data} index={index} issues={issues} dataBasedOnly={dataBasedOnly} />
               </li>
             ))}
           </ul>

@@ -69,7 +69,7 @@ export function OverviewTab({ index, issues, id }: StakeholderTabProps) {
                     <li key={story.id}>
                       <StoryCard
                         story={story}
-                        issueNumber={issue.number}
+                        issue={issue}
                         stakeholderName={stakeholderName(index.stakeholders, story.stakeholder)}
                         wantKey={wantKey(issue, story)}
                         needKey={needKey(story)}

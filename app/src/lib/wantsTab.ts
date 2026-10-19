@@ -28,7 +28,7 @@ export function wantsTabView(issue: IssueFile, stakeholder: string | null, dataB
     const dataKeys = new Set(dataBasedPickList(byStakeholder, issue.stories).map((i) => i.key))
     wants = byStakeholder.filter((w) => dataKeys.has(w.key))
   }
-  const kept = conflictsForStakeholder(issue.conflicts, stakeholder)
+  const kept = conflictsForStakeholder(issue, stakeholder)
   const conflicts = kept.map((c) => conflictView(issue, c))
   // With a filter, a want lists only the conflicts on the tab. A W group can
   // be in a conflict through another stakeholder's story, and that conflict

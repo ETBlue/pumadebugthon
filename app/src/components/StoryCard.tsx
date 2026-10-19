@@ -5,7 +5,8 @@ import { t } from '@/i18n/zh-TW'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { needFocusPath, storyPath, wantFocusPath } from '@/lib/entityPaths'
 import { priorityLabel } from '@/lib/priority'
-import type { Story } from '@/types'
+import { storyPriority } from '@/lib/needs'
+import type { IssueFile, Story } from '@/types'
 import { CellText } from './CellText'
 import { Markdown } from './Markdown'
 import { linkClass } from './styles'
@@ -13,8 +14,9 @@ import { TagBadge } from './TagBadge'
 
 export interface StoryCardProps {
   story: Story
-  /** The issue of the story. The story ID links to its story page (design 3.15). */
-  issueNumber: number
+  /** The issue of the story: its number for the links (the story ID links
+   * to its story page, design 3.15), and its needs for the priority. */
+  issue: Pick<IssueFile, 'number' | 'needs'>
   stakeholderName: string
   /** Less padding, for long lists of stories. The 來源 row stays, so a [實證] story keeps its source. */
   compact?: boolean
@@ -28,14 +30,17 @@ export interface StoryCardProps {
   needKey?: string
 }
 
-/** One user story: ID, stakeholder, 我想要, 以便, source and priority with its tag.
+/** One user story: ID, stakeholder, 我想要, 以便, source and priority with its
+ * tag. The priority is the one of the story's need (storyPriority, design 3.15).
  * The story ID links to the story page. The story page has no data filter,
  * so that link drops ?evidence=1. The 訴求 and 需求 links go to issue tabs,
  * so they keep it. */
 export function StoryCard({
-  story, issueNumber, stakeholderName, compact = false, stakeholderNote, wantKey, needKey,
+  story, issue, stakeholderName, compact = false, stakeholderNote, wantKey, needKey,
 }: StoryCardProps) {
   const [params] = useSearchParams()
+  const issueNumber = issue.number
+  const priority = storyPriority(issue, story)
   const dataBasedOnly = isDataBasisFilterOn(params)
   const row = 'flex flex-col gap-0.5 md:flex-row md:gap-3'
   const label = 'shrink-0 text-muted-foreground md:w-20'
@@ -69,8 +74,8 @@ export function StoryCard({
         <div className={row}>
           <dt className={label}>{t.story.priority}</dt>
           <dd>
-            <TagBadge kind={story.priorityTag} className="mr-1.5" />
-            {priorityLabel(story.priority)}
+            <TagBadge kind={priority.tag} className="mr-1.5" />
+            {priorityLabel(priority.priority)}
           </dd>
         </div>
       </dl>

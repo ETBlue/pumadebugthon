@@ -2,7 +2,9 @@
 // There is no want page (design decision 45), so there is no findWant or wantView.
 import type { Cell, Conflict, IssueFile, Need, Solution, Story } from '@/types'
 import { compareIds } from './ids'
+import { solutionsOfStories } from './needs'
 import { pickList, type PickItem } from './opinion'
+import { storyStakeholderOf } from './stories'
 
 /** One want: an opinion check pick item, with the links the 訴求 tab shows. */
 export interface WantItem extends PickItem {
@@ -11,13 +13,9 @@ export interface WantItem extends PickItem {
   /** The conflicts with a story of the item on a side, in file order. The
    * same type as NeedItem.conflicts. */
   conflicts: Conflict[]
-  /** The solutions that cover the need of one of its stories, in file order. */
+  /** The solutions that cover the need of one of its stories, in ID order
+   * (solutionsOfStories). */
   solutions: Solution[]
-}
-
-/** The stakeholder of a story ID: the part before 「-」. */
-function stakeholderOfStory(storyId: string): string {
-  return storyId.split('-')[0]
 }
 
 /** The want key of a story (design 3.16): its W group (for example "W08"),
@@ -29,14 +27,14 @@ export function wantKey(issue: IssueFile, story: Story): string {
 
 /** The wants of an issue, in the order of pickList. */
 export function issueWants(issue: IssueFile): WantItem[] {
+  const stakeholderOf = storyStakeholderOf(issue)
   return pickList(issue).map((item) => {
     const own = new Set(item.storyIds)
-    const stakeholders = [...new Set(item.storyIds.map(stakeholderOfStory))].sort(compareIds)
+    const stakeholders = [...new Set(item.storyIds.map(stakeholderOf))].sort(compareIds)
     const conflicts = issue.conflicts.filter(
       (c) => c.sideA.some((id) => own.has(id)) || c.sideB.some((id) => own.has(id)),
     )
-    // Solution.stories holds the stories whose need the solution covers.
-    const solutions = issue.solutions.filter((sol) => sol.stories.some((id) => own.has(id)))
+    const solutions = solutionsOfStories(issue, item.storyIds)
     return { ...item, stakeholders, conflicts, solutions }
   })
 }
@@ -54,10 +52,11 @@ export function wantsOfStakeholder(issue: IssueFile, id: string): WantItem[] {
 
 /** The conflicts with a story of the stakeholder on either side, in file
  * order. null keeps every conflict. */
-export function conflictsForStakeholder(conflicts: Conflict[], id: string | null): Conflict[] {
-  if (id === null) return conflicts
-  const has = (side: string[]) => side.some((s) => stakeholderOfStory(s) === id)
-  return conflicts.filter((c) => has(c.sideA) || has(c.sideB))
+export function conflictsForStakeholder(issue: IssueFile, id: string | null): Conflict[] {
+  if (id === null) return issue.conflicts
+  const stakeholderOf = storyStakeholderOf(issue)
+  const has = (side: string[]) => side.some((s) => stakeholderOf(s) === id)
+  return issue.conflicts.filter((c) => has(c.sideA) || has(c.sideB))
 }
 
 /** What the 訴求 tab shows for one conflict (design 3.2). */

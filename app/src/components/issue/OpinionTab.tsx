@@ -144,7 +144,7 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
         <li key={s.id}>
           <StoryCard
             story={s}
-            issueNumber={n}
+            issue={issue}
             stakeholderName={stakeholderName(index.stakeholders, s.stakeholder)}
             stakeholderNote={alsoIn(s.stakeholder)}
             compact

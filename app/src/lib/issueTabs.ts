@@ -6,6 +6,7 @@
 import type { Conflict, IssueFile, Solution } from '@/types'
 import { dataBasedNeeds, issueNeeds, needsByPriority, needsForStakeholder, type NeedPriorityGroup } from './needs'
 import { solutionNeedCoverage, type CoveredNeed } from './solutionPage'
+import { compareIds } from './ids'
 import { conflictsForStakeholder } from './wantList'
 
 export interface NeedsTabView {
@@ -31,7 +32,7 @@ export function needsTabView(issue: IssueFile, stakeholder: string | null, dataB
   // with the same filter. The links 「出現在衝突」 keep ?stakeholder=, so a
   // conflict with no story of the stakeholder would point to nothing.
   if (stakeholder !== null) {
-    const shown = new Set(conflictsForStakeholder(issue.conflicts, stakeholder).map((c) => c.id))
+    const shown = new Set(conflictsForStakeholder(issue, stakeholder).map((c) => c.id))
     items = items.map((i) => ({ ...i, conflicts: i.conflicts.filter((c) => shown.has(c.id)) }))
   }
   return { oldFormat, groups: needsByPriority(items), shown: items.length }
@@ -61,10 +62,10 @@ export interface SolutionsTabItem {
  * that stakeholder's needs. The data filter hides needs, never a solution. */
 export function solutionsTabView(issue: IssueFile, stakeholder: string | null, dataBased: boolean): SolutionsTabItem[] {
   const out: SolutionsTabItem[] = []
-  const solutions = [...issue.solutions].sort((a, b) => a.id.localeCompare(b.id))
+  const solutions = [...issue.solutions].sort((a, b) => compareIds(a.id, b.id))
   // The conflict links keep ?stakeholder=, so list only the conflicts that
   // the 訴求 tab shows with that filter.
-  const conflicts = conflictsForStakeholder(issue.conflicts, stakeholder)
+  const conflicts = conflictsForStakeholder(issue, stakeholder)
   for (const solution of solutions) {
     const covered = solutionNeedCoverage(issue, solution).covered
     const own = needsForStakeholder(covered, stakeholder)

@@ -7,6 +7,7 @@ import { availableIssues } from './issues'
 import { dataBasedNeeds, needsOfStakeholder, type StakeholderNeedItem } from './needs'
 import { priorityCounts, type TagPriorityCounts } from './priority'
 import { resolveId } from './stakeholders'
+import { storyStakeholderOf } from './stories'
 import { conflictsForStakeholder, conflictView, type ConflictView } from './wantList'
 
 export interface PathStep {
@@ -99,8 +100,9 @@ export interface StakeholderConflictView {
  * the same conflicts as the tab count (conflictsForStakeholder). */
 export function stakeholderConflictViews(issue: IssueFile, id: string): StakeholderConflictView[] {
   const byId = new Map(issue.stories.map((s) => [s.id, s]))
-  const isOwn = (storyId: string) => (byId.get(storyId)?.stakeholder ?? storyId.split('-')[0]) === id
-  return conflictsForStakeholder(issue.conflicts, id).map((conflict) => {
+  const stakeholderOf = storyStakeholderOf(issue)
+  const isOwn = (storyId: string) => stakeholderOf(storyId) === id
+  return conflictsForStakeholder(issue, id).map((conflict) => {
     const onA = conflict.sideA.some(isOwn)
     const onB = conflict.sideB.some(isOwn)
     // Side A first, then side B, so the order matches the issue's 訴求 tab.

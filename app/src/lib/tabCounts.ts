@@ -35,7 +35,7 @@ export function stakeholderTabCounts(issues: IssueFile[], id: string): TabCounts
   for (const issue of issues) {
     const needs = needsOfStakeholder(issue, id)
     out.wants += wantsOfStakeholder(issue, id).length
-    out.conflicts += conflictsForStakeholder(issue.conflicts, id).length
+    out.conflicts += conflictsForStakeholder(issue, id).length
     out.needs += needs.length
     out.solutions += new Set(needs.flatMap((n) => n.solutions.map((s) => s.solution.id))).size
   }

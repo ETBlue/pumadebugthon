@@ -3,6 +3,7 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { IssueFile, Story } from '@/types'
 import {
+  solutionsOfStories, storyPriority,
   dataBasedNeeds,
   issueNeeds,
   needKey,
@@ -212,5 +213,50 @@ describe('shownNeedStories', () => {
 
   it('with the filter, a need that dataBasedNeeds keeps always has a story left', () => {
     for (const item of dataBasedNeeds(issueNeeds(trashcans))) expect(shownNeedStories(item, true).length).toBeGreaterThan(0)
+  })
+})
+
+describe('solutionsOfStories', () => {
+  it('gives the solutions that list the need of one of the stories, in ID order', () => {
+    // W08 of #2: its stories are covered by A and D (the same as on the need).
+    const w08 = trashcans.stories.filter((s) => s.group === 'W08').map((s) => s.id)
+    expect(solutionsOfStories(trashcans, w08).map((s) => s.id)).toEqual(['A', 'D'])
+  })
+
+  it('uses needs.must and needs.shouldCould, the same source as a need', () => {
+    for (const story of trashcans.stories) {
+      const need = issueNeeds(trashcans).find((i) => i.need.id === needKey(story))!
+      expect(solutionsOfStories(trashcans, [story.id]).map((s) => s.id)).toEqual(need.solutions.map((s) => s.solution.id))
+    }
+  })
+
+  it('uses Solution.stories in the old format, where a solution has no needs', () => {
+    const story = trashcans.stories[0]
+    const old = {
+      ...trashcans,
+      format: 'stories',
+      needs: [],
+      solutions: [
+        { ...trashcans.solutions[1], id: 'B', needs: null, stories: [story.id] },
+        { ...trashcans.solutions[0], id: 'A', needs: null, stories: [story.id] },
+        { ...trashcans.solutions[2], id: 'C', needs: null, stories: [] },
+      ],
+    } as IssueFile
+    expect(solutionsOfStories(old, [story.id]).map((s) => s.id)).toEqual(['A', 'B'])
+  })
+})
+
+describe('storyPriority', () => {
+  it("gives the priority of the story's need, with the need's tag", () => {
+    const story = trashcans.stories.find((s) => s.needGroup === 'N01')!
+    const n01 = trashcans.needs.find((n) => n.id === 'N01')!
+    // A story cell can have another tag than the need row. The need row wins.
+    const other: Story = { ...story, priorityTag: n01.priorityTag === '實證' ? 'AI模擬' : '實證' }
+    expect(storyPriority(trashcans, other)).toEqual({ priority: n01.priority, tag: n01.priorityTag })
+  })
+
+  it("falls back to the story's own priority when the need is not found (old format)", () => {
+    const story = trashcans.stories[0]
+    expect(storyPriority({ needs: [] }, story)).toEqual({ priority: story.priority, tag: story.priorityTag })
   })
 })

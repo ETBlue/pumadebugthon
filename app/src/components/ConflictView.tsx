@@ -46,7 +46,7 @@ export function ConflictView({
   const sub = subLevel(headingLevel)
   const headingId = useId()
   const stories = (list: Story[]) => (
-    <StoryList stories={list} issueNumber={n} stakeholders={stakeholders} dataBasedOnly={dataBasedOnly} />
+    <StoryList stories={list} issue={issue} stakeholders={stakeholders} dataBasedOnly={dataBasedOnly} />
   )
   const needs = (label: string, list: Need[]) => (
     <div className="min-w-0">

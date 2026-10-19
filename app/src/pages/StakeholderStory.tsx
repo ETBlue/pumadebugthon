@@ -16,6 +16,7 @@ import {
 } from '@/lib/entityPaths'
 import { findIssue, tabPath } from '@/lib/issuePage'
 import { opinionPickTo } from '@/lib/opinion'
+import { storyPriority } from '@/lib/needs'
 import { priorityLabel } from '@/lib/priority'
 import { findStory, storyRedirectPath, storyView, type StoryGroup, type StoryView } from '@/lib/storyPage'
 import { resolveId, stakeholderName } from '@/lib/stakeholders'
@@ -87,6 +88,7 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
 }) {
   const { story } = view
   const n = summary.number
+  const priority = storyPriority(issue, story)
   const title = ts.title(n, story.id)
   const row = 'flex flex-col gap-0.5 sm:flex-row sm:gap-3'
   const label = 'shrink-0 text-muted-foreground sm:w-20'
@@ -138,8 +140,8 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
           <div className={row}>
             <dt className={label}>{ts.priority}</dt>
             <dd className="min-w-0">
-              <TagBadge kind={story.priorityTag} className="mr-1.5" />
-              {priorityLabel(story.priority)}
+              <TagBadge kind={priority.tag} className="mr-1.5" />
+              {priorityLabel(priority.priority)}
               <span className="mt-1 block text-muted-foreground">{ts.priorityNote}</span>
               <span className="mt-1 block"><PriorityLegend /></span>
             </dd>
@@ -207,7 +209,7 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
       <Section heading={ts.solutionsHeading}>
         {view.solutions.length === 0 ? (
           <p className="mt-2 text-muted-foreground">
-            {story.priority === 'W' ? ts.solutionsWontDo : ts.solutionsNone}
+            {priority.priority === 'W' ? ts.solutionsWontDo : ts.solutionsNone}
           </p>
         ) : (
           <>

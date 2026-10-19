@@ -4,6 +4,7 @@ import { withDataBasisFilter } from './dataBasis'
 import { compareIds } from './ids'
 import { tabPath } from './issuePage'
 import { stripMarkdown } from './markdown'
+import { solutionsOfStories } from './needs'
 
 /** One thing a citizen can pick: a W group, or a story without a group. */
 export interface PickItem {
@@ -34,7 +35,7 @@ export interface OpinionResult {
   /** 可能有不同意見的人: conflicts with a picked story on one side, and at
    * least one story that is not picked. */
   otherSide: OtherSide[]
-  /** 相關解法: solutions that list a picked story. */
+  /** 相關解法: the solutions that cover the need of a picked story, in ID order (solutionsOfStories). */
   solutions: Solution[]
   /** 這個意見沒有直接提到的人: stakeholder IDs of the issue that are not
    * in same or otherSide, in ID order. */
@@ -92,7 +93,7 @@ export function opinionResult(issue: IssueFile, storyIds: string[]): OpinionResu
     otherSide.push({ conflict: c, otherStories: stories(other) })
   }
 
-  const solutions = issue.solutions.filter((sol) => sol.stories.some((id) => picked.has(id)))
+  const solutions = solutionsOfStories(issue, [...picked])
 
   const mentioned = new Set([
     ...same.map((s) => s.stakeholder),

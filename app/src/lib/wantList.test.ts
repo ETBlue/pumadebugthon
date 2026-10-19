@@ -60,7 +60,7 @@ describe('issueWants', () => {
     expect(ids(items.find((i) => i.key === 'I09-US01')!.conflicts)).toEqual(['C1', 'C7', 'C8'])
   })
 
-  it('lists the solutions that cover the need of one of its stories, in file order', () => {
+  it('lists the solutions that cover the need of one of its stories, in ID order', () => {
     // W08 has I06-US01 and I07-US02 (need N07: A) and O12-US01 (A, D).
     expect(ids(items.find((i) => i.key === 'W08')!.solutions)).toEqual(['A', 'D'])
   })
@@ -100,20 +100,20 @@ describe('wantsForStakeholder', () => {
 
 describe('conflictsForStakeholder', () => {
   it('I06 in #2 has the conflict C6', () => {
-    expect(ids(conflictsForStakeholder(trashcans.conflicts, 'I06'))).toEqual(['C6'])
+    expect(ids(conflictsForStakeholder(trashcans, 'I06'))).toEqual(['C6'])
   })
 
   it('keeps a conflict with the stakeholder on either side, in file order', () => {
     // I09 is on side B of C1, C5, C7 and C8.
-    expect(ids(conflictsForStakeholder(trashcans.conflicts, 'I09'))).toEqual(['C1', 'C5', 'C7', 'C8'])
+    expect(ids(conflictsForStakeholder(trashcans, 'I09'))).toEqual(['C1', 'C5', 'C7', 'C8'])
   })
 
   it('returns all conflicts for null', () => {
-    expect(conflictsForStakeholder(trashcans.conflicts, null)).toBe(trashcans.conflicts)
+    expect(conflictsForStakeholder(trashcans, null)).toBe(trashcans.conflicts)
   })
 
   it('is empty for an unknown stakeholder', () => {
-    expect(conflictsForStakeholder(trashcans.conflicts, 'I99')).toEqual([])
+    expect(conflictsForStakeholder(trashcans, 'I99')).toEqual([])
   })
 })
 

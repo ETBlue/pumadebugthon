@@ -2,8 +2,9 @@
 import type { Group, IssueFile, Need, NeedGroup, Solution, Stakeholder, Story } from '@/types'
 import { storyPath } from './entityPaths'
 import { compareIds } from './ids'
-import { needKey as needKeyOf } from './needs'
+import { needKey as needKeyOf, solutionsOfStories } from './needs'
 import { resolveId } from './stakeholders'
+import { storyStakeholderOf } from './stories'
 import { conflictView, wantKey, type ConflictView } from './wantList'
 
 /** The result of findStory. */
@@ -75,14 +76,14 @@ export interface StoryView {
   need: Need | null
   /** In file order. */
   conflicts: StoryConflict[]
-  /** The solutions that cover its need, in file order. */
+  /** The solutions that cover its need, in ID order (solutionsOfStories). */
   solutions: Solution[]
 }
 
 /** The story page content for a story of the issue. */
 export function storyView(issue: IssueFile, story: Story): StoryView {
   const byId = new Map(issue.stories.map((s) => [s.id, s]))
-  const stakeholderOf = (id: string) => byId.get(id)?.stakeholder ?? id.split('-')[0]
+  const stakeholderOf = storyStakeholderOf(issue)
   const groupOf = <G extends { stories: string[] }>(group: G | undefined): StoryGroup<G> | null =>
     group
       ? {
@@ -112,7 +113,6 @@ export function storyView(issue: IssueFile, story: Story): StoryView {
     needGroup,
     need: issue.needs.find((n) => n.id === needKey) ?? null,
     conflicts,
-    // Solution.stories holds the stories whose need the solution covers.
-    solutions: issue.solutions.filter((sol) => sol.stories.includes(story.id)),
+    solutions: solutionsOfStories(issue, [story.id]),
   }
 }

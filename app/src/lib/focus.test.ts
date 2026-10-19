@@ -86,6 +86,11 @@ describe('shouldFocusJump', () => {
     expect(shouldFocusJump(visit(), visit({ key: 'b', pathname: '/issues/1/wants' }), 'REPLACE')).toBe(true)
   })
 
+  it('jumps for a new target typed in the address bar (the location key stays "default")', () => {
+    const a = visit({ key: 'default' })
+    expect(shouldFocusJump(a, visit({ key: 'default', search: '?focus=C1', elementId: 'focus-C1' }), 'POP')).toBe(true)
+  })
+
   it('jumps again when the same link is clicked twice (React Router then replaces the same URL)', () => {
     expect(shouldFocusJump(visit(), visit({ key: 'b' }), 'REPLACE')).toBe(true)
     expect(shouldFocusJump(visit(), visit({ key: 'b' }), 'PUSH')).toBe(true)

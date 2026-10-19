@@ -48,7 +48,9 @@ export function shouldFocusJump(
 ): boolean {
   if (next.elementId === null) return false
   if (prev === null) return true
-  if (prev.key === next.key) return false
+  // A new target or path jumps first. A URL typed in the address bar has
+  // no history state, so its key stays "default", like the first page.
   if (prev.pathname !== next.pathname || prev.elementId !== next.elementId) return true
+  if (prev.key === next.key) return false
   return navigationType !== 'REPLACE' || prev.search === next.search
 }

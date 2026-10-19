@@ -79,12 +79,32 @@ works with both:
 
 Markdown inside cells (for example **bold** and [links](...)) stays as written
 in the Cell text and in other text fields. The app renders it.
+
+cross-issue.json: when cross-issue/cross-issue-analysis.md exists, the script
+reads it with check_cross_issue.read_cross_issue (the same rules as
+check_cross_issue.py) and writes <out>/cross-issue.json. Any problem in the
+file stops the script ("cross-issue: <reason>"). Without the file, an old
+cross-issue.json is removed. index.json and issues/*.json do not change.
+A reference to an ID of one issue is {"issue": n, "id": "..."} (issue is null
+for the file's own X-N IDs). Fields: title, updated, issues, spaces, summary
+(as in the issue JSON), sharedStakeholders [{id, name, focus, issues,
+stories}], repeatedNeeds [{stakeholder, summary, needs, note}], focusGroups
+[{tag, stakeholders, note}], needGroups [{id, tag, summary, needs [{issue,
+id, priority}], stories, stakeholders, priority (null when the issues
+differ), priorityTag, prioritiesDiffer, reason}], conflicts [{id, text,
+issueConflicts, sideA, sideB, needsA, needsB, wayOut, wayOutSolutions,
+method, result}], solutions [{code, name, tag, parts [{issue, code}],
+spaces, added, summary, needs {must, shouldCould, crossIssue}, measures
+[{indicator, baseline, source, from [{issue, code}], isNew}], detail {owner,
+laws, privacy, risks}}], solutionFocus [{tag, solutions, note}], pending
+[{text, section}].
 """
 import csv, datetime, glob, json, os, re, subprocess, sys
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import analysis_common as common
+import check_cross_issue
 
 # A source tag (see analysis_common.TAGS), with or without backticks. Group 1 is the tag name.
 TAG = re.compile(rf"`?{common.TAG_RE}`?")
@@ -867,15 +887,46 @@ def write_json(path, data):
         f.write("\n")
 
 
+CROSS_SECTION = "cross-issue"
+
+
+def build_cross_issue(analysis_dir):
+    """The cross-issue data (see the notes at the top), or None when the file does not exist."""
+    md = os.path.join(analysis_dir, check_cross_issue.CROSS_FOLDER, check_cross_issue.CROSS_FILE)
+    if not os.path.exists(md):
+        return None
+    with open(md, encoding="utf-8") as f:
+        text = f.read()
+    try:
+        ctx = check_cross_issue.load_context(analysis_dir)
+    except (OSError, KeyError, ValueError, csv.Error) as e:
+        raise ReadError(CROSS_SECTION, f"cannot read the shared files ({e})")
+    data, errors = check_cross_issue.read_cross_issue(text, ctx)
+    if errors:
+        more = f" (and {len(errors) - 1} more; run check_cross_issue.py)" if len(errors) > 1 else ""
+        raise ReadError(CROSS_SECTION, errors[0] + more)
+    return {"title": data["title"], "updated": git_updated(os.path.dirname(md)),
+            **{k: v for k, v in data.items() if k != "title"}}
+
+
 def main(analysis_dir, out_dir):
     try:
         index, issue_files = build(analysis_dir)
+        cross = build_cross_issue(analysis_dir)
     except ReadError as e:
         print(f"{e.section}: {e.reason}", file=sys.stderr)
         return 1
     issues_dir = os.path.join(out_dir, "issues")
     os.makedirs(issues_dir, exist_ok=True)
     write_json(os.path.join(out_dir, "index.json"), index)
+    cross_path = os.path.join(out_dir, "cross-issue.json")
+    if cross is not None:
+        write_json(cross_path, cross)
+        print(f"cross-issue: {len(cross['sharedStakeholders'])} shared stakeholders, {len(cross['needGroups'])} X-N groups, "
+              f"{len(cross['conflicts'])} conflicts, {len(cross['solutions'])} combined solutions")
+    elif os.path.exists(cross_path):
+        os.remove(cross_path)
+        print(f"removed {cross_path}")
     for folder, data in issue_files.items():
         write_json(os.path.join(issues_dir, f"{folder}.json"), data)
     for old in glob.glob(os.path.join(issues_dir, "*.json")):

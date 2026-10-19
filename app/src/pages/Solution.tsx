@@ -64,7 +64,9 @@ export default function Solution() {
   if (parsed.kind === 'cross') return <CrossSolutionLoader index={index.data} code={parsed.code} />
   const found = findIssue(index.data, String(parsed.issueNumber))
   if (found.kind !== 'available') {
-    return <NotFound title={tp.issueNotFoundTitle} body={tp.issueNotFoundBody} />
+    // A known issue with no analysis yet still gets the link to its 解法 tab (design 3.12).
+    const known = found.kind === 'unavailable' ? found.issue.number : undefined
+    return <NotFound title={tp.issueNotFoundTitle} body={tp.issueNotFoundBody} issueNumber={known} />
   }
   return <SolutionLoader index={index.data} summary={found.issue} code={parsed.code} />
 }

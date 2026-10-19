@@ -8,8 +8,9 @@
 #   1. sync_stakeholders.py fills the 議題 column of stakeholders.csv.
 #   2. For each issue folder in issues.csv that has an issue-analysis.md:
 #      build_csv.py, then check_analysis.py.
-#   3. The unittest suite.
-#   4. build_json.py writes the JSON.
+#   3. check_cross_issue.py for cross-issue/cross-issue-analysis.md (if it exists).
+#   4. The unittest suite.
+#   5. build_json.py writes the JSON (also cross-issue.json).
 # With CI=true, steps 1 and 2 also fail when a rebuilt file differs from the
 # committed one. In CI the committed files must already be up to date.
 set -euo pipefail
@@ -52,10 +53,18 @@ while read -r folder; do
   python3 -I analysis/check_analysis.py "$md" "$csv"
 done < <(tail -n +2 analysis/issues.csv | cut -d, -f2 | tr -d '\r')
 
-echo "== 3. unit tests"
+echo "== 3. check_cross_issue.py"
+cross="analysis/cross-issue/cross-issue-analysis.md"
+if [[ -f "$cross" ]]; then
+  python3 -I analysis/check_cross_issue.py "$cross"
+else
+  echo "no $cross; skipped"
+fi
+
+echo "== 4. unit tests"
 python3 -I -m unittest discover -s analysis/tests -t .
 
-echo "== 4. build_json.py -> $out"
+echo "== 5. build_json.py -> $out"
 python3 -I analysis/build_json.py analysis "$out"
 
 echo "== all steps passed"

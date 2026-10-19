@@ -33,7 +33,7 @@ class AnalysisCommonTest(unittest.TestCase):
 
     def test_step4_ids(self):
         ids = self.common.step4_ids(read("2-trashcans"))
-        self.assertEqual(len(ids), 51)
+        self.assertEqual(len(ids), 52)
         self.assertIn("O01-US01", ids)
 
     def test_tags(self):

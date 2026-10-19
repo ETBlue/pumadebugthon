@@ -288,19 +288,24 @@ def main(md_path, csv_path):
     for c in s1rows:
         if len(c) == len(STEP1_HEADER): compare_shared("step 1", c[0], c[1], c[2], c[3])
 
-    # 11. 3.7 (new stakeholders) matches stakeholders.csv; the name cell starts with a tag
+    # 11. the new stakeholders table (the last part of step 3, 「### 3.n
+    # 新增的利害關係人」, found by its name) matches stakeholders.csv; the name
+    # cell starts with a tag. Messages use the number in the heading, for example 3.8.
     STEP37_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "從哪裡發現", "可能的輸入來源"]
-    sec37 = text.split("### 3.7", 1)[1].split("\n## ", 1)[0] if "### 3.7" in text else ""
+    m37 = re.search(r"^### (3\.\d+) 新增的利害關係人\s*$", text, re.M)
+    if not m37: err("step 3: no heading 「### 3.n 新增的利害關係人」")
+    n37 = m37.group(1) if m37 else "3.n"
+    sec37 = text[m37.end():].split("\n## ", 1)[0] if m37 else ""
     ls37 = sec37.splitlines()
     h37 = [cells(ls37[i - 1]) for i, l in enumerate(ls37) if i > 0 and SEPARATOR.match(l)]
-    if len(h37) != 1 or h37[0] != STEP37_HEADER: err(f"3.7 table header wrong: {h37} (expected {' | '.join(STEP37_HEADER)})")
+    if m37 and (len(h37) != 1 or h37[0] != STEP37_HEADER): err(f"{n37} table header wrong: {h37} (expected {' | '.join(STEP37_HEADER)})")
     for l in ls37:
         if not re.match(r"^\| [OI]\d\d \|", l): continue
         c = cells(l)
-        if len(c) != len(STEP37_HEADER): err(f"3.7 row {c[0]} has {len(c)} cells, expected {len(STEP37_HEADER)}"); continue
-        if c[0] not in stake: err(f"3.7: {c[0]} is not in step 1")
+        if len(c) != len(STEP37_HEADER): err(f"{n37} row {c[0]} has {len(c)} cells, expected {len(STEP37_HEADER)}"); continue
+        if c[0] not in stake: err(f"{n37}: {c[0]} is not in step 1")
         name = re.sub(rf"^`\[(?:{TAG_NAMES})\]` ", "", c[1])
-        compare_shared("3.7", c[0], name, c[2], c[3])
+        compare_shared(n37, c[0], name, c[2], c[3])
 
     # 12. 編號異動紀錄: each new ID exists; each old ID is gone from step 1 and step 4
     if CHANGE_LOG in text:

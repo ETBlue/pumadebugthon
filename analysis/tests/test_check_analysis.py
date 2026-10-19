@@ -105,7 +105,20 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md",
                   "| I11 | `[AI模擬]` 資源回收個體業者（含高齡回收者） | `wrk` |",
                   "| I11 | `[AI模擬]` 資源回收個體業者（含高齡回收者） | `res` |")
-        self.assertFails("3.7: I11 分類路徑 res")
+        self.assertFails("3.8: I11 分類路徑 res")
+
+    def test_new_stakeholder_section_found_by_name(self):
+        # The section is 「### 3.n 新增的利害關係人」 for any n. A wrong row
+        # under another number is still found.
+        self.edit(f"{ISSUE}/issue-analysis.md", "### 3.8 新增的利害關係人", "### 3.9 新增的利害關係人")
+        self.edit(f"{ISSUE}/issue-analysis.md",
+                  "| I11 | `[AI模擬]` 資源回收個體業者（含高齡回收者） | `wrk` |",
+                  "| I11 | `[AI模擬]` 資源回收個體業者（含高齡回收者） | `res` |")
+        self.assertFails("3.9: I11 分類路徑 res")
+
+    def test_new_stakeholder_section_missing_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "### 3.8 新增的利害關係人", "### 3.8 其他")
+        self.assertFails("新增的利害關係人")
 
     def test_repeated_space_code_in_issue_line(self):
         self.edit(f"{ISSUE}/issue-analysis.md", "`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`park`\n")
@@ -445,9 +458,6 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(raw[3:].decode("utf-8").splitlines()[0], "名稱,網址,提供機關,授權,議題")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
     # ---------- 1.3 特別關注族群檢查 ----------
     # The #2 table: 呼吸道疾病 has no stakeholder; I11 is in two groups.
     FOCUS_RESP = "| 呼吸道疾病 | （無） | 【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】 |\n"
@@ -522,3 +532,7 @@ if __name__ == "__main__":
         self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN, "| 外籍 | I03、I04 | `[AI模擬]` 需要多語言 |\n")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
+
+
+if __name__ == "__main__":
+    unittest.main()

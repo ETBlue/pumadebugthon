@@ -13,6 +13,10 @@ import {
   solutionStakeholderCoverage,
   solutionTitle,
   solutionWayOutConflicts,
+  coverageByPriority,
+  dataBasedCoverage,
+  solutionRelatedConflicts,
+  stakeholderEntries,
 } from './solutionPage'
 
 const trees = treesJson as IssueFile
@@ -198,5 +202,68 @@ describe('solutionWayOutConflicts', () => {
   it('is empty for a solution in no way out', () => {
     const none = { ...sol(trashcans, 'A'), id: 'Z' }
     expect(solutionWayOutConflicts(trashcans, none)).toEqual([])
+  })
+})
+
+describe('solutionRelatedConflicts', () => {
+  it('gives the conflicts with a covered story that do not list the solution in the way out, in file order', () => {
+    const list = (issue: IssueFile, code: string) =>
+      solutionRelatedConflicts(issue, sol(issue, code)).map((c) => c.conflict.id)
+    // #2 A has a covered story in C1–C6 and C9. C1, C2, C6 and C9 list A in the way out.
+    expect(list(trashcans, 'A')).toEqual(['C3', 'C4', 'C5'])
+    expect(list(smokefree, 'B')).toEqual(['C3'])
+    // #1 C lists C3, C4 and C8 in the way out.
+    expect(list(trees, 'C')).toEqual(['C5', 'C6'])
+  })
+})
+
+const groupIds = (groups: { priority: string; items: { need: { id: string } }[] }[]) =>
+  groups.map((g) => [g.priority, ids(g.items)])
+
+describe('dataBasedCoverage', () => {
+  it('keeps everything when the filter is off', () => {
+    const coverage = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
+    expect(dataBasedCoverage(coverage, false)).toEqual(coverage)
+  })
+
+  it('keeps the needs with a 實證 or AI整理 以便… cell when the filter is on', () => {
+    const { covered, notCovered } = dataBasedCoverage(solutionNeedCoverage(trashcans, sol(trashcans, 'A')), true)
+    expect(ids(covered)).toEqual(['N01', 'N04', 'I01-US09'])
+    expect(ids(notCovered)).toEqual(['N03', 'N06', 'I24-US01'])
+  })
+})
+
+describe('coverageByPriority', () => {
+  it('groups the covered and not covered needs of #2 A by the need priority, in the order M, S, C, W', () => {
+    const groups = coverageByPriority(solutionNeedCoverage(trashcans, sol(trashcans, 'A')))
+    expect(groupIds(groups.covered)).toEqual([
+      ['M', ['N01', 'N04', 'N05', 'N07', 'O04-US02', 'O12-US01']],
+      ['S', ['N02', 'O04-US04', 'I01-US09']],
+    ])
+    expect(groupIds(groups.notCovered)).toEqual([
+      ['M', ['N06', 'I24-US01']],
+      ['S', ['N03', 'N08', 'N09', 'N10', 'O09-US02', 'I11-US01', 'I13-US02']],
+      ['C', ['O08-US01', 'O08-US02']],
+      ['W', ['O09-US01']],
+    ])
+  })
+
+  it('keeps the extra fields (part, otherSolutions)', () => {
+    const groups = coverageByPriority(solutionNeedCoverage(trashcans, sol(trashcans, 'A')))
+    expect(groups.covered[0].items[0].part).toBe('must')
+    expect(codes(groups.notCovered[0].items[0].otherSolutions)).toEqual(['B', 'D'])
+  })
+})
+
+describe('stakeholderEntries', () => {
+  it('puts the needs of each stakeholder under its issue, keeping the ID order', () => {
+    const coverage = solutionStakeholderCoverage(trashcans, sol(trashcans, 'A'))
+    const { covered, notCovered } = stakeholderEntries(2, coverage)
+    expect(covered.map((e) => e.id)).toEqual(coverage.covered.map((s) => s.id))
+    expect(notCovered.map((e) => e.id)).toEqual(coverage.notCovered.map((s) => s.id))
+    const i01 = covered.find((e) => e.id === 'I01')
+    expect(i01?.issues.map((i) => i.issueNumber)).toEqual([2])
+    expect(ids(i01?.issues[0].covered ?? [])).toEqual(['N01', 'N04', 'I01-US09'])
+    expect(ids(i01?.issues[0].notCovered ?? [])).toEqual(['N06'])
   })
 })

@@ -45,6 +45,14 @@
 | #7 自由題：你看見的市政 bug | `7-misc` | 空白範本製作中 |
 | #8 無菸城市（非主辦單位題目，由參加者補充） | [8-smokefree](8-smokefree/) | **試作完成**：[議題分析](8-smokefree/issue-analysis.md)、[使用者故事表](8-smokefree/user-stories.csv) |
 
+## 跨議題分析
+
+#1、#2、#8 有 16 位共用的利害關係人，例如身心障礙者、推嬰兒車的家長與工務局新建工程處。樹、清潔箱與吸菸區也常在同一段人行道上。所以這三個議題另外做了跨議題分析：[cross-issue/cross-issue-analysis.md](cross-issue/cross-issue-analysis.md)（試作）。
+
+- 列出共用的利害關係人、跨議題的共同需求（X-N01…）、跨議題的衝突（X-C1…），以及合併的解法（解法 X-A…）。
+- 合併的解法由各議題的解法組成，例如樹、清潔箱與吸菸區的參與式選址一起辦（解法 X-A）。它不取代各議題的解法。
+- 優先順序沿用各議題的結果，不重新排序。規則見[如何閱讀議題分析](method.md#跨議題分析)。
+
 ## 使用者故事總表的格式轉換
 
 每個議題資料夾都有 `user-stories.csv`，如有需要，可以直接匯入 Google 試算表（檔案 → 匯入）。匯入後，試算表裡**看不到**本頁開頭的說明。請把下面這段文字放在**試算表標題或第一列**，讓讀者知道 `[AI模擬]` 的意思：
@@ -59,7 +67,7 @@
 analysis/build_all.sh
 ```
 
-這個指令會依序：更新 `stakeholders.csv` 的「議題」欄、為每個議題重建 `user-stories.csv` 並執行檢查、執行單元測試、產生 app 用的 JSON（預設寫到 `app/public/data`）。任何一步失敗就會停止。
+這個指令會依序：更新 `stakeholders.csv` 的「議題」欄、為每個議題重建 `user-stories.csv` 並執行檢查、檢查跨議題分析（`check_cross_issue.py`）、執行單元測試、產生 app 用的 JSON（預設寫到 `app/public/data`，跨議題分析是 `cross-issue.json`）。任何一步失敗就會停止。修改 `cross-issue/cross-issue-analysis.md` 之後，也請執行這個指令。
 
 檢查會確認編號（包含 `#2 O01-US01` 這種跨議題引用）、連結、標記、優先順序與 CSV 是否一致。指令更新了 CSV 時會提醒你，請一起提交。
 

@@ -4,6 +4,7 @@
 import { withDataBasisFilter } from './dataBasis'
 import { FOCUS_PARAM } from './focus'
 import { parseIssueNumber, tabPath, type IssueTab } from './issuePage'
+import { keptSearch } from './stakeholderFilter'
 
 /** The tabs of the stakeholder page, in display order. The first one is the default. */
 export const STAKEHOLDER_TABS = ['overview', 'wants', 'needs', 'solutions'] as const
@@ -50,9 +51,19 @@ export function issueFocusPath(issueNumber: number, tab: IssueTab, value: string
 }
 
 /** A link to one conflict on the issue's 訴求 tab, for example
- * { pathname: "/issues/2/wants", search: "?focus=C9" } (design 3.2). */
-export function conflictFocusPath(issueNumber: number, conflictId: string, dataBasedOnly = false): PathTarget {
-  return issueFocusPath(issueNumber, 'wants', conflictId, dataBasedOnly)
+ * { pathname: "/issues/2/wants", search: "?focus=C9" } (design 3.2).
+ * The third argument is either dataBasedOnly (adds evidence=1), or the
+ * params of the current URL: then evidence and stakeholder are kept, the
+ * same as a tab change (keptSearch), and pick and the old focus are dropped. */
+export function conflictFocusPath(
+  issueNumber: number,
+  conflictId: string,
+  filters: boolean | URLSearchParams = false,
+): PathTarget {
+  if (typeof filters === 'boolean') return issueFocusPath(issueNumber, 'wants', conflictId, filters)
+  const params = new URLSearchParams(keptSearch(filters))
+  params.set(FOCUS_PARAM, conflictId)
+  return { pathname: tabPath(issueNumber, 'wants'), search: `?${params.toString()}` }
 }
 
 /** A link to one want on the issue's 訴求 tab, for example

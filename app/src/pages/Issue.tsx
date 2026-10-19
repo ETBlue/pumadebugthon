@@ -1,10 +1,9 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
-import { ConflictsTab } from '@/components/issue/ConflictsTab'
-import { OpinionTab } from '@/components/issue/OpinionTab'
 import { OverviewTab } from '@/components/issue/OverviewTab'
 import { SolutionsTab } from '@/components/issue/SolutionsTab'
 import { StakeholdersTab } from '@/components/issue/StakeholdersTab'
+import { WantsTab } from '@/components/issue/WantsTab'
 import type { IssueTabProps } from '@/components/issue/types'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
@@ -38,25 +37,13 @@ function OverviewWithStakeholders(props: IssueTabProps) {
   )
 }
 
-/** 訴求: the opinion check, then the conflicts (decision 38). */
-function WantsFrame(props: IssueTabProps) {
-  return (
-    <>
-      <OpinionTab {...props} />
-      <section id="focus-conflicts" tabIndex={-1} className={cn('mt-8', focusTargetClass)}>
-        <ConflictsTab {...props} />
-      </section>
-    </>
-  )
-}
-
 function NeedsFrame() {
   return <TabComing text={ti.tabComing} />
 }
 
 const TAB_CONTENT: Record<IssueTab, (props: IssueTabProps) => ReactNode> = {
   overview: OverviewWithStakeholders,
-  wants: WantsFrame,
+  wants: WantsTab,
   needs: NeedsFrame,
   solutions: SolutionsTab,
 }

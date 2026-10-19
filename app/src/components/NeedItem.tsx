@@ -97,7 +97,6 @@ export function NeedItem({
   stakeholderLinks = true, others, ownStories, otherSolutionsThan, focusTarget = true, children,
 }: NeedItemProps) {
   const [params] = useSearchParams()
-  const dataBasedOnly = isDataBasisFilterOn(params)
   const { need, summary } = item
   const has = (part: NeedPart) => parts.includes(part)
   const who = item.stakeholders.filter((id) => id !== others)
@@ -184,7 +183,7 @@ export function NeedItem({
             <ul className="flex flex-wrap gap-x-3 gap-y-1">
               {item.conflicts.map((c) => (
                 <li key={c.id}>
-                  <Link to={conflictFocusPath(issueNumber, c.id, dataBasedOnly)} className={cn(linkClass, 'font-mono')}>
+                  <Link to={conflictFocusPath(issueNumber, c.id, params)} className={cn(linkClass, 'font-mono')}>
                     {c.id}
                   </Link>
                 </li>

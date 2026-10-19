@@ -1,6 +1,6 @@
-import { useEffect } from 'react'
-import { useLocation, useSearchParams } from 'react-router'
-import { FOCUS_PARAM, FOCUS_WAIT_MS, focusElementId, focusScrollBehavior } from '@/lib/focus'
+import { useEffect, useRef } from 'react'
+import { useLocation, useNavigationType } from 'react-router'
+import { FOCUS_PARAM, FOCUS_WAIT_MS, focusElementId, focusScrollBehavior, shouldFocusJump, type FocusVisit } from '@/lib/focus'
 
 function prefersReducedMotion(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -12,17 +12,29 @@ function prefersReducedMotion(): boolean {
  * With prefers-reduced-motion, the scroll has no animation. An unknown value
  * does nothing. It gives up after FOCUS_WAIT_MS.
  *
- * It runs again only when the path or the focus value changes. So turning
- * the 「只看有資料根據」 toggle does not jump back to the target.
+ * When it jumps is decided by shouldFocusJump (src/lib/focus.ts): a new
+ * target, a new path, or a link to the same target clicked again. Turning
+ * the 「只看有資料根據」 toggle (it replaces the URL with another search) does
+ * not jump back to the target.
  *
  * The target element needs tabIndex={-1} and focusTargetClass (styles.ts). */
 export function useFocusTarget(): void {
-  const [params] = useSearchParams()
-  const { pathname } = useLocation()
-  const elementId = focusElementId(params.get(FOCUS_PARAM))
+  const location = useLocation()
+  const navigationType = useNavigationType()
+  const elementId = focusElementId(new URLSearchParams(location.search).get(FOCUS_PARAM))
+  const last = useRef<FocusVisit | null>(null)
+  // The wait for an element that is not on the page yet. A new jump stops
+  // it. A navigation that does not jump (the toggle) lets it go on.
+  const stopWaiting = useRef<(() => void) | null>(null)
 
   useEffect(() => {
-    if (elementId === null) return
+    const visit: FocusVisit = { key: location.key, pathname: location.pathname, search: location.search, elementId }
+    const jump = shouldFocusJump(last.current, visit, navigationType)
+    last.current = visit
+    if (!jump || elementId === null) return
+    stopWaiting.current?.()
+    stopWaiting.current = null
+
     const go = (el: HTMLElement) => {
       el.scrollIntoView({ behavior: focusScrollBehavior(prefersReducedMotion()), block: 'start' })
       el.focus({ preventScroll: true })
@@ -44,10 +56,14 @@ export function useFocusTarget(): void {
     function stop() {
       observer.disconnect()
       window.clearTimeout(timer)
+      if (stopWaiting.current === stop) stopWaiting.current = null
     }
     observer.observe(document.body, { childList: true, subtree: true })
-    return stop
-  }, [pathname, elementId])
+    stopWaiting.current = stop
+  }, [location.key, location.pathname, location.search, elementId, navigationType])
+
+  // Stop the wait when the page goes away.
+  useEffect(() => () => stopWaiting.current?.(), [])
 }
 
 /** The props for an element that ?focus=<key> can point to: its element ID

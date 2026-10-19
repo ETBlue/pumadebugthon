@@ -1,52 +1,32 @@
-import { CellText } from '@/components/CellText'
-import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
-import { StoryList } from '@/components/StoryList'
+import { ConflictView } from '@/components/ConflictView'
 import { t } from '@/i18n/zh-TW'
-import type { IssueTabProps } from './types'
+import type { ConflictView as ConflictData } from '@/lib/wantList'
+import type { IssueFile, Stakeholder } from '@/types'
 
-const tc = t.conflictsTab
+const tw = t.wantsTab
 
-/** 衝突 (design 3.2): each conflict with both sides, the method and the simulated result. */
-export function ConflictsTab({ index, issue }: IssueTabProps) {
-  const [dataBasedOnly] = useDataBasisFilter()
-  if (issue.conflicts.length === 0) return <p>{tc.none}</p>
-  const byId = new Map(issue.stories.map((s) => [s.id, s]))
-  const stories = (ids: string[]) => ids.flatMap((id) => byId.get(id) ?? [])
+/** The 「衝突」 part of the 訴求 tab (design 3.2): each conflict in file order,
+ * as a ConflictView with the element ID focus-<conflict ID>. The list comes
+ * from wantsTabView, so the stakeholder filter is already applied. */
+export function ConflictsTab({ conflicts, issue, stakeholders, filtered, dataBasedOnly }: {
+  conflicts: ConflictData[]
+  issue: IssueFile
+  /** All stakeholders from index.json, for the names. */
+  stakeholders: Stakeholder[]
+  /** True when the stakeholder filter is on, for the empty message. */
+  filtered: boolean
+  dataBasedOnly: boolean
+}) {
+  if (conflicts.length === 0) {
+    return <p className="mt-2">{filtered && issue.conflicts.length > 0 ? tw.conflictsNoneFiltered : tw.conflictsNone}</p>
+  }
   return (
-    <>
-      <DataBasisToggle className="mb-6" />
-      <ul className="space-y-6">
-        {issue.conflicts.map((c) => (
-          <li key={c.id}>
-            <article aria-labelledby={`conflict-${c.id}`} className="rounded-lg border p-4">
-              <h3 id={`conflict-${c.id}`} className="text-lg font-semibold">
-                <span className="mr-2 font-mono">{c.id}</span>
-                <CellText cell={c.text} />
-              </h3>
-              <div className="mt-3 grid gap-4 md:grid-cols-2">
-                <section>
-                  <h4 className="font-medium">{tc.sideA}</h4>
-                  <StoryList stories={stories(c.sideA)} issueNumber={issue.number} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
-                </section>
-                <section>
-                  <h4 className="font-medium">{tc.sideB}</h4>
-                  <StoryList stories={stories(c.sideB)} issueNumber={issue.number} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
-                </section>
-              </div>
-              <dl className="mt-4 space-y-2">
-                <div>
-                  <dt className="text-sm text-muted-foreground">{tc.method}</dt>
-                  <dd><CellText cell={c.method} /></dd>
-                </div>
-                <div>
-                  <dt className="text-sm text-muted-foreground">{tc.result}</dt>
-                  <dd><CellText cell={c.result} /></dd>
-                </div>
-              </dl>
-            </article>
-          </li>
-        ))}
-      </ul>
-    </>
+    <ul className="mt-3 space-y-6">
+      {conflicts.map((view) => (
+        <li key={view.conflict.id}>
+          <ConflictView view={view} issue={issue} stakeholders={stakeholders} headingLevel={4} dataBasedOnly={dataBasedOnly} />
+        </li>
+      ))}
+    </ul>
   )
 }

@@ -82,6 +82,18 @@ describe('issueFocusPath and conflictFocusPath', () => {
     expect(issueFocusPath(1, 'needs', 'N03', true).search).toBe('?focus=N03&evidence=1')
     expect(conflictFocusPath(1, 'C7', true)).toEqual({ pathname: '/issues/1/wants', search: '?focus=C7&evidence=1' })
   })
+
+  it('conflictFocusPath with the URL params keeps evidence and stakeholder, like a tab change', () => {
+    const params = new URLSearchParams('stakeholder=I06&evidence=1&pick=W08&focus=W08')
+    expect(conflictFocusPath(2, 'C6', params)).toEqual({
+      pathname: '/issues/2/wants',
+      search: '?evidence=1&stakeholder=I06&focus=C6',
+    })
+    expect(conflictFocusPath(2, 'C6', new URLSearchParams('pick=W08'))).toEqual({
+      pathname: '/issues/2/wants',
+      search: '?focus=C6',
+    })
+  })
 })
 
 describe('parseSolutionTab', () => {

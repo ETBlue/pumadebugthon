@@ -130,7 +130,7 @@ export function WantItem({
             <ul className="inline-flex flex-wrap gap-x-3 gap-y-1">
               {item.conflicts.map((c) => (
                 <li key={c.id}>
-                  <Link to={conflictFocusPath(issueNumber, c.id, dataBasedOnly)} className={cn(linkClass, 'font-mono')}>
+                  <Link to={conflictFocusPath(issueNumber, c.id, params)} className={cn(linkClass, 'font-mono')}>
                     {c.id}
                   </Link>
                 </li>

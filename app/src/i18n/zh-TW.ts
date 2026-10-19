@@ -274,12 +274,18 @@ export const t = {
     /** Shown in a pick item: 「其中 3 則有資料根據」. */
     countInItem: (n: number) => `其中 ${n} 則有資料根據`,
   },
-  conflictsTab: {
-    sideA: '一方',
-    sideB: '另一方',
-    method: '可能的審議方法',
-    result: '模擬結果',
-    none: '這個議題沒有列出衝突。',
+  /** The 訴求 tab of the issue page (WantsTab, design 3.2 and section 4). */
+  wantsTab: {
+    checkHeading: '訴求與意見健檢',
+    intro: '訴求是利害關係人心中的解法，還沒有評估。選一個和你的想法相近的訴求，看看誰也想要、誰可能有不同意見。',
+    searchLabel: '搜尋訴求',
+    listLabel: '選一個和你的想法相近的訴求',
+    /** The list is empty because of the stakeholder filter. */
+    noWants: '這位利害關係人在這個議題沒有訴求。',
+    conflictsHeading: '衝突',
+    conflictsNone: '這個議題沒有列出衝突。',
+    /** No conflict has a story of the picked stakeholder on a side. */
+    conflictsNoneFiltered: '這位利害關係人沒有出現在衝突的任何一方。',
   },
   solutionsTab: {
     spaces: '空間類型',

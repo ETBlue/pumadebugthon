@@ -325,3 +325,210 @@ ETBlue's notes for the UI are in `human-inputs.md`. Part 1 is U1. Part 2 is U2. 
 4. Footer link to the event page (design 3.8, decision 16).
 5. Watermark (design 3.11, decision 17).
 6. Check: 1280, 768 and 375 px, both themes, clicks through the watermark, no sideways scroll, no console errors, `npm test`, `npm run build`.
+
+## Phase N: needs-based pages (design 3.2, 3.3, 3.12, 3.14–3.19)
+
+Decided by ETBlue on 2026-10-20 (design decisions 34–42). The design follows the recommendations in design section 14 (Q1–Q13) until ETBlue decides otherwise.
+
+**Rules for this phase** (on top of the rules at the top of this file):
+- Pure logic goes in `src/lib/`, with Vitest tests written first. Components only show what `src/lib/` returns.
+- All UI text goes in `src/i18n/zh-TW.ts`. Each task adds its own block (the namespace is given in the task), so tasks in parallel change different parts of the file.
+- No scores, ranks or sorting by a count. Sort by the fixed order (M, S, C, W; the 6 特別關注 groups) or by ID / file order.
+- Tags `[實證]` / `[AI整理]` / `[AI模擬]` always show with `TagBadge`, next to their text. The 「只看有資料根據」 filter (`?evidence=1`) works on every new list.
+- Solarized tokens only. Headings in order, `aria` names, keyboard use, no sideways scroll at 360 px.
+- Every task ends with `npm test`, `npx tsc -b` and `npm run build` in `app/`, all passing, and a local commit. Do not push until Task N12 passes.
+- Real numbers for tests come from the fixtures (#1, #2, #8). Examples in this plan: #2 has 訴求 39, 衝突 9, 需求 21, 解法 5. I06 has 訴求 5, 衝突 4, 需求 4, 解法 4. #2 A covers 9 needs (12 not covered) and 14 stakeholders (13 not covered).
+
+**Order and parallel groups:**
+
+| Step | Tasks | Can run in parallel? |
+|---|---|---|
+| 1 | N1 | No. Everything else needs it. |
+| 2 | N2a, N2b, N2c | Yes. Each one only creates new files in `src/lib/`. |
+| 3 | N2d | No. It uses N2b and N2c. |
+| 4 | N3 | No. It changes the router, the tab lists and the shared links. |
+| 5 | N4 | No. It makes the shared components. |
+| 6 | N5, N6, N7, N8, N9 | Yes, but only in separate git worktrees. They change different page files. They all add to `zh-TW.ts`, each in its own block, so a merge may need a small fix in that file. Without worktrees, run them one after another. |
+| 7 | N10 | No. It checks links across all pages. |
+| 8 | N11 | No. It needs the cross-issue data from `analysis/cross-issue/`. |
+| 9 | N12 | No. The final check. |
+
+### Task N1: refresh the fixtures and fix the broken tests (test first for `summary.ts`)
+
+**Files:** `src/test/fixtures/index.json`, `src/test/fixtures/issues/1-trees.json`, `2-trashcans.json`, `8-smokefree.json`, `src/types.ts`, `src/types.test.ts`, `src/lib/summary.ts`, `src/lib/summary.test.ts`, and the tests that fail (expected: `types.test` #2 counts, `cellBasis`, `issuePage`, `priority`, `solutionPage` ×4, `spaces`, `summary`; about 11).
+
+1. Run `analysis/build_all.sh <a scratchpad dir>` and copy its `index.json` and the three issue files over the fixtures.
+2. `src/types.ts`: add the new fields, as `build_json.py` writes them (see its docstring):
+   - `IssueFile.format: 'needs' | 'stories'`, `IssueFile.needGroups: NeedGroup[]` (`id`, `summary`, `tag`, `stories`), `IssueFile.needs: Need[]` (`id`, `kind: 'group' | 'story'`, `summary`, `stories`, `priority`, `priorityTag`, `reason: Cell`)
+   - `Story.needGroup: string | null`
+   - `Conflict.needsA`, `Conflict.needsB: string[]`, `Conflict.wayOut: Cell | null`, `Conflict.wayOutSolutions: string[]`
+   - `Solution.needs: { must: string[]; shouldCould: string[] } | null`
+3. Run `npm test`. For each failing test, check why. Update the expected numbers to the new data when the code is right. Fix the code when it is wrong. Write down each change in the commit message.
+4. Test first: `parseSummaryRef` reads N groups (`N01`, `#1 N03`) as a new kind `need`. `summaryRefTo` links:
+   - `N01` → `{ pathname: '/issues/2/needs', search: '?focus=N01' }` (with `evidence=1` when the filter is on). Return null when the N group is not in the issue.
+   - `#1 N03` → `/issues/1/needs?focus=N03`.
+   - W refs keep working (`W08` → opinion pick). Add a test for a W ref in each fixture that has one.
+   - The test 「every reference in the fixtures has a link」 must pass for all three fixtures.
+   The `needs` tab does not exist until Task N3. That is expected.
+
+**Done when:** all tests pass with the new fixtures, and no test was deleted without a reason in the commit message.
+
+### Task N2a: paths, the stakeholder filter and `?focus=` (test first) — parallel group 2
+
+**Files (new):** `src/lib/entityPaths.ts`, `src/lib/entityPaths.test.ts`, `src/lib/stakeholderFilter.ts`, `src/lib/stakeholderFilter.test.ts`, `src/lib/focus.ts`, `src/lib/focus.test.ts`.
+
+1. `entityPaths.ts` (design 3.3, 3.12, 3.15–3.17, 3.19):
+   - `STAKEHOLDER_TABS = ['overview', 'wants', 'needs', 'solutions']`, `parseStakeholderTab(segment)`, `stakeholderTabPath(id, tab)` (`/stakeholders/I06`, `/stakeholders/I06/wants`)
+   - `storyPath(issueNumber, storyId)` → `/stakeholders/I06/stories/2/I06-US01` (the stakeholder is the part before 「-」)
+   - `wantPath(stakeholderId, issueNumber, key)`, `needPath(stakeholderId, issueNumber, key)`
+   - `SOLUTION_TABS = ['overview', 'needs', 'stakeholders']`, `parseSolutionTab`, `solutionTabPath(issueNumber, code, tab)`
+   - `movedStakeholderPath(pathname, oldId, newId)`: the same path with the new ID, and a story ID that starts with the old ID gets the new ID (design 3.3)
+2. `stakeholderFilter.ts` (design 3.14): `STAKEHOLDER_PARAM = 'stakeholder'`, `stakeholderFilterOf(params, issueIds, stakeholders)` (resolves a moved ID; an ID not in the issue gives null), `withStakeholderFilter(params, id | null)`, `keptSearch(params)` (keeps `evidence` and `stakeholder`, drops `pick` and `focus`), `menuGroups(ids, stakeholders)` → `[{ group: 'O', items }, { group: 'I', items }]` in ID order (`compareIds`), empty groups left out.
+3. `focus.ts` (design 3.2): `FOCUS_PARAM = 'focus'`, `focusElementId(value)` → `focus-<value>` for `conflicts`, `stakeholders`, `C\d+`, `N\d\d`, a story ID; null for anything else.
+
+**Done when:** each function has tests for the normal case, an unknown value and a moved ID where it applies.
+
+### Task N2b: needs (test first) — parallel group 2
+
+**Files (new):** `src/lib/needs.ts`, `src/lib/needs.test.ts`.
+
+1. `needKey(story)` → `story.needGroup ?? story.id`.
+2. `NeedItem`: `need`, `summary: Cell` (the group's summary and tag, or the story's 以便… cell), `stories`, `stakeholders` (ID order), `solutions` (`{ solution, part: 'must' | 'shouldCould' }`, letter order), `conflicts` (the conflicts that list the key in `needsA` or `needsB`).
+3. `issueNeeds(issue)` → `NeedItem[]` in the order of `issue.needs`. `needsByPriority(items)` → groups in the order M, S, C, W, empty groups left out.
+4. `needsOfStakeholder(issue, id)` → its `NeedItem`s, each once, with `ownStories`.
+5. `findNeed(issue, stakeholderId, key)` → `{ kind: 'found', item, ownStories }`, `{ kind: 'redirect', stakeholderId, key }` (a story ID in an N group, or a story of another stakeholder) or `{ kind: 'notFound' }`. `needView` for the need page (design 3.17).
+6. `dataBasedNeeds(items)`: keep a need when at least one of its stories has a `[實證]` or `[AI整理]` 以便… cell. `needsForStakeholder(items, id | null)`.
+7. Tests on #2: N01 has 9 stories and the stakeholders I01, I02, I07, I08, I10; I01 has N01 once (5 stories); O09-US01 is 這次不做 and no solution covers it; C1 lists N01; `findNeed(#2, 'I01', 'I01-US01')` redirects to N01; `findNeed(#2, 'I06', 'N01')` is not found. On #8: I06 has the need `I06-US01`.
+
+**Done when:** the tests above pass, and nothing sorts by a count.
+
+### Task N2c: wants and stories (test first) — parallel group 2
+
+**Files (new):** `src/lib/wantList.ts`, `src/lib/wantList.test.ts`, `src/lib/storyPage.ts`, `src/lib/storyPage.test.ts`. Do not change `opinion.ts` here (Task N3 does).
+
+1. `WantItem` = the opinion `PickItem` plus `stakeholders` (ID order), `conflicts` (a story of the item on a side) and `solutions` (they cover the need of one of its stories).
+2. `issueWants(issue)` (the order of `pickList`), `wantsOfStakeholder(issue, id)`, `wantsForStakeholder(items, id | null)`, `findWant(issue, stakeholderId, key)` (same result kinds as `findNeed`), `wantView` (design 3.16).
+3. `conflictView(issue, conflict)` → the stories of each side, the needs of each side (from `issue.needs`), the way out cell and its solutions, and `hasWayOut`. `conflictsForStakeholder(conflicts, id | null)`.
+4. `storyPage.ts`: `findStory(issue, stakeholderId, storyId)` (found, redirect to the right stakeholder, not found) and `storyView(issue, story)` → want key, need key, W group and N group with the other stakeholders, conflicts, solutions (design 3.15).
+5. Tests on #2: W08 has I06 and the other stakeholders of the group; I06 in #2 has the wants W08 and W11 and the conflict C6; C1 has needs N01 vs N06 and the way out A, B, D; `findWant(#2, 'I06', 'I06-US01')` redirects to W08; `findStory(#2, 'I01', 'I06-US01')` redirects to I06.
+
+**Done when:** the tests above pass.
+
+### Task N2d: counts for the tab labels and the solution coverage (test first)
+
+**Files:** `src/lib/counts.ts`, `src/lib/counts.test.ts`, new `src/lib/tabCounts.ts`, `src/lib/tabCounts.test.ts`, `src/lib/solutionPage.ts`, `src/lib/solutionPage.test.ts`.
+
+1. `needCount` counts the rows of `issue.needs` (design section 14, Q1). Update its comment and test.
+2. `issueTabCounts(issue)` → `{ wants, conflicts, needs, solutions }`. #2: 39, 9, 21, 5.
+3. `stakeholderTabCounts(issues, id)` → the same fields, summed over the issues (Q6). I06: 5, 4, 4, 4.
+4. In `solutionPage.ts`: `solutionNeedCoverage(issue, solution)` → `{ covered, notCovered }` (NeedItems; each not-covered need with the other solutions that cover it), `solutionStakeholderCoverage(issue, solution)` → `{ covered, notCovered }` (stakeholder ID order, each with its covered and not-covered needs), `solutionWayOutConflicts(issue, solution)`.
+5. `solutionTabCounts(issue, solution)`. #2 A: needs 9 / 12, stakeholders 14 / 13.
+
+**Done when:** the numbers above are in the tests and pass.
+
+### Task N3: routes, redirects, tab frames and shared links
+
+**Files:** `src/router.tsx`, `src/lib/issuePage.ts` (+ test), `src/lib/opinion.ts` (+ test), `src/lib/summary.ts` (+ test), `src/lib/nav.ts` (+ test), `src/pages/Issue.tsx`, `src/pages/Stakeholder.tsx`, `src/pages/Solution.tsx`, new `src/pages/StakeholderStory.tsx`, `StakeholderWant.tsx`, `StakeholderNeed.tsx`, `src/components/issue/types.ts`, `src/i18n/zh-TW.ts` (blocks `issue.tabs`, `stakeholderPage.tabs`, `solutionPage.tabs`).
+
+1. Test first in `issuePage.ts`: `ISSUE_TABS = ['overview', 'wants', 'needs', 'solutions']`. `legacyIssueTab(segment)` → the new tab and the search to add (`opinion` → `wants`, same query; `conflicts` → `wants`, `focus=conflicts`; `stakeholders` → `overview`, `focus=stakeholders`), else null.
+2. Test first: `opinionPickTo` → `/issues/<n>/wants?pick=…`. `summaryRefTo`: a story → `storyPath`; a conflict → `/issues/<n>/wants?focus=C9`; an N group as in Task N1, now with `tabPath(n, 'needs')`. Same for another issue.
+3. Test first: `activeNavItem` gives 利害關係人 for `/stakeholders/I06/needs/2/N07`, and 解法 for `/issues/2/solutions/A/needs` and `/solutions/cross/X1` (design 3.7).
+4. Router (design 3.19): `issues/:number/solutions/:code/:tab?`, `stakeholders/:id/:tab?`, `stakeholders/:id/stories/:number/:storyId`, `stakeholders/:id/wants/:number/:key`, `stakeholders/:id/needs/:number/:key`. Old issue tabs redirect with `<Navigate replace>`. Moved stakeholder IDs redirect on every sub-route (`movedStakeholderPath`).
+5. Tab frames: the issue page shows the 4 tabs with the count labels (`issueTabCounts`). For now, the 訴求 tab shows the old `OpinionTab` and `ConflictsTab` one after the other, the 需求 tab is empty, and the 總覽 tab adds the old `StakeholdersTab` at the end. The stakeholder page and the solution page get their tab lists with the counts; the current content goes in 總覽 for now. A tab change uses `keptSearch`.
+6. The three new pages: find the issue and the item with the `src/lib/` functions, redirect or show the "not found" message with links. The content can be the h1 and the breadcrumb only; Task N8 fills them.
+
+**Done when:** every URL in design 3.19 opens the right page or redirects; old URLs `#/issues/2/opinion?pick=W08`, `#/issues/2/conflicts`, `#/issues/2/stakeholders`, `#/stakeholders/O02/needs` work; tests pass.
+
+### Task N4: shared components
+
+**Files (new):** `src/components/StakeholderMenu.tsx`, `src/components/NeedItem.tsx`, `src/components/WantItem.tsx`, `src/components/ConflictView.tsx`, `src/components/FocusTarget.tsx` (or a hook `useFocusTarget`), `src/components/TabCountLabel.tsx`. **Change:** `src/components/StoryCard.tsx`, `src/components/StoryList.tsx`, `src/i18n/zh-TW.ts` (block `stakeholderMenu`, `need`, `want`, `conflict`).
+
+1. `StakeholderMenu` (design 3.14): two modes (`filter` for the issue page, `switch` for the stakeholder page), links, `aria-current`, the sticky left column from `lg`, the Collapsible below `lg`, the status line with 「清除篩選」.
+2. `NeedItem` and `WantItem`: the parts listed in design 3.2 (訴求 and 需求 tabs). Props choose which parts show, so the issue tabs, the stakeholder tabs and the solution tabs can use them.
+3. `ConflictView`: the conflict as in design 3.2 (sides, 雙方的需求, 以需求為本的解方, 「備案：審議方法」).
+4. `useFocusTarget`: reads `?focus=`, waits for the content, scrolls to `focus-<value>` and focuses it.
+5. `StoryCard`: the story ID links to `storyPath`. Optional links 「訴求」 and 「需求」.
+
+**Done when:** the components build, and `StoryCard` links work on the existing pages. Check with the keyboard at 360 px.
+
+### Task N5: issue page 訴求 tab — parallel group 6
+
+**Files:** new `src/components/issue/WantsTab.tsx`; change `src/components/issue/OpinionTab.tsx`, `src/components/issue/ConflictsTab.tsx` (merge into the new tab, or keep them as parts of it), `src/pages/Issue.tsx` (only the `TAB_CONTENT` line), `src/i18n/zh-TW.ts` (block `wantsTab`).
+
+Design 3.2 訴求 and section 4: the menu and the data toggle, 「訴求與意見健檢」 with the pick list (now `WantItem`s with stakeholders and 「有衝突」), the opinion result, then 「衝突」 with `ConflictView`. The stakeholder filter applies to the wants and the conflicts. `?pick=` and `?focus=C1` / `?focus=conflicts` work.
+
+**Done when:** `#/issues/2/wants?stakeholder=I06` shows 2 wants (W08, W11) and 1 conflict (C6); `#/issues/2/wants?focus=C6` focuses C6; the old opinion URLs still open with the item picked.
+
+### Task N6: issue page 需求 tab, 解法 tab and 總覽 — parallel group 6
+
+**Files:** new `src/components/issue/NeedsTab.tsx`; change `src/components/issue/SolutionsTab.tsx`, `src/components/issue/OverviewTab.tsx`, `src/components/issue/StakeholdersTab.tsx` (used inside the overview), `src/pages/Issue.tsx` (only the `TAB_CONTENT` line), `src/i18n/zh-TW.ts` (blocks `needsTab`, `solutionsTab`, `overview`).
+
+1. 需求 tab (design 3.2): grouped by priority, each `NeedItem` with stakeholders, stories (Collapsible), solutions, conflicts. The filter rule for 以便… cells. `?focus=N01`. The old-format note (Q10).
+2. 解法 tab: covered needs in the two 6.2 parts, 解開的衝突, the stakeholder filter with 「這個解法還涵蓋其他 N 個需求」.
+3. 總覽: the 「利害關係人」 section at the end (`focus-stakeholders`), the counts row with the new links and the 需求 count.
+
+**Done when:** `#/issues/2/needs` shows 21 needs in 4 priority groups at most; `?stakeholder=I01` shows N01 once; `#/issues/2?focus=stakeholders` focuses the section.
+
+### Task N7: stakeholder page tabs — parallel group 6
+
+**Files:** `src/pages/Stakeholder.tsx`, new `src/components/stakeholder/OverviewTab.tsx`, `WantsTab.tsx`, `NeedsTab.tsx`, `SolutionsTab.tsx`, `src/lib/stakeholderPage.ts` (+ test, only if a view function needs a change), `src/i18n/zh-TW.ts` (block `stakeholderPage`).
+
+Design 3.3: the 4 tabs with summed counts, an h2 per issue in each tab, the menu in `switch` mode, the moved-ID note. 解法 tab: 「尚未有解法涵蓋的需求」 replaces 「沒有解法涵蓋的故事」.
+
+**Done when:** I06 shows 訴求 5・衝突 4, 需求 4, 解法 4; the menu goes to the same tab of another stakeholder; `#/stakeholders/O02/wants` lands on `#/stakeholders/I12/wants?from=O02`.
+
+### Task N8: story, want and need pages — parallel group 6
+
+**Files:** `src/pages/StakeholderStory.tsx`, `src/pages/StakeholderWant.tsx`, `src/pages/StakeholderNeed.tsx`, `src/i18n/zh-TW.ts` (blocks `storyPage`, `wantPage`, `needPage`).
+
+Design 3.15, 3.16, 3.17: breadcrumbs, h1, page titles, all the parts in the tables, the redirects and the "not found" messages.
+
+**Done when:** `#/stakeholders/I06/stories/2/I06-US01`, `#/stakeholders/I06/wants/2/W08`, `#/stakeholders/I06/needs/2/N07` show their parts; `#/stakeholders/I01/needs/2/I01-US01` redirects to `…/N01`; `#/stakeholders/I01/stories/2/I06-US01` redirects to I06.
+
+### Task N9: solution page tabs — parallel group 6
+
+**Files:** `src/pages/Solution.tsx`, new `src/components/solution/OverviewTab.tsx`, `NeedsTab.tsx`, `StakeholdersTab.tsx`, `src/i18n/zh-TW.ts` (block `solutionPage`).
+
+Design 3.12: the header above the tabs, 總覽 with 解開的衝突, the 需求 tab (covered by priority; not covered with 「由其他解法涵蓋」), the 利害關係人 tab (covered and not covered, with their needs). Labels with counts from `solutionTabCounts`.
+
+**Done when:** `#/issues/2/solutions/A` shows 「需求　涵蓋 9・未涵蓋 12」 and 「利害關係人　涵蓋 14・未涵蓋 13」; an unknown tab shows the message with links.
+
+### Task N10: link sweep and list pages
+
+**Files:** `src/pages/Solutions.tsx`, `src/lib/solutionList.ts` (+ test), `src/pages/Space.tsx`, `src/pages/Home.tsx`, `src/components/SolutionCard.tsx`, any file that still links to `/opinion`, `/conflicts` or the `stakeholders` issue tab, `app/README.md` (only if it describes the old tabs), `src/i18n/zh-TW.ts` (block `solutionsList`).
+
+1. `#/solutions` and `SolutionCard`: 「涵蓋 9 個需求」 instead of the story count (Q12). Test first in `solutionList.ts` if it computes the number.
+2. Search the code for old paths (`'opinion'`, `'conflicts'`, `tabPath(…, 'stakeholders')`) and for story IDs shown without a link. Change them to the new paths and `storyPath` (Q13).
+3. The opinion check result (4.2): story IDs link to story pages.
+
+**Done when:** `grep` finds no old tab paths in `src/` except in `legacyIssueTab` and its test; all tests pass.
+
+### Task N11: cross-issue solutions (needs the data from `analysis/cross-issue/`)
+
+**Input:** the cross-issue JSON from the other agent. Before you start, read the real file and its writer in `analysis/build_json.py`. Compare it with the draft shape in design 3.18. If the shape is different, follow the real data and update design 3.18 in the same commit. If the data has no file yet, stop and report.
+
+**Files:** `src/types.ts` (new `CrossIssueFile` type), `src/data.ts` (`useCrossIssue`, null for a missing file), new `src/lib/crossIssue.ts` (+ test, on a new fixture `src/test/fixtures/cross-issue.json` copied from the real build), new `src/pages/CrossSolution.tsx`, `src/router.tsx` (`solutions/cross/:code`), `src/pages/Solutions.tsx`, `src/components/issue/SolutionsTab.tsx`, `src/components/solution/OverviewTab.tsx`, `src/lib/counts.ts` and `src/lib/recent.ts` (Q9), `src/pages/About.tsx` and `src/lib/dataFiles.ts` (list the new JSON file), `src/i18n/zh-TW.ts` (block `crossIssue`).
+
+1. Test first: `crossSolutionPath(code)`, `findCrossSolution`, `crossSolutionsOfIssue(data, issueNumber)`, `crossSolutionsOfSolution(data, issueNumber, code)`, the issue filter rule on `#/solutions`, and the header count with and without the file.
+2. The parts in the design 3.18 table.
+
+**Done when:** with the file, every part in design 3.18 shows; without the file, the app works as before and no request error shows in the console.
+
+### Task N12: accessibility and phone check (Playwright)
+
+**Files:** a script in the scratchpad only (not in the repo); fixes in any app file.
+
+1. `npm run build`, then `npx vite preview --port 4311` in `app/` (in the background).
+2. A Playwright script (import `~/.npm/_npx/705bc6b22212b352/node_modules/playwright/index.mjs`) opens these pages at 360 px, 375 px, 768 px and 1280 px, in both themes: `#/`, `#/issues/2`, `#/issues/2/wants`, `#/issues/2/wants?stakeholder=I06`, `#/issues/2/needs`, `#/issues/2/solutions`, `#/stakeholders/I06`, `#/stakeholders/I06/wants`, `#/stakeholders/I06/needs`, `#/stakeholders/I06/solutions`, `#/stakeholders/I06/stories/2/I06-US01`, `#/stakeholders/I06/wants/2/W08`, `#/stakeholders/I06/needs/2/N07`, `#/issues/2/solutions/A`, `…/A/needs`, `…/A/stakeholders`, `#/solutions`, and a cross-issue page when the data exists.
+3. On each page, check:
+   - no sideways scroll (`document.documentElement.scrollWidth <= innerWidth`)
+   - **the header at 360 px:** the app name 「市政提案小幫手」 fits on the first row, does not wrap in the middle of the name, and does not overlap the links or the theme button (decision 42)
+   - one h1, and no heading level is skipped
+   - every tab list has an `aria-label`; tabs work with the arrow keys and Enter
+   - the stakeholder menu: keyboard order before the tabs; `aria-current` on the current item; at 360 px it is a closed Collapsible that opens with Enter
+   - `?focus=` moves keyboard focus to the target
+   - no console errors
+4. Take screenshots at 360 px and 1280 px of the issue 訴求 tab, the stakeholder 需求 tab and the solution 利害關係人 tab. Look at them.
+5. Fix what fails, then run all the checks again.
+
+**Done when:** every check passes on every page, `npm test` and `npm run build` pass, and the report lists what was fixed.

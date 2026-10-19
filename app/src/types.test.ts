@@ -7,13 +7,15 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { Cell, IndexFile, IssueFile } from '@/types'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
-const issues = [trees, trashcans, smokefree]
+const policy = policyJson as IssueFile
+const issues = [trees, trashcans, smokefree, policy]
 
 const TAGS = ['實證', 'AI整理', 'AI模擬', null]
 const PRIORITIES = ['M', 'S', 'C', 'W']
@@ -27,15 +29,15 @@ function expectCell(c: Cell) {
 }
 
 describe('index.json', () => {
-  it('has the 6 host issues and #8; #1, #2 and #8 are available', () => {
+  it('has the 6 host issues, #8 and #9; #1, #2, #8 and #9 are available', () => {
     // #7 (自由題) has no topic, so it is not listed.
-    expect(index.issues.map((i) => i.number)).toEqual([1, 2, 3, 4, 5, 6, 8])
-    expect(index.issues.filter((i) => i.available).map((i) => i.number)).toEqual([1, 2, 8])
+    expect(index.issues.map((i) => i.number)).toEqual([1, 2, 3, 4, 5, 6, 8, 9])
+    expect(index.issues.filter((i) => i.available).map((i) => i.number)).toEqual([1, 2, 8, 9])
   })
 
-  it('has the source of each issue: #8 was added by a participant', () => {
+  it('has the source of each issue: #8 and #9 were added by participants', () => {
     expect(index.issues.map((i) => [i.number, i.source])).toEqual([
-      [1, '主辦單位'], [2, '主辦單位'], [3, '主辦單位'], [4, '主辦單位'], [5, '主辦單位'], [6, '主辦單位'], [8, '參加者補充'],
+      [1, '主辦單位'], [2, '主辦單位'], [3, '主辦單位'], [4, '主辦單位'], [5, '主辦單位'], [6, '主辦單位'], [8, '參加者補充'], [9, '參加者補充'],
     ])
   })
 
@@ -231,7 +233,9 @@ describe('issue files', () => {
       it('every pending item has section and text', () => {
         expect(issue.pending.length).toBeGreaterThan(0)
         for (const p of issue.pending) {
-          expect(typeof p.section).toBe('string')
+          // null when no heading is above the item (#9 has one in its intro
+          // notes). The 總覽 tab shows it under 「其他」.
+          expect(p.section === null || typeof p.section === 'string').toBe(true)
           expect(p.text).toMatch(/^【待補[^】]*】$/)
           expect(p.context === null || typeof p.context === 'string').toBe(true)
         }

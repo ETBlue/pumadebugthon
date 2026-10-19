@@ -4,12 +4,14 @@ import type { CellCounts, IndexFile, IssueFile } from '@/types'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { BASIS_ORDER, basisBar, basisTextParts, basisTotal, evidencePercent, storyCells } from './cellBasis'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
+const policy = policyJson as IssueFile
 const cellsOf = (n: number): CellCounts => {
   const i = index.issues.find((x) => x.number === n)
   if (!i?.available) throw new Error(`#${n} is not available`)
@@ -96,7 +98,7 @@ describe('the fixture issues', () => {
 
 describe('storyCells', () => {
   it('counts the 我想要… and 以便… cells by tag, the same as build_json.py', () => {
-    for (const f of [trees, trashcans, smokefree]) expect(storyCells(f.stories)).toEqual(cellsOf(f.number))
+    for (const f of [trees, trashcans, smokefree, policy]) expect(storyCells(f.stories)).toEqual(cellsOf(f.number))
     expect(storyCells([])).toEqual(cells(0, 0, 0, 0))
   })
 })

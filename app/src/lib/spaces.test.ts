@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import { compareIds } from './ids'
 import {
@@ -11,6 +12,7 @@ import {
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
+const policy = policyJson as IssueFile
 
 const pairs = (list: { issueNumber: number; solution: { id: string } }[]) =>
   list.map((x) => `#${x.issueNumber} ${x.solution.id}`)
@@ -127,5 +129,21 @@ describe('stakeholdersInSeveralIssues', () => {
       { id: 'O01', issues: [1, 3] },
       { id: 'I06', issues: [1, 2, 3] },
     ])
+  })
+})
+
+describe('an issue with no space type (#9, 空間類型：無)', () => {
+  it('is on no space page, and its solutions are on no space page', () => {
+    expect(policy.spaces).toEqual([])
+    expect(index.spaceTypes.length).toBeGreaterThan(0)
+    for (const { code } of index.spaceTypes) {
+      expect(issuesBySpace(index, code).map((i) => i.number)).not.toContain(9)
+      expect(solutionsBySpace([policy], code)).toEqual([])
+      expect(stakeholdersBySpace([policy], code)).toEqual([])
+    }
+  })
+
+  it('has no other issues with the same space', () => {
+    expect(sameSpaceIssues(index, 9)).toEqual([])
   })
 })

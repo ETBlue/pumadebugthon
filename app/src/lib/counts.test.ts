@@ -12,22 +12,22 @@ const issues = [treesJson, trashcansJson, smokefreeJson] as IssueFile[]
 
 describe('issueCount', () => {
   it('counts only the analyzed issues', () => {
-    // #1, #2 and #8 are analyzed; #3 to #6 are 製作中.
-    expect(issueCount(index)).toBe(3)
+    // #1, #2, #8 and #9 are analyzed; #3 to #6 are 製作中.
+    expect(issueCount(index)).toBe(4)
   })
 })
 
 describe('stakeholderCount', () => {
   it('counts active stakeholders and leaves out moved IDs', () => {
-    // 52 rows, one of them (O02) moved to I12.
-    expect(index.stakeholders).toHaveLength(52)
-    expect(stakeholderCount(index)).toBe(51)
+    // 65 rows, one of them (O02) moved to I12. #9 added O25–O31 and I29–I34.
+    expect(index.stakeholders).toHaveLength(65)
+    expect(stakeholderCount(index)).toBe(64)
   })
 })
 
 describe('solutionCount', () => {
   it('sums the solutions of the analyzed issues', () => {
-    expect(solutionCount(index)).toBe(5 + 5 + 5)
+    expect(solutionCount(index)).toBe(5 + 5 + 5 + 5)
   })
 })
 

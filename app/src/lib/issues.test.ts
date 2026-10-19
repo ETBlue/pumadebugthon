@@ -13,7 +13,7 @@ const person = (id: string, issues: number[], extra: Partial<Stakeholder> = {}):
 
 describe('availableIssues', () => {
   it('returns the analyzed issues by number', () => {
-    expect(availableIssues(index).map((i) => i.number)).toEqual([1, 2, 8])
+    expect(availableIssues(index).map((i) => i.number)).toEqual([1, 2, 8, 9])
   })
 })
 
@@ -21,15 +21,18 @@ describe('isParticipantIssue', () => {
   it('is true only for an issue that a participant added (來源 參加者補充)', () => {
     const byNumber = (n: number) => index.issues.find((i) => i.number === n)!
     expect(isParticipantIssue(byNumber(8))).toBe(true)
+    expect(isParticipantIssue(byNumber(9))).toBe(true)
     for (const n of [1, 2, 3, 4, 5, 6]) expect(isParticipantIssue(byNumber(n))).toBe(false)
   })
 })
 
 describe('sharedStakeholders', () => {
   it('counts the stakeholders of an issue that are also in another issue', () => {
-    expect(sharedStakeholders(index.stakeholders, 2)).toEqual({ count: 14, issues: [1, 8] })
-    expect(sharedStakeholders(index.stakeholders, 1)).toEqual({ count: 13, issues: [2, 8] })
-    expect(sharedStakeholders(index.stakeholders, 8)).toEqual({ count: 14, issues: [1, 2] })
+    // #9 shares O06, O07, I04, I05 and I06 with the other issues.
+    expect(sharedStakeholders(index.stakeholders, 2)).toEqual({ count: 15, issues: [1, 8, 9] })
+    expect(sharedStakeholders(index.stakeholders, 1)).toEqual({ count: 13, issues: [2, 8, 9] })
+    expect(sharedStakeholders(index.stakeholders, 8)).toEqual({ count: 14, issues: [1, 2, 9] })
+    expect(sharedStakeholders(index.stakeholders, 9)).toEqual({ count: 5, issues: [1, 2, 8] })
   })
 
   it('leaves out moved IDs and lists other issues in number order', () => {

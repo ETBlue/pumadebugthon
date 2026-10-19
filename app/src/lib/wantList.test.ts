@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IssueFile } from '@/types'
 import { pickList } from './opinion'
 import { conflictView, conflictsForStakeholder, issueWants, wantKey, wantsForStakeholder, wantsOfStakeholder } from './wantList'
@@ -9,6 +10,7 @@ import { conflictView, conflictsForStakeholder, issueWants, wantKey, wantsForSta
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
+const policy = policyJson as IssueFile
 
 const ids = (list: { id: string }[]) => list.map((x) => x.id)
 
@@ -24,7 +26,7 @@ describe('wantKey', () => {
   })
 
   it('is a key of the pick list for every story in the fixtures', () => {
-    for (const issue of [trees, trashcans, smokefree]) {
+    for (const issue of [trees, trashcans, smokefree, policy]) {
       const keys = new Set(pickList(issue).map((i) => i.key))
       for (const s of issue.stories) {
         expect(keys.has(wantKey(issue, s))).toBe(true)

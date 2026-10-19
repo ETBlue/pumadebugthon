@@ -2,12 +2,14 @@ import { describe, expect, it } from 'vitest'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IssueFile } from '@/types'
 import { SUMMARY_TOPICS, parseSummaryRef, summaryRefTo } from './summary'
 
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
+const policy = policyJson as IssueFile
 
 describe('parseSummaryRef', () => {
   it('reads each kind of reference', () => {
@@ -108,13 +110,13 @@ describe('summaryRefTo', () => {
 
 describe('the summary in the fixtures', () => {
   it('has the 5 topics in the fixed order in every issue', () => {
-    for (const issue of [trees, trashcans, smokefree]) {
+    for (const issue of [trees, trashcans, smokefree, policy]) {
       expect(issue.summary.map((t) => t.topic)).toEqual([...SUMMARY_TOPICS])
     }
   })
 
   it('links every reference (build_json.py checks that each one exists)', () => {
-    for (const issue of [trees, trashcans, smokefree]) {
+    for (const issue of [trees, trashcans, smokefree, policy]) {
       for (const topic of issue.summary) {
         for (const item of topic.items) {
           for (const ref of item.refs) expect(summaryRefTo(ref, issue.number, issue, false), ref).not.toBeNull()

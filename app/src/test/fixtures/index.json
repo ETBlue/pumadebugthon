@@ -134,6 +134,32 @@
         }
       },
       "focusGaps": []
+    },
+    {
+      "number": 9,
+      "folder": "9-policydiscovery",
+      "title": "將產品探索技巧運用到政策前期研究",
+      "source": "參加者補充",
+      "available": true,
+      "spaces": [],
+      "updated": "2026-10-20",
+      "counts": {
+        "stakeholdersO": 9,
+        "stakeholdersI": 9,
+        "stories": 35,
+        "conflicts": 4,
+        "solutions": 5,
+        "cells": {
+          "evidence": 2,
+          "aiSummary": 0,
+          "aiSimulated": 68,
+          "pending": 0
+        }
+      },
+      "focusGaps": [
+        "呼吸道疾病",
+        "兒童與照顧者"
+      ]
     }
   ],
   "stakeholders": [
@@ -203,7 +229,8 @@
       "focus": [],
       "issues": [
         1,
-        2
+        2,
+        9
       ],
       "movedTo": null,
       "added": "2026-10-18"
@@ -216,7 +243,8 @@
       "issues": [
         1,
         2,
-        8
+        8,
+        9
       ],
       "movedTo": null,
       "added": "2026-10-18"
@@ -458,7 +486,8 @@
         "外籍"
       ],
       "issues": [
-        2
+        2,
+        9
       ],
       "movedTo": null,
       "added": "2026-10-18"
@@ -473,7 +502,8 @@
       "issues": [
         1,
         2,
-        8
+        8,
+        9
       ],
       "movedTo": null,
       "added": "2026-10-18"
@@ -488,7 +518,8 @@
       "issues": [
         1,
         2,
-        8
+        8,
+        9
       ],
       "movedTo": null,
       "added": "2026-10-18"
@@ -750,6 +781,151 @@
       ],
       "movedTo": null,
       "added": "2026-10-18"
+    },
+    {
+      "id": "O25",
+      "name": "研考會研究發展組",
+      "path": "gov-local-taipei-rdec-rd",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "O26",
+      "name": "研考會綜合計畫室",
+      "path": "gov-local-taipei-rdec-plan",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "O27",
+      "name": "民政局（參與式預算）",
+      "path": "gov-local-taipei-ca",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "O28",
+      "name": "資訊局",
+      "path": "gov-local-taipei-doit",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "O29",
+      "name": "法務局",
+      "path": "gov-local-taipei-law",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "O30",
+      "name": "臺北市議會",
+      "path": "gov-local-taipei-council",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "O31",
+      "name": "資訊服務廠商（系統開發與維護）",
+      "path": "ind-tech",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "I29",
+      "name": "負責政策前期研究的公務員（各局處承辦人）",
+      "path": "wrk",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "I30",
+      "name": "市政 debug 松參加者",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "I31",
+      "name": "參與市政討論的市民",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "I32",
+      "name": "沒有穩定網路或裝置的市民",
+      "path": "res",
+      "focus": [
+        "經濟弱勢"
+      ],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "I33",
+      "name": "意見被整理進分析的市民",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "I34",
+      "name": "本專案作者（市政提案小幫手的作者）",
+      "path": "res",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
     }
   ],
   "pathLabels": {
@@ -764,16 +940,21 @@
     "gov-central-ly": "立法院",
     "gov-local": "地方政府",
     "gov-local-taipei": "臺北市",
+    "gov-local-taipei-ca": "民政局",
     "gov-local-taipei-council": "臺北市議會",
     "gov-local-taipei-doh": "衛生局",
+    "gov-local-taipei-doit": "資訊局",
     "gov-local-taipei-epb": "環保局",
     "gov-local-taipei-epb-cleaning": "清潔隊",
+    "gov-local-taipei-law": "法務局",
     "gov-local-taipei-li": "里辦公處",
     "gov-local-taipei-pwd": "工務局",
     "gov-local-taipei-pwd-nce": "新建工程處",
     "gov-local-taipei-pwd-parks": "公園路燈工程管理處",
     "gov-local-taipei-rdec": "研究發展考核委員會",
     "gov-local-taipei-rdec-1999": "1999 市民熱線",
+    "gov-local-taipei-rdec-plan": "綜合計畫室",
+    "gov-local-taipei-rdec-rd": "研究發展組",
     "gov-local-taipei-udd": "都市發展局",
     "ind": "產業",
     "ind-construction": "營造業",

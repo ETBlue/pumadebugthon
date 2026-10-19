@@ -15,6 +15,7 @@ describe('dataFileLinks', () => {
       { file: '1-trees.json', issue: 1, href: '/pumadebugthon/data/issues/1-trees.json' },
       { file: '2-trashcans.json', issue: 2, href: '/pumadebugthon/data/issues/2-trashcans.json' },
       { file: '8-smokefree.json', issue: 8, href: '/pumadebugthon/data/issues/8-smokefree.json' },
+      { file: '9-policydiscovery.json', issue: 9, href: '/pumadebugthon/data/issues/9-policydiscovery.json' },
     ])
   })
 
@@ -25,6 +26,7 @@ describe('dataFileLinks', () => {
       { file: 'user-stories.csv', issue: 1, href: `${blob}/1-trees/user-stories.csv` },
       { file: 'user-stories.csv', issue: 2, href: `${blob}/2-trashcans/user-stories.csv` },
       { file: 'user-stories.csv', issue: 8, href: `${blob}/8-smokefree/user-stories.csv` },
+      { file: 'user-stories.csv', issue: 9, href: `${blob}/9-policydiscovery/user-stories.csv` },
       { file: 'space-types.csv', issue: null, href: `${blob}/data/space-types.csv` },
       { file: 'path-labels.csv', issue: null, href: `${blob}/data/path-labels.csv` },
       { file: 'issues.csv', issue: null, href: `${blob}/data/issues.csv` },
@@ -37,15 +39,15 @@ describe('dataFileLinks', () => {
       ...index,
       issues: [
         ...index.issues,
-        { number: 9, folder: '9-new', title: 'x', source: '主辦單位', available: true, spaces: [], updated: null,
+        { number: 10, folder: '10-new', title: 'x', source: '主辦單位', available: true, spaces: [], updated: null,
           counts: { stakeholdersO: 0, stakeholdersI: 0, stories: 0, conflicts: 0, solutions: 0,
             cells: { evidence: 0, aiSummary: 0, aiSimulated: 0, pending: 0 } }, focusGaps: [] },
       ],
     }
     const l = dataFileLinks(more, '/', repo)
-    expect(l.json.map((x) => x.issue)).toEqual([null, 1, 2, 8, 9])
-    expect(l.json[4].href).toBe('/data/issues/9-new.json')
-    expect(l.csv.filter((x) => x.issue !== null).map((x) => x.issue)).toEqual([1, 2, 8, 9])
+    expect(l.json.map((x) => x.issue)).toEqual([null, 1, 2, 8, 9, 10])
+    expect(l.json[5].href).toBe('/data/issues/10-new.json')
+    expect(l.csv.filter((x) => x.issue !== null).map((x) => x.issue)).toEqual([1, 2, 8, 9, 10])
     // #3 to #6 are 製作中: no files.
     expect(l.json.some((x) => x.issue === 3)).toBe(false)
   })

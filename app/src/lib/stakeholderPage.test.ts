@@ -3,6 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import {
   movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
@@ -14,6 +15,7 @@ const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
+const policy = policyJson as IssueFile
 
 const ids = (list: { id: string }[]) => list.map((x) => x.id)
 
@@ -134,8 +136,9 @@ describe('stakeholderIssueView', () => {
 
 describe('stakeholderMenuIds', () => {
   it('gives every active stakeholder of the available issues, in ID order', () => {
+    // 64 active rows, all in an available issue (#9 added 13).
     const list = stakeholderMenuIds(index)
-    expect(list).toHaveLength(51)
+    expect(list).toHaveLength(64)
     expect(list).not.toContain('O02')
     expect(list.slice(0, 2)).toEqual(['O01', 'O03'])
     expect(list).toContain('I12')
@@ -189,7 +192,7 @@ describe('stakeholderConflictViews', () => {
     }
     const list = stakeholderConflictViews(issue, 'I06')
     expect(list.map((c) => [c.view.conflict.id, c.otherStories])).toEqual([['CY', []]])
-    for (const i of [trees, trashcans, smokefree]) {
+    for (const i of [trees, trashcans, smokefree, policy]) {
       expect(stakeholderConflictViews(i, 'I06').length).toBe(stakeholderTabCounts([i], 'I06').conflicts)
     }
   })
@@ -208,7 +211,7 @@ describe('stakeholderSolutionsView', () => {
   })
 
   it('has as many solutions as the tab count', () => {
-    for (const i of [trees, trashcans, smokefree]) {
+    for (const i of [trees, trashcans, smokefree, policy]) {
       for (const id of ['I06', 'I01', 'O09']) {
         expect(stakeholderSolutionsView(i, id).solutions.length).toBe(stakeholderTabCounts([i], id).solutions)
       }

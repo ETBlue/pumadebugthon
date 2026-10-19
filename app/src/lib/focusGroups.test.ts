@@ -3,6 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile, IssueSummary } from '@/types'
 import { focusGapsText, focusRows } from './focusGroups'
 import { FOCUS_ORDER } from './issues'
@@ -11,10 +12,11 @@ const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
+const policy = policyJson as IssueFile
 
 describe('focusRows', () => {
   it('has all 6 groups, always in the fixed order', () => {
-    for (const issue of [trees, trashcans, smokefree]) {
+    for (const issue of [trees, trashcans, smokefree, policy]) {
       expect(focusRows(issue, index.stakeholders).map((r) => r.tag)).toEqual([...FOCUS_ORDER])
     }
   })

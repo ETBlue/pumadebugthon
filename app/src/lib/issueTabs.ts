@@ -6,6 +6,7 @@
 import type { Conflict, IssueFile, Solution } from '@/types'
 import { dataBasedNeeds, issueNeeds, needsByPriority, needsForStakeholder, type NeedPriorityGroup } from './needs'
 import { solutionNeedCoverage, type CoveredNeed } from './solutionPage'
+import { conflictsForStakeholder } from './wantList'
 
 export interface NeedsTabView {
   /** The issue uses the old format (format "stories", no needs). The tab
@@ -19,11 +20,20 @@ export interface NeedsTabView {
 
 /** The 需求 tab. stakeholder: the ID from the menu, or null for every
  * stakeholder. dataBased: keep a need only when one of its stories has a
- * [實證] or [AI整理] 以便… cell. The two filters work together. */
+ * [實證] or [AI整理] 以便… cell. The two filters work together.
+ * With a stakeholder, each need's conflicts are only the ones that the 訴求
+ * tab shows with the same stakeholder (conflictsForStakeholder). */
 export function needsTabView(issue: IssueFile, stakeholder: string | null, dataBased: boolean): NeedsTabView {
   const oldFormat = issue.format === 'stories'
   let items = needsForStakeholder(issueNeeds(issue), stakeholder)
   if (dataBased) items = dataBasedNeeds(items)
+  // With a filter, a need lists only the conflicts that the 訴求 tab shows
+  // with the same filter. The links 「出現在衝突」 keep ?stakeholder=, so a
+  // conflict with no story of the stakeholder would point to nothing.
+  if (stakeholder !== null) {
+    const shown = new Set(conflictsForStakeholder(issue.conflicts, stakeholder).map((c) => c.id))
+    items = items.map((i) => ({ ...i, conflicts: i.conflicts.filter((c) => shown.has(c.id)) }))
+  }
   return { oldFormat, groups: needsByPriority(items), shown: items.length }
 }
 

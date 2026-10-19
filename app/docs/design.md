@@ -134,7 +134,7 @@ With a stakeholder picked in the menu, the tab shows only the wants with a story
    - 「涵蓋的解法」: the solutions whose `needs.must` or `needs.shouldCould` lists the need, as links. When none: 「尚未有解法涵蓋」 (for a 這次不做 need: 「這次不做，所以沒有解法涵蓋」).
    - 「出現在衝突」: the conflicts that list the need in `needsA` or `needsB`, as links to the 訴求 tab (`?focus=C1`)
 
-With a stakeholder picked, the tab shows only the needs with a story of that stakeholder.
+With a stakeholder picked, the tab shows only the needs with a story of that stakeholder. 「出現在衝突」 then lists only the conflicts that the 訴求 tab shows with the same stakeholder (a story of that stakeholder on either side), because the links keep `?stakeholder=` and a hidden conflict would be a link to nothing. The 「有衝突」 list of a want follows the same rule.
 
 **解法.** The stakeholder filter menu and the data toggle, then each solution in letter order:
 - the title link, the summary and the space types (as before)

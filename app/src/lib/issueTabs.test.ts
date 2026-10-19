@@ -35,6 +35,24 @@ describe('needsTabView', () => {
     expect(view.shown).toBe(4)
   })
 
+  it('with a stakeholder, a need lists only the conflicts the 訴求 tab shows (#2, I02, N01)', () => {
+    // N01 is in C1, C2, C3, C6 and C9. No story of I02 is on a side of
+    // these conflicts, so the 訴求 tab with ?stakeholder=I02 hides them, and
+    // the links 「出現在衝突」 would point to nothing.
+    const all = needsTabView(trashcans, null, false).groups.flatMap((g) => g.items)
+    expect(all.find((i) => i.need.id === 'N01')!.conflicts.map((c) => c.id)).toEqual(['C1', 'C2', 'C3', 'C6', 'C9'])
+    const view = needsTabView(trashcans, 'I02', false)
+    const n01 = view.groups.flatMap((g) => g.items).find((i) => i.need.id === 'N01')!
+    expect(n01.conflicts).toEqual([])
+    // A conflict with a story of the stakeholder stays: I06 is on a side of C6.
+    const i06 = needsTabView(trashcans, 'I06', false).groups.flatMap((g) => g.items)
+    for (const item of i06) {
+      const full = all.find((i) => i.need.id === item.need.id)!
+      expect(item.conflicts.map((c) => c.id)).toEqual(full.conflicts.map((c) => c.id).filter((id) => id === 'C6'))
+    }
+    expect(i06.some((i) => i.conflicts.length > 0)).toBe(true)
+  })
+
   it('with the data filter, keeps a need when one of its 以便… cells is [實證] or [AI整理]', () => {
     const view = needsTabView(trashcans, null, true)
     expect(needIds(view.groups.flatMap((g) => g.items))).toEqual(['N01', 'N04', 'N06', 'I24-US01', 'N03', 'I01-US09'])

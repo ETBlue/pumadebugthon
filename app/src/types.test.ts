@@ -50,8 +50,8 @@ describe('index.json', () => {
   it('has the counts of #2', () => {
     const i = index.issues.find((i) => i.number === 2)
     expect(i?.counts).toEqual({
-      stakeholdersO: 12, stakeholdersI: 15, stories: 51, conflicts: 8, solutions: 5,
-      cells: { evidence: 8, aiSummary: 21, aiSimulated: 72, pending: 1 },
+      stakeholdersO: 12, stakeholdersI: 15, stories: 52, conflicts: 9, solutions: 5,
+      cells: { evidence: 10, aiSummary: 21, aiSimulated: 72, pending: 1 },
     })
   })
 
@@ -115,12 +115,30 @@ describe('index.json', () => {
 })
 
 describe('issue files', () => {
+  it('have a 分析摘要 with 5 topics; every item has a Cell and string refs', () => {
+    for (const issue of issues) {
+      expect(issue.summary).toHaveLength(5)
+      for (const topic of issue.summary) {
+        expect(typeof topic.topic).toBe('string')
+        expect(topic.items.length).toBeGreaterThan(0)
+        for (const item of topic.items) {
+          expect(Object.keys(item)).toEqual(['item', 'text', 'refs'])
+          expect(typeof item.item).toBe('string')
+          expectCell(item.text)
+          // A row with a tag lists where it comes from; a 【待補】 row may list nothing.
+          if (item.text.tag !== null) expect(item.refs.length).toBeGreaterThan(0)
+          for (const ref of item.refs) expect(typeof ref).toBe('string')
+        }
+      }
+    }
+  })
+
   it('have the known counts', () => {
-    expect(trashcans.stories).toHaveLength(51)
-    expect(trashcans.conflicts).toHaveLength(8)
+    expect(trashcans.stories).toHaveLength(52)
+    expect(trashcans.conflicts).toHaveLength(9)
     expect(trashcans.solutions).toHaveLength(5)
     expect(trashcans.groups).toHaveLength(11)
-    expect(trees.stories).toHaveLength(65)
+    expect(trees.stories).toHaveLength(66)
   })
 
   it('C6 of #2 has I01-US01 on one side and I06-US01 on the other', () => {

@@ -95,7 +95,7 @@ describe('solutionStakeholders', () => {
 describe('solutionConflicts', () => {
   it('lists the conflicts with a covered story on either side, in file order', () => {
     const a = solutionConflicts(trashcans, sol(trashcans, 'A'))
-    expect(a.map((c) => c.conflict.id)).toEqual(['C1', 'C2', 'C3', 'C4', 'C5', 'C6'])
+    expect(a.map((c) => c.conflict.id)).toEqual(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C9'])
     const c6 = a.find((c) => c.conflict.id === 'C6')!
     // Covered stories on both sides, side A first.
     expect(c6.covered).toContain('I01-US01')

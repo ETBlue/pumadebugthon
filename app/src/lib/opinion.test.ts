@@ -115,7 +115,7 @@ describe('opinionResult on #2', () => {
 
   it('a story on side A shows side B', () => {
     const c = opinionResult(trashcans, ['I01-US01'])
-    expect(c.otherSide.map((o) => o.conflict.id)).toEqual(['C1', 'C2', 'C3', 'C6'])
+    expect(c.otherSide.map((o) => o.conflict.id)).toEqual(['C1', 'C2', 'C3', 'C6', 'C9'])
     expect(ids(c.otherSide[0].otherStories)).toEqual(['I09-US01'])
   })
 

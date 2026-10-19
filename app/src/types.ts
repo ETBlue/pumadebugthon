@@ -275,6 +275,25 @@ export interface SolutionIdea {
   handling: Cell
 }
 
+/** A row of a 分析摘要 topic table (項目 | 說明 | 相關編號). */
+export interface SummaryItem {
+  /** 項目 */
+  item: string
+  /** 說明: a tag and the text, or a 【待補】 cell. */
+  text: Cell
+  /** 相關編號 as written, for example "C5", "I01-US09", "解法 A" or
+   * "#8 解法 B" (another issue). Empty for 「—」. build_json.py checks
+   * that each one exists. */
+  refs: string[]
+}
+
+/** One topic of the 分析摘要 (a 「### 」 subsection). */
+export interface SummaryTopic {
+  /** For example 「難以取捨的決定」. */
+  topic: string
+  items: SummaryItem[]
+}
+
 /** A 【待補…】 item anywhere in the issue file. */
 export interface Pending {
   /** The nearest ## or ### heading above the item, for example "6.3 成效衡量".
@@ -293,6 +312,9 @@ export interface IssueFile {
   title: string
   spaces: string[]
   updated: string | null
+  /** 分析摘要: 5 topics, in the fixed order (SUMMARY_TOPICS). The summary
+   * adds no new facts; each item lists where it comes from. */
+  summary: SummaryTopic[]
   stakeholders: IssueStakeholder[]
   inputSources: InputSource[]
   /** The 特別關注族群檢查 table: 6 groups, in the fixed order. */

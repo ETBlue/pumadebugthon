@@ -107,7 +107,7 @@ describe('storiesByPriority', () => {
     const a = trashcans.solutions.find((s) => s.id === 'A')!
     expect(ids(storiesByPriority(trashcans, a.stories))).toEqual([
       ['M', ['O04-US01', 'O04-US02', 'O12-US01', 'I01-US01', 'I01-US04', 'I01-US05', 'I06-US01', 'I07-US02', 'I09-US04']],
-      ['S', ['O01-US01', 'O01-US03', 'O04-US04', 'I01-US07', 'I02-US01', 'I07-US01', 'I10-US01', 'I12-US01', 'I23-US01']],
+      ['S', ['O01-US01', 'O01-US03', 'O04-US04', 'I01-US07', 'I01-US09', 'I02-US01', 'I07-US01', 'I10-US01', 'I12-US01', 'I23-US01']],
       ['C', ['O01-US04', 'O10-US01', 'O11-US01']],
     ])
   })

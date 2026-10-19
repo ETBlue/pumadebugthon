@@ -33,7 +33,7 @@ describe('solutionCount', () => {
 
 describe('wantCount', () => {
   it('counts each W group once and each story with no W group, summed over the issues', () => {
-    expect(wantCount(issues)).toBe(47 + 38 + 32)
+    expect(wantCount(issues)).toBe(48 + 39 + 32)
   })
 
   it('is the same as the opinion check pick lists', () => {
@@ -60,7 +60,7 @@ describe('wantCount', () => {
 
 describe('needCount', () => {
   it('counts one 需求 per story with a 以便… cell, summed over the issues', () => {
-    expect(needCount(issues)).toBe(65 + 51 + 45)
+    expect(needCount(issues)).toBe(66 + 52 + 45)
   })
 
   it('counts a 【待補】 cell, but not an empty one', () => {

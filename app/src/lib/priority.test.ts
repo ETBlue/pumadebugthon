@@ -45,11 +45,11 @@ describe('priorityCounts', () => {
     expect(priorityCounts(stories)[1]).toEqual({ tag: 'AI整理', counts: [{ priority: 'C', n: 1 }] })
   })
 
-  it('counts the I01 stories of #2 (M 4, S 4, all AI模擬)', () => {
+  it('counts the I01 stories of #2 (M 4, S 5, all AI模擬)', () => {
     const i01 = trashcans.stories.filter((s) => s.stakeholder === 'I01')
-    expect(i01).toHaveLength(8)
+    expect(i01).toHaveLength(9)
     expect(priorityCounts(i01)).toEqual([
-      { tag: 'AI模擬', counts: [{ priority: 'M', n: 4 }, { priority: 'S', n: 4 }] },
+      { tag: 'AI模擬', counts: [{ priority: 'M', n: 4 }, { priority: 'S', n: 5 }] },
     ])
   })
 })

@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { useTabTo } from '@/components/DataBasisToggle'
+import { useDataBasisFilter, useTabTo } from '@/components/DataBasisToggle'
 import { CellBasis } from '@/components/CellBasis'
 import { CellText } from '@/components/CellText'
 import { Field } from '@/components/Field'
@@ -12,12 +12,13 @@ import { focusRows } from '@/lib/focusGroups'
 import { spaceTypeNames } from '@/lib/issues'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
 import { sameSpaceIssues } from '@/lib/spaces'
+import { summaryRefTo } from '@/lib/summary'
 import type { IssueTabProps } from './types'
 
 const to = t.overview
 const TAG_KINDS: TagKind[] = ['實證', 'AI整理', 'AI模擬', 'pending']
 
-/** 總覽 (design 3.2): counts, 資料根據, 特別關注族群, tag legend, 使用相同空間的議題 and 待補清單. */
+/** 總覽 (design 3.2): 分析摘要, counts, 資料根據, 特別關注族群, tag legend, 使用相同空間的議題 and 待補清單. */
 export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const c = summary.counts
   const n = summary.number
@@ -26,9 +27,43 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const pending = pendingBySection(issue.pending)
   const tabTo = useTabTo()
   const focus = focusRows(issue, index.stakeholders)
+  const [dataBasedOnly] = useDataBasisFilter()
 
   return (
     <div className="space-y-8">
+      <section aria-labelledby="summary-heading">
+        <h3 id="summary-heading" className="text-lg font-semibold">{to.summaryHeading}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{to.summaryIntro}</p>
+        {/* The topics keep the fixed order of the issue file (decision 29). */}
+        {issue.summary.map((topic, ti) => (
+          <div key={topic.topic} className="mt-4">
+            <h4 id={`summary-topic-${ti}`} className="font-medium">{topic.topic}</h4>
+            <ul aria-labelledby={`summary-topic-${ti}`} className="mt-2 space-y-2">
+              {topic.items.map((item) => (
+                <li key={item.item} className="min-w-0 rounded-md border p-3 text-sm">
+                  <p className="font-medium">{item.item}</p>
+                  <p className="mt-1"><CellText cell={item.text} /></p>
+                  {item.refs.length > 0 && (
+                    <p className="mt-1 text-muted-foreground">
+                      {to.summaryRefs}
+                      {item.refs.map((ref, i) => {
+                        const target = summaryRefTo(ref, n, issue, dataBasedOnly)
+                        return (
+                          <span key={ref}>
+                            {target ? <Link to={target} className={linkClass}>{ref}</Link> : <span>{ref}</span>}
+                            {i < item.refs.length - 1 && to.summaryRefSeparator}
+                          </span>
+                        )
+                      })}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </section>
+
       <section aria-labelledby="counts-heading">
         <h3 id="counts-heading" className="text-lg font-semibold">{to.countsHeading}</h3>
         <dl className="mt-2 space-y-1.5">

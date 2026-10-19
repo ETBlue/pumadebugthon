@@ -205,6 +205,12 @@ export const t = {
     },
   },
   overview: {
+    /** 分析摘要 (design 3.2, decision 29): the first section of the tab. */
+    summaryHeading: '分析摘要',
+    summaryIntro:
+      '整理本議題難以取捨的決定、可能的爭議、受影響較大的弱勢族群、法規上的障礙，以及相依事項與現行政策的關係。摘要不加入新的事實，每一項都列出它來自哪些故事、衝突或解法。大部分是 AI 的判斷。',
+    summaryRefs: '相關：',
+    summaryRefSeparator: '、',
     countsHeading: '數量',
     stakeholders: '利害關係人',
     stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,

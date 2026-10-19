@@ -16,11 +16,11 @@
       "counts": {
         "stakeholdersO": 14,
         "stakeholdersI": 14,
-        "stories": 65,
+        "stories": 66,
         "conflicts": 8,
         "solutions": 5,
         "cells": {
-          "evidence": 8,
+          "evidence": 10,
           "aiSummary": 27,
           "aiSimulated": 95,
           "pending": 0
@@ -47,11 +47,11 @@
       "counts": {
         "stakeholdersO": 12,
         "stakeholdersI": 15,
-        "stories": 51,
-        "conflicts": 8,
+        "stories": 52,
+        "conflicts": 9,
         "solutions": 5,
         "cells": {
-          "evidence": 8,
+          "evidence": 10,
           "aiSummary": 21,
           "aiSimulated": 72,
           "pending": 1

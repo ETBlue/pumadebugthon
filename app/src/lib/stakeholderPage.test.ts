@@ -2,12 +2,18 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
+import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { IndexFile, IssueFile } from '@/types'
-import { movedFrom, pathTrail, stakeholderIssueNumbers, stakeholderIssueView } from './stakeholderPage'
+import {
+  movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
+  stakeholderIssueView, stakeholderMenuIds, stakeholderSolutionsView,
+} from './stakeholderPage'
+import { stakeholderTabCounts } from './tabCounts'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
+const smokefree = smokefreeJson as IssueFile
 
 const ids = (list: { id: string }[]) => list.map((x) => x.id)
 
@@ -123,5 +129,106 @@ describe('stakeholderIssueView', () => {
     expect(v).toEqual({
       relation: null, stories: [], counts: [], groups: [], conflicts: [], solutions: [], uncovered: [], inputSources: [],
     })
+  })
+})
+
+describe('stakeholderMenuIds', () => {
+  it('gives every active stakeholder of the available issues, in ID order', () => {
+    const list = stakeholderMenuIds(index)
+    expect(list).toHaveLength(51)
+    expect(list).not.toContain('O02')
+    expect(list.slice(0, 2)).toEqual(['O01', 'O03'])
+    expect(list).toContain('I12')
+    // O first, then I, each in ID order.
+    const firstI = list.findIndex((id) => id.startsWith('I'))
+    expect(list.slice(firstI).every((id) => id.startsWith('I'))).toBe(true)
+  })
+
+  it('leaves out a stakeholder whose issues are not available', () => {
+    const only1 = { ...index, issues: index.issues.map((i) => ({ ...i, available: i.number === 1 && i.available })) }
+    const list = stakeholderMenuIds(only1 as IndexFile)
+    for (const id of list) expect(index.stakeholders.find((s) => s.id === id)!.issues).toContain(1)
+  })
+})
+
+describe('movedStakeholderRedirect', () => {
+  it('keeps the rest of the path and adds from=', () => {
+    expect(movedStakeholderRedirect('/stakeholders/O02/wants', '?evidence=1', 'O02', 'I12')).toEqual({
+      pathname: '/stakeholders/I12/wants',
+      search: '?evidence=1&from=O02',
+    })
+  })
+
+  it('falls back to the overview of the new ID when the path is not a page of the old ID', () => {
+    // For example when the URL writes the ID in another way than the route param.
+    expect(movedStakeholderRedirect('/stakeholders/%4F02', '', 'O02', 'I12')).toEqual({
+      pathname: '/stakeholders/I12',
+      search: '?from=O02',
+    })
+  })
+})
+
+describe('stakeholderConflictViews', () => {
+  it('I06 in #2: C6 with the other side and the conflict view', () => {
+    const list = stakeholderConflictViews(trashcans, 'I06')
+    expect(list.map((c) => [c.view.conflict.id, ids(c.otherStories)])).toEqual([['C6', ['I01-US01']]])
+    expect(ids(list[0].view.wayOutSolutions)).toEqual(['A', 'C'])
+  })
+
+  it('I06 in #1: C1 and C7, in file order', () => {
+    expect(stakeholderConflictViews(trees, 'I06').map((c) => [c.view.conflict.id, ids(c.otherStories)])).toEqual([
+      ['C1', ['I18-US01', 'I05-US01', 'O14-US01']],
+      ['C7', ['O14-US06']],
+    ])
+  })
+
+  it('has as many conflicts as the tab count, also when every story is its own', () => {
+    const issue: IssueFile = {
+      ...trashcans,
+      conflicts: [{ ...trashcans.conflicts[0], id: 'CY', sideA: ['I06-US01'], sideB: ['I06-US02'] }],
+    }
+    const list = stakeholderConflictViews(issue, 'I06')
+    expect(list.map((c) => [c.view.conflict.id, c.otherStories])).toEqual([['CY', []]])
+    for (const i of [trees, trashcans, smokefree]) {
+      expect(stakeholderConflictViews(i, 'I06').length).toBe(stakeholderTabCounts([i], 'I06').conflicts)
+    }
+  })
+})
+
+describe('stakeholderSolutionsView', () => {
+  const needIds = (list: { need: { id: string } }[]) => list.map((n) => n.need.id)
+
+  it('I06 in #2: A covers N07, C covers N08, nothing is left uncovered', () => {
+    const v = stakeholderSolutionsView(trashcans, 'I06')
+    expect(v.solutions.map((s) => [s.solution.id, needIds(s.needs)])).toEqual([
+      ['A', ['N07']],
+      ['C', ['N08']],
+    ])
+    expect(v.uncovered).toEqual([])
+  })
+
+  it('has as many solutions as the tab count', () => {
+    for (const i of [trees, trashcans, smokefree]) {
+      for (const id of ['I06', 'I01', 'O09']) {
+        expect(stakeholderSolutionsView(i, id).solutions.length).toBe(stakeholderTabCounts([i], id).solutions)
+      }
+    }
+  })
+
+  it('O09 in #2: B covers O09-US02, and O09-US01 has no solution', () => {
+    const v = stakeholderSolutionsView(trashcans, 'O09')
+    expect(v.solutions.map((s) => [s.solution.id, needIds(s.needs)])).toEqual([['B', ['O09-US02']]])
+    expect(needIds(v.uncovered)).toEqual(['O09-US01'])
+  })
+
+  it('with the data filter, keeps only data-based needs and drops a solution with none left', () => {
+    // Both needs of I06 in #2 have only [AI模擬] 以便… cells.
+    expect(stakeholderSolutionsView(trashcans, 'I06', true)).toEqual({ solutions: [], uncovered: [] })
+    // O09-US01 is [AI模擬] too.
+    expect(stakeholderSolutionsView(trashcans, 'O09', true).uncovered).toEqual([])
+  })
+
+  it('is empty for a stakeholder that is not in the issue', () => {
+    expect(stakeholderSolutionsView(trees, 'I12')).toEqual({ solutions: [], uncovered: [] })
   })
 })

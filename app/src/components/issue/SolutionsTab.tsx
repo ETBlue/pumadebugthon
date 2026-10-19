@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
+import { LabelledSection, SectionLabelScope } from '@/components/LabelledSection'
 import { Markdown } from '@/components/Markdown'
 import { NeedSummaryLink } from '@/components/NeedItem'
 import { SolutionTitleLink } from '@/components/SolutionCard'
@@ -53,7 +54,7 @@ function CrossIssueBox({ issueNumber }: { issueNumber: number }) {
 function NeedPart({ id, title, needs, issueNumber }: { id: string; title: string; needs: CoveredNeed[]; issueNumber: number }) {
   if (needs.length === 0) return null
   return (
-    <section aria-labelledby={id} className="mt-3">
+    <LabelledSection headingId={id} className="mt-3">
       <h5 id={id} className="text-sm font-semibold">{title}</h5>
       <ul className="mt-1 space-y-2 text-sm">
         {needs.map((n) => (
@@ -66,7 +67,7 @@ function NeedPart({ id, title, needs, issueNumber }: { id: string; title: string
           </li>
         ))}
       </ul>
-    </section>
+    </LabelledSection>
   )
 }
 
@@ -113,8 +114,11 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
                 <h4 id={`${key}-needs`} className="mt-4 font-medium">{ts.needs}</h4>
                 {sol.needs === null && <p className="mt-1 text-sm text-muted-foreground">{ts.needsNone}</p>}
                 {item.emptyByData && <p className="mt-1 text-sm text-muted-foreground">{ts.dataEmpty}</p>}
-                <NeedPart id={`${key}-must`} title={ts.must} needs={item.must} issueNumber={n} />
-                <NeedPart id={`${key}-should`} title={ts.shouldCould} needs={item.shouldCould} issueNumber={n} />
+                {/* The solution title is part of the name of these two parts. */}
+                <SectionLabelScope id={key}>
+                  <NeedPart id={`${key}-must`} title={ts.must} needs={item.must} issueNumber={n} />
+                  <NeedPart id={`${key}-should`} title={ts.shouldCould} needs={item.shouldCould} issueNumber={n} />
+                </SectionLabelScope>
                 {item.otherNeeds > 0 && (
                   <p className="mt-3 text-sm">
                     <Link

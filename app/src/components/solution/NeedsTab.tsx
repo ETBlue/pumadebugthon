@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Heading, subLevel, type HeadingLevel } from '@/components/Heading'
+import { LabelledSection } from '@/components/LabelledSection'
 import { NeedItem, type NeedPart } from '@/components/NeedItem'
 import { t } from '@/i18n/zh-TW'
 import { priorityLabel } from '@/lib/priority'
@@ -34,7 +35,7 @@ function PriorityGroups<T extends NeedData>({
   return (
     <div className="mt-4 space-y-6">
       {groups.map((g) => (
-        <section key={g.priority} aria-labelledby={`${idPrefix}-${g.priority}`}>
+        <LabelledSection key={g.priority} headingId={`${idPrefix}-${g.priority}`}>
           <Heading level={level} id={`${idPrefix}-${g.priority}`} className="font-semibold">
             {priorityLabel(g.priority)}
           </Heading>
@@ -54,7 +55,7 @@ function PriorityGroups<T extends NeedData>({
               </li>
             ))}
           </ul>
-        </section>
+        </LabelledSection>
       ))}
     </div>
   )
@@ -98,7 +99,7 @@ export function NeedCoverageParts({
 
   return (
     <div className="space-y-10">
-      <section aria-labelledby={`${idPrefix}-covered`}>
+      <LabelledSection headingId={`${idPrefix}-covered`}>
         <Heading level={headingLevel} id={`${idPrefix}-covered`} className="text-xl font-bold">
           {tp.coveredNeedsHeading}
         </Heading>
@@ -107,9 +108,9 @@ export function NeedCoverageParts({
         ) : (
           <PriorityGroups {...common} groups={groups.covered} idPrefix={`${idPrefix}-covered`} parts={COVERED_PARTS} />
         )}
-      </section>
+      </LabelledSection>
 
-      <section aria-labelledby={`${idPrefix}-not-covered`}>
+      <LabelledSection headingId={`${idPrefix}-not-covered`}>
         <Heading level={headingLevel} id={`${idPrefix}-not-covered`} className="text-xl font-bold">
           {tp.notCoveredNeedsHeading}
         </Heading>
@@ -126,7 +127,7 @@ export function NeedCoverageParts({
             parts={NOT_COVERED_PARTS}
           />
         )}
-      </section>
+      </LabelledSection>
     </div>
   )
 }

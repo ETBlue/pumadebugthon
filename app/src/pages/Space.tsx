@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router'
 import { Field } from '@/components/Field'
+import { LabelledSection } from '@/components/LabelledSection'
 import { AlsoInLine } from '@/components/issue/AlsoIn'
 import { IssueCard } from '@/components/IssueCard'
 import { LoadState } from '@/components/LoadState'
@@ -95,7 +96,7 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
 
   return (
     <>
-      <section aria-labelledby="space-solutions">
+      <LabelledSection headingId="space-solutions">
         <h2 id="space-solutions" className="text-xl font-bold">{tp.solutionsHeading}</h2>
         {solutions.length === 0 ? (
           <p className="mt-2">{tp.solutionsNone}</p>
@@ -103,7 +104,7 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
           sorted
             .filter((issue) => solutions.some((s) => s.issueNumber === issue.number))
             .map((issue) => (
-              <section key={issue.number} aria-labelledby={`space-solutions-${issue.number}`} className="mt-4">
+              <LabelledSection key={issue.number} headingId={`space-solutions-${issue.number}`} className="mt-4">
                 <h3 id={`space-solutions-${issue.number}`} className="font-semibold">{title(issue.number)}</h3>
                 <ul className="mt-2 space-y-3">
                   {solutions
@@ -128,12 +129,12 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                       )
                     })}
                 </ul>
-              </section>
+              </LabelledSection>
             ))
         )}
-      </section>
+      </LabelledSection>
 
-      <section aria-labelledby="space-stakeholders">
+      <LabelledSection headingId="space-stakeholders">
         <h2 id="space-stakeholders" className="text-xl font-bold">{tp.stakeholdersHeading}</h2>
         {stakeholders.length === 0 ? (
           <p className="mt-2">{tp.stakeholdersNone}</p>
@@ -141,7 +142,7 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
           <>
             <p className="mt-2 text-muted-foreground">{tp.stakeholdersIntro}</p>
 
-            <section aria-labelledby="space-shared" className="mt-4 rounded-lg border-2 border-foreground/40 p-4">
+            <LabelledSection headingId="space-shared" className="mt-4 rounded-lg border-2 border-foreground/40 p-4">
               <h3 id="space-shared" className="font-semibold">{tp.sharedHeading}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{tp.sharedIntro}</p>
               {shared.length === 0 ? (
@@ -157,11 +158,11 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                   ))}
                 </ul>
               )}
-            </section>
+            </LabelledSection>
 
             <h3 className="mt-6 font-semibold">{tp.byIssueHeading}</h3>
             {stakeholders.map((entry) => (
-              <section key={entry.issueNumber} aria-labelledby={`space-people-${entry.issueNumber}`} className="mt-3">
+              <LabelledSection key={entry.issueNumber} headingId={`space-people-${entry.issueNumber}`} className="mt-3">
                 <h4 id={`space-people-${entry.issueNumber}`} className="font-medium">{title(entry.issueNumber)}</h4>
                 <ul className="mt-2 grid gap-3 sm:grid-cols-2">
                   {entry.stakeholders.map((id) => (
@@ -172,11 +173,11 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                     </li>
                   ))}
                 </ul>
-              </section>
+              </LabelledSection>
             ))}
           </>
         )}
-      </section>
+      </LabelledSection>
     </>
   )
 }

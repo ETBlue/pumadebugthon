@@ -237,13 +237,16 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_index_issue_list(self):
         issues = self.index["issues"]
-        # #7 (自由題) has no topic, so it is not in issues.csv. #8 is an extra issue.
-        self.assertEqual([i["number"] for i in issues], [1, 2, 3, 4, 5, 6, 8])
+        # #7 (自由題) has no topic, so it is not in issues.csv. #8 and #9 are extra issues.
+        self.assertEqual([i["number"] for i in issues], [1, 2, 3, 4, 5, 6, 8, 9])
         available = [i["number"] for i in issues if i["available"]]
         self.assertTrue({1, 2} <= set(available))
         self.assertFalse({3, 4, 5, 6} & set(available))
         three = issues[2]
         self.assertEqual((three["counts"], three["spaces"], three["updated"]), (None, [], None))
+        # #9 uses no city space (「空間類型：無」), so its list is empty, but it is available.
+        nine = issues[-1]
+        self.assertEqual((nine["available"], nine["spaces"]), (True, []))
 
     def test_focus_groups(self):
         # The 1.3 特別關注族群檢查 table: all 6 groups, in the fixed order.
@@ -277,14 +280,14 @@ class BuildJsonOutputTest(unittest.TestCase):
         # focusGaps: the groups with no stakeholder, in the fixed order. null for an issue without an analysis.
         gaps = {i["number"]: i["focusGaps"] for i in self.index["issues"]}
         self.assertEqual(gaps, {1: ["呼吸道疾病", "外籍"], 2: ["呼吸道疾病"], 3: None, 4: None,
-                                5: None, 6: None, 8: []})
+                                5: None, 6: None, 8: [], 9: ["呼吸道疾病", "兒童與照顧者"]})
 
     def test_index_issue_source(self):
         # 來源 in issues.csv becomes "source": 主辦單位 for the host's issues,
         # 參加者補充 for an issue a participant added.
         source = {i["number"]: i["source"] for i in self.index["issues"]}
         self.assertEqual(source, {1: "主辦單位", 2: "主辦單位", 3: "主辦單位", 4: "主辦單位",
-                                  5: "主辦單位", 6: "主辦單位", 8: "參加者補充"})
+                                  5: "主辦單位", 6: "主辦單位", 8: "參加者補充", 9: "參加者補充"})
 
     def test_moved_and_active_stakeholders(self):
         by_id = {s["id"]: s for s in self.index["stakeholders"]}
@@ -708,11 +711,11 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("issues.csv: header: no column 來源")
 
     def test_bad_issue_value_in_csv(self):
-        self.edit("I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,1、2、8,", "data/stakeholders.csv")
+        self.edit("I05,高齡者,res,高齡,1 2 8 9,", "I05,高齡者,res,高齡,1、2、8、9,", "data/stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:")
 
     def test_bad_stakeholder_date(self):
-        self.edit("I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,1 2 8,,2026/10/18", "data/stakeholders.csv")
+        self.edit("I05,高齡者,res,高齡,1 2 8 9,,2026-10-18", "I05,高齡者,res,高齡,1 2 8 9,,2026/10/18", "data/stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:", "新增日期")
 
     def test_missing_stakeholder_date_column(self):

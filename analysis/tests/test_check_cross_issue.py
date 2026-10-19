@@ -60,6 +60,26 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
         self.assertIn("PASS", out)
 
+    # ---------- the issues the file compares ----------
+
+    def test_title_names_issue_without_analysis(self):
+        # The title names the issues the file compares (「#1、#2、#8」).
+        self.edit("# 跨議題分析：#1、#2、#8（試作）", "# 跨議題分析：#1、#2、#3、#8（試作）")
+        self.assertFails("title", "#3")
+
+    def test_title_without_issue_numbers(self):
+        self.edit("# 跨議題分析：#1、#2、#8（試作）", "# 跨議題分析（試作）")
+        self.assertFails("title")
+
+    @unittest.skipUnless(os.path.isfile(os.path.join(ANALYSIS, "9-policydiscovery", "issue-analysis.md")), "needs #9")
+    def test_issue_not_in_title_gives_a_note(self):
+        # #9 shares stakeholders with #1, #2 and #8 but the file does not compare it yet.
+        # That is a note for a person, not a failure (the owner decides).
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+        self.assertIn("NOTE: issue #9", out)
+        self.assertIn("O07", out)
+
     # ---------- tags and 待補 ----------
 
     def test_tag_without_backticks(self):

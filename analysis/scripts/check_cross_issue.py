@@ -236,12 +236,28 @@ def slug(h):
 
 # ---------- the whole file ----------
 
+def compared_issues(title):
+    """The issue numbers in the title, sorted: 「跨議題分析：#1、#2、#8（試作）」 -> [1, 2, 8]."""
+    return sorted({int(n) for n in re.findall(r"#(\d+)", title or "")})
+
+
+def not_compared(ctx, nums):
+    """The issues with an analysis that the file does not compare but that
+    share a stakeholder with a compared issue: {issue number: [stakeholder IDs]}."""
+    in_compared = {sid for n in nums for sid in ctx["issues"][n].stakeholders()}
+    out = {}
+    for n, iss in sorted(ctx["issues"].items()):
+        if n in nums: continue
+        ids = [sid for sid in iss.stakeholders() if sid in in_compared]
+        if ids: out[n] = ids
+    return out
+
+
 def read_cross_issue(text, ctx):
     """Check the cross-issue file and read it. Returns (data, errors)."""
     errors = []
     def err(m): errors.append(m)
     issues, stake = ctx["issues"], ctx["stakeholders"]
-    nums = sorted(issues)
 
     def issue_ref(num, rid, where):
         """Check one 「#n ID」 reference. Returns the Issue, or None after an error."""
@@ -303,6 +319,16 @@ def read_cross_issue(text, ctx):
     title = lines[0][2:].strip() if lines and lines[0].startswith("# ") else None
     if title is None:
         err("the first line must be the title 「# …」")
+    # The issues this file compares are the 「#n」 numbers in the title, for
+    # example 「# 跨議題分析：#1、#2、#8（試作）」. Only these issues are checked.
+    # Another issue that shares stakeholders is not an error: main() prints a
+    # NOTE, and the owner decides when to add it.
+    nums = compared_issues(title)
+    if title is not None and not nums:
+        err("the title must name the issues the file compares, for example 「# 跨議題分析：#1、#2、#8」")
+    for n in nums:
+        if n not in issues: err(f"the title names #{n}, but issue #{n} has no analysis file")
+    nums = [n for n in nums if n in issues]
     file_spaces = []
     if len(lines) > 2 and lines[1] == "" and lines[2].startswith("空間類型："):
         body = lines[2][len("空間類型："):]
@@ -748,7 +774,11 @@ def main(md_path):
     analysis_dir = os.path.dirname(os.path.dirname(md_path))
     with open(md_path, encoding="utf-8") as f:
         text = f.read()
-    data, errors = read_cross_issue(text, load_context(analysis_dir))
+    ctx = load_context(analysis_dir)
+    data, errors = read_cross_issue(text, ctx)
+    for n, ids in not_compared(ctx, data["issues"]).items():
+        print(f"NOTE: issue #{n} shares stakeholders with the compared issues ({'、'.join(ids)}), "
+              f"but this file does not compare it. A person decides whether to add it.")
     print(f"issues: {data['issues']}; shared stakeholders: {len(data['sharedStakeholders'])}; "
           f"X-N groups: {len(data['needGroups'])}; conflicts: {len(data['conflicts'])}; "
           f"combined solutions: {len(data['solutions'])}; 待補 items: {len(data['pending'])}")

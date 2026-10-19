@@ -85,7 +85,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("solution D", "parking")
 
     def test_wrong_issue_value(self):
-        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,", "I05,高齡者,res,高齡,2,")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8 9,", "I05,高齡者,res,高齡,2,")
         self.assertFails("I05", "議題")
 
     def test_moved_id_must_have_empty_issue_value(self):
@@ -262,8 +262,8 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("#2 O99", folder="1-trees")
 
     def test_cross_issue_unknown_issue_number(self):
-        self.add_to_issue_1("見 #9 O01-US01")
-        self.assertFails("#9 O01-US01", "issues.csv", folder="1-trees")
+        self.add_to_issue_1("見 #99 O01-US01")
+        self.assertFails("#99 O01-US01", "issues.csv", folder="1-trees")
 
     def test_cross_issue_reference_to_own_issue(self):
         self.add_to_issue_1("見 #1 O01-US01")
@@ -387,11 +387,11 @@ class CheckAnalysisTest(unittest.TestCase):
         for wrong in ("2026/10/18", "", "2026-13-01"):
             with self.subTest(wrong=wrong):
                 self.tearDown(); self.setUp()
-                self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", f"I05,高齡者,res,高齡,1 2 8,,{wrong}")
+                self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8 9,,2026-10-18", f"I05,高齡者,res,高齡,1 2 8 9,,{wrong}")
                 self.assertFails("stakeholders.csv: I05 新增日期")
 
     def test_stakeholders_csv_future_date_fails(self):
-        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8,,2026-10-18", "I05,高齡者,res,高齡,1 2 8,,2999-01-01")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 8 9,,2026-10-18", "I05,高齡者,res,高齡,1 2 8 9,,2999-01-01")
         self.assertFails("stakeholders.csv: I05 新增日期 2999-01-01", "future")
 
     def test_solution_date_passes(self):

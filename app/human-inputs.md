@@ -10,7 +10,7 @@ other concerns:
 
 directions:
 * I want to have an UI to browse the issue analysis result in a structured way. as a hackathon submission, the content will come from the analysis folder of this repo. my raw idea is to retrieve structured data from the analysis result, and build a web page that can browse the structured data easily
-* the app can be named as "提案小幫手", since the goal is to help people with building proposals. I had built an app named "審稿小幫手", so I think it is easier for people to remember if we follow the same naming pattern
+* the app can be named as "市政提案小幫手", since the goal is to help people with building proposals. I had built an app named "審稿小幫手", so I think it is easier for people to remember if we follow the same naming pattern
 * license for source code: MIT. license for content I produced: CC-BY 4.0. license for content from the hackathon host: depends on the host
 
 information architecture:

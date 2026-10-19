@@ -1,0 +1,119 @@
+// URL paths of the entity pages: stakeholder, story and solution
+// (design 3.3, 3.12, 3.15, 3.16, 3.19). Wants and needs have no page of
+// their own (decision 45). A link to one goes to the issue tab with ?focus=.
+import { withDataBasisFilter } from './dataBasis'
+import { FOCUS_PARAM } from './focus'
+
+/** The tabs of the stakeholder page, in display order. The first one is the default. */
+export const STAKEHOLDER_TABS = ['overview', 'wants', 'needs', 'solutions'] as const
+
+export type StakeholderTab = (typeof STAKEHOLDER_TABS)[number]
+
+/** The tabs of the solution page, in display order. The first one is the default. */
+export const SOLUTION_TABS = ['overview', 'needs', 'stakeholders'] as const
+
+export type SolutionTab = (typeof SOLUTION_TABS)[number]
+
+/** A link target for react-router: a path and a search part ("" or "?…"). */
+export interface PathTarget {
+  pathname: string
+  search: string
+}
+
+/** The stakeholder tab of the URL segment. No segment is the overview. An
+ * unknown name returns null. "stories" is a sub-page, not a tab, so it is null too. */
+export function parseStakeholderTab(segment: string | undefined): StakeholderTab | null {
+  if (segment === undefined) return 'overview'
+  return (STAKEHOLDER_TABS as readonly string[]).includes(segment) ? (segment as StakeholderTab) : null
+}
+
+/** The URL path of a stakeholder tab, for example "/stakeholders/I06/wants".
+ * The overview has no tab segment: "/stakeholders/I06". */
+export function stakeholderTabPath(id: string, tab: StakeholderTab): string {
+  return tab === 'overview' ? `/stakeholders/${id}` : `/stakeholders/${id}/${tab}`
+}
+
+/** The URL path of a story page, for example
+ * "/stakeholders/I06/stories/2/I06-US01". The stakeholder is the part of the
+ * story ID before 「-」. */
+export function storyPath(issueNumber: number, storyId: string): string {
+  return `/stakeholders/${storyId.split('-')[0]}/stories/${issueNumber}/${storyId}`
+}
+
+function focusPath(issueNumber: number, tab: 'wants' | 'needs', key: string, dataBasedOnly: boolean): PathTarget {
+  const params = withDataBasisFilter(new URLSearchParams({ [FOCUS_PARAM]: key }), dataBasedOnly)
+  return { pathname: `/issues/${issueNumber}/${tab}`, search: `?${params.toString()}` }
+}
+
+/** A link to one want on the issue's 訴求 tab, for example
+ * { pathname: "/issues/2/wants", search: "?focus=W08" } (decision 57).
+ * With dataBasedOnly, the search also has evidence=1. */
+export function wantFocusPath(issueNumber: number, key: string, dataBasedOnly = false): PathTarget {
+  return focusPath(issueNumber, 'wants', key, dataBasedOnly)
+}
+
+/** A link to one need on the issue's 需求 tab, for example
+ * { pathname: "/issues/2/needs", search: "?focus=N07" } (decision 57).
+ * With dataBasedOnly, the search also has evidence=1. */
+export function needFocusPath(issueNumber: number, key: string, dataBasedOnly = false): PathTarget {
+  return focusPath(issueNumber, 'needs', key, dataBasedOnly)
+}
+
+/** The solution tab of the URL segment. No segment is the overview. An
+ * unknown name returns null. */
+export function parseSolutionTab(segment: string | undefined): SolutionTab | null {
+  if (segment === undefined) return 'overview'
+  return (SOLUTION_TABS as readonly string[]).includes(segment) ? (segment as SolutionTab) : null
+}
+
+function withTab(base: string, tab: string | undefined): string {
+  return tab === undefined || tab === 'overview' ? base : `${base}/${tab}`
+}
+
+/** The URL path of the solution page of an issue, for example
+ * "/solutions/2-A" or "/solutions/2-A/needs". The overview has no tab segment. */
+export function solutionPath(issueNumber: number, code: string, tab?: SolutionTab): string {
+  return withTab(`/solutions/${issueNumber}-${code}`, tab)
+}
+
+/** The URL path of a cross-issue solution page. code is the code as
+ * cross-issue.json writes it, for example "X-A": "/solutions/X-A",
+ * "/solutions/X-A/stakeholders". */
+export function crossSolutionPath(code: string, tab?: SolutionTab): string {
+  return withTab(`/solutions/${code}`, tab)
+}
+
+export type SolutionSlug = { kind: 'issue'; issueNumber: number; code: string } | { kind: 'cross'; code: string }
+
+/** The solution of the path segment (design 3.12): "2-A" is solution A of
+ * issue #2, "X-A" is a cross-issue solution. The issue number is a plain
+ * positive number (not "02"). The code is one capital letter. Anything else
+ * returns null. */
+export function parseSolutionSlug(segment: string | undefined): SolutionSlug | null {
+  if (segment === undefined) return null
+  const cross = /^X-[A-Z]$/.exec(segment)
+  if (cross) return { kind: 'cross', code: segment }
+  const m = /^([1-9]\d*)-([A-Z])$/.exec(segment)
+  if (!m) return null
+  return { kind: 'issue', issueNumber: Number(m[1]), code: m[2] }
+}
+
+/** The new path for an old URL "/issues/2/solutions/A[/<tab>]" (design
+ * 3.12). The tab segment is kept as it is, also an unknown one, so the new
+ * page can show its "tab not found" message. */
+export function legacySolutionPath(issueNumber: number, code: string, tab?: string): string {
+  return withTab(`/solutions/${issueNumber}-${code}`, tab)
+}
+
+/** The same stakeholder path with newId in place of oldId (design 3.3). On a
+ * story page, a story ID that starts with "<oldId>-" gets the new ID. Any
+ * other story ID is kept. null when pathname is not a page of oldId. */
+export function movedStakeholderPath(pathname: string, oldId: string, newId: string): string | null {
+  const parts = pathname.split('/')
+  if (parts[0] !== '' || parts[1] !== 'stakeholders' || parts[2] !== oldId) return null
+  parts[2] = newId
+  if (parts[3] === 'stories' && parts[5]?.startsWith(`${oldId}-`)) {
+    parts[5] = newId + parts[5].slice(oldId.length)
+  }
+  return parts.join('/')
+}

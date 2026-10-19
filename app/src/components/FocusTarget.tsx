@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useLocation, useNavigationType } from 'react-router'
-import { FOCUS_PARAM, FOCUS_WAIT_MS, focusElementId, focusScrollBehavior, shouldFocusJump, type FocusVisit } from '@/lib/focus'
+import { FOCUS_JUMP_ATTRIBUTE, FOCUS_PARAM, FOCUS_WAIT_MS, focusElementId, focusScrollBehavior, shouldFocusJump, type FocusVisit } from '@/lib/focus'
 
 function prefersReducedMotion(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -17,7 +17,9 @@ function prefersReducedMotion(): boolean {
  * the 「只看有資料根據」 toggle (it replaces the URL with another search) does
  * not jump back to the target.
  *
- * The target element needs tabIndex={-1} and focusTargetClass (styles.ts). */
+ * The target element needs tabIndex={-1} and focusTargetClass (styles.ts).
+ * It gets FOCUS_JUMP_ATTRIBUTE until it loses focus, so only a jump shows
+ * the outline, not a mouse click inside it. */
 export function useFocusTarget(): void {
   const location = useLocation()
   const navigationType = useNavigationType()
@@ -37,6 +39,10 @@ export function useFocusTarget(): void {
 
     const go = (el: HTMLElement) => {
       el.scrollIntoView({ behavior: focusScrollBehavior(prefersReducedMotion()), block: 'start' })
+      // Mark the element, so it shows the focus outline (focusTargetClass).
+      // The mark goes away when the focus leaves it.
+      el.setAttribute(FOCUS_JUMP_ATTRIBUTE, '')
+      el.addEventListener('blur', () => el.removeAttribute(FOCUS_JUMP_ATTRIBUTE), { once: true })
       el.focus({ preventScroll: true })
     }
     const now = document.getElementById(elementId)

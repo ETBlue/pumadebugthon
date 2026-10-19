@@ -19,6 +19,9 @@ export const containerClass = 'mx-auto w-full max-w-5xl px-4 md:px-8'
 /** A part of a page that ?focus= can scroll to (design 3.2). It gets
  * tabIndex={-1}. The page moves focus to it with a script, and
  * :focus-visible does not always match then, so the outline uses :focus.
- * scroll-mt keeps a little space above it. */
+ * The outline shows only while the element has data-focus-jump
+ * (FOCUS_JUMP_ATTRIBUTE in src/lib/focus.ts). useFocusTarget sets it, so a
+ * mouse click inside the card shows no outline. scroll-mt keeps a little
+ * space above it. */
 export const focusTargetClass =
-  'scroll-mt-4 rounded-md focus:outline-solid focus:outline-2 focus:outline-offset-2 focus:outline-ring'
+  'scroll-mt-4 rounded-md data-focus-jump:focus:outline-solid data-focus-jump:focus:outline-2 data-focus-jump:focus:outline-offset-2 data-focus-jump:focus:outline-ring'

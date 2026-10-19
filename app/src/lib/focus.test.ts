@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { FOCUS_PARAM, FOCUS_WAIT_MS, focusElementId, focusScrollBehavior, shouldFocusJump, type FocusVisit } from './focus'
+import { focusTargetClass } from '@/components/styles'
+import { FOCUS_JUMP_ATTRIBUTE, FOCUS_PARAM, FOCUS_WAIT_MS, focusElementId, focusScrollBehavior, shouldFocusJump, type FocusVisit } from './focus'
 
 describe('focusElementId', () => {
   it('uses the parameter name focus', () => {
@@ -98,5 +99,20 @@ describe('shouldFocusJump', () => {
 
   it('does not jump when the data toggle replaces the URL with another search', () => {
     expect(shouldFocusJump(visit(), visit({ key: 'b', search: '?focus=C6&evidence=1' }), 'REPLACE')).toBe(false)
+  })
+})
+
+describe('FOCUS_JUMP_ATTRIBUTE', () => {
+  it('is a data attribute', () => {
+    expect(FOCUS_JUMP_ATTRIBUTE).toBe('data-focus-jump')
+  })
+
+  it('is the only way the focus target shows its outline', () => {
+    // A mouse click inside the card also focuses it (tabIndex=-1). The
+    // outline must show only after a ?focus= jump, so every outline class
+    // needs the data-focus-jump variant.
+    const outline = focusTargetClass.split(' ').filter((c) => c.includes('outline'))
+    expect(outline.length).toBeGreaterThan(0)
+    for (const c of outline) expect(c.startsWith('data-focus-jump:focus:')).toBe(true)
   })
 })

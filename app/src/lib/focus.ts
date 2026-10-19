@@ -3,6 +3,12 @@
 
 export const FOCUS_PARAM = 'focus'
 
+/** useFocusTarget puts this attribute on the element it moved focus to, and
+ * removes it when the element loses focus. The outline (focusTargetClass)
+ * shows only with it. A mouse click inside the card also focuses it
+ * (tabIndex=-1), but without the attribute, so it shows no outline. */
+export const FOCUS_JUMP_ATTRIBUTE = 'data-focus-jump'
+
 /** Section names, a conflict (C1), a W group (W08), an N group (N01) or a
  * story ID (I06-US01: a want or a need with no group). */
 const FOCUS_VALUE = /^(?:conflicts|stakeholders|C\d+|W\d\d|N\d\d|[OI]\d+-US\d+)$/

@@ -62,11 +62,14 @@ describe('wantsTabView', () => {
   })
 
   it('applies the stakeholder filter and the data filter together', () => {
-    // Every story of I06 in #2 is [AI模擬], but W08 and W11 have stories of
-    // other stakeholders. The result is the same as filtering one after the other.
-    const byStakeholder = wantsTabView(trashcans, 'I06', false).wants
-    const both = wantsTabView(trashcans, 'I06', true).wants
-    expect(keys(both)).toEqual(keys(dataBasedPickList(byStakeholder, trashcans.stories)))
+    // O04 in #2 has 5 wants. Only W04 and O04-US04 have a story with a
+    // [實證] or [AI整理] cell, so the two filters together keep those 2.
+    expect(keys(wantsTabView(trashcans, 'O04', false).wants)).toEqual([
+      'W04', 'O04-US01', 'O04-US02', 'O04-US03', 'O04-US04',
+    ])
+    expect(keys(wantsTabView(trashcans, 'O04', true).wants)).toEqual(['W04', 'O04-US04'])
+    // The data filter alone keeps more wants than the two filters together.
+    expect(wantsTabView(trashcans, null, true).wants.length).toBeGreaterThan(2)
   })
 
   it('works on #8 too: I06 has one want, W07 (its story I06-US01 is in W07)', () => {

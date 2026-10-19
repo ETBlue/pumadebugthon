@@ -1,6 +1,7 @@
 // The story page (design 3.15).
 import type { Group, IssueFile, Need, NeedGroup, Solution, Story } from '@/types'
 import { compareIds } from './ids'
+import { needKey as needKeyOf } from './needs'
 import { conflictView, wantKey, type ConflictView } from './wantList'
 
 /** The result of findStory. */
@@ -68,8 +69,7 @@ export function storyView(issue: IssueFile, story: Story): StoryView {
 
   const wantGroup = groupOf(issue.groups.find((g) => g.id === story.group))
   const needGroup = groupOf(issue.needGroups.find((g) => g.id === story.needGroup))
-  // The same rule as needKey in needs.ts (Task N2b): the N group, else the story ID.
-  const needKey = needGroup ? needGroup.group.id : story.id
+  const needKey = needKeyOf(story)
 
   const conflicts: StoryConflict[] = []
   for (const conflict of issue.conflicts) {

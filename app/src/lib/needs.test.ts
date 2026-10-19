@@ -118,7 +118,7 @@ describe('needsOfStakeholder', () => {
   })
 
   it('finds the need I06-US01 for I06 in #8', () => {
-    expect(needsOfStakeholder(smokefree, 'I06').map((i) => i.need.id)).toContain('I06-US01')
+    expect(needsOfStakeholder(smokefree, 'I06').map((i) => i.need.id)).toEqual(['I06-US01'])
   })
 
   it('is empty for a stakeholder with no story', () => {

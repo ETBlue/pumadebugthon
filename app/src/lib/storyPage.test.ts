@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IssueFile } from '@/types'
+import { needKey } from './needs'
 import { findStory, storyView } from './storyPage'
 
 const trashcans = trashcansJson as IssueFile
@@ -66,5 +67,24 @@ describe('storyView', () => {
     expect(v.needGroup).toBeNull()
     expect(v.need?.id).toBe('I24-US01')
     expect(ids(v.solutions)).toEqual(['E'])
+  })
+
+  it('uses the same need key rule as needs.ts, also when the N group is missing from needGroups', () => {
+    const s = { ...story('I06-US01'), needGroup: 'N99' }
+    const v = storyView(trashcans, s)
+    expect(needKey(s)).toBe('N99')
+    expect(v.needKey).toBe('N99')
+    expect(v.needGroup).toBeNull()
+    expect(v.need).toBeNull()
+  })
+
+  it('has no need and no N group in the old format', () => {
+    const old: IssueFile = { ...trashcans, format: 'stories', needs: [], needGroups: [] }
+    const s = { ...story('I06-US01'), needGroup: null }
+    const v = storyView(old, s)
+    expect(v.needKey).toBe('I06-US01')
+    expect(v.needGroup).toBeNull()
+    expect(v.need).toBeNull()
+    expect(v.wantKey).toBe('W08')
   })
 })

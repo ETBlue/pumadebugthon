@@ -44,9 +44,9 @@ describe('issueWants', () => {
   })
 
   it('lists the conflicts with a story of the item on a side, in file order', () => {
-    expect(items.find((i) => i.key === 'W08')!.conflicts).toEqual(['C6'])
+    expect(ids(items.find((i) => i.key === 'W08')!.conflicts)).toEqual(['C6'])
     // I09-US01 is on side B of C1, C7 and C8.
-    expect(items.find((i) => i.key === 'I09-US01')!.conflicts).toEqual(['C1', 'C7', 'C8'])
+    expect(ids(items.find((i) => i.key === 'I09-US01')!.conflicts)).toEqual(['C1', 'C7', 'C8'])
   })
 
   it('lists the solutions that cover the need of one of its stories, in file order', () => {

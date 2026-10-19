@@ -8,8 +8,9 @@ import { pickList, type PickItem } from './opinion'
 export interface WantItem extends PickItem {
   /** The stakeholders of its stories, in ID order, each once. */
   stakeholders: string[]
-  /** The IDs of the conflicts with a story of the item on a side, in file order. */
-  conflicts: string[]
+  /** The conflicts with a story of the item on a side, in file order. The
+   * same type as NeedItem.conflicts. */
+  conflicts: Conflict[]
   /** The solutions that cover the need of one of its stories, in file order. */
   solutions: Solution[]
 }
@@ -30,9 +31,9 @@ export function issueWants(issue: IssueFile): WantItem[] {
   return pickList(issue).map((item) => {
     const own = new Set(item.storyIds)
     const stakeholders = [...new Set(item.storyIds.map(stakeholderOfStory))].sort(compareIds)
-    const conflicts = issue.conflicts
-      .filter((c) => c.sideA.some((id) => own.has(id)) || c.sideB.some((id) => own.has(id)))
-      .map((c) => c.id)
+    const conflicts = issue.conflicts.filter(
+      (c) => c.sideA.some((id) => own.has(id)) || c.sideB.some((id) => own.has(id)),
+    )
     // Solution.stories holds the stories whose need the solution covers.
     const solutions = issue.solutions.filter((sol) => sol.stories.some((id) => own.has(id)))
     return { ...item, stakeholders, conflicts, solutions }

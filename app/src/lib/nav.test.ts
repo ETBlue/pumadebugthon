@@ -12,17 +12,13 @@ describe('activeNavItem', () => {
     ['/issues/2/solutions/A/', 'solutions'],
     ['/stakeholders', 'stakeholders'],
     ['/stakeholders/I12', 'stakeholders'],
-    ['/wants', 'wants'],
-    ['/wants/anything', 'wants'],
-    ['/needs', 'needs'],
-    ['/needs/anything', 'needs'],
     ['/solutions', 'solutions'],
     ['/solutions/x', 'solutions'],
   ] as const)('%s is %s', (path, item) => {
     expect(activeNavItem(path)).toBe(item)
   })
 
-  it.each(['/', '', '/spaces/sidewalk', '/nope', '/issuesx', '/issuesx/2', '/stakeholdersx', '/wantsx', '/needsx', '/solutionsx'])(
+  it.each(['/', '', '/spaces/sidewalk', '/nope', '/issuesx', '/issuesx/2', '/stakeholdersx', '/solutionsx', '/about', '/wants', '/needs'])(
     '%s has no active item',
     (path) => {
       expect(activeNavItem(path)).toBeNull()
@@ -35,8 +31,10 @@ describe('isNavListPage', () => {
     expect(isNavListPage('/issues')).toBe(true)
     expect(isNavListPage('/issues/')).toBe(true)
     expect(isNavListPage('/solutions')).toBe(true)
-    expect(isNavListPage('/needs')).toBe(true)
-    expect(isNavListPage('/needs/x')).toBe(false)
+    expect(isNavListPage('/stakeholders')).toBe(true)
+    expect(isNavListPage('/stakeholders/I12')).toBe(false)
+    expect(isNavListPage('/about')).toBe(false)
+    expect(isNavListPage('/wants')).toBe(false)
     expect(isNavListPage('/issues/2')).toBe(false)
     expect(isNavListPage('/issues/2/solutions/A')).toBe(false)
     expect(isNavListPage('/')).toBe(false)

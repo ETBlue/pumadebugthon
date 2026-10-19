@@ -1,9 +1,7 @@
-import { useMemo } from 'react'
 import { Link, useLocation } from 'react-router'
-import { useIndex, useIssues } from '@/data'
+import { useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { issueCount, needCount, solutionCount, stakeholderCount, wantCount } from '@/lib/counts'
-import { availableIssues } from '@/lib/issues'
+import { issueCount, solutionCount, stakeholderCount } from '@/lib/counts'
 import { activeNavItem, isNavListPage, type NavItem } from '@/lib/nav'
 import type { IndexFile } from '@/types'
 import { ThemeToggle } from './ThemeToggle'
@@ -32,23 +30,16 @@ function CountLink({ item, label, count }: { item: NavItem; label: string; count
 }
 
 function Links({ index }: { index: IndexFile | null }) {
-  const folders = useMemo(() => (index ? availableIssues(index).map((i) => i.folder) : []), [index])
-  const issues = useIssues(folders)
-  const ready = index && issues.status === 'ready' ? issues.data : null
-  const wants = ready && wantCount(ready)
-  const needs = ready && needCount(ready)
   return (
     <ul className="flex flex-wrap items-center gap-x-4 gap-y-0 text-sm md:gap-x-5">
       <li><CountLink item="issues" label={th.issues} count={index && issueCount(index)} /></li>
       <li><CountLink item="stakeholders" label={th.stakeholders} count={index && stakeholderCount(index)} /></li>
-      <li><CountLink item="wants" label={th.wants} count={wants} /></li>
-      <li><CountLink item="needs" label={th.needs} count={needs} /></li>
       <li><CountLink item="solutions" label={th.solutions} count={index && solutionCount(index)} /></li>
     </ul>
   )
 }
 
-/** The page header (design 3.7): app name, the five count links, and the
+/** The page header (design 3.7): app name, the three count links, and the
  * theme toggle. On a phone the links and the toggle wrap to a second row,
  * in the same order as the keyboard order. */
 export function Header({ container }: { container: string }) {

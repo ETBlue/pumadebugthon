@@ -21,8 +21,6 @@ export const t = {
     nav: '主要導覽',
     issues: '議題',
     stakeholders: '利害關係人',
-    wants: '訴求',
-    needs: '需求',
     solutions: '解法',
   },
   /** The page footer (design 3.8). */

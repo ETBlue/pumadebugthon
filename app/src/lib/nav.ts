@@ -1,7 +1,7 @@
-/** The five header nav items (design 3.7). */
-export type NavItem = 'issues' | 'stakeholders' | 'wants' | 'needs' | 'solutions'
+/** The three header nav items (design 3.7). */
+export type NavItem = 'issues' | 'stakeholders' | 'solutions'
 
-const items: readonly NavItem[] = ['issues', 'stakeholders', 'wants', 'needs', 'solutions']
+const items: readonly NavItem[] = ['issues', 'stakeholders', 'solutions']
 
 /** Split a path into its non-empty segments. "/issues/2/" gives ["issues", "2"]. */
 function segments(pathname: string): string[] {
@@ -22,7 +22,7 @@ export function activeNavItem(pathname: string): NavItem | null {
   return items.find((item) => item === first) ?? null
 }
 
-/** True only on one of the five list pages itself, for example "/issues". */
+/** True only on one of the three list pages itself, for example "/issues". */
 export function isNavListPage(pathname: string): boolean {
   const parts = segments(pathname)
   return parts.length === 1 && activeNavItem(pathname) !== null

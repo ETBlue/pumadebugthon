@@ -148,15 +148,15 @@ Space types have no `[實證]` / `[AI整理]` / `[AI模擬]` tag. They are a cla
 On every page. A `<header>` landmark with:
 
 - the app name 「提案小幫手」 on the left, a link to the home page
-- a `<nav>` with five links, each with a count:
+- a `<nav>` with three links, each with a count:
 
 | Link | Count | Goes to |
 |---|---|---|
 | 議題 | Analyzed issues (`available: true`) | `#/issues` |
 | 利害關係人 | Active stakeholders (moved IDs left out) | `#/stakeholders` |
-| 訴求 | 訴求 of every analyzed issue: each W group once, plus each story with no W group (section 4.1), summed over the issues | `#/wants` |
-| 需求 | 需求 of every analyzed issue: one per story with a 以便… cell (`needCount` in `src/lib/counts.ts`). A 【待補】 cell counts. 以便… cells have no groups, so nothing is merged. | `#/needs` |
 | 解法 | Solutions of every analyzed issue, summed | `#/solutions` |
+
+The header has no 訴求 or 需求 link, and no link to 關於本站 (decision 30). The pages `#/wants` and `#/needs` are removed; their old URLs show the not-found page.
 
 - the theme toggle on the right (section 3.10)
 
@@ -167,16 +167,14 @@ A link looks active (bold and underlined) on its list page and on the pages unde
 | `#/issues`, `#/issues/<n>`, `#/issues/<n>/<tab>` (also the issue's own 解法 tab `#/issues/<n>/solutions`) | 議題 |
 | `#/issues/<n>/solutions/<code>` (one solution's page, 3.12) | 解法 |
 | `#/stakeholders`, `#/stakeholders/<id>` | 利害關係人 |
-| `#/wants` and the pages under it | 訴求 |
-| `#/needs` and the pages under it | 需求 |
 | `#/solutions` and the pages under it | 解法 |
-| `#/`, `#/spaces/<code>`, unknown pages | none |
+| `#/`, `#/about`, `#/spaces/<code>`, unknown pages (also the old `#/wants` and `#/needs`) | none |
 
 The active link has `aria-current="page"` only on the list page itself. On a page under it, the link has `aria-current="true"`.
 
 The counts come from pure functions in `src/lib/`. A count is a plain number next to its label. It is not a score. While the data loads, the label shows with no number.
 
-On a phone (375 px) the header must not scroll sideways. The app name is on the first row. The five links and the toggle wrap onto the next row. The order on screen is the same as the keyboard order.
+On a phone (375 px) the header must not scroll sideways. The app name is on the first row. The three links and the toggle wrap onto the next row. The order on screen is the same as the keyboard order.
 
 ### 3.8 Footer
 
@@ -577,3 +575,4 @@ Required by the hackathon rules:
 27. The home block links to the list pages are named 「看全部」 and sit on the heading row, right aligned. Each keeps its full name (for example 「看全部議題」) as its `aria-label` (3.1). (ETBlue, 2026-10-19)
 28. The theme button shows the theme it switches to (moon + 深色模式, or sun + 淺色模式), not a fixed 深色模式 with `aria-pressed`. With the fixed text, the only change was a filled moon and a gray background, so readers thought the button did not work (3.10). (ETBlue, 2026-10-19)
 29. Each issue analysis has a 「分析摘要」 section near the top, after the intro notes and before 題目原文重點 (ETBlue, `human-inputs.md`). It has 5 topics in a fixed order: 難以取捨的決定, 可能的爭議, 受影響較大的弱勢族群, 法規上的障礙, 相依事項與現行政策的關係. Each item has a tag (mostly `[AI模擬]`, or a 【待補】 item) and lists where it comes from (相關編號). The summary adds no new facts. 受影響較大的弱勢族群 follows the 1.3 order and names the groups not included yet. The wording is neutral: each controversy gives the sides in the same way, and a current policy is described as 「與現行政策的關係」. The app shows the summary first on the 總覽 tab (3.2). The section heading 「分析摘要」 is an h3, like the other sections of the tab, so each topic is an h4. The topics are never sorted by the number of items. (ETBlue, 2026-10-19)
+30. The header shows only the app name, 議題, 利害關係人 and 解法 with counts, and the theme button. 訴求 and 需求 are no longer in the header (ETBlue, `human-inputs.md`, information architecture). This replaces the header part of decisions 13 and 22 (3.7). (ETBlue, 2026-10-20)

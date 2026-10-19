@@ -35,8 +35,6 @@ information architecture:
   * issue
   * stakeholder
     * user story
-    * user want (訴求, refers to "我想要")
-    * user need (需求, refers to "以便")
   * solution
 * the issue page should include
   * a tab menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count

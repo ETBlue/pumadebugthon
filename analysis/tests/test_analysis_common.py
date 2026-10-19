@@ -36,6 +36,32 @@ class AnalysisCommonTest(unittest.TestCase):
         self.assertEqual(len(ids), 52)
         self.assertIn("O01-US01", ids)
 
+    def test_parse_ref(self):
+        p = self.common.parse_ref
+        self.assertEqual(p("I01-US03"), (None, "story", "I01-US03"))
+        self.assertEqual(p("I05"), (None, "stakeholder", "I05"))
+        self.assertEqual(p("C9"), (None, "conflict", "C9"))
+        self.assertEqual(p("W01"), (None, "group", "W01"))
+        self.assertEqual(p("解法 A"), (None, "solution", "A"))
+        self.assertEqual(p("#8 解法 B"), (8, "solution", "B"))
+        self.assertEqual(p("#2 C6"), (2, "conflict", "C6"))
+        for bad in ("解法A", "A", "#8解法 B", "C5，O01-US02", "I01-US3", ""):
+            self.assertIsNone(p(bad), bad)
+
+    def test_split_refs(self):
+        self.assertEqual(self.common.split_refs("—"), [])
+        self.assertEqual(self.common.split_refs(" C1、 解法 A "), ["C1", "解法 A"])
+
+    def test_issue_ids_and_summary(self):
+        text = read("2-trashcans")
+        ids = self.common.issue_ids(text)
+        self.assertEqual(sorted(ids["conflict"]), [f"C{n}" for n in range(1, 10)])
+        self.assertEqual(sorted(ids["solution"]), ["A", "B", "C", "D", "E"])
+        self.assertIn("W11", ids["group"])
+        self.assertIn("I24", ids["stakeholder"])
+        topics = self.common.summary_topics(self.common.summary_lines(text))
+        self.assertEqual(tuple(name for name, _ in topics), self.common.SUMMARY_TOPICS)
+
     def test_tags(self):
         # The three source tags, in display order: 實證, AI整理, AI模擬.
         self.assertEqual(self.common.TAGS, ("實證", "AI整理", "AI模擬"))

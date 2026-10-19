@@ -26,6 +26,13 @@ Rules:
 - The 特別關注族群檢查 table is the table under the heading
   "### 1.n 特別關注族群檢查" (any number n), up to the next heading. It has
   one row per group in FOCUS_GROUPS, in that order.
+- The 分析摘要 section starts at "## 分析摘要" and ends at the next "## "
+  heading. It has one "### " subsection per topic in SUMMARY_TOPICS, in that
+  order. Each subsection has one table with the header SUMMARY_HEADER.
+- A 相關編號 cell lists references separated by 「、」, or 「—」. A reference
+  is a story (I01-US01), a stakeholder (I05), a conflict (C3), a group (W01)
+  or a solution (解法 A). A reference to another issue starts with 「#」, the
+  issue number and one space: 「#8 解法 B」, 「#2 C9」 (SUMMARY_REF).
 """
 import re
 
@@ -49,6 +56,16 @@ FOCUS_HEADING = re.compile(r"^### 1\.\d+ 特別關注族群檢查\s*$")
 FOCUS_HEADER = ["特別關注", "納入的利害關係人", "說明"]
 # The 納入的利害關係人 cell of a group with no stakeholder in the issue.
 FOCUS_NONE = "（無）"
+
+# The 分析摘要 section near the top of each issue file (see method.md, 分析摘要).
+SUMMARY_HEADING = "## 分析摘要"
+# The topics, in the fixed order. Each one is a "### " subsection.
+SUMMARY_TOPICS = ("難以取捨的決定", "可能的爭議", "受影響較大的弱勢族群", "法規上的障礙", "相依事項與現行政策的關係")
+SUMMARY_HEADER = ["項目", "說明", "相關編號"]
+# One reference in a 相關編號 cell. Group 1 is the issue number of another
+# issue (or None), group 2 the ID: a story, a stakeholder, a conflict, a group
+# or 「解法 X」.
+SUMMARY_REF = re.compile(r"(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|解法 [A-Z])")
 
 SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
 HEADING = re.compile(r"^(#{2,3}) (.+)$")
@@ -143,3 +160,72 @@ def focus_tables(text):
     a list of (header cells, rows of cells). None if there is no such heading."""
     head = focus_heading(text)
     return None if head is None else tables(section(text, head))
+
+
+def issue_ids(text):
+    """The IDs that a 相關編號 reference can point to in one issue file:
+    {"story", "stakeholder", "conflict", "group", "solution"} -> set of IDs.
+    A conflict is the first cell of a 5.4 row (C1), a group the W ID of a
+    相同訴求群組 row (W01), a solution the 代號 of a 6.1 row (A)."""
+    conflicts = {r[0] for h, rows in tables(section(text, "### 5.4") or []) if h and h[0] == "#" for r in rows}
+    groups = set()
+    for h, rows in tables(section(text, "### 相同訴求群組") or []):
+        for r in rows:
+            m = re.search(r"W\d\d", r[0])
+            if m:
+                groups.add(m.group(0))
+    solutions = {r[0] for h, rows in tables(section(text, "### 6.1") or []) if h and h[0] == "代號"
+                 for r in rows if re.fullmatch(r"[A-Z]", r[0])}
+    return {"story": set(step4_ids(text)), "stakeholder": set(step1_ids(text)),
+            "conflict": conflicts, "group": groups, "solution": solutions}
+
+
+def summary_lines(text):
+    """The lines after "## 分析摘要", up to the next "## " heading. None if
+    there is no such heading."""
+    lines = text.splitlines()
+    for i, line in enumerate(lines):
+        if line.strip() == SUMMARY_HEADING:
+            body = []
+            for l in lines[i + 1:]:
+                if l.startswith("## "):
+                    break
+                body.append(l)
+            return body
+    return None
+
+
+def summary_topics(lines):
+    """The "### " subsections of the 分析摘要 lines: a list of (topic, lines).
+    Lines before the first "### " heading are left out."""
+    out = []
+    for l in lines:
+        if l.startswith("### "):
+            out.append((l[4:].strip(), []))
+        elif out:
+            out[-1][1].append(l)
+    return out
+
+
+def split_refs(value):
+    """The references in a 相關編號 cell, split on 「、」. 「—」 or empty -> []."""
+    v = value.strip()
+    return [] if v in ("", "—") else [x.strip() for x in v.split("、")]
+
+
+def parse_ref(ref):
+    """One 相關編號 reference -> (issue number or None, kind, ID), or None when
+    it is not a reference. kind is story, stakeholder, conflict, group or
+    solution. The ID of a solution is its code: 「解法 B」 -> "B"."""
+    m = SUMMARY_REF.fullmatch(ref)
+    if not m:
+        return None
+    num = int(m.group(1)) if m.group(1) else None
+    rid = m.group(2)
+    if rid.startswith("解法 "):
+        return num, "solution", rid[3:]
+    if "-US" in rid:
+        return num, "story", rid
+    if rid[0] in "OI":
+        return num, "stakeholder", rid
+    return num, ("conflict" if rid[0] == "C" else "group"), rid

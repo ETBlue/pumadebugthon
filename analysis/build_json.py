@@ -13,7 +13,7 @@ A section that cannot be read stops the script with exit code 1 and the line
 
 Sections and tables are found with the shared rules in analysis_common.py,
 the same as in check_analysis.py and sync_stakeholders.py: by their heading
-text ("### 1.1", "### 1.2", "### 1.n 特別關注族群檢查", "## 步驟 4", "### 相同訴求群組", "### 5.4",
+text ("## 分析摘要" and its "### " topics, "### 1.1", "### 1.2", "### 1.n 特別關注族群檢查", "## 步驟 4", "### 相同訴求群組", "### 5.4",
 "### 6.1", "### 6.2", "### 6.3", one "### 7.n 解法 X：…" per solution, and
 "### 7.n 總覽"). A heading matches when the prefix is followed by a
 space, 「：」 or the end of the line, so "### 6.1" does not match "### 6.10".
@@ -37,6 +37,14 @@ Each solution also gets the fields for its own page in the app:
   本文件的處理 cell names the solution as 「解法 X」.
 - pending: the 【待補】 items of its step 7 section and of its 6.3 rows. The
   same items are also in the issue's pending list.
+
+summary: the 「## 分析摘要」 section, one item per topic in
+analysis_common.SUMMARY_TOPICS, in that fixed order: {topic, items: [{item,
+text, refs}]}. text is the 說明 Cell (a tag, or a 【待補】 cell). refs are the
+references of the 相關編號 cell as written, for example "C5", "解法 A" or
+"#8 解法 B". Each one must exist: in this issue, or in issue #n. A 【待補】
+item in the summary that is also elsewhere in the file is not listed again
+in pending.
 
 focusGroups: the 「### 1.n 特別關注族群檢查」 table, one item per group in
 analysis_common.FOCUS_GROUPS, in that fixed order: {tag, stakeholders, note}.
@@ -307,6 +315,63 @@ def check_focus(focus_groups, step1_ids, focus_by_id):
             if sid not in g["stakeholders"]:
                 raise ReadError(FOCUS, f"{g['tag']}: {sid} has 特別關注 {g['tag']} in stakeholders.csv but is not listed")
 
+SUMMARY = "分析摘要"
+
+
+def parse_summary(text, ids):
+    """The 分析摘要 section -> ([{"topic", "items"}], cross refs).
+    ids: the IDs of this issue (analysis_common.issue_ids). A local reference
+    must be in ids. A reference to another issue is returned as
+    (issue number, kind, ID, ref, where), for build() to check."""
+    lines = common.summary_lines(text)
+    if lines is None:
+        raise ReadError(SUMMARY, f"no heading 「{common.SUMMARY_HEADING}」")
+    topics = common.summary_topics(lines)
+    names = [n for n, _ in topics]
+    if names != list(common.SUMMARY_TOPICS):
+        raise ReadError(SUMMARY, f"the topics must be {'、'.join(common.SUMMARY_TOPICS)}, in this order; "
+                                 f"found {'、'.join(names)}")
+    out, cross = [], []
+    for name, body in topics:
+        try:
+            rows = table_rows(common.tables(body), SUMMARY, common.SUMMARY_HEADER)
+        except ReadError as e:
+            raise ReadError(SUMMARY, f"{name}: {e.reason}")
+        if not rows:
+            raise ReadError(SUMMARY, f"{name}: the table has no rows")
+        items = []
+        for r in rows:
+            where = f"{name} 「{r['項目']}」"
+            text_cell = cell(r["說明"], SUMMARY, where)
+            if text_cell["tag"] is None and not text_cell["pending"]:
+                raise ReadError(SUMMARY, f"{where}: 說明 must start with a tag, or be one 【待補：…】 item")
+            refs = common.split_refs(r["相關編號"])
+            if text_cell["tag"] is not None and not refs:
+                raise ReadError(SUMMARY, f"{where}: 相關編號 is empty")
+            for ref in refs:
+                parsed = common.parse_ref(ref)
+                if parsed is None:
+                    raise ReadError(SUMMARY, f"{where}: 「{ref}」 is not a reference")
+                num, kind, rid = parsed
+                if num is None:
+                    if rid not in ids[kind]:
+                        raise ReadError(SUMMARY, f"{where}: {ref} is not in this issue")
+                else:
+                    cross.append((num, kind, rid, ref, where))
+            items.append({"item": r["項目"], "text": text_cell, "refs": refs})
+        out.append({"topic": name, "items": items})
+    return out, cross
+
+
+def summary_range(lines):
+    """(start, end) line indexes of the 分析摘要 section (heading included), or (0, 0)."""
+    for i, l in enumerate(lines):
+        if l.strip() == common.SUMMARY_HEADING:
+            end = next((j for j in range(i + 1, len(lines)) if lines[j].startswith("## ")), len(lines))
+            return i, end
+    return 0, 0
+
+
 def parse_issue(text, space_codes):
     lines = text.splitlines()
 
@@ -513,15 +578,23 @@ def parse_issue(text, space_codes):
                     raise ReadError("6.1", f"構想 「{idea['text']}」: 解法 {code} is not in 6.1")
                 by_sol[code]["ideas"].append({"idea": idea, "handling": handling})
 
+    # 分析摘要: the topics and items. Cross-issue references are checked in build().
+    summary, summary_cross = parse_summary(text, common.issue_ids(text))
+
     # every 【待補…】 item with the nearest heading. Items in backticks are
     # examples of the format (for example in the notice), not open items.
     # An item in a solution's 7.n section or in its 6.3 row is also listed
     # under that solution.
     pending = []
+    # The 分析摘要 adds no new facts, so a 【待補】 item there that is also
+    # elsewhere in the file is not listed twice.
+    s_start, s_end = summary_range(lines)
+    outside = {m.group(0) for i, l in enumerate(lines) if not s_start <= i < s_end
+               for m in PENDING.finditer(re.sub(r"`[^`]*`", "", l))}
     step7_names = {code: head[4:].replace("`", "").strip() for code, head in step7_heads.items()}
     for s in solutions:
         s["pending"] = []
-    for line, head in zip(lines, headings_before(lines)):
+    for n_line, (line, head) in enumerate(zip(lines, headings_before(lines))):
         # Blank out code spans (same length) so positions still match the line.
         plain = re.sub(r"`[^`]*`", lambda m: " " * len(m.group(0)), line)
         owners = [c for c, n in step7_names.items() if n == head]
@@ -530,12 +603,14 @@ def parse_issue(text, space_codes):
             if SOLUTION_CODES.fullmatch(first):
                 owners = [c for c in re.findall(r"[A-Z]", first) if c in by_sol]
         for m in PENDING.finditer(plain):
+            if s_start <= n_line < s_end and m.group(0) in outside:
+                continue
             item = {"section": head, "text": m.group(0), "context": pending_context(line, m.start())}
             pending.append(item)
             for c in owners:
                 by_sol[c]["pending"].append(item)
 
-    return {"spaces": spaces, "stakeholders": stakeholders, "inputSources": input_sources,
+    return {"spaces": spaces, "summary": summary, "summaryCross": summary_cross, "stakeholders": stakeholders, "inputSources": input_sources,
             "focusGroups": focus_groups, "stories": stories, "groups": groups, "conflicts": conflicts,
             "solutions": solutions, "pending": pending}
 
@@ -551,6 +626,7 @@ def build(analysis_dir):
                           ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "議題", "備註", "新增日期"])
     focus_by_id = {r["利害關係人編號"]: common.split_focus(r["特別關注"]) for r in stake_rows}
     index_issues, issue_files = [], {}
+    ids_by_num, cross_by_folder = {}, {}
     for i, row in enumerate(issues_csv, start=2):
         if not re.fullmatch(r"\d+", row["編號"].strip()):
             raise ReadError("issues.csv", f"row {i}: 編號 「{row['編號']}」 is not a number")
@@ -573,6 +649,8 @@ def build(analysis_dir):
             check_focus(data["focusGroups"], ids, focus_by_id)
         except ReadError as e:
             raise ReadError(f"{folder}: {e.section}", e.reason)
+        ids_by_num[num] = common.issue_ids(text)
+        cross_by_folder[folder] = (num, data.pop("summaryCross"))
         updated = git_updated(os.path.join(analysis_dir, folder))
         counts = {
             "stakeholdersO": sum(i.startswith("O") for i in ids),
@@ -588,6 +666,16 @@ def build(analysis_dir):
                              "focusGaps": [g["tag"] for g in data["focusGroups"] if not g["stakeholders"]]})
         issue_files[folder] = {"number": num, "folder": folder, "title": title,
                                "spaces": data["spaces"], "updated": updated, **{k: v for k, v in data.items() if k != "spaces"}}
+
+    # 分析摘要 references to another issue: the issue has an analysis and the ID.
+    for folder, (own, refs) in cross_by_folder.items():
+        for num, kind, rid, ref, where in refs:
+            if num == own:
+                raise ReadError(f"{folder}: {SUMMARY}", f"{where}: {ref} is this issue itself; write {rid}")
+            if num not in ids_by_num:
+                raise ReadError(f"{folder}: {SUMMARY}", f"{where}: {ref}: issue #{num} has no analysis")
+            if rid not in ids_by_num[num][kind]:
+                raise ReadError(f"{folder}: {SUMMARY}", f"{where}: {ref} is not in issue #{num}")
 
     stakeholders = []
     for r in stake_rows:

@@ -358,6 +358,44 @@ class BuildJsonOutputTest(unittest.TestCase):
             self.assertTrue(u is None or re.fullmatch(r"\d{4}-\d\d-\d\d", u), u)
 
 
+    # ---------- 分析摘要 ----------
+
+    def summary_item(self, topic, item):
+        t = next(x for x in self.issue["summary"] if x["topic"] == topic)
+        return next(i for i in t["items"] if i["item"] == item)
+
+    def test_summary_topics_in_fixed_order(self):
+        self.assertEqual([t["topic"] for t in self.issue["summary"]],
+                         ["難以取捨的決定", "可能的爭議", "受影響較大的弱勢族群", "法規上的障礙", "相依事項與現行政策的關係"])
+        for t in self.issue["summary"]:
+            self.assertEqual(list(t), ["topic", "items"])
+            self.assertTrue(t["items"])
+            for i in t["items"]:
+                self.assertEqual(list(i), ["item", "text", "refs"])
+
+    def test_summary_item(self):
+        self.assertEqual(self.summary_item("可能的爭議", "誰負責清理"), {
+            "item": "誰負責清理",
+            "text": {"text": "店家希望不要預設由店家清理清潔箱；住戶與便利商店店員希望周邊保持乾淨。",
+                     "tag": "AI模擬", "pending": False},
+            "refs": ["C5", "O01-US02", "I09-US02", "I12-US01"]})
+
+    def test_summary_pending_row(self):
+        item = self.summary_item("受影響較大的弱勢族群", "呼吸道疾病（尚未納入）")
+        self.assertEqual(item["text"], {"text": "【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】",
+                                        "tag": None, "pending": True})
+        self.assertEqual(item["refs"], [])
+
+    def test_summary_cross_refs_stay_as_written(self):
+        item = self.summary_item("相依事項與現行政策的關係", "和 #1、#8 共用人行道")
+        self.assertEqual(item["refs"], ["C6", "#1 C7", "#8 C3"])
+
+    def test_summary_pending_item_not_listed_twice(self):
+        # The summary repeats the 1.3 item. The 待補 list keeps one copy, under 1.3.
+        text = "【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】"
+        found = [p for p in self.issue["pending"] if p["text"] == text]
+        self.assertEqual([p["section"] for p in found], ["1.3 特別關注族群檢查"])
+
 class BuildJsonUnitTest(unittest.TestCase):
     def setUp(self):
         self.mod = load_module()
@@ -421,6 +459,35 @@ class BuildJsonErrorTest(unittest.TestCase):
         for n in needles:
             self.assertIn(n, out)
         self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
+
+    # ---------- 分析摘要 ----------
+    SUMMARY_ROW = "| 誰負責清理 | `[AI模擬]` 店家希望不要預設由店家清理清潔箱；住戶與便利商店店員希望周邊保持乾淨。 | C5、O01-US02、I09-US02、I12-US01 |"
+
+    def test_summary_missing(self):
+        self.edit("## 分析摘要\n", "## 摘要\n")
+        self.assertFails("2-trashcans: 分析摘要:", "no heading")
+
+    def test_summary_topics_out_of_order(self):
+        self.edit("### 難以取捨的決定\n", "### TMP\n")
+        self.edit("### 可能的爭議\n", "### 難以取捨的決定\n")
+        self.edit("### TMP\n", "### 可能的爭議\n")
+        self.assertFails("2-trashcans: 分析摘要:", "難以取捨的決定、可能的爭議")
+
+    def test_summary_unknown_local_ref(self):
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "C99、"))
+        self.assertFails("2-trashcans: 分析摘要:", "誰負責清理", "C99")
+
+    def test_summary_bad_ref(self):
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "C5，"))
+        self.assertFails("2-trashcans: 分析摘要:", "誰負責清理", "is not a reference")
+
+    def test_summary_cross_ref_not_in_other_issue(self):
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("C5、", "#8 解法 Z、"))
+        self.assertFails("2-trashcans: 分析摘要:", "#8 解法 Z")
+
+    def test_summary_row_without_tag(self):
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("`[AI模擬]` ", ""))
+        self.assertFails("2-trashcans: 分析摘要:", "誰負責清理", "tag")
 
     FOCUS_FOREIGN = "| 外籍 | I03、I04 | — |"
 

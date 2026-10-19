@@ -4,9 +4,10 @@ from collections import Counter, defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from analysis_common import (CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, SEPARATOR, TAG_NAMES, TAG_RE, TAGS, cross_refs,
-                             focus_tables, section, split_cells as cells, split_focus, step1_ids, step1_tables, step4_ids,
-                             tables, without_cross_refs)
+from analysis_common import (CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
+                             SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, cross_refs, focus_tables, issue_ids, parse_ref,
+                             section, split_cells as cells, split_focus, split_refs, step1_tables, summary_lines,
+                             summary_topics, tables, without_cross_refs)
 
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
 # 新增日期: the date a stakeholder (stakeholders.csv) or a solution (6.1) was added.
@@ -460,20 +461,23 @@ def main(md_path, csv_path):
     own_num = folder_num.get(own_folder)
     num_folder = {n: f for f, n in folder_num.items()}
     other_ids = {}
-    for num, rid in sorted(set(cross_refs(without_change_log(text)))):
-        ref = f"#{num} {rid}"
-        if num == own_num: err(f"{ref}: this is issue #{num} itself; write the local ID {rid}"); continue
-        if num not in num_folder: err(f"{ref}: issue #{num} is not in issues.csv"); continue
+    def other_issue(ref, num, rid):
+        """The IDs of issue #num (see analysis_common.issue_ids), or None after an error."""
+        if num == own_num: err(f"{ref}: this is issue #{num} itself; write the local ID {rid}"); return None
+        if num not in num_folder: err(f"{ref}: issue #{num} is not in issues.csv"); return None
         other_md = os.path.join(analysis_dir, num_folder[num], "issue-analysis.md")
-        if not os.path.exists(other_md): err(f"{ref}: issue #{num} has no analysis file {other_md}"); continue
+        if not os.path.exists(other_md): err(f"{ref}: issue #{num} has no analysis file {other_md}"); return None
         if num not in other_ids:
             with open(other_md, encoding="utf-8") as f:
-                t = f.read()
-            other_ids[num] = (set(step4_ids(t)), set(step1_ids(t)))
-        stories, stakeholders = other_ids[num]
+                other_ids[num] = issue_ids(f.read())
+        return other_ids[num]
+    for num, rid in sorted(set(cross_refs(without_change_log(text)))):
+        ref = f"#{num} {rid}"
+        ids_other = other_issue(ref, num, rid)
+        if ids_other is None: continue
         if "-US" in rid:
-            if rid not in stories: err(f"{ref}: story {rid} is not in step 4 of issue #{num} ({num_folder[num]})")
-        elif rid not in stakeholders: err(f"{ref}: stakeholder {rid} is not in step 1 of issue #{num} ({num_folder[num]})")
+            if rid not in ids_other["story"]: err(f"{ref}: story {rid} is not in step 4 of issue #{num} ({num_folder[num]})")
+        elif rid not in ids_other["stakeholder"]: err(f"{ref}: stakeholder {rid} is not in step 1 of issue #{num} ({num_folder[num]})")
 
     # 19. open-data.csv lists every open dataset (on data.gov.tw or data.taipei)
     # that the appendix of this issue cites, and every row that lists this
@@ -562,6 +566,63 @@ def main(md_path, csv_path):
                     err(f"{FW} {g}: no stakeholder, so 說明 must be one 【待補：…】 item (only a person decides that a group does not apply): {note!r}")
             elif note != "—" and not note.startswith("【待補") and not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", note):
                 err(f"{FW} {g}: 說明 must be 「—」 or start with a tag in backticks: {note!r}")
+
+    # 21. the 分析摘要 section (see method.md, 分析摘要). It comes before step 1.
+    # It has one 「### 」 subsection per topic in SUMMARY_TOPICS, in that order.
+    # Each subsection has one table: 項目 | 說明 | 相關編號. 說明 starts with a
+    # tag, or is one 【待補：…】 item. 相關編號 lists references separated by
+    # 「、」 (「—」 for none). A row with a tag has at least one reference.
+    # Every reference exists: in this issue, or in issue #n for 「#n …」.
+    SW = "分析摘要"
+    KIND_WHERE = {"story": "step 4", "stakeholder": "step 1", "conflict": "5.4", "group": "相同訴求群組", "solution": "6.1"}
+    own_ids = issue_ids(text)
+    s_lines = summary_lines(text)
+    if s_lines is None:
+        err(f"{SW}: no heading 「{SUMMARY_HEADING}」")
+    else:
+        lines_all = text.splitlines()
+        pos = lines_all.index(SUMMARY_HEADING)
+        step1_pos = next((i for i, l in enumerate(lines_all) if l.startswith("## 步驟 1")), None)
+        if step1_pos is not None and pos > step1_pos:
+            err(f"{SW}: the section must come before 「## 步驟 1」")
+        topics = summary_topics(s_lines)
+        got = [name for name, _ in topics]
+        for name in SUMMARY_TOPICS:
+            if name not in got: err(f"{SW}: topic 「### {name}」 is missing")
+        for name in got:
+            if name not in SUMMARY_TOPICS: err(f"{SW}: unknown topic 「### {name}」 (expected one of {'、'.join(SUMMARY_TOPICS)})")
+        if got != list(SUMMARY_TOPICS) and sorted(got) == sorted(SUMMARY_TOPICS):
+            err(f"{SW}: the topics must be in the fixed order {'、'.join(SUMMARY_TOPICS)}, found {'、'.join(got)}")
+        for name, body in topics:
+            where = f"{SW} {name}"
+            found = tables(body)
+            if [h for h, _ in found] != [SUMMARY_HEADER]:
+                err(f"{where}: expected one table with the header {' | '.join(SUMMARY_HEADER)}, found {[' | '.join(h) for h, _ in found]}")
+                continue
+            rows_s = found[0][1]
+            if not rows_s: err(f"{where}: the table has no rows; write one row with a 【待補：…】 item")
+            for c in rows_s:
+                if len(c) != len(SUMMARY_HEADER): err(f"{where}: row 「{c[0]}」 has {len(c)} cells, expected {len(SUMMARY_HEADER)}"); continue
+                item, note, refs_cell = c
+                rw = f"{where} 「{item}」"
+                if not item: err(f"{where}: a row has an empty 項目")
+                tagged = re.match(rf"`\[(?:{TAG_NAMES})\]` \S", note) is not None
+                if not tagged and not re.fullmatch(r"【待補：[^】]+】", note):
+                    err(f"{rw}: 說明 must start with a tag in backticks, or be one 【待補：…】 item: {note[:30]!r}")
+                refs_s = split_refs(refs_cell)
+                if tagged and not refs_s:
+                    err(f"{rw}: 相關編號 is empty; list the stories, conflicts or solutions the item comes from")
+                for ref in refs_s:
+                    p_ = parse_ref(ref)
+                    if p_ is None:
+                        err(f"{rw}: 「{ref}」 is not a reference (write IDs like I01-US01, I05, C3, W01 or 解法 A, separated by 「、」; 「#n 」 before an ID of another issue)"); continue
+                    num, kind, rid = p_
+                    if num is None:
+                        if rid not in own_ids[kind]: err(f"{rw}: {ref} is not in {KIND_WHERE[kind]} of this issue")
+                    else:
+                        ids_other = other_issue(ref, num, rid)
+                        if ids_other is not None and rid not in ids_other[kind]:
+                            err(f"{rw}: {ref} is not in issue #{num} ({KIND_WHERE[kind]})")
 
     print(f"stakeholders: {len(stake)} (O {sum(k[0]=='O' for k in stake)}, I {sum(k[0]=='I' for k in stake)})")
     print(f"stories: {len(step4)}; 我想要 tags: {dict(want_tags)}; 以便 tags: {dict(so_tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}")

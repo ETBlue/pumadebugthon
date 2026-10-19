@@ -150,6 +150,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(md, "| A、D | 家用垃圾", "| A、K | 家用垃圾")
         self.edit(md, "| D | 新設點中", "| K | 新設點中")
         self.edit(md, "| D | 設置後 3 個月", "| K | 設置後 3 個月")
+        self.edit(md, "O04-US04、解法 A、解法 D |", "O04-US04、解法 A、解法 K |")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
@@ -530,6 +531,92 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_focus_note_of_included_group_with_tag_passes(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN, "| 外籍 | I03、I04 | `[AI模擬]` 需要多語言 |\n")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    # ---------- 分析摘要 ----------
+    # A row of the #2 summary, used by the tests below.
+    SUMMARY_ROW = "| 誰負責清理 | `[AI模擬]` 店家希望不要預設由店家清理清潔箱；住戶與便利商店店員希望周邊保持乾淨。 | C5、O01-US02、I09-US02、I12-US01 |"
+
+    def summary_row(self, text, refs):
+        return f"| 誰負責清理 | {text} | {refs} |"
+
+    def test_summary_passes_in_every_issue(self):
+        for folder in ("1-trees", "2-trashcans", "8-smokefree"):
+            with self.subTest(folder=folder):
+                code, out = self.run_check(folder)
+                self.assertEqual(code, 0, out)
+
+    def test_summary_missing_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "## 分析摘要\n", "## 摘要\n")
+        self.assertFails("分析摘要: no heading")
+
+    def test_summary_after_step_1_fails(self):
+        md = f"{ISSUE}/issue-analysis.md"
+        self.edit(md, "## 分析摘要\n", "## 分析摘要（舊）\n")
+        self.edit(md, "## 編號異動紀錄\n", "## 分析摘要\n\n### 難以取捨的決定\n\n## 編號異動紀錄\n")
+        self.assertFails("分析摘要: the section must come before")
+
+    def test_summary_topic_missing_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "### 法規上的障礙\n", "### 法規\n")
+        self.assertFails("分析摘要", "法規上的障礙")
+
+    def test_summary_topics_out_of_order_fail(self):
+        md = f"{ISSUE}/issue-analysis.md"
+        self.edit(md, "### 難以取捨的決定\n", "### TMP\n")
+        self.edit(md, "### 可能的爭議\n", "### 難以取捨的決定\n")
+        self.edit(md, "### TMP\n", "### 可能的爭議\n")
+        self.assertFails("分析摘要", "order")
+
+    def test_summary_header_wrong_fails(self):
+        md = f"{ISSUE}/issue-analysis.md"
+        self.edit(md, "### 法規上的障礙\n\n| 項目 | 說明 | 相關編號 |", "### 法規上的障礙\n\n| 項目 | 內容 | 相關編號 |")
+        self.assertFails("分析摘要 法規上的障礙", "header")
+
+    def test_summary_row_without_tag_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
+                  self.summary_row("店家希望不要預設由店家清理清潔箱。", "C5、O01-US02"))
+        self.assertFails("分析摘要 可能的爭議", "誰負責清理", "tag")
+
+    def test_summary_pending_row_passes(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
+                  self.summary_row("【待補：需要真人確認誰負責清理】", "—"))
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_summary_tagged_row_without_refs_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
+                  self.summary_row("`[AI模擬]` 店家希望不要預設由店家清理清潔箱。", "—"))
+        self.assertFails("分析摘要 可能的爭議", "誰負責清理", "相關編號")
+
+    def test_summary_bad_ref_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
+                  self.summary_row("`[AI模擬]` 店家希望不要預設由店家清理清潔箱。", "C5, O01-US02"))
+        self.assertFails("分析摘要 可能的爭議", "「C5, O01-US02」 is not a reference")
+
+    def test_summary_unknown_local_refs_fail(self):
+        for ref in ("C99", "解法 Z", "W99", "I99", "I01-US99"):
+            with self.subTest(ref=ref):
+                # A fresh copy for each reference.
+                self.tearDown()
+                self.setUp()
+                self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
+                          self.summary_row("`[AI模擬]` 店家希望不要預設由店家清理清潔箱。", f"C5、{ref}"))
+                self.assertFails("分析摘要 可能的爭議", ref)
+
+    def test_summary_cross_ref_missing_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
+                  self.summary_row("`[AI模擬]` 店家希望不要預設由店家清理清潔箱。", "C5、#8 解法 Z"))
+        self.assertFails("#8 解法 Z", "not in issue #8")
+
+    def test_summary_cross_ref_to_own_issue_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
+                  self.summary_row("`[AI模擬]` 店家希望不要預設由店家清理清潔箱。", "#2 C5"))
+        self.assertFails("#2 C5", "this is issue #2 itself")
+
+    def test_summary_cross_ref_passes(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
+                  self.summary_row("`[AI模擬]` 店家希望不要預設由店家清理清潔箱。", "C5、#8 解法 B、#8 C3、#1 I06-US02、#8 W03"))
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 

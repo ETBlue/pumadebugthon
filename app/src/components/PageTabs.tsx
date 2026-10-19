@@ -3,10 +3,12 @@ import { Link, useNavigate, useSearchParams } from 'react-router'
 import { linkClass } from '@/components/styles'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { keptSearch } from '@/lib/stakeholderFilter'
+import { useFocusTarget } from './FocusTarget'
 
 /** The tab list of an entity page (issue, stakeholder, solution; design 3.2,
  * 3.3, 3.12). The tab is in the URL. A tab change keeps only ?evidence= and
- * ?stakeholder= (keptSearch). It drops ?pick= and ?focus=. */
+ * ?stakeholder= (keptSearch). It drops ?pick= and ?focus=. It also runs
+ * useFocusTarget, so ?focus= works on every tab. */
 export function PageTabs<T extends string>({
   label, tabs, current, nameOf, labelOf, pathOf, notFound, overviewPath, overviewLink, children,
 }: {
@@ -29,6 +31,8 @@ export function PageTabs<T extends string>({
 }) {
   const navigate = useNavigate()
   const [params] = useSearchParams()
+  // ?focus=<value>: scroll to that part of the tab and focus it (design 3.2).
+  useFocusTarget()
 
   // A new history entry per tab, so the back button returns to the tab
   // before. activationMode="manual": with automatic activation, Radix calls

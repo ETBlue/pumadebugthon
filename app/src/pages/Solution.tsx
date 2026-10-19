@@ -177,7 +177,7 @@ function OverviewParts({ index, issue, solution: sol }: { index: IndexFile; issu
           storyGroups.map((g) => (
             <section key={g.priority} aria-labelledby={`solution-stories-${g.priority}`} className="mt-4 first:mt-0">
               <h3 id={`solution-stories-${g.priority}`} className="font-semibold">{priorityLabel(g.priority)}</h3>
-              <StoryList stories={g.stories} stakeholders={index.stakeholders} />
+              <StoryList stories={g.stories} issueNumber={issue.number} stakeholders={index.stakeholders} />
             </section>
           ))
         )}

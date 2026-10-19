@@ -22,10 +22,12 @@ import {
   movedStakeholderTarget, parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab,
 } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
+import { needKey } from '@/lib/needs'
 import { availableIssues } from '@/lib/issues'
 import { movedFrom, pathTrail, stakeholderIssueNumbers, stakeholderIssueView } from '@/lib/stakeholderPage'
 import { resolveId, stakeholderName } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
+import { wantKey } from '@/lib/wantList'
 import type { IndexFile, IssueFile, Stakeholder as StakeholderType } from '@/types'
 
 const tp = t.stakeholderPage
@@ -226,7 +228,15 @@ function IssueSection({ index, issue, id, first, dataBasedOnly }: {
         ) : (
           <ul className="space-y-2">
             {stories.map((story) => (
-              <li key={story.id}><StoryCard story={story} stakeholderName={name(story.stakeholder)} /></li>
+              <li key={story.id}>
+                <StoryCard
+                  story={story}
+                  issueNumber={n}
+                  stakeholderName={name(story.stakeholder)}
+                  wantKey={wantKey(issue, story)}
+                  needKey={needKey(story)}
+                />
+              </li>
             ))}
           </ul>
         )}
@@ -274,7 +284,7 @@ function IssueSection({ index, issue, id, first, dataBasedOnly }: {
                   <CellText cell={c.text} />
                 </h4>
                 <p className="mt-3 text-sm text-muted-foreground">{tp.otherSide}</p>
-                <StoryList stories={otherStories} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
+                <StoryList stories={otherStories} issueNumber={n} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
               </li>
             ))}
           </ul>
@@ -299,7 +309,7 @@ function IssueSection({ index, issue, id, first, dataBasedOnly }: {
         {v.uncovered.length === 0 ? (
           <Empty>{tp.uncoveredNone}</Empty>
         ) : (
-          <StoryList stories={v.uncovered} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
+          <StoryList stories={v.uncovered} issueNumber={n} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
         )}
       </Part>
 

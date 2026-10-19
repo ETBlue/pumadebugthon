@@ -42,7 +42,7 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
                 {groups.map((g) => (
                   <section key={g.priority} className="mt-3">
                     <h5 className="text-sm font-semibold">{priorityLabel(g.priority)}</h5>
-                    <StoryList stories={g.stories} stakeholders={index.stakeholders} />
+                    <StoryList stories={g.stories} issueNumber={issue.number} stakeholders={index.stakeholders} />
                   </section>
                 ))}
               </article>

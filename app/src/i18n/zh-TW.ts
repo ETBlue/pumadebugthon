@@ -114,6 +114,10 @@ export const t = {
     soThat: '以便…',
     source: '來源',
     priority: '優先順序',
+    /** The links of a StoryCard to its want and its need on the issue tabs
+     * (decision 57), for example 「訴求 W08」 and 「需求 N07」. */
+    wantLink: (key: string) => `訴求 ${key}`,
+    needLink: (key: string) => `需求 ${key}`,
   },
   /** 「#2 A」: a solution in a list across issues. */
   solutionId: (issueNumber: number, id: string) => `#${issueNumber} ${id}`,
@@ -476,5 +480,70 @@ export const t = {
     notFoundTitle: '找不到這一頁',
     notFoundBody: '網址可能打錯了，或這一頁已經移除。',
     backHome: '回到首頁',
+  },
+  /** The stakeholder menu (design 3.14). */
+  stakeholderMenu: {
+    /** The <nav> name on the issue page (filter mode). */
+    filterLabel: '依利害關係人篩選',
+    /** The <nav> name on the stakeholder page (switch mode). */
+    switchLabel: '切換利害關係人',
+    all: '全部利害關係人',
+    groups: {
+      O: '組織',
+      I: '個人',
+    },
+    /** One item: 「I06 身心障礙者（視障、輪椅使用者）」. */
+    item: (id: string, name: string) => `${id} ${name}`,
+    /** The Collapsible button below lg. current is 「I06 名稱」, or null for 全部. */
+    trigger: (current: string | null) => `利害關係人：${current ?? '全部'}`,
+    /** The status line with a filter on. The tab adds what it shows (shown…). */
+    status: (id: string, name: string) => `篩選：${id} ${name}。`,
+    shownWants: (wants: number, conflicts: number) => `顯示 ${wants} 個訴求、${conflicts} 個衝突。`,
+    shownNeeds: (n: number) => `顯示 ${n} 個需求。`,
+    shownSolutions: (n: number) => `顯示 ${n} 個解法。`,
+    clear: '清除篩選',
+  },
+  /** One need (需求) in a list (NeedItem, design 3.2, 3.3). */
+  need: {
+    priority: '優先順序',
+    reason: '理由',
+    who: '誰需要',
+    others: '同樣需要的人',
+    othersNone: '沒有其他利害關係人有這個需求。',
+    ownStories: '自己的說法（以便…）',
+    stories: (n: number) => `相關故事（${n} 則）`,
+    solutions: '涵蓋的解法',
+    solutionsNone: '尚未有解法涵蓋',
+    solutionsWontDo: '這次不做，所以沒有解法涵蓋',
+    /** On a solution page: the other solutions that cover a need. */
+    otherSolutions: '由其他解法涵蓋',
+    otherSolutionsNone: '沒有其他解法涵蓋',
+    conflicts: '出現在衝突',
+  },
+  /** One want (訴求) in a list (WantItem, design 3.2, 3.3). */
+  want: {
+    who: '誰想要',
+    others: '同樣想要的人',
+    othersNone: '沒有其他利害關係人有這個訴求。',
+    conflicts: '有衝突',
+    storyCount: (n: number) => `${n} 則故事`,
+    pickLink: (n: number) => `到 #${n} 做意見健檢`,
+  },
+  /** One conflict (ConflictView, design 3.2). */
+  conflict: {
+    sideA: '一方',
+    sideB: '另一方',
+    otherSide: '另一方的故事',
+    needs: '雙方的需求',
+    needsA: '一方的需求',
+    needsB: '另一方的需求',
+    needsNone: '分析裡沒有列出這一方的需求。',
+    wayOut: '以需求為本的解方',
+    wayOutSolutions: '相關解法',
+    /** The method heading when a way out exists: the method is only for
+     * places where the way out does not work (analysis/docs/method.md). */
+    methodFallback: '備案：審議方法',
+    method: '審議方法',
+    result: '模擬結果',
   },
 } as const

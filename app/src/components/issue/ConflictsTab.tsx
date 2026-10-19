@@ -26,11 +26,11 @@ export function ConflictsTab({ index, issue }: IssueTabProps) {
               <div className="mt-3 grid gap-4 md:grid-cols-2">
                 <section>
                   <h4 className="font-medium">{tc.sideA}</h4>
-                  <StoryList stories={stories(c.sideA)} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
+                  <StoryList stories={stories(c.sideA)} issueNumber={issue.number} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
                 </section>
                 <section>
                   <h4 className="font-medium">{tc.sideB}</h4>
-                  <StoryList stories={stories(c.sideB)} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
+                  <StoryList stories={stories(c.sideB)} issueNumber={issue.number} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
                 </section>
               </div>
               <dl className="mt-4 space-y-2">

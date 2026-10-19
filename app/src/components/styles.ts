@@ -15,3 +15,10 @@ export const codeClass = 'rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.9em]
 /** The centered page column. The header, the footer and most pages use it.
  * The home page hero is full width, with this column inside it. */
 export const containerClass = 'mx-auto w-full max-w-5xl px-4 md:px-8'
+
+/** A part of a page that ?focus= can scroll to (design 3.2). It gets
+ * tabIndex={-1}. The page moves focus to it with a script, and
+ * :focus-visible does not always match then, so the outline uses :focus.
+ * scroll-mt keeps a little space above it. */
+export const focusTargetClass =
+  'scroll-mt-4 rounded-md focus:outline-solid focus:outline-2 focus:outline-offset-2 focus:outline-ring'

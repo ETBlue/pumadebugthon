@@ -10,7 +10,8 @@ import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { PageTabs, TabComing } from '@/components/PageTabs'
-import { linkClass } from '@/components/styles'
+import { focusTargetClass, linkClass } from '@/components/styles'
+import { cn } from '@/lib/utils'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
@@ -29,7 +30,7 @@ function OverviewWithStakeholders(props: IssueTabProps) {
   return (
     <>
       <OverviewTab {...props} />
-      <section id="focus-stakeholders" tabIndex={-1} aria-labelledby="stakeholders-heading" className="mt-8 outline-none">
+      <section id="focus-stakeholders" tabIndex={-1} aria-labelledby="stakeholders-heading" className={cn('mt-8', focusTargetClass)}>
         <h3 id="stakeholders-heading" className="text-lg font-semibold">{ti.stakeholdersHeading}</h3>
         <div className="mt-2"><StakeholdersTab {...props} /></div>
       </section>
@@ -42,7 +43,7 @@ function WantsFrame(props: IssueTabProps) {
   return (
     <>
       <OpinionTab {...props} />
-      <section id="focus-conflicts" tabIndex={-1} className="mt-8 outline-none">
+      <section id="focus-conflicts" tabIndex={-1} className={cn('mt-8', focusTargetClass)}>
         <ConflictsTab {...props} />
       </section>
     </>

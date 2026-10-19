@@ -223,8 +223,8 @@ def date_problem(value):
         d = datetime.date.fromisoformat(value)
     except ValueError:
         return f"{value} is not a real date"
-    if d > datetime.date.today():
-        return f"{value} is in the future"
+    if d > common.today():
+        return f"{value} is in the future (today in Taiwan is {common.today().isoformat()})"
     return None
 
 

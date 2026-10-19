@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from analysis_common import (data_file, doc_file, CONFLICT_HEADER, CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, NEED_GROUP_HEADING,
+from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, NEED_GROUP_HEADING,
                              NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
                              SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, WAY_OUT_NONE, conflict_heading, cross_refs,
                              focus_tables, issue_ids, needs_format, parse_ref, section, split_cells as cells, split_focus,
@@ -24,8 +24,8 @@ def date_problem(value):
         d = datetime.date.fromisoformat(value)
     except ValueError:
         return f"{value} is not a real date"
-    if d > datetime.date.today():
-        return f"{value} is in the future (today is {datetime.date.today().isoformat()})"
+    if d > today():
+        return f"{value} is in the future (today in Taiwan is {today().isoformat()})"
     return None
 
 

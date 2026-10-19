@@ -45,7 +45,7 @@ Rules:
   folders). The shared CSV files are in its data/ folder (data_file) and
   method.md is in its docs/ folder (doc_file).
 """
-import os, re
+import datetime, os, re
 
 DATA_FOLDER = "data"
 DOCS_FOLDER = "docs"
@@ -290,3 +290,9 @@ def parse_ref(ref):
     if rid[0] in "OI":
         return num, "stakeholder", rid
     return num, {"C": "conflict", "W": "group", "N": "need"}[rid[0]], rid
+
+
+def today():
+    """Today's date in Taiwan (UTC+8). The dates in the analysis are Taiwan
+    dates, but the CI runner uses UTC, so date.today() can be one day behind."""
+    return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).date()

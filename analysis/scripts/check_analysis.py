@@ -5,7 +5,7 @@ from collections import Counter, defaultdict
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, NEED_GROUP_HEADING,
-                             NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
+                             NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, NO_SPACE_CELL, NO_SPACE_LINE, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
                              SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, WAY_OUT_NONE, conflict_heading, cross_refs,
                              focus_tables, issue_ids, needs_format, parse_ref, section, split_cells as cells, split_focus,
                              split_refs, step1_tables, summary_lines, summary_topics, tables, without_cross_refs)
@@ -571,11 +571,14 @@ def main(md_path, csv_path):
     space_codes = {r["代碼"] for r in read_csv("space-types.csv")}
     lines = text.splitlines()
     issue_spaces = []
+    # 「空間類型：無」: the issue uses no city space (see analysis_common).
+    no_space = False
     if len(lines) > 2 and lines[0].startswith("# ") and lines[1] == "" and lines[2].startswith("空間類型："):
         body = lines[2][len("空間類型："):]
         issue_spaces = re.findall(r"`([^`]+)`", body)
-        if not issue_spaces or "、".join(f"`{c}`" for c in issue_spaces) != body.strip():
-            err(f"空間類型 line must be codes in backticks separated by 、: {lines[2]}")
+        no_space = body.strip() == NO_SPACE_LINE
+        if not no_space and (not issue_spaces or "、".join(f"`{c}`" for c in issue_spaces) != body.strip()):
+            err(f"空間類型 line must be codes in backticks separated by 、, or 「{NO_SPACE_LINE}」: {lines[2]}")
         for code in sorted({x for x in issue_spaces if issue_spaces.count(x) > 1}):
             err(f"空間類型 line: space code {code} is listed twice")
         for code in issue_spaces:
@@ -583,7 +586,8 @@ def main(md_path, csv_path):
     else:
         err("no 「空間類型：」 line right under the title (title, blank line, then the line)")
 
-    # 16. 6.1 has a 空間類型 column; each code is known and in the issue's list
+    # 16. 6.1 has a 空間類型 column; each code is known and in the issue's list.
+    # An issue with 「空間類型：無」 has 「—」 in every cell, and only such an issue.
     sec61 = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0] if "### 6.1" in text else ""
     hdr61 = next((cells(l) for l in sec61.splitlines() if l.startswith("| 代號 ")), None)
     if not hdr61 or DATE_COL not in hdr61: err(f"6.1: no {DATE_COL} column")
@@ -601,7 +605,13 @@ def main(md_path, csv_path):
             if not re.match(r"^\| [A-Z] \|", line): continue
             c = cells(line); sol = c[0]
             codes = re.findall(r"`([^`]+)`", c[col]) if len(c) > col else []
-            if not codes: err(f"6.1 solution {sol}: no space type")
+            dash = len(c) > col and c[col].strip() == NO_SPACE_CELL
+            if no_space and not dash:
+                err(f"6.1 solution {sol}: the 空間類型 line is 「{NO_SPACE_LINE}」, so the 空間類型 cell must be 「{NO_SPACE_CELL}」")
+                codes = []
+            elif dash and not no_space:
+                err(f"6.1 solution {sol}: 「{NO_SPACE_CELL}」 is only for an issue whose 空間類型 line is 「{NO_SPACE_LINE}」")
+            elif not codes and not dash: err(f"6.1 solution {sol}: no space type")
             for code in sorted({x for x in codes if codes.count(x) > 1}):
                 err(f"6.1 solution {sol}: space code {code} is listed twice")
             for code in codes:

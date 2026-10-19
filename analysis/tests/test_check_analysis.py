@@ -123,6 +123,35 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md", "### 3.8 新增的利害關係人", "### 3.8 其他")
         self.assertFails("新增的利害關係人")
 
+    def make_no_space(self):
+        """Turn the copied #2 into an issue with no city space: the line
+        「空間類型：無」 and 「—」 in every 6.1 空間類型 cell."""
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        text = text.replace("空間類型：`sidewalk`、`arcade`、`park`、`mrt-exit`\n", "空間類型：無\n", 1)
+        sec = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0]
+        new_sec = re.sub(r"^(\| [A-Z] \| [^|]+ \| )`[^|]+` \|", r"\1— |", sec, flags=re.M)
+        self.assertEqual(new_sec.count("| — |"), 5)
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(text.replace(sec, new_sec))
+
+    def test_no_space_issue_passes(self):
+        # An issue with no city space (ETBlue, 2026-10-20).
+        self.make_no_space()
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_no_space_issue_with_solution_space_fails(self):
+        self.make_no_space()
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | `[AI模擬]` 參與式選址流程 | — |",
+                  "| D | `[AI模擬]` 參與式選址流程 | `park` |")
+        self.assertFails("solution D", "無")
+
+    def test_dash_solution_space_in_issue_with_spaces_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |",
+                  "| D | `[AI模擬]` 參與式選址流程 | — |")
+        self.assertFails("solution D", "無")
+
     def test_repeated_space_code_in_issue_line(self):
         self.edit(f"{ISSUE}/issue-analysis.md", "`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`park`\n")
         self.assertFails("space code park is listed twice")

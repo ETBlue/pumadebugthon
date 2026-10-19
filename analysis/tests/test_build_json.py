@@ -652,6 +652,39 @@ class BuildJsonErrorTest(unittest.TestCase):
                   "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`moon` |")
         self.assertFails("2-trashcans: 6.1:", "moon")
 
+    def make_no_space(self):
+        """Turn the copied #2 into an issue with no city space (「空間類型：無」, 「—」 in 6.1)."""
+        path = os.path.join(self.dir, ISSUE, "issue-analysis.md")
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        text = text.replace("空間類型：`sidewalk`、`arcade`、`park`、`mrt-exit`\n", "空間類型：無\n", 1)
+        sec = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0]
+        new_sec = re.sub(r"^(\| [A-Z] \| [^|]+ \| )`[^|]+` \|", r"\1— |", sec, flags=re.M)
+        self.assertEqual(new_sec.count("| — |"), 5)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text.replace(sec, new_sec))
+
+    def test_no_space_issue_gives_empty_lists(self):
+        self.make_no_space()
+        code, out = run_build(self.dir, self.out)
+        self.assertEqual(code, 0, out)
+        with open(os.path.join(self.out, "index.json"), encoding="utf-8") as f:
+            item = next(i for i in json.load(f)["issues"] if i["folder"] == ISSUE)
+        with open(os.path.join(self.out, "issues", f"{ISSUE}.json"), encoding="utf-8") as f:
+            issue = json.load(f)
+        self.assertEqual(item["spaces"], [])
+        self.assertEqual(issue["spaces"], [])
+        self.assertEqual([s["spaces"] for s in issue["solutions"]], [[]] * 5)
+
+    def test_no_space_issue_with_solution_space_fails(self):
+        self.make_no_space()
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | — |", "| D | `[AI模擬]` 參與式選址流程 | `park` |")
+        self.assertFails("2-trashcans: 6.1:", "solution D", "無")
+
+    def test_dash_solution_space_in_issue_with_spaces_fails(self):
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |", "| D | `[AI模擬]` 參與式選址流程 | — |")
+        self.assertFails("2-trashcans: 6.1:", "solution D", "無")
+
     def test_two_tables_with_step_4_header(self):
         self.edit("\n### 相同訴求群組\n",
                   "\n| 故事編號 | 身為… | 我想要… | 相同訴求編號 | 以便… | 相同需求編號 | 來源 | 優先順序 |\n"

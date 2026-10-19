@@ -491,8 +491,10 @@ def parse_issue(text, space_codes):
     if len(lines) < 3 or not lines[2].startswith("空間類型："):
         raise ReadError("空間類型", "no 「空間類型：」 line right under the title")
     spaces = re.findall(r"`([^`]+)`", lines[2])
-    if not spaces:
-        raise ReadError("空間類型", "no space codes in backticks")
+    # 「空間類型：無」: the issue uses no city space, so spaces is [] (see analysis_common).
+    no_space = lines[2][len("空間類型："):].strip() == common.NO_SPACE_LINE
+    if not spaces and not no_space:
+        raise ReadError("空間類型", f"no space codes in backticks (or 「{common.NO_SPACE_LINE}」)")
     for code in spaces:
         if code not in space_codes:
             raise ReadError("空間類型", f"unknown space code {code} (not in space-types.csv)")
@@ -619,7 +621,12 @@ def parse_issue(text, space_codes):
     solutions = []
     for r in table_rows(common.tables(section(text, "### 6.1", "6.1")), "6.1", ["代號", "解法", "空間類型", "新增日期", "一句話說明"]):
         sol, codes = r["代號"], re.findall(r"`([^`]+)`", r["空間類型"])
-        if not codes:
+        dash = r["空間類型"].strip() == common.NO_SPACE_CELL
+        if no_space and not dash:
+            raise ReadError("6.1", f"solution {sol}: the 空間類型 line is 「{common.NO_SPACE_LINE}」, so the 空間類型 cell must be 「{common.NO_SPACE_CELL}」")
+        if dash and not no_space:
+            raise ReadError("6.1", f"solution {sol}: 「{common.NO_SPACE_CELL}」 is only for an issue whose 空間類型 line is 「{common.NO_SPACE_LINE}」")
+        if not codes and not dash:
             raise ReadError("6.1", f"solution {sol}: no space code")
         for code in codes:
             if code not in space_codes:

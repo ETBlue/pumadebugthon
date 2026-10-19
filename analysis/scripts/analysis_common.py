@@ -41,6 +41,12 @@ Rules:
   priority on each story. All analyzed issues (#1, #2, #8) use the
   needs-based format now. The scripts still read the old format, and
   tests/fixtures/old-format tests it.
+- 空間類型: the line right under the title lists space codes in backticks,
+  separated by 「、」, and each 6.1 row lists its codes in the 空間類型 cell.
+  An issue that uses no city space (for example #9) writes 「空間類型：無」
+  (NO_SPACE_LINE) and 「—」 (NO_SPACE_CELL) in every 6.1 空間類型 cell.
+  Both give an empty list of codes. 「—」 is allowed only with 「無」, and
+  「無」 only with 「—」 (ETBlue, 2026-10-20).
 - Folders: the scripts get the analysis folder (the folder with the issue
   folders). The shared CSV files are in its data/ folder (data_file) and
   method.md is in its docs/ folder (doc_file).
@@ -103,6 +109,10 @@ NEED_MAP_HEADER = ["代號", "解法", "涵蓋的 Must 需求", "涵蓋的 Shoul
 CONFLICT_HEADER = ["#", "衝突", "相關故事", "雙方的需求", "以需求為本的解方", "可能的審議方法", "模擬結果"]
 # The 以需求為本的解方 cell when no solution was found. It then needs a 審議 method.
 WAY_OUT_NONE = "未找到"
+
+# An issue with no city space (see the rules above).
+NO_SPACE_LINE = "無"
+NO_SPACE_CELL = "—"
 
 SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
 HEADING = re.compile(r"^(#{2,3}) (.+)$")

@@ -1,7 +1,7 @@
 // All UI text of the app. Components never contain UI text directly.
 // An English file (src/i18n/en.ts) can copy this shape later.
 export const t = {
-  appTitle: '提案小幫手',
+  appTitle: '市政提案小幫手',
   /** Shown under the h1 on the home page, and in the index.html meta description. */
   appSubtitle: '在提案之前，先看見各方利害關係人的關注',
   /** Between the parts of the page <title>. */
@@ -21,7 +21,7 @@ export const t = {
   /** The page footer (design 3.8). */
   footer: {
     contextHeading: '這是什麼',
-    context: '提案小幫手是 ETBlue 為「市政 debug 松」製作的參加作品。它把臺北市政議題的分析整理成結構化資料，讓你看見每個議題的利害關係人、他們的關注和可能的解法。',
+    context: '市政提案小幫手是 ETBlue 為「市政 debug 松」製作的參加作品。它把臺北市政議題的分析整理成結構化資料，讓你看見每個議題的利害關係人、他們的關注和可能的解法。',
     disclaimerHeading: '免責聲明',
     personal: '這是一位參加者個人用 AI 協助製作的作品，與主辦單位和臺北市政府沒有關係，也不代表他們的立場。',
     simulated: '的內容由 AI 推想，不是真實訪談，也不是真實市民的話。',
@@ -32,7 +32,7 @@ export const t = {
   /** The about page #/about (design 3.13). */
   about: {
     title: '關於本站',
-    intro: '提案小幫手的活動、原始碼、授權、資料檔案和相關文章。',
+    intro: '市政提案小幫手的活動、原始碼、授權、資料檔案和相關文章。',
     linksHeading: '專案連結',
     repo: 'GitHub 原始碼',
     method: '如何閱讀議題分析',
@@ -336,7 +336,7 @@ export const t = {
     breadcrumb: '頁面位置',
     home: '首頁',
     solutions: '解法',
-    /** The second part of the page title: 「#2 A 名稱 · 解法 · 提案小幫手」. */
+    /** The second part of the page title: 「#2 A 名稱 · 解法 · 市政提案小幫手」. */
     titlePart: '解法',
     issueNotFoundTitle: '找不到這個議題',
     issueNotFoundBody: '網址裡的議題編號可能打錯了，或這個議題的分析還在製作中。',

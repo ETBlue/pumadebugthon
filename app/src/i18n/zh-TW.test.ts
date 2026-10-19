@@ -8,8 +8,8 @@ describe('zh-TW strings', () => {
     expect(html).toContain(`<title>${t.appTitle}</title>`)
   })
 
-  it('names the app 提案小幫手', () => {
-    expect(t.appTitle).toBe('提案小幫手')
+  it('names the app 市政提案小幫手', () => {
+    expect(t.appTitle).toBe('市政提案小幫手')
     expect(html).toContain(t.appSubtitle)
   })
 })

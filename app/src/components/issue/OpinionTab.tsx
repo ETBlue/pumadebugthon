@@ -1,19 +1,19 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
 import { PickLabel } from '@/components/PickLabel'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { SolutionCard } from '@/components/SolutionCard'
+import { StakeholderCard } from '@/components/StakeholderCard'
 import { StoryCard } from '@/components/StoryCard'
-import { linkClass } from '@/components/styles'
 import { Input } from '@/components/ui/input'
 import { t } from '@/i18n/zh-TW'
 import { dataBasedCount, dataBasedPickList, isDataBasisFilterOn, withDataBasisFilter } from '@/lib/dataBasis'
 import { filterPickList, opinionResult, pickList, type PickItem } from '@/lib/opinion'
-import { stakeholderName } from '@/lib/stakeholders'
+import { findStakeholder, stakeholderName } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
 import type { Story } from '@/types'
-import { AlsoIn } from './AlsoIn'
+import { AlsoIn, AlsoInLine } from './AlsoIn'
 import type { IssueTabProps } from './types'
 
 const to = t.opinion
@@ -216,13 +216,12 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
         ) : (
           <>
             <p className="mt-2">{to.notMentionedPrompt}</p>
-            <ul className="mt-2 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+            <ul className="mt-2 grid gap-3 sm:grid-cols-2">
               {result.notMentioned.map((id) => (
-                <li key={id} className="flex flex-wrap items-baseline gap-x-2">
-                  <Link to={`/stakeholders/${id}`} className={linkClass}>
-                    {stakeholderName(index.stakeholders, id)}
-                  </Link>
-                  {alsoIn(id)}
+                <li key={id}>
+                  <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
+                    <AlsoInLine index={index} id={id} issueNumber={n} available={available} />
+                  </StakeholderCard>
                 </li>
               ))}
             </ul>

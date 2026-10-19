@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router'
 import { Field } from '@/components/Field'
-import { AlsoIn } from '@/components/issue/AlsoIn'
+import { AlsoInLine } from '@/components/issue/AlsoIn'
 import { IssueCard } from '@/components/IssueCard'
 import { LoadState } from '@/components/LoadState'
 import { SolutionCard } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
+import { StakeholderCard } from '@/components/StakeholderCard'
 import { linkClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
@@ -14,7 +15,7 @@ import { availableIssues } from '@/lib/issues'
 import {
   findSpaceType, issuesBySpace, otherSpaces, solutionsBySpace, stakeholdersBySpace, stakeholdersInSeveralIssues,
 } from '@/lib/spaces'
-import { stakeholderName } from '@/lib/stakeholders'
+import { findStakeholder } from '@/lib/stakeholders'
 import type { IndexFile, IssueFile, SpaceType } from '@/types'
 
 const tp = t.spacePage
@@ -91,7 +92,6 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
   const available = availableIssues(index).map((i) => i.number)
   const sorted = [...issues].sort((a, b) => a.number - b.number)
   const title = (n: number) => t.issueCard.numberTitle(n, sorted.find((i) => i.number === n)?.title ?? '')
-  const name = (id: string) => stakeholderName(index.stakeholders, id)
 
   return (
     <>
@@ -147,11 +147,12 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
               {shared.length === 0 ? (
                 <p className="mt-2">{tp.sharedNone}</p>
               ) : (
-                <ul className="mt-2 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                <ul className="mt-2 grid gap-3 sm:grid-cols-2">
                   {shared.map((s) => (
-                    <li key={s.id} className="flex flex-wrap items-baseline gap-x-2">
-                      <Link to={`/stakeholders/${s.id}`} className={linkClass}>{name(s.id)}</Link>
-                      <span className="text-sm text-muted-foreground">{tp.sharedIssues(s.issues)}</span>
+                    <li key={s.id}>
+                      <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, s.id)}>
+                        <p className="mt-1 text-sm text-muted-foreground">{tp.sharedIssues(s.issues)}</p>
+                      </StakeholderCard>
                     </li>
                   ))}
                 </ul>
@@ -162,11 +163,12 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
             {stakeholders.map((entry) => (
               <section key={entry.issueNumber} aria-labelledby={`space-people-${entry.issueNumber}`} className="mt-3">
                 <h4 id={`space-people-${entry.issueNumber}`} className="font-medium">{title(entry.issueNumber)}</h4>
-                <ul className="mt-2 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                <ul className="mt-2 grid gap-3 sm:grid-cols-2">
                   {entry.stakeholders.map((id) => (
-                    <li key={id} className="flex flex-wrap items-baseline gap-x-2">
-                      <Link to={`/stakeholders/${id}`} className={linkClass}>{name(id)}</Link>
-                      <AlsoIn index={index} id={id} issueNumber={entry.issueNumber} available={available} />
+                    <li key={id}>
+                      <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
+                        <AlsoInLine index={index} id={id} issueNumber={entry.issueNumber} available={available} />
+                      </StakeholderCard>
                     </li>
                   ))}
                 </ul>

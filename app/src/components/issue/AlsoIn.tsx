@@ -21,3 +21,11 @@ export function AlsoIn(props: { index: IndexFile; id: string; issueNumber: numbe
     </Link>
   )
 }
+
+/** AlsoIn on its own line, for the end of a StakeholderCard. Nothing when the
+ * stakeholder is in this issue only, so the card gets no empty line. */
+export function AlsoInLine(props: { index: IndexFile; id: string; issueNumber: number; available: number[] }) {
+  const issues = alsoInIssues(props.index.stakeholders, props.id, props.issueNumber, props.available)
+  if (issues.length === 0) return null
+  return <p className="mt-1"><AlsoIn {...props} /></p>
+}

@@ -4,11 +4,12 @@ import { Link, useParams, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
 import { DataBasisEmpty, DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
-import { AlsoIn } from '@/components/issue/AlsoIn'
+import { AlsoInLine } from '@/components/issue/AlsoIn'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
 import { PageTitle } from '@/components/PageTitle'
 import { SpaceLinks } from '@/components/SpaceLinks'
+import { StakeholderCard } from '@/components/StakeholderCard'
 import { StoryList } from '@/components/StoryList'
 import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
@@ -21,7 +22,7 @@ import { priorityLabel } from '@/lib/priority'
 import {
   findSolution, solutionConflicts, solutionGroupCoverage, solutionStakeholders, solutionStoryGroups, solutionTitle,
 } from '@/lib/solutionPage'
-import { stakeholderName } from '@/lib/stakeholders'
+import { findStakeholder, stakeholderName } from '@/lib/stakeholders'
 import type { AvailableIssueSummary, IndexFile, IssueFile, Solution as SolutionType } from '@/types'
 
 const tp = t.solutionPage
@@ -180,12 +181,12 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
           ) : (
             <>
               <p className="text-sm text-muted-foreground">{tp.stakeholdersIntro}</p>
-              <ul className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+              <ul className="mt-3 grid gap-3 sm:grid-cols-2">
                 {stakeholders.map((id) => (
-                  <li key={id} className="flex flex-wrap items-baseline gap-x-2">
-                    <Link to={`/stakeholders/${id}`} className={linkClass}>{name(id)}</Link>
-                    <span className="font-mono text-xs text-muted-foreground">{id}</span>
-                    <AlsoIn index={index} id={id} issueNumber={n} available={available} />
+                  <li key={id}>
+                    <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
+                      <AlsoInLine index={index} id={id} issueNumber={n} available={available} />
+                    </StakeholderCard>
                   </li>
                 ))}
               </ul>

@@ -1,7 +1,5 @@
 import { useId, useMemo, useState } from 'react'
 import { ChevronRight } from 'lucide-react'
-import { Link } from 'react-router'
-import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Toggle } from '@/components/ui/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
@@ -11,38 +9,18 @@ import {
   buildTree, filterStakeholders, storyCountsByStakeholder, type StoryCountsByStakeholder, type TreeNode,
 } from '@/lib/stakeholders'
 import type { IssueFile, Stakeholder } from '@/types'
-import { PriorityCounts, PriorityLegend } from './PriorityCounts'
-import { linkClass, toggleOnClass } from './styles'
+import { PriorityLegend } from './PriorityCounts'
+import { StakeholderCard } from './StakeholderCard'
+import { toggleOnClass } from './styles'
 import { ToggleCheck } from './ToggleCheck'
 
 const ts = t.stakeholderList
 
+/** One stakeholder in the tree: a detailed card (design 3.9). */
 function StakeholderRow({ stakeholder: s, counts }: { stakeholder: Stakeholder; counts: StoryCountsByStakeholder }) {
-  const entries = counts.get(s.id) ?? []
   return (
-    <li className="py-2">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <Link to={`/stakeholders/${s.id}`} className={linkClass}>{s.name}</Link>
-        <span className="font-mono text-xs text-muted-foreground">{s.id}</span>
-        {s.focus.length > 0 && (
-          <span className="inline-flex flex-wrap gap-1">
-            <span className="sr-only">{ts.focusLabel}</span>
-            {s.focus.map((f) => (
-              <Badge key={f} variant="secondary" className="rounded-sm">{f}</Badge>
-            ))}
-          </span>
-        )}
-      </div>
-      {entries.length > 0 && (
-        <ul className="mt-1 space-y-1 text-sm">
-          {entries.map((e) => (
-            <li key={e.issueNumber} className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="font-medium">{ts.issueEntry(e.issueNumber)}</span>
-              <PriorityCounts counts={e.counts} />
-            </li>
-          ))}
-        </ul>
-      )}
+    <li>
+      <StakeholderCard variant="detailed" stakeholder={s} entries={counts.get(s.id) ?? []} />
     </li>
   )
 }
@@ -57,7 +35,7 @@ function TreeLevel({ node, depth, openAll, counts }: { node: TreeNode; depth: nu
           <span className="text-sm text-muted-foreground">{ts.storyTotal(node.storyTotal)}</span>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <ul className="ml-3 border-l pl-3 md:ml-4 md:pl-4">
+          <ul className="ml-3 space-y-2 border-l pb-2 pl-3 md:ml-4 md:pl-4">
             {node.stakeholders.map((s) => <StakeholderRow key={s.id} stakeholder={s} counts={counts} />)}
             {node.children.map((c) => (
               <TreeLevel key={c.path} node={c} depth={depth + 1} openAll={openAll} counts={counts} />
@@ -163,7 +141,7 @@ export function StakeholderList(props: StakeholderListProps) {
                 {n.label}
                 <span className="text-sm font-normal text-muted-foreground">{ts.storyTotal(n.storyTotal)}</span>
               </H2>
-              <ul className="ml-1 border-l pl-3 md:pl-4">
+              <ul className="mt-2 ml-1 space-y-2 border-l pl-3 md:pl-4">
                 {n.stakeholders.map((s) => <StakeholderRow key={s.id} stakeholder={s} counts={counts} />)}
               </ul>
             </div>

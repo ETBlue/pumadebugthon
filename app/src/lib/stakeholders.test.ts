@@ -4,7 +4,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Stakeholder } from '@/types'
 import {
-  alsoInIssues, alsoInLabel, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, issueStakeholders, resolveId, stakeholderName, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
+  alsoInIssues, alsoInLabel, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, findStakeholder, issueStakeholders, resolveId, stakeholderName, storiesWithoutSolution, storyCountsByStakeholder, type TreeNode,
 } from './stakeholders'
 
 const index = indexJson as IndexFile
@@ -288,5 +288,18 @@ describe('alsoInLabel', () => {
 
   it('keeps the ID as the name for an unknown stakeholder', () => {
     expect(alsoInLabel(index, 'X99', [2])).toBe('X99 X99 也出現在 #2 找回消失的垃圾桶')
+  })
+})
+
+describe('findStakeholder', () => {
+  it('finds the stakeholder by ID', () => {
+    expect(findStakeholder(index.stakeholders, 'I06')).toBe(index.stakeholders.find((s) => s.id === 'I06'))
+  })
+
+  it('gives a stand-in with the ID as its name for an unknown ID', () => {
+    const s = findStakeholder(index.stakeholders, 'X99')
+    expect(s.id).toBe('X99')
+    expect(s.name).toBe(stakeholderName(index.stakeholders, 'X99'))
+    expect(s.focus).toEqual([])
   })
 })

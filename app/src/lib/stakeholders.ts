@@ -165,6 +165,13 @@ export function stakeholderName(stakeholders: Stakeholder[], id: string): string
   return stakeholders.find((s) => s.id === id)?.name ?? id
 }
 
+/** The stakeholder with this ID, for a StakeholderCard. An unknown ID gives
+ * a stand-in with the ID as its name and no other data, the same as
+ * stakeholderName, so a list never drops an item. */
+export function findStakeholder(stakeholders: Stakeholder[], id: string): Stakeholder {
+  return stakeholders.find((s) => s.id === id) ?? { id, name: id, path: null, focus: [], issues: [], movedTo: null, added: '' }
+}
+
 /** Design 4.2 「也出現在 #1」: the other available issues the stakeholder
  * appears in, by number. available is the list of available issue numbers. */
 export function alsoInIssues(stakeholders: Stakeholder[], id: string, issueNumber: number, available: number[]): number[] {

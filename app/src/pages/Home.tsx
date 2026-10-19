@@ -5,8 +5,8 @@ import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { IssueCard } from '@/components/IssueCard'
 import { SolutionCard } from '@/components/SolutionCard'
+import { StakeholderCard } from '@/components/StakeholderCard'
 import { containerClass, linkClass } from '@/components/styles'
-import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { availableIssues } from '@/lib/issues'
@@ -98,33 +98,23 @@ function HomeBlocks({ index }: { index: IndexFile }) {
           {stakeholders.length === 0 ? (
             <p>{th.stakeholdersNone}</p>
           ) : (
-            <ul className="divide-y">
+            <ul className="space-y-3">
               {stakeholders.map((s) => (
-                <li key={s.id} className="py-3">
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <Link to={`/stakeholders/${s.id}`} className={`${linkClass} font-medium`}>{s.name}</Link>
-                    <span className="font-mono text-xs text-muted-foreground">{s.id}</span>
-                    {s.focus.length > 0 && (
-                      <span className="inline-flex flex-wrap gap-1">
-                        <span className="sr-only">{th.focusLabel}</span>
-                        {s.focus.map((f) => (
-                          <Badge key={f} variant="secondary" className="rounded-sm">{f}</Badge>
-                        ))}
-                      </span>
-                    )}
-                  </div>
-                  <dl className="mt-1 space-y-1 text-sm">
-                    {s.issues.length > 0 && (
-                      <Field label={th.issues}>
-                        <ul className="flex flex-wrap gap-x-3">
-                          {s.issues.map((n) => (
-                            <li key={n}><Link to={`/issues/${n}`} className={linkClass}>{th.issueLink(n)}</Link></li>
-                          ))}
-                        </ul>
-                      </Field>
-                    )}
-                    <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
-                  </dl>
+                <li key={s.id}>
+                  <StakeholderCard variant="compact" stakeholder={s}>
+                    <dl className="mt-1 space-y-1 text-sm">
+                      {s.issues.length > 0 && (
+                        <Field label={th.issues}>
+                          <ul className="flex flex-wrap gap-x-3">
+                            {s.issues.map((n) => (
+                              <li key={n}><Link to={`/issues/${n}`} className={linkClass}>{th.issueLink(n)}</Link></li>
+                            ))}
+                          </ul>
+                        </Field>
+                      )}
+                      <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
+                    </dl>
+                  </StakeholderCard>
                 </li>
               ))}
             </ul>

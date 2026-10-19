@@ -136,7 +136,6 @@ export const t = {
     added: '加入日期',
     solutionAdded: '新增日期',
     issues: '出現的議題',
-    focusLabel: '特別關注：',
     issueLink: (n: number) => `#${n}`,
   },
   /** The issue list with the space type filter (design 3.9). */
@@ -175,9 +174,12 @@ export const t = {
     organizations: '組織',
     individuals: '個人',
     storyTotal: (n: number) => `${n} 則故事`,
-    issueEntry: (n: number) => `#${n}`,
-    focusLabel: '特別關注：',
     none: '沒有符合的利害關係人。',
+  },
+  /** StakeholderCard (design 3.9). */
+  stakeholderCard: {
+    focusLabel: '特別關注：',
+    issueEntry: (n: number) => `#${n}`,
   },
   issue: {
     notFoundTitle: '找不到這個議題',

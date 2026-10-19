@@ -156,7 +156,9 @@ export const t = {
     stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,
     stories: '使用者故事',
     storiesValue: (n: number) => `${n} 則`,
+    wants: '訴求',
     conflicts: '衝突',
+    needs: '需求',
     solutions: '解法',
     itemsValue: (n: number) => `${n} 個`,
     shared: '跨議題共用的利害關係人',
@@ -226,7 +228,9 @@ export const t = {
     stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,
     stories: '使用者故事',
     storiesValue: (n: number) => `${n} 則`,
+    wants: '訴求',
     conflicts: '衝突',
+    needs: '需求',
     solutions: '解法',
     itemsValue: (n: number) => `${n} 個`,
     legendHeading: '標記說明',
@@ -252,6 +256,8 @@ export const t = {
     pendingNone: '這個議題沒有待補的項目。',
     noSection: '其他',
     issueLink: (n: number) => `#${n}`,
+    /** The last section of the tab: the issue's stakeholders (decision 38). */
+    stakeholdersHeading: '利害關係人',
   },
   /** 資料根據 (design 3.2, 3.9): the story cells (我想要… and 以便…) by tag. */
   basis: {
@@ -281,10 +287,31 @@ export const t = {
     result: '模擬結果',
     none: '這個議題沒有列出衝突。',
   },
+  /** The issue page's 解法 tab (design 3.2). */
   solutionsTab: {
     spaces: '空間類型',
-    stories: '涵蓋的使用者故事',
+    needs: '涵蓋的需求',
+    /** The two parts of step 6.2. */
+    must: '必須有',
+    shouldCould: '應該有、可以有',
+    needsNone: '分析裡沒有列出這個解法涵蓋的需求。',
+    /** The stakeholders of a need, as plain IDs. */
+    needStakeholders: '利害關係人：',
+    wayOut: '解開的衝突',
+    /** With a stakeholder picked: a link to the solution's 需求 tab. */
+    otherNeeds: (n: number) => `這個解法還涵蓋其他 ${n} 個需求`,
+    dataEmpty: '這位利害關係人在這個解法的需求，都沒有標記 [實證] 或 [AI整理]。',
     none: '這個議題沒有列出解法。',
+    noneForStakeholder: '沒有解法涵蓋這位利害關係人的需求。',
+  },
+  /** The issue page's 需求 tab (design 3.2). */
+  needsTab: {
+    intro: '需求是利害關係人得到的好處（以便…）。需求之間不會衝突。優先順序（MoSCoW）是這些利害關係人有多需要它，不是利害關係人之間的排名。',
+    /** Decision 52: an issue in the old format has no needs list. */
+    oldFormat: '本議題使用舊格式，沒有需求列表',
+    none: '這個議題沒有列出需求。',
+    noneForStakeholder: '這位利害關係人在本議題沒有需求。',
+    dataEmpty: '這裡沒有以便… 標記 [實證] 或 [AI整理] 的需求。',
   },
   opinion: {
     intro: '從清單選一個你想要的事，看看誰也想要、誰可能有不同意見、有哪些解法，以及還有誰沒有被提到。',

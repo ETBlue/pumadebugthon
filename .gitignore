@@ -2,3 +2,6 @@
 .confidential
 .eventinfo
 app/public/data/
+
+# Claude Code worktrees for subagents
+.claude/worktrees/

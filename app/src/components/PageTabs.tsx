@@ -47,7 +47,7 @@ export function PageTabs<T extends string>({
   return (
     <Tabs value={current ?? ''} onValueChange={onTabChange} activationMode="manual" className="mt-6">
       {/* On a phone the tab list wraps onto two rows. It never scrolls sideways. */}
-      <TabsList aria-label={label} className="h-auto w-full flex-wrap justify-start">
+      <TabsList aria-label={label} className="h-auto w-full flex-wrap items-stretch justify-start group-data-horizontal/tabs:h-auto">
         {tabs.map((name) => {
           const l = labelOf(name)
           // On a phone the second part (the counts) is on its own line, in
@@ -60,7 +60,7 @@ export function PageTabs<T extends string>({
               key={name}
               value={name}
               aria-label={tabLabelText(l)}
-              className="flex-1 whitespace-normal px-2 py-1.5 md:px-3"
+              className="h-auto flex-1 whitespace-normal px-2 py-1.5 md:px-3"
             >
               <span className="flex flex-col items-center leading-tight md:flex-row md:leading-normal">
                 <span className="whitespace-nowrap">{l.main}</span>

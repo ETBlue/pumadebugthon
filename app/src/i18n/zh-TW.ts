@@ -8,11 +8,6 @@ export const t = {
   titleSeparator: ' · ',
   layout: {
     skipLink: '跳到主要內容',
-    footerNav: '專案連結',
-    repo: 'GitHub 原始碼',
-    method: '如何閱讀議題分析',
-    /** The official event page of the hackathon (design 3.8). */
-    event: '市政 debug 松活動頁面',
     /** For screen readers, after a link that opens a new tab. */
     newTab: '（在新分頁開啟）',
   },
@@ -25,16 +20,30 @@ export const t = {
   },
   /** The page footer (design 3.8). */
   footer: {
+    contextHeading: '這是什麼',
+    context: '提案小幫手是 ETBlue 為「市政 debug 松」製作的參加作品。它把臺北市政議題的分析整理成結構化資料，讓你看見每個議題的利害關係人、他們的關注和可能的解法。',
+    disclaimerHeading: '免責聲明',
+    personal: '這是一位參加者個人用 AI 協助製作的作品，與主辦單位和臺北市政府沒有關係，也不代表他們的立場。',
+    simulated: '的內容由 AI 推想，不是真實訪談，也不是真實市民的話。',
+    summary: '的內容由 AI 從真實資料或新聞報導整理，還沒有經過真人查核。資料的件數是估計。',
+    nav: '網站資訊',
+    about: '關於本站',
+  },
+  /** The about page #/about (design 3.13). */
+  about: {
+    title: '關於本站',
+    intro: '提案小幫手的活動、原始碼、授權、資料檔案和相關文章。',
+    linksHeading: '專案連結',
+    repo: 'GitHub 原始碼',
+    method: '如何閱讀議題分析',
+    /** The official event page of the hackathon. */
+    event: '市政 debug 松活動頁面',
     licenseHeading: '授權',
     code: '程式碼：',
     mit: 'MIT 授權',
     content: '作者製作的內容：',
     ccBy: '創用 CC 姓名標示 4.0（CC BY 4.0）',
     exceptions: '主辦單位的內容依主辦單位的規定使用。開放資料依各資料集的授權使用。',
-    disclaimerHeading: '免責聲明',
-    personal: '這是一位參加者個人用 AI 協助製作的作品，與主辦單位和臺北市政府沒有關係，也不代表他們的立場。',
-    simulated: '的內容由 AI 推想，不是真實訪談，也不是真實市民的話。',
-    summary: '的內容由 AI 從真實資料或新聞報導整理，還沒有經過真人查核。資料的件數是估計。',
     dataHeading: '下載資料',
     dataIntro: '本站使用的資料，歡迎在授權範圍內再利用。',
     json: 'JSON（本站讀取的檔案）',
@@ -43,6 +52,7 @@ export const t = {
     dataLicense: '分析內容採用 CC BY 4.0 授權，例外見 ',
     contentLicenseFile: 'LICENSE-CONTENT.md',
     dataLicenseEnd: '：主辦單位的內容依主辦單位的規定使用；從主辦單位的市民資料整理出的內容，只限於這次黑客松使用。',
+    postsHeading: '作者的相關文章',
   },
   /** The list pages (design 3.9). */
   lists: {

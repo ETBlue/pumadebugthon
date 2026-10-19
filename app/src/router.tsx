@@ -1,5 +1,6 @@
 import { createHashRouter } from 'react-router'
 import { Layout } from '@/components/Layout'
+import About from '@/pages/About'
 import Home from '@/pages/Home'
 import Issue from '@/pages/Issue'
 import Issues from '@/pages/Issues'
@@ -34,6 +35,7 @@ export const router = createHashRouter([
       { path: 'stakeholders/:id', element: <Stakeholder /> },
       { path: 'solutions', element: <Solutions /> },
       { path: 'spaces/:code', element: <Space /> },
+      { path: 'about', element: <About /> },
       // Unknown pages, also the removed #/wants and #/needs (design 3.7).
       { path: '*', element: <Placeholder /> },
     ],

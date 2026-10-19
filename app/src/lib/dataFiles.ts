@@ -1,4 +1,4 @@
-// Links to the app's own data files, for the footer (design 3.8): the JSON
+// Links to the app's own data files, for the about page (design 3.13): the JSON
 // the site reads, and the CSV files in analysis/ on GitHub. The issue files
 // come from index.json, so a new issue appears without a code change.
 import type { IndexFile } from '@/types'

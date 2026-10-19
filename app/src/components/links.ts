@@ -11,5 +11,16 @@ export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`
 /** The content licenses (CC BY 4.0) and their exceptions. */
 export const CONTENT_LICENSE_URL = `${REPO_URL}/blob/main/LICENSE-CONTENT.md`
 
-/** The official event page of the hackathon (design 3.8). */
+/** The official event page of the hackathon (design 3.13). */
 export const EVENT_URL = 'https://puma.taipei/hackathon'
+
+/** Related blog posts by the author, for the about page (design 3.13).
+ * Newest first. The title is the post's own title, like an issue title from
+ * the data, so it is not in the i18n file. */
+export const AUTHOR_POSTS: readonly { title: string; date: string; url: string }[] = [
+  {
+    title: '台北市政 debug 松議題的模擬分析',
+    date: '2026-10-17',
+    url: 'https://etblue.blogspot.com/2026/10/puma-taipei-debug-hackathon-issue-analysis.html',
+  },
+]

@@ -178,16 +178,15 @@ On a phone (375 px) the header must not scroll sideways. The app name is on the 
 
 ### 3.8 Footer
 
-On every page. A `<footer>` landmark with:
+On every page. A `<footer>` landmark with three parts, in this order (`human-inputs.md`, information architecture):
 
 | Part | Content |
 |---|---|
-| 專案連結 | GitHub source code, 「如何閱讀議題分析」 (`analysis/method.md`), and 「市政 debug 松活動頁面」 (https://puma.taipei/hackathon, the official event page; opens in a new tab, `rel="noopener noreferrer"`, with 「（在新分頁開啟）」 for screen readers). The disclaimer is right next to it, so the link gives the context and does not suggest that the host approved the app. |
-| 授權 | Code: MIT, link to `LICENSE` on GitHub. Content made by ETBlue: CC BY 4.0, link to `LICENSE-CONTENT.md` on GitHub. A short note: the host's content follows the host's rules, and open data follows each dataset's license. |
+| 這是什麼 | One short paragraph on the context of the app: 提案小幫手 is ETBlue's entry for 「市政 debug 松」. It turns the analysis of Taipei city issues into structured data, so readers can see each issue's stakeholders, their concerns and the possible solutions. |
 | 免責聲明 | A personal work by one participant, made with AI help. It is not linked to the host or to the Taipei City Government. `[AI模擬]` content is not real interviews or real citizen words. `[AI整理]` content is an AI summary of real data or news reports, not yet checked by a person, and its counts are estimates. This is the only disclaimer on the page (3.5). |
-| 下載資料 | The app's own data files, so others can reuse them. This is what `human-inputs.md` means by "the open data used by the app". The JSON the site reads (`data/index.json`, and `data/issues/<folder>.json` for each analyzed issue), as links on the site. The CSV files on GitHub: `analysis/stakeholders.csv`, each analyzed issue's `analysis/<folder>/user-stories.csv`, `space-types.csv`, `path-labels.csv`, `issues.csv`, `open-data.csv`. The list is built from `index.json` (a tested function in `src/lib/`), so a new issue appears with no code change. One line on the data license: the analysis is CC BY 4.0, with the exceptions in `LICENSE-CONTENT.md` (host content; content made from the host's citizen data is only for this hackathon). |
+| 關於本站 | A link to `#/about` (3.13), in a small `<nav>` named 「網站資訊」. |
 
-The government open datasets (`openData` in `index.json`) are not in the footer. Each issue lists them in its appendix.
+On a wide screen the first two parts are side by side, and the link is on its own row below them. On a phone the three parts stack. The project links, the licenses and the data files moved to the about page (decision 32).
 
 ### 3.9 List pages
 
@@ -304,6 +303,19 @@ Rules:
 - Every mention of a solution links to its page: the issue 解法 tab, `#/solutions`, the home block, the opinion result (相關解法), the space page and the stakeholder page. The link text is the code and the name, so each solution has one link and no two links have the same text and different targets. The link keeps `?evidence=1`.
 - An unknown issue, an issue with no analysis, or an unknown code shows a short message with links (the issue's 解法 tab, `#/solutions`, the home page).
 - The logic is in `src/lib/solutionPage.ts`: `solutionPath`, `findSolution`, `solutionTitle`, `solutionStoryGroups`, `solutionGroupCoverage`, `solutionStakeholders`, `solutionConflicts`. Nothing is sorted by a count.
+
+### 3.13 About page
+
+URL: `#/about`. The h1 and the page title are 「關於本站」 (page title 「關於本站 · 提案小幫手」). The footer links here. The header has no link to it, so no header link is active on this page (3.7). The page is `src/pages/About.tsx`. Each part is an h2:
+
+| Part | Content |
+|---|---|
+| 專案連結 | 「市政 debug 松活動頁面」 (https://puma.taipei/hackathon, the official event page; opens in a new tab, `rel="noopener noreferrer"`, with 「（在新分頁開啟）」 for screen readers), GitHub source code, and 「如何閱讀議題分析」 (`analysis/method.md`). The disclaimer in the footer is on the same page, so the event link gives the context and does not suggest that the host approved the app. |
+| 授權 | Code: MIT, link to `LICENSE` on GitHub. Content made by ETBlue: CC BY 4.0, link to `LICENSE-CONTENT.md` on GitHub. A short note: the host's content follows the host's rules, and open data follows each dataset's license. |
+| 下載資料 | The app's own data files, so others can reuse them. This is what `human-inputs.md` means by "the open data used by the app". The JSON the site reads (`data/index.json`, and `data/issues/<folder>.json` for each analyzed issue), as links on the site. The CSV files on GitHub: `analysis/stakeholders.csv`, each analyzed issue's `analysis/<folder>/user-stories.csv`, `space-types.csv`, `path-labels.csv`, `issues.csv`, `open-data.csv`. The list is built from `index.json` (`dataFileLinks` in `src/lib/dataFiles.ts`), so a new issue appears with no code change. One line on the data license: the analysis is CC BY 4.0, with the exceptions in `LICENSE-CONTENT.md` (host content; content made from the host's citizen data is only for this hackathon). |
+| 作者的相關文章 | The author's blog posts about this work, newest first, each with its title (a link) and date. Today one post: 「台北市政 debug 松議題的模擬分析」, 2026-10-17. The list is `AUTHOR_POSTS` in `src/components/links.ts`. |
+
+The government open datasets (`openData` in `index.json`) are not on this page. Each issue lists them in its appendix.
 
 ## 4. Opinion check
 
@@ -559,3 +571,4 @@ Required by the hackathon rules:
 29. Each issue analysis has a 「分析摘要」 section near the top, after the intro notes and before 題目原文重點 (ETBlue, `human-inputs.md`). It has 5 topics in a fixed order: 難以取捨的決定, 可能的爭議, 受影響較大的弱勢族群, 法規上的障礙, 相依事項與現行政策的關係. Each item has a tag (mostly `[AI模擬]`, or a 【待補】 item) and lists where it comes from (相關編號). The summary adds no new facts. 受影響較大的弱勢族群 follows the 1.3 order and names the groups not included yet. The wording is neutral: each controversy gives the sides in the same way, and a current policy is described as 「與現行政策的關係」. The app shows the summary first on the 總覽 tab (3.2). The section heading 「分析摘要」 is an h3, like the other sections of the tab, so each topic is an h4. The topics are never sorted by the number of items. (ETBlue, 2026-10-19)
 30. The header shows only the app name, 議題, 利害關係人 and 解法 with counts, and the theme button. 訴求 and 需求 are no longer in the header (ETBlue, `human-inputs.md`, information architecture). This replaces the header part of decisions 13 and 22 (3.7). (ETBlue, 2026-10-20)
 31. The pages `#/wants` and `#/needs` are removed, with their routes, page files and list code (`src/lib/wants.ts`, `src/lib/needs.ts`). Their old URLs show the not-found page. The pick link helpers move to `src/lib/opinion.ts`. `wantCount` and `needCount` stay in `src/lib/counts.ts` for the planned 訴求 and 需求 tabs. This replaces decisions 14 and 22 (3.9). (ETBlue, `human-inputs.md`, 2026-10-20)
+32. The footer has only three parts: a short text on what the app is (who made it, for 市政 debug 松, what it does), the disclaimer, and a link 「關於本站」. A new page `#/about` 關於本站 has the event page link, the GitHub link, the licenses, the data files and the author's related blog posts. These moved from the footer (3.8, 3.13). This replaces the footer part of decisions 13 and 16. (ETBlue, `human-inputs.md`, 2026-10-20)

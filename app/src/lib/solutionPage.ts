@@ -1,12 +1,13 @@
 // Lookups for the solution page #/solutions/<n>-<code> (design 3.12).
 // The paths are in entityPaths.ts (solutionPath).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
-import type { Conflict, Group, IssueFile, Solution } from '@/types'
+import type { Conflict, Group, IssueFile, Priority, Solution } from '@/types'
 import { dataBasedOnly } from './dataBasis'
 import { compareIds } from './ids'
 import { storiesByPriority, type PriorityGroup } from './issuePage'
 import { stripMarkdown } from './markdown'
-import { issueNeeds, needsOfStakeholder, type NeedItem, type NeedSolution } from './needs'
+import { dataBasedNeeds, issueNeeds, needsOfStakeholder, type NeedItem, type NeedSolution } from './needs'
+import { PRIORITIES } from './priority'
 import { conflictView, type ConflictView } from './wantList'
 
 /** The solution for the code in the URL: one capital letter, for example "A".
@@ -162,4 +163,65 @@ export function solutionWayOutConflicts(issue: IssueFile, solution: Solution): C
   return issue.conflicts
     .filter((c) => c.wayOutSolutions.includes(solution.id))
     .map((c) => conflictView(issue, c))
+}
+
+/** 相關的衝突 on the 總覽 tab (design 3.12): the conflicts with a covered
+ * story on either side, but not the ones whose way out lists the solution
+ * (those show under 解開的衝突). File order. */
+export function solutionRelatedConflicts(issue: IssueFile, solution: Solution): SolutionConflict[] {
+  return solutionConflicts(issue, solution).filter((c) => !c.conflict.wayOutSolutions.includes(solution.id))
+}
+
+/** The 「只看有資料根據」 filter on a coverage: with on, keep only the needs
+ * with a [實證] or [AI整理] 以便… cell (dataBasedNeeds). Keeps the order. */
+export function dataBasedCoverage(coverage: NeedCoverage, on: boolean): NeedCoverage {
+  if (!on) return coverage
+  return { covered: dataBasedNeeds(coverage.covered), notCovered: dataBasedNeeds(coverage.notCovered) }
+}
+
+export interface CoveragePriorityGroup<T extends NeedItem> {
+  priority: Priority
+  items: T[]
+}
+
+function byPriority<T extends NeedItem>(items: T[]): CoveragePriorityGroup<T>[] {
+  return PRIORITIES.map((priority) => ({ priority, items: items.filter((i) => i.need.priority === priority) })).filter(
+    (g) => g.items.length > 0,
+  )
+}
+
+/** The 需求 tab (design 3.12): the covered and the not covered needs, each
+ * grouped by the need's own priority in the fixed order M, S, C, W. Inside
+ * a group, the order of step 5.2. Empty groups are left out. */
+export function coverageByPriority(coverage: NeedCoverage): {
+  covered: CoveragePriorityGroup<CoveredNeed>[]
+  notCovered: CoveragePriorityGroup<NotCoveredNeed>[]
+} {
+  return { covered: byPriority(coverage.covered), notCovered: byPriority(coverage.notCovered) }
+}
+
+/** The needs of one stakeholder in one issue. */
+export interface IssueNeedCoverage extends NeedCoverage {
+  issueNumber: number
+}
+
+/** One stakeholder on the 利害關係人 tab, with its needs split by issue. An
+ * issue solution has one issue. A cross-issue solution (Task N11, design
+ * 3.18) can have several, in issue number order. */
+export interface StakeholderEntry {
+  id: string
+  issues: IssueNeedCoverage[]
+}
+
+/** The stakeholder coverage of an issue solution in the shape of the
+ * 利害關係人 tab: one issue per stakeholder. Keeps the ID order. */
+export function stakeholderEntries(
+  issueNumber: number,
+  coverage: SolutionStakeholderCoverage,
+): { covered: StakeholderEntry[]; notCovered: StakeholderEntry[] } {
+  const entry = ({ id, covered, notCovered }: StakeholderCoverage): StakeholderEntry => ({
+    id,
+    issues: [{ issueNumber, covered, notCovered }],
+  })
+  return { covered: coverage.covered.map(entry), notCovered: coverage.notCovered.map(entry) }
 }

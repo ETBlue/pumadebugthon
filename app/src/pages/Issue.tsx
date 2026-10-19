@@ -1,17 +1,15 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
-import { ConflictsTab } from '@/components/issue/ConflictsTab'
 import { NeedsTab } from '@/components/issue/NeedsTab'
-import { OpinionTab } from '@/components/issue/OpinionTab'
 import { OverviewTab } from '@/components/issue/OverviewTab'
 import { SolutionsTab } from '@/components/issue/SolutionsTab'
+import { WantsTab } from '@/components/issue/WantsTab'
 import type { IssueTabProps } from '@/components/issue/types'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { PageTabs } from '@/components/PageTabs'
-import { focusTargetClass, linkClass } from '@/components/styles'
-import { cn } from '@/lib/utils'
+import { linkClass } from '@/components/styles'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
@@ -22,24 +20,9 @@ import type { AvailableIssueSummary, IndexFile } from '@/types'
 
 const ti = t.issue
 
-// For now (plan Task N3) the 訴求 tab reuses the old tab parts. Task N5
-// replaces them.
-
-/** 訴求: the opinion check, then the conflicts (decision 38). */
-function WantsFrame(props: IssueTabProps) {
-  return (
-    <>
-      <OpinionTab {...props} />
-      <section id="focus-conflicts" tabIndex={-1} className={cn('mt-8', focusTargetClass)}>
-        <ConflictsTab {...props} />
-      </section>
-    </>
-  )
-}
-
 const TAB_CONTENT: Record<IssueTab, (props: IssueTabProps) => ReactNode> = {
   overview: OverviewTab,
-  wants: WantsFrame,
+  wants: WantsTab,
   needs: NeedsTab,
   solutions: SolutionsTab,
 }

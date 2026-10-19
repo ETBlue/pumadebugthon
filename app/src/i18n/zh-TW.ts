@@ -650,6 +650,8 @@ export const t = {
     prioritiesDiffer: '各議題的優先順序不同',
     groupReason: '理由',
     groupNeeds: '各議題的需求',
+    /** Above the needs of an issue that is not in parts (design 3.18). */
+    notInPartsNote: '這個議題沒有解法被合併進來。這裡只列出透過「跨議題的共同需求」涵蓋的需求。',
     issuesIntro: '下面依議題列出涵蓋和未涵蓋的需求。',
   },
   /** One conflict (ConflictView, design 3.2). */

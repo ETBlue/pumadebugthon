@@ -6,11 +6,12 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import {
-  crossConflictView, crossIssueNumbers, crossNeedCoverage, crossNeedGroupsOf, crossSolutionFocus,
+  crossConflictView, crossCoverageIssueNumbers, crossIssueNumbers, crossNeedCoverage, crossNeedGroupsOf, crossSolutionFocus,
   crossSolutionGroup, crossSolutionsOfIssue, crossSolutionsOfSolution, crossSolutionTabCounts,
   crossSolutionTitle, crossStakeholderCoverage, crossWayOutConflicts, findCrossSolution, issuesOfCross,
 } from './crossIssue'
 import { compareIds } from './ids'
+import { issueNeeds } from './needs'
 
 const cross = crossJson as CrossIssueFile
 const index = indexJson as IndexFile
@@ -127,6 +128,46 @@ describe('crossNeedCoverage (design 3.18, decision 60)', () => {
   })
 })
 
+describe('cross-issue coverage of an issue that is not in parts (X-E, #1 N15)', () => {
+  // X-E has parts in #2 and #8 only. It lists X-N03, and X-N03 has #1 N15.
+  // Decision 60: a need in a listed X-N group is covered, so #1 N15 is
+  // covered. 「Not covered」 stays limited to the issues in parts.
+  it('loads the issues of parts plus the issues of the listed X-N groups', () => {
+    expect(crossIssueNumbers(xe)).toEqual([2, 8])
+    expect(crossCoverageIssueNumbers(cross, xe)).toEqual([1, 2, 8])
+    expect(crossCoverageIssueNumbers(cross, xa)).toEqual([1, 2, 8])
+  })
+
+  it('lists #1 N15 as covered through X-N03, with no not covered need in #1', () => {
+    const coverage = crossNeedCoverage(cross, xe, files)
+    expect(coverage.map((c) => [c.issueNumber, c.inParts])).toEqual([[1, false], [2, true], [8, true]])
+    const one = coverage[0].coverage
+    expect(one.covered.map((i) => [i.need.id, i.part])).toEqual([['N15', 'crossIssue']])
+    expect(one.notCovered).toEqual([])
+  })
+
+  it('lists the stakeholders of #1 N15 as covered, with only that need in #1', () => {
+    const n15 = issueNeeds(trees).find((i) => i.need.id === 'N15')!
+    const { covered, notCovered } = crossStakeholderCoverage(cross, xe, files)
+    for (const id of n15.stakeholders) {
+      const entry = covered.find((e) => e.id === id)!
+      const one = entry.issues.find((i) => i.issueNumber === 1)!
+      expect(one.covered.map((c) => c.need.id)).toEqual(['N15'])
+      expect(one.notCovered).toEqual([])
+    }
+    // A stakeholder of #1 with no need in X-N03 is not listed at all.
+    const listed = new Set([...covered, ...notCovered].map((e) => e.id))
+    const onlyInOne = trees.stakeholders.map((s) => s.id).filter(
+      (id) => !trashcans.stakeholders.some((s) => s.id === id) && !smokefree.stakeholders.some((s) => s.id === id),
+    )
+    for (const id of onlyInOne) if (!n15.stakeholders.includes(id)) expect(listed.has(id)).toBe(false)
+    // No entry lists a not covered need of #1.
+    for (const e of [...covered, ...notCovered]) {
+      for (const i of e.issues) if (i.issueNumber === 1) expect(i.notCovered).toEqual([])
+    }
+  })
+})
+
 describe('crossStakeholderCoverage', () => {
   const { covered, notCovered } = crossStakeholderCoverage(cross, xa, files)
 
@@ -160,9 +201,11 @@ describe('crossSolutionTabCounts', () => {
       needs: { covered: 17, notCovered: 57 },
       stakeholders: { covered: 21, notCovered: 30 },
     })
+    // X-E: 9 needs of #2 and #8, plus #1 N15 through X-N03 (decision 60).
+    // N15 (O05, O13) moves one stakeholder from not covered to covered.
     expect(crossSolutionTabCounts(cross, xe, files)).toEqual({
-      needs: { covered: 9, notCovered: 36 },
-      stakeholders: { covered: 15, notCovered: 21 },
+      needs: { covered: 10, notCovered: 36 },
+      stakeholders: { covered: 16, notCovered: 20 },
     })
   })
 })

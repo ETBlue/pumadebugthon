@@ -555,16 +555,16 @@ Today the file has 5 solutions (X-A to X-E), 7 X-N groups and 2 conflicts (X-C1,
 |---|---|
 | Breadcrumb, h1, title | 首頁 › 解法 › X-A. The h1 is 「X-A」 and the name with its tag. Page title: 「X-A <name> · 解法 · 市政提案小幫手」. |
 | Line under the h1 | 「跨議題解法・議題：#1、#2、#8」, each issue a link. The issues are the ones in `parts`. Then the summary, the space types and 新增日期. |
-| Covered needs | An issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue` (decision 60). |
-| Not covered needs | Every other need of the issues in `parts`. |
-| Covered stakeholders | A stakeholder with at least one covered need, in any of these issues. Each stakeholder is listed once, in ID order. |
+| Covered needs | An issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue` (decision 60). This can be a need of an issue that is not in `parts`. For example X-E has parts in #2 and #8, but its group X-N03 has #1 N15, so #1 N15 is covered. |
+| Not covered needs | Every other need of the issues in `parts`. An issue that is not in `parts` has no not covered need. |
+| Covered stakeholders | A stakeholder with at least one covered need, in any of these issues (also an issue that is not in `parts`). Each stakeholder is listed once, in ID order. |
 | Tab counts | The same rules as 3.12, summed over the issues. They count needs and stakeholders, not priorities (decision 48). |
-| 需求 tab | One h3 per issue (「#2 找回消失的垃圾桶」, in issue number order), then the covered and the not covered needs of that issue as in 3.12. Before them, 「跨議題的共同需求」: each X-N group in `needs.crossIssue`, with its summary and tag, its priority (or 「各議題的優先順序不同」 when `prioritiesDiffer`), its reason, and its issue needs as links (`#/issues/<n>/needs?focus=<id>`). An X-N group has no page and no link. |
-| 利害關係人 tab | As in 3.12. Under each stakeholder, its needs are split by issue. |
+| 需求 tab | One h3 per issue (「#2 找回消失的垃圾桶」, in issue number order), then the covered and the not covered needs of that issue as in 3.12. An issue that is not in `parts` shows only its covered needs, under the note 「這個議題沒有解法被合併進來。這裡只列出透過「跨議題的共同需求」涵蓋的需求。」. Before them, 「跨議題的共同需求」: each X-N group in `needs.crossIssue`, with its summary and tag, its priority (or 「各議題的優先順序不同」 when `prioritiesDiffer`), its reason, and its issue needs as links (`#/issues/<n>/needs?focus=<id>`). An X-N group has no page and no link. |
+| 利害關係人 tab | As in 3.12. Under each stakeholder, its needs are split by issue. For an issue that is not in `parts`, only the covered needs show, and only the stakeholders of those needs are added. |
 | 總覽 | 合併的解法 (each item of `parts`, as a link `#/solutions/<n>-<code>` with the issue and the name), 解開的衝突 (each cross-issue conflict whose `wayOutSolutions` lists this code: the text, the two sides with story links, 雙方的需求, 以需求為本的解方, and the issue conflicts in `issueConflicts` as links `#/issues/<n>/wants?focus=C7`), 特別關注族群 (each `solutionFocus` item that lists this code: the group and its note), 成效衡量 (`measures`: the indicator, the baseline with its tag, the source, the issue solutions in `from` as links, and 「新指標」 when `isNew`), 主責單位、法規、隱私與風險 (`detail`), and 更多 (link to `#/solutions`). |
 | 待補 | No own list. The `pending` list of the file is per section, not per solution. The 【待補】 text shows inside each cell. |
 
-The page needs the issue files of the issues in `parts`. It loads them like the issue page does.
+The page needs the issue files of the issues in `parts`, plus the issues of every need it covers (`needs.must`, `needs.shouldCould` and the X-N groups in `needs.crossIssue`). It loads them like the issue page does.
 
 **Where else they show:**
 
@@ -897,7 +897,7 @@ Required by the hackathon rules:
 57. A link to one want or one need goes to the issue's 訴求 or 需求 tab with `?focus=<key>` (for example `#/issues/2/wants?focus=W08`, `#/issues/2/needs?focus=N07`). A link to a stakeholder in a want or need list goes to that stakeholder's page on the same tab (`#/stakeholders/I06/wants`). This is the simplest rule: it uses the `?focus=` parameter that already exists, and needs no new page (3.16). (ETBlue, 2026-10-20)
 58. On the issue page, the stakeholder menu is inside the content of the 訴求, 需求 and 解法 tabs, after the tab list. The keyboard order is: tabs, then the menu, then the content. The reason: the 總覽 tab has no menu, and a wrapper around the tabs would build the tabs again on each tab change, so the keyboard focus would be lost. On the stakeholder page the menu is on every tab, so it stays before the tabs (3.3, 3.14). (Coordinator, after the N4 review, 2026-10-20)
 59. On the stakeholder page's 解法 tab, the 「只看有資料根據」 filter hides a need with no data basis (`dataBasedNeeds`), and hides a solution that has no need left. A conflict link in a filtered list keeps `?stakeholder=` and `?evidence=1` (3.3, 3.14). (Coordinator, after the N4 review, 2026-10-20)
-60. On a cross-issue solution page, an issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue`. 「Not covered」 means every other need of the issues in `parts`. A stakeholder is covered when at least one of its needs, in any of these issues, is covered (3.18). (ETBlue, 2026-10-20)
+60. On a cross-issue solution page, an issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue`. A need of an issue that is not in `parts` is covered too when it is in such a group (for example #1 N15 for X-E, through X-N03), and the page loads that issue for it. 「Not covered」 means every other need of the issues in `parts`; an issue that is not in `parts` has no not covered need. A stakeholder is covered when at least one of its needs, in any of these issues, is covered (3.18). (ETBlue, 2026-10-20; the part about issues not in `parts` added after the Phase N review, 2026-10-20)
 
 ## 14. Open questions
 

@@ -18,7 +18,7 @@ import { TagBadge } from '@/components/TagBadge'
 import { useCrossIssue, useIndex, useIssue, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
-import { crossIssueNumbers, crossSolutionTabCounts, crossSolutionTitle, findCrossSolution } from '@/lib/crossIssue'
+import { crossCoverageIssueNumbers, crossSolutionTabCounts, crossSolutionTitle, findCrossSolution } from '@/lib/crossIssue'
 import {
   crossSolutionPath, parseSolutionSlug, parseSolutionTab, SOLUTION_TABS, solutionPath, type SolutionTab,
 } from '@/lib/entityPaths'
@@ -155,11 +155,16 @@ function CrossSolutionLoader({ index, code }: { index: IndexFile; code: string }
   return <CrossIssueFilesLoader key={solution.code} index={index} data={cross.data} solution={solution} />
 }
 
-/** Loads the issue files of the issues in parts, like the issue page does. */
+/** Loads the issue files like the issue page does: the issues in parts,
+ * plus the issues of the needs the solution covers, for example #1 for
+ * X-E through its group X-N03 (crossCoverageIssueNumbers, decision 60). */
 function CrossIssueFilesLoader({ index, data, solution }: { index: IndexFile; data: CrossIssueFile; solution: CrossSolution }) {
   const folders = useMemo(
-    () => crossIssueNumbers(solution).flatMap((n) => index.issues.find((i) => i.number === n && i.available)?.folder ?? []),
-    [index, solution],
+    () =>
+      crossCoverageIssueNumbers(data, solution).flatMap(
+        (n) => index.issues.find((i) => i.number === n && i.available)?.folder ?? [],
+      ),
+    [index, data, solution],
   )
   const issues = useIssues(folders)
   if (issues.status !== 'ready') return <LoadState state={issues} />

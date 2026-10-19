@@ -82,7 +82,8 @@ function CrossNeedGroupCard({ group: g, issues }: { group: CrossNeedGroup; issue
 
 /** The 需求 tab of a cross-issue solution (design 3.18): the toggle,
  * 「跨議題的共同需求」, then one h3 per issue with the covered and the not
- * covered needs of that issue (NeedCoverageParts). */
+ * covered needs of that issue (NeedCoverageParts). An issue that is not in
+ * parts shows only its covered needs, with a short note. */
 export function CrossNeedsTab({ data, index, issues, solution }: {
   data: CrossIssueFile
   index: IndexFile
@@ -113,10 +114,12 @@ export function CrossNeedsTab({ data, index, issues, solution }: {
         </SolutionPart>
 
         {/* A line above each issue, so the issue h3 stands apart from the h4 parts under it. */}
-        {coverage.map(({ issueNumber, coverage: c }) => (
+        {coverage.map(({ issueNumber, inParts, coverage: c }) => (
           <div key={issueNumber} className="border-t pt-6">
             <SolutionPart id={`cross-issue-${issueNumber}`} title={title(issueNumber)}>
+              {!inParts && <p className="mb-4 text-sm text-muted-foreground">{tx.notInPartsNote}</p>}
               <NeedCoverageParts
+                showNotCovered={inParts}
                 issueNumber={issueNumber}
                 coverage={c}
                 solutionId={solution.code}

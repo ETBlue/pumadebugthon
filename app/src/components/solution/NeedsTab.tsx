@@ -82,6 +82,9 @@ export interface NeedCoveragePartsProps {
    * Default true. Set false when the same need key can show twice on the
    * page (several issues in Task N11). */
   focusTarget?: boolean
+  /** Show 「未涵蓋的需求」. Default true. false for an issue that is not in
+   * the parts of a cross-issue solution: it has only covered needs (design 3.18). */
+  showNotCovered?: boolean
 }
 
 /** The two parts of the 需求 tab (design 3.12): 「涵蓋的需求」 grouped by the
@@ -90,6 +93,7 @@ export interface NeedCoveragePartsProps {
  * the URL. The toggle itself is on the tab. */
 export function NeedCoverageParts({
   issueNumber, coverage, solutionId, stakeholders, headingLevel = 3, idPrefix = 'solution-needs', focusTarget = true,
+  showNotCovered = true,
 }: NeedCoveragePartsProps) {
   const [dataBasedOnly] = useDataBasisFilter()
   const groups = useMemo(() => coverageByPriority(dataBasedCoverage(coverage, dataBasedOnly)), [coverage, dataBasedOnly])
@@ -110,24 +114,26 @@ export function NeedCoverageParts({
         )}
       </LabelledSection>
 
-      <LabelledSection headingId={`${idPrefix}-not-covered`}>
-        <Heading level={headingLevel} id={`${idPrefix}-not-covered`} className="text-xl font-bold">
-          {tp.notCoveredNeedsHeading}
-        </Heading>
-        <p className="mt-1 text-sm text-muted-foreground">{tp.notCoveredNeedsIntro}</p>
-        {groups.notCovered.length === 0 ? (
-          <div className="mt-3">
-            <PartEmpty>{emptyText(coverage.notCovered.length, tp.notCoveredNeedsNone)}</PartEmpty>
-          </div>
-        ) : (
-          <PriorityGroups
-            {...common}
-            groups={groups.notCovered}
-            idPrefix={`${idPrefix}-not-covered`}
-            parts={NOT_COVERED_PARTS}
-          />
-        )}
-      </LabelledSection>
+      {showNotCovered && (
+        <LabelledSection headingId={`${idPrefix}-not-covered`}>
+          <Heading level={headingLevel} id={`${idPrefix}-not-covered`} className="text-xl font-bold">
+            {tp.notCoveredNeedsHeading}
+          </Heading>
+          <p className="mt-1 text-sm text-muted-foreground">{tp.notCoveredNeedsIntro}</p>
+          {groups.notCovered.length === 0 ? (
+            <div className="mt-3">
+              <PartEmpty>{emptyText(coverage.notCovered.length, tp.notCoveredNeedsNone)}</PartEmpty>
+            </div>
+          ) : (
+            <PriorityGroups
+              {...common}
+              groups={groups.notCovered}
+              idPrefix={`${idPrefix}-not-covered`}
+              parts={NOT_COVERED_PARTS}
+            />
+          )}
+        </LabelledSection>
+      )}
     </div>
   )
 }

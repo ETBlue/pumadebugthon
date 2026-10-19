@@ -29,10 +29,36 @@ export function crossIssueNumbers(solution: CrossSolution): number[] {
   return [...new Set(solution.parts.map((p) => p.issue))].sort((a, b) => a - b)
 }
 
-/** The files of the solution's issues, in number order. An issue with no
- * file in the list is left out. */
+/** The files of the solution's issues (the issues in parts), in number
+ * order. An issue with no file in the list is left out. */
 export function issuesOfCross(solution: CrossSolution, issues: IssueFile[]): IssueFile[] {
   return crossIssueNumbers(solution).flatMap((n) => issues.find((i) => i.number === n) ?? [])
+}
+
+/** The issues that the solution page needs (design 3.18, decision 60): the
+ * issues in parts, plus the issues of every need the solution covers
+ * (needs.must, needs.shouldCould and the X-N groups in needs.crossIssue).
+ * Each once, in number order. For example X-E has parts in #2 and #8, but
+ * its group X-N03 has #1 N15, so this gives [1, 2, 8]. */
+export function crossCoverageIssueNumbers(data: CrossIssueFile, solution: CrossSolution): number[] {
+  const numbers = [
+    ...crossIssueNumbers(solution),
+    ...solution.needs.must.map((r) => r.issue),
+    ...solution.needs.shouldCould.map((r) => r.issue),
+    ...crossNeedGroupsOf(data, solution).flatMap((g) => g.needs.map((m) => m.issue)),
+  ]
+  return [...new Set(numbers.filter((n): n is number => n !== null))].sort((a, b) => a - b)
+}
+
+/** The files of crossCoverageIssueNumbers, in number order, each with
+ * inParts: true when the issue is in parts. An issue with no file in the
+ * list is left out. */
+function coverageFiles(data: CrossIssueFile, solution: CrossSolution, issues: IssueFile[]) {
+  const inParts = new Set(crossIssueNumbers(solution))
+  return crossCoverageIssueNumbers(data, solution).flatMap((n) => {
+    const issue = issues.find((i) => i.number === n)
+    return issue ? [{ issue, inParts: inParts.has(n) }] : []
+  })
 }
 
 /** The cross-issue solutions with the issue in parts, in code order. For the
@@ -56,8 +82,9 @@ export function crossNeedGroupsOf(data: CrossIssueFile, solution: CrossSolution)
 
 // ---------- Coverage (design 3.18, decision 60) ----------
 // An issue need is covered when it is in needs.must or needs.shouldCould, or
-// in an X-N group listed in needs.crossIssue. Not covered: every other need
-// of the issues in parts.
+// in an X-N group listed in needs.crossIssue. This can be a need of an issue
+// that is not in parts. Not covered: every other need of the issues in parts.
+// An issue that is not in parts has no not covered need.
 
 /** Need ID -> the part that covers it, for one issue. must and shouldCould
  * come first; crossIssue is only for a need that is not in them. */
@@ -86,38 +113,63 @@ function splitNeeds<T extends NeedItem>(items: T[], parts: Map<string, CoveredNe
 
 export interface IssueCoverage {
   issueNumber: number
+  /** true when the issue is in parts. false: the issue is here only because
+   * the solution covers some of its needs, and notCovered is empty. */
+  inParts: boolean
   coverage: NeedCoverage
 }
 
-/** The covered and not covered needs, per issue of parts (number order).
- * Inside an issue, the order of step 5.2. Pass the issue files; an issue
- * with no file is left out. */
-export function crossNeedCoverage(data: CrossIssueFile, solution: CrossSolution, issues: IssueFile[]): IssueCoverage[] {
-  return issuesOfCross(solution, issues).map((issue) => ({
-    issueNumber: issue.number,
-    coverage: splitNeeds(issueNeeds(issue), coveredParts(data, solution, issue.number)),
-  }))
+/** The needs of one issue to split: all of them for an issue in parts, only
+ * the covered ones for another issue. Keeps the order. */
+function needsToSplit<T extends NeedItem>(items: T[], parts: Map<string, CoveredNeed['part']>, inParts: boolean): T[] {
+  return inParts ? items : items.filter((i) => parts.has(i.need.id))
 }
 
-/** The 利害關係人 tab (design 3.18): each stakeholder of the issues (step 1)
- * once, in ID order, with its needs split by issue (number order). An issue
- * where the stakeholder has no need is left out of its entry. A stakeholder
+/** The covered and not covered needs, per issue of crossCoverageIssueNumbers
+ * (number order). Inside an issue, the order of step 5.2. Pass the issue
+ * files; an issue with no file is left out. */
+export function crossNeedCoverage(data: CrossIssueFile, solution: CrossSolution, issues: IssueFile[]): IssueCoverage[] {
+  return coverageFiles(data, solution, issues).map(({ issue, inParts }) => {
+    const parts = coveredParts(data, solution, issue.number)
+    return {
+      issueNumber: issue.number,
+      inParts,
+      coverage: splitNeeds(needsToSplit(issueNeeds(issue), parts, inParts), parts),
+    }
+  })
+}
+
+/** The 利害關係人 tab (design 3.18): each stakeholder of the issues in parts
+ * (step 1), and each stakeholder of a covered need of another issue, once,
+ * in ID order, with its needs split by issue (number order). For an issue
+ * that is not in parts, only the covered needs show. An issue where the
+ * stakeholder has no need to show is left out of its entry. A stakeholder
  * is covered when at least one of its needs, in any of the issues, is covered. */
 export function crossStakeholderCoverage(
   data: CrossIssueFile,
   solution: CrossSolution,
   issues: IssueFile[],
 ): { covered: StakeholderEntry[]; notCovered: StakeholderEntry[] } {
-  const files = issuesOfCross(solution, issues)
-  const parts = new Map(files.map((issue) => [issue.number, coveredParts(data, solution, issue.number)]))
-  const ids = [...new Set(files.flatMap((issue) => issue.stakeholders.map((s) => s.id)))].sort(compareIds)
+  const files = coverageFiles(data, solution, issues).map((f) => ({
+    ...f,
+    parts: coveredParts(data, solution, f.issue.number),
+  }))
+  const ids = [
+    ...new Set(
+      files.flatMap(({ issue, inParts, parts }) =>
+        inParts
+          ? issue.stakeholders.map((s) => s.id)
+          : needsToSplit(issueNeeds(issue), parts, false).flatMap((i) => i.stakeholders),
+      ),
+    ),
+  ].sort(compareIds)
   const out = { covered: [] as StakeholderEntry[], notCovered: [] as StakeholderEntry[] }
   for (const id of ids) {
     const entry: StakeholderEntry = {
       id,
-      issues: files.flatMap((issue) => {
-        const needs = needsOfStakeholder(issue, id)
-        return needs.length === 0 ? [] : [{ issueNumber: issue.number, ...splitNeeds(needs, parts.get(issue.number)!) }]
+      issues: files.flatMap(({ issue, inParts, parts }) => {
+        const needs = needsToSplit(needsOfStakeholder(issue, id), parts, inParts)
+        return needs.length === 0 ? [] : [{ issueNumber: issue.number, ...splitNeeds(needs, parts) }]
       }),
     }
     if (entry.issues.some((i) => i.covered.length > 0)) out.covered.push(entry)

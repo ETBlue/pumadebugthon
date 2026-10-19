@@ -1,9 +1,8 @@
 // The counts in the header (design 3.7). A count is a plain number, not a
 // score. Nothing here sorts.
 // wantCount and needCount are not in the header any more (decision 30). They
-// stay for the 訴求 and 需求 tabs that human-inputs.md plans for the issue
-// and stakeholder pages.
-import type { IndexFile, IssueFile, Story } from '@/types'
+// give the 訴求 and 需求 tab labels (decision 40, tabCounts.ts).
+import type { IndexFile, IssueFile } from '@/types'
 import { availableIssues } from './issues'
 import { pickList } from './opinion'
 
@@ -29,14 +28,10 @@ export function wantCount(issues: IssueFile[]): number {
   return issues.reduce((n, issue) => n + pickList(issue).length, 0)
 }
 
-/** True when the story has a 以便… cell. A 【待補】 cell counts; an empty one does not. */
-export function hasSoThat(story: Story): boolean {
-  return story.soThat.text.trim() !== ''
-}
-
-/** 需求: one per story with a 以便… cell, summed over the issues. 以便…
- * cells have no groups, so two cells with the same text are two 需求.
- * Pass the files of the analyzed issues. */
+/** 需求: the rows of step 5.2 (`needs` in the issue JSON), summed over the
+ * issues. Each N group counts once, plus each story with no N group
+ * (decision 43). This is the list the 需求 tab shows. An issue in the old
+ * format has no rows, so it counts 0. Pass the files of the analyzed issues. */
 export function needCount(issues: IssueFile[]): number {
-  return issues.reduce((n, issue) => n + issue.stories.filter(hasSoThat).length, 0)
+  return issues.reduce((n, issue) => n + issue.needs.length, 0)
 }

@@ -5,6 +5,8 @@ import { dataBasedOnly } from './dataBasis'
 import { compareIds } from './ids'
 import { storiesByPriority, type PriorityGroup } from './issuePage'
 import { stripMarkdown } from './markdown'
+import { issueNeeds, needsOfStakeholder, type NeedItem, type NeedSolution } from './needs'
+import { conflictView, type ConflictView } from './wantList'
 
 /** The URL path of a solution page, for example "/issues/2/solutions/A".
  * A solution code is never reused in an issue, so the path keeps working. */
@@ -82,4 +84,87 @@ export function solutionConflicts(issue: IssueFile, solution: Solution): Solutio
     const ids = [...conflict.sideA, ...conflict.sideB].filter((id) => covered.has(id))
     return ids.length === 0 ? [] : [{ conflict, covered: [...new Set(ids)] }]
   })
+}
+
+// ---------- Coverage (design 3.12, decision 50) ----------
+// A need is covered when the solution lists its ID in needs.must or
+// needs.shouldCould (step 6.2). Every other need of the issue is not covered,
+// also a 這次不做 need. A stakeholder is covered when at least one of its
+// needs is covered. The lists keep the order of step 5.2 or ID order.
+
+export interface CoveredNeed extends NeedItem {
+  /** The part of step 6.2 that lists the need for this solution. */
+  part: NeedSolution['part']
+}
+
+export interface NotCoveredNeed extends NeedItem {
+  /** The other solutions that cover the need, in letter order. Empty when no
+   * solution covers it (「沒有任何解法涵蓋」). */
+  otherSolutions: Solution[]
+}
+
+export interface NeedCoverage {
+  covered: CoveredNeed[]
+  notCovered: NotCoveredNeed[]
+}
+
+/** The part of step 6.2 that lists the need in the solution, or null. */
+function coveredPart(solution: Solution, needId: string): NeedSolution['part'] | null {
+  if (!solution.needs) return null
+  if (solution.needs.must.includes(needId)) return 'must'
+  if (solution.needs.shouldCould.includes(needId)) return 'shouldCould'
+  return null
+}
+
+/** Splits the given needs into covered and not covered. Keeps their order. */
+function splitNeeds(items: NeedItem[], solution: Solution): NeedCoverage {
+  const out: NeedCoverage = { covered: [], notCovered: [] }
+  for (const item of items) {
+    const part = coveredPart(solution, item.need.id)
+    if (part) out.covered.push({ ...item, part })
+    else {
+      const otherSolutions = item.solutions.map((s) => s.solution).filter((s) => s.id !== solution.id)
+      out.notCovered.push({ ...item, otherSolutions })
+    }
+  }
+  return out
+}
+
+/** The needs of the issue that the solution covers and does not cover, in
+ * the order of step 5.2. In the old format (needs is null), nothing is covered. */
+export function solutionNeedCoverage(issue: IssueFile, solution: Solution): NeedCoverage {
+  return splitNeeds(issueNeeds(issue), solution)
+}
+
+export interface StakeholderCoverage extends NeedCoverage {
+  /** The stakeholder ID. */
+  id: string
+}
+
+export interface SolutionStakeholderCoverage {
+  covered: StakeholderCoverage[]
+  notCovered: StakeholderCoverage[]
+}
+
+/** The stakeholders of the issue (step 1) that the solution covers and does
+ * not cover, in ID order. Each one comes with its own needs, split into
+ * covered and not covered. A need with several stories of the stakeholder
+ * shows once. */
+export function solutionStakeholderCoverage(issue: IssueFile, solution: Solution): SolutionStakeholderCoverage {
+  const out: SolutionStakeholderCoverage = { covered: [], notCovered: [] }
+  const ids = issue.stakeholders.map((s) => s.id).sort(compareIds)
+  for (const id of ids) {
+    const coverage = { id, ...splitNeeds(needsOfStakeholder(issue, id), solution) }
+    if (coverage.covered.length > 0) out.covered.push(coverage)
+    else out.notCovered.push(coverage)
+  }
+  return out
+}
+
+/** 解開的衝突: the conflicts whose 以需求為本的解方 lists the solution, in
+ * file order, with their sides, needs and way out. */
+export function solutionWayOutConflicts(issue: IssueFile, solution: Solution): ConflictView[] {
+  return issue.conflicts
+    .filter((c) => c.wayOutSolutions.includes(solution.id))
+    .map((c) => conflictView(issue, c))
 }

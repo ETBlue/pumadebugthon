@@ -3,7 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
-import type { IndexFile, IssueFile, Story } from '@/types'
+import type { IndexFile, IssueFile, Need, Story } from '@/types'
 import { issueCount, needCount, solutionCount, stakeholderCount, wantCount } from './counts'
 import { pickList } from './opinion'
 
@@ -57,25 +57,24 @@ describe('wantCount', () => {
   })
 })
 
-
 describe('needCount', () => {
-  it('counts one 需求 per story with a 以便… cell, summed over the issues', () => {
-    expect(needCount(issues)).toBe(66 + 52 + 46)
+  it('counts the rows of step 5.2 (issue.needs), summed over the issues', () => {
+    // Each N group once, plus each story with no N group (decision 43).
+    expect(needCount(issues)).toBe(29 + 21 + 24)
+    expect(needCount([trashcansJson as IssueFile])).toBe(21)
   })
 
-  it('counts a 【待補】 cell, but not an empty one', () => {
-    const story = (id: string, text: string, pending = false): Story => ({
-      id, stakeholder: id.split('-')[0], group: 'W01',
-      want: { text: id, tag: 'AI模擬', pending: false },
-      soThat: { text, tag: pending ? null : 'AI模擬', pending },
-      source: null, priority: 'M', priorityTag: 'AI模擬', needGroup: null,
+  it('counts an N group once, however many stories it has', () => {
+    const need = (id: string, stories: string[]): Need => ({
+      id, kind: id.startsWith('N') ? 'group' : 'story', summary: id, stories,
+      priority: 'M', priorityTag: 'AI模擬', reason: { text: '', tag: 'AI模擬', pending: false },
     })
     const issue = {
       ...issues[0],
-      stories: [story('I01-US01', 'a'), story('I02-US01', 'a'), story('I03-US01', '【待補】', true), story('I04-US01', ' ')],
+      needs: [need('N01', ['I01-US01', 'I02-US01', 'I03-US01']), need('I04-US01', ['I04-US01'])],
     } as IssueFile
-    // Two stories with the same text are still two 需求: 以便… cells have no groups.
-    expect(needCount([issue])).toBe(3)
+    expect(needCount([issue])).toBe(2)
+    expect(needCount([{ ...issues[0], needs: [] } as IssueFile])).toBe(0)
     expect(needCount([])).toBe(0)
   })
 })

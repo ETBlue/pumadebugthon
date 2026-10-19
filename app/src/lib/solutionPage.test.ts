@@ -10,7 +10,10 @@ import {
   solutionPath,
   solutionStakeholders,
   solutionStoryGroups,
+  solutionNeedCoverage,
+  solutionStakeholderCoverage,
   solutionTitle,
+  solutionWayOutConflicts,
 } from './solutionPage'
 
 const trees = treesJson as IssueFile
@@ -120,5 +123,88 @@ describe('solutionConflicts', () => {
         }
       }
     }
+  })
+})
+
+const ids = (list: { need: { id: string } }[]) => list.map((x) => x.need.id)
+const codes = (list: { id: string }[]) => list.map((x) => x.id)
+
+describe('solutionNeedCoverage', () => {
+  it('splits the needs of #2 into 9 covered by A and 12 not covered, in the order of step 5.2', () => {
+    const { covered, notCovered } = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
+    expect(ids(covered)).toEqual(['N01', 'N02', 'N04', 'N05', 'N07', 'O04-US02', 'O04-US04', 'O12-US01', 'I01-US09'])
+    expect(notCovered).toHaveLength(12)
+    expect(ids(notCovered)).toEqual(trashcans.needs.map((n) => n.id).filter((id) => !ids(covered).includes(id)))
+  })
+
+  it('gives each covered need the part of step 6.2 that lists it', () => {
+    const { covered } = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
+    expect(covered.find((c) => c.need.id === 'N01')?.part).toBe('must')
+    expect(covered.find((c) => c.need.id === 'N02')?.part).toBe('shouldCould')
+  })
+
+  it('gives each not covered need the other solutions that cover it, in letter order', () => {
+    const { notCovered } = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
+    const others = (id: string) => codes(notCovered.find((n) => n.need.id === id)?.otherSolutions ?? [])
+    expect(others('N06')).toEqual(['B', 'D'])
+    expect(others('I24-US01')).toEqual(['E'])
+    // O09-US01 is 這次不做 and no solution covers it. It is still in the list.
+    expect(others('O09-US01')).toEqual([])
+    expect(notCovered.find((n) => n.need.id === 'O09-US01')?.need.priority).toBe('W')
+  })
+
+  it('has no covered needs in the old format (needs is null)', () => {
+    const old = { ...sol(trashcans, 'A'), needs: null }
+    const { covered, notCovered } = solutionNeedCoverage(trashcans, old)
+    expect(covered).toEqual([])
+    expect(notCovered).toHaveLength(21)
+  })
+})
+
+describe('solutionStakeholderCoverage', () => {
+  it('splits the stakeholders of #2 into 14 covered by A and 13 not covered, in ID order', () => {
+    const { covered, notCovered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'A'))
+    expect(covered.map((s) => s.id)).toEqual([
+      'O01', 'O04', 'O05', 'O10', 'O11', 'O12', 'I01', 'I02', 'I06', 'I07', 'I08', 'I09', 'I10', 'I12',
+    ])
+    expect(notCovered.map((s) => s.id)).toEqual([
+      'O03', 'O06', 'O07', 'O08', 'O09', 'O13', 'I03', 'I04', 'I05', 'I11', 'I13', 'I23', 'I24',
+    ])
+  })
+
+  it('gives each stakeholder its covered and not covered needs, each need once', () => {
+    const { covered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'A'))
+    const i01 = covered.find((s) => s.id === 'I01')
+    // I01 has 5 stories in N01, but N01 shows once.
+    expect(ids(i01?.covered ?? [])).toEqual(['N01', 'N04', 'I01-US09'])
+    expect(ids(i01?.notCovered ?? [])).toEqual(['N06'])
+    expect(codes(i01?.notCovered[0].otherSolutions ?? [])).toEqual(['B', 'D'])
+  })
+
+  it('gives a not covered stakeholder only not covered needs', () => {
+    const { notCovered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'A'))
+    const o09 = notCovered.find((s) => s.id === 'O09')
+    expect(o09?.covered).toEqual([])
+    expect(ids(o09?.notCovered ?? [])).toContain('O09-US01')
+  })
+})
+
+describe('solutionWayOutConflicts', () => {
+  it('gives the conflicts whose way out lists the solution, in file order', () => {
+    const list = (code: string) => solutionWayOutConflicts(trashcans, sol(trashcans, code)).map((v) => v.conflict.id)
+    expect(list('A')).toEqual(['C1', 'C2', 'C6', 'C7', 'C9'])
+    expect(list('E')).toEqual(['C2', 'C8'])
+  })
+
+  it('gives each conflict its needs and way out', () => {
+    const [c1] = solutionWayOutConflicts(trashcans, sol(trashcans, 'A'))
+    expect(codes(c1.needsA)).toEqual(['N01'])
+    expect(codes(c1.needsB)).toEqual(['N06'])
+    expect(c1.hasWayOut).toBe(true)
+  })
+
+  it('is empty for a solution in no way out', () => {
+    const none = { ...sol(trashcans, 'A'), id: 'Z' }
+    expect(solutionWayOutConflicts(trashcans, none)).toEqual([])
   })
 })

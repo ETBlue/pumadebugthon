@@ -21,5 +21,6 @@ what ETBlue expects the AI agent to do:
 * place template files (.md and .csv) in issue #7 folder, and a README file in the analysis folder as a quick intro for other hackathon participants
 * the hackathon host provided their data collected from "市長，你給我聽好了" event. the data is confidential and cannot be shared with the public. I put the data in folder `.confidential` and ignored it in git. use the data in the issue analysis process
 * there is an extra folder `8-smokefree` which is for the "無菸城市" policy from current Taipei City government. because it's related to issue #1, #2 and #5, I would like the AI agent to gather information from the internet and do the analysis for this issue too
+* for each issue, when the analysis is done, check if any stakeholder shared with other issues. if yes, run an extra analysis against multiple issues with shared stakeholders and put results in the `analysis/cross-issue` folder
 
 what ETBlue wants to do with the analysis output: I would like to share the results on hackathon Discord before the event, so that other participants have time to read the content if they want to. I want the hackathon to have the best possible outcome -- becoming a successful demo of future open government initiative in Taipei

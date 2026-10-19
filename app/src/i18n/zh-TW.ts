@@ -330,17 +330,19 @@ export const t = {
     priorityCounts: '優先順序',
     stories: '使用者故事',
     storiesNone: '這個議題沒有這位利害關係人的故事。',
-    groups: '相同訴求群組',
-    groupsNone: '這位利害關係人的故事不在任何相同訴求群組裡。',
-    groupOthers: '同一群組的其他利害關係人：',
-    groupOthersNone: '同一群組沒有其他利害關係人。',
+    /** 訴求 tab (design 3.3). */
+    wantsHeading: '訴求',
+    wantsNone: '這個議題沒有這位利害關係人的訴求。',
     conflicts: '衝突',
     conflictsNone: '分析裡沒有和這位利害關係人的故事衝突的項目。',
-    otherSide: '另一方的故事',
-    solutions: '涵蓋這些故事的解法',
-    solutionsNone: '沒有解法涵蓋這位利害關係人的故事。',
-    uncovered: '還沒有解法涵蓋的故事',
-    uncoveredNone: '這位利害關係人的故事都有解法涵蓋。',
+    /** 需求 tab (design 3.3). */
+    needsNone: '這個議題沒有這位利害關係人的需求。',
+    /** 解法 tab (design 3.3). */
+    solutionsHeading: '涵蓋這些需求的解法',
+    solutionsNone: '還沒有解法涵蓋這位利害關係人的需求。',
+    coveredNeeds: '涵蓋的需求：',
+    uncoveredNeeds: '尚未有解法涵蓋的需求',
+    uncoveredNeedsNone: '這位利害關係人的需求都有解法涵蓋。',
     inputSources: '可能的輸入來源',
     inputSourcesNone: '分析裡沒有為這位利害關係人列出輸入來源。',
     inputFit: '適合的利害關係人：',
@@ -361,7 +363,6 @@ export const t = {
     },
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',
-    tabComing: '這個分頁的內容還在製作中。',
   },
   /** The story page #/stakeholders/:id/stories/:number/:storyId (design 3.15). */
   storyPage: {

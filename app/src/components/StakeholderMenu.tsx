@@ -1,4 +1,4 @@
-import { useId, useState, type ReactNode } from 'react'
+import { useEffect, useId, useState, type ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { Link, useLocation, useSearchParams, type To } from 'react-router'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -41,8 +41,11 @@ export type StakeholderMenuProps =
 export function StakeholderMenu(props: StakeholderMenuProps) {
   const { ids, stakeholders, current, mode } = props
   const [params] = useSearchParams()
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
   const [open, setOpen] = useState(false)
+  // Close the list after a pick (below lg). With 51 items, an open list
+  // pushes the content far down on a phone.
+  useEffect(() => setOpen(false), [pathname, search])
   const labelId = useId()
   const groups = menuGroups(ids, stakeholders)
   const picked = current === null ? null : findStakeholder(stakeholders, current)

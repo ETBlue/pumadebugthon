@@ -1,34 +1,29 @@
-import type { ReactNode } from 'react'
-import { useMemo } from 'react'
+import { useMemo, type ComponentType } from 'react'
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router'
-import { CellText } from '@/components/CellText'
-import { DataBasisEmpty, DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
+import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
-import { PageTabs, TabComing } from '@/components/PageTabs'
-import { Markdown } from '@/components/Markdown'
-import { PriorityCounts } from '@/components/PriorityCounts'
-import { SolutionCard } from '@/components/SolutionCard'
-import { StoryCard } from '@/components/StoryCard'
-import { StoryList } from '@/components/StoryList'
+import { PageTabs } from '@/components/PageTabs'
+import { PageTitle } from '@/components/PageTitle'
+import { StakeholderMenu, StakeholderMenuLayout } from '@/components/StakeholderMenu'
+import type { StakeholderTabProps } from '@/components/stakeholder/IssueSection'
+import { NeedsTab } from '@/components/stakeholder/NeedsTab'
+import { OverviewTab } from '@/components/stakeholder/OverviewTab'
+import { SolutionsTab } from '@/components/stakeholder/SolutionsTab'
+import { WantsTab } from '@/components/stakeholder/WantsTab'
 import { linkClass } from '@/components/styles'
-import { TagBadge } from '@/components/TagBadge'
 import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { PageTitle } from '@/components/PageTitle'
-import { dataBasedOnly as onlyDataBased } from '@/lib/dataBasis'
-import {
-  movedStakeholderTarget, parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab,
-} from '@/lib/entityPaths'
+import { parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
-import { needKey } from '@/lib/needs'
 import { availableIssues } from '@/lib/issues'
-import { movedFrom, pathTrail, stakeholderIssueNumbers, stakeholderIssueView } from '@/lib/stakeholderPage'
-import { resolveId, stakeholderName } from '@/lib/stakeholders'
+import {
+  movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers, stakeholderMenuIds,
+} from '@/lib/stakeholderPage'
+import { resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
-import { wantKey } from '@/lib/wantList'
-import type { IndexFile, IssueFile, Stakeholder as StakeholderType } from '@/types'
+import type { IndexFile, Stakeholder as StakeholderType } from '@/types'
 
 const tp = t.stakeholderPage
 
@@ -62,11 +57,18 @@ export default function Stakeholder() {
     )
   }
   if (resolved !== id) {
-    const target = movedStakeholderTarget(location.pathname, location.search, id, resolved)
-    if (target) return <Navigate replace to={target} />
+    return <Navigate replace to={movedStakeholderRedirect(location.pathname, location.search, id, resolved)} />
   }
+  // resolveId returned id itself, so the stakeholder is in the list.
   const stakeholder = index.data.stakeholders.find((s) => s.id === id)!
   return <StakeholderContent key={id} index={index.data} stakeholder={stakeholder} />
+}
+
+const TAB_CONTENT: Record<StakeholderTab, ComponentType<StakeholderTabProps>> = {
+  overview: OverviewTab,
+  wants: WantsTab,
+  needs: NeedsTab,
+  solutions: SolutionsTab,
 }
 
 function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stakeholder: StakeholderType }) {
@@ -79,38 +81,25 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   }, [index, s])
   const folders = useMemo(() => shown.map((i) => i.folder), [shown])
   const issues = useIssues(folders)
+  const menuIds = useMemo(() => stakeholderMenuIds(index), [index])
   const trail = pathTrail(s.path, index.pathLabels)
-  const [dataBasedOnly] = useDataBasisFilter()
   const tab = parseStakeholderTab(useParams().tab)
   const counts = useMemo(
     () => (issues.status === 'ready' ? stakeholderTabCounts(issues.data, s.id) : null),
     [issues, s.id],
   )
 
-  // For now (plan Task N3) the 總覽 tab has the old page content. Task N7
-  // fills the other tabs.
-  const overview =
-    shown.length === 0 ? null : (
+  const content = (name: StakeholderTab) => {
+    if (shown.length === 0) return <p>{tp.noIssues}</p>
+    if (issues.status !== 'ready') return <LoadState state={issues} />
+    const Content = TAB_CONTENT[name]
+    return (
       <>
-        <DataBasisToggle />
-        <div className="mt-8 space-y-10">
-          {issues.status === 'ready' ? (
-            issues.data.map((issue, i) => (
-              <IssueSection
-                key={issue.number}
-                index={index}
-                issue={issue}
-                id={s.id}
-                first={i === 0}
-                dataBasedOnly={dataBasedOnly}
-              />
-            ))
-          ) : (
-            <LoadState state={issues} />
-          )}
-        </div>
+        <DataBasisToggle className="mb-6" />
+        <Content index={index} issues={issues.data} id={s.id} />
       </>
     )
+  }
 
   return (
     <>
@@ -161,181 +150,28 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         </Field>
       </dl>
 
-      <PageTabs
-        label={tp.tabsLabel}
-        tabs={STAKEHOLDER_TABS}
-        current={tab}
-        nameOf={(name) => tp.tabs[name]}
-        labelOf={(name) => tabLabel(name, counts)}
-        pathOf={(name) => stakeholderTabPath(s.id, name)}
-        notFound={tp.tabNotFound}
-        overviewPath={stakeholderTabPath(s.id, 'overview')}
-        overviewLink={tp.goToOverview}
+      {/* The menu goes to the same tab of another stakeholder (design 3.14).
+          For an unknown tab it goes to the overview. */}
+      <StakeholderMenuLayout
+        className="mt-6"
+        menu={
+          <StakeholderMenu mode="switch" ids={menuIds} stakeholders={index.stakeholders} current={s.id} tab={tab ?? 'overview'} />
+        }
       >
-        {(name) => (name === 'overview' ? overview : <TabComing text={tp.tabComing} />)}
-      </PageTabs>
+        <PageTabs
+          label={tp.tabsLabel}
+          tabs={STAKEHOLDER_TABS}
+          current={tab}
+          nameOf={(name) => tp.tabs[name]}
+          labelOf={(name) => tabLabel(name, counts)}
+          pathOf={(name) => stakeholderTabPath(s.id, name)}
+          notFound={tp.tabNotFound}
+          overviewPath={stakeholderTabPath(s.id, 'overview')}
+          overviewLink={tp.goToOverview}
+        >
+          {content}
+        </PageTabs>
+      </StakeholderMenuLayout>
     </>
-  )
-}
-
-function Part({ id, title, children }: { id: string; title: string; children: ReactNode }) {
-  return (
-    <section aria-labelledby={id}>
-      <h3 id={id} className="font-semibold">{title}</h3>
-      <div className="mt-2">{children}</div>
-    </section>
-  )
-}
-
-function Empty({ children }: { children: ReactNode }) {
-  return <p className="text-muted-foreground">{children}</p>
-}
-
-/** One issue of the stakeholder. first: show the priority legend once per
- * page. dataBasedOnly: the 「只看有資料根據」 filter for the story lists. */
-function IssueSection({ index, issue, id, first, dataBasedOnly }: {
-  index: IndexFile
-  issue: IssueFile
-  id: string
-  first: boolean
-  dataBasedOnly: boolean
-}) {
-  const v = stakeholderIssueView(issue, id)
-  const stories = dataBasedOnly ? onlyDataBased(v.stories) : v.stories
-  const n = issue.number
-  const p = `issue-${n}`
-  const name = (sid: string) => stakeholderName(index.stakeholders, sid)
-
-  return (
-    <section aria-labelledby={`${p}-heading`} className="space-y-6 border-t pt-6">
-      <h2 id={`${p}-heading`} className="text-xl font-bold">
-        <Link to={tabPath(n, 'overview')} className={linkClass}>{t.issueCard.numberTitle(n, issue.title)}</Link>
-      </h2>
-
-      <Part id={`${p}-relation`} title={tp.relation}>
-        {v.relation ? <p><CellText cell={v.relation} /></p> : <Empty>{tp.relationNone}</Empty>}
-      </Part>
-
-      <Part id={`${p}-counts`} title={tp.priorityCounts}>
-        <PriorityCounts counts={v.counts} showLegend={first} />
-      </Part>
-
-      <Part id={`${p}-stories`} title={tp.stories}>
-        {v.stories.length === 0 ? (
-          <Empty>{tp.storiesNone}</Empty>
-        ) : stories.length === 0 ? (
-          <DataBasisEmpty />
-        ) : (
-          <ul className="space-y-2">
-            {stories.map((story) => (
-              <li key={story.id}>
-                <StoryCard
-                  story={story}
-                  issueNumber={n}
-                  stakeholderName={name(story.stakeholder)}
-                  wantKey={wantKey(issue, story)}
-                  needKey={needKey(story)}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </Part>
-
-      <Part id={`${p}-groups`} title={tp.groups}>
-        {v.groups.length === 0 ? (
-          <Empty>{tp.groupsNone}</Empty>
-        ) : (
-          <ul className="space-y-3">
-            {v.groups.map(({ group: g, others }) => (
-              <li key={g.id} className="rounded-md border p-3">
-                <p>
-                  <span className="mr-2 font-mono font-semibold">{g.id}</span>
-                  {g.tag && <TagBadge kind={g.tag} className="mr-1.5" />}
-                  <Markdown text={g.summary} />
-                </p>
-                {others.length === 0 ? (
-                  <p className="mt-1 text-sm text-muted-foreground">{tp.groupOthersNone}</p>
-                ) : (
-                  <div className="mt-1 text-sm">
-                    <span className="text-muted-foreground">{tp.groupOthers}</span>
-                    <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-                      {others.map((o) => (
-                        <li key={o}><Link to={`/stakeholders/${o}`} className={linkClass}>{name(o)}</Link></li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Part>
-
-      <Part id={`${p}-conflicts`} title={tp.conflicts}>
-        {v.conflicts.length === 0 ? (
-          <Empty>{tp.conflictsNone}</Empty>
-        ) : (
-          <ul className="space-y-4">
-            {v.conflicts.map(({ conflict: c, otherStories }) => (
-              <li key={c.id} className="rounded-lg border p-3 md:p-4">
-                <h4 className="font-semibold">
-                  <span className="mr-2 font-mono">{c.id}</span>
-                  <CellText cell={c.text} />
-                </h4>
-                <p className="mt-3 text-sm text-muted-foreground">{tp.otherSide}</p>
-                <StoryList stories={otherStories} issueNumber={n} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </Part>
-
-      <Part id={`${p}-solutions`} title={tp.solutions}>
-        {v.solutions.length === 0 ? (
-          <Empty>{tp.solutionsNone}</Empty>
-        ) : (
-          <ul className="space-y-3">
-            {v.solutions.map((sol) => (
-              <li key={sol.id}>
-                <SolutionCard variant="compact" solution={sol} issueNumber={n} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </Part>
-
-      <Part id={`${p}-uncovered`} title={tp.uncovered}>
-        {v.uncovered.length === 0 ? (
-          <Empty>{tp.uncoveredNone}</Empty>
-        ) : (
-          <StoryList stories={v.uncovered} issueNumber={n} stakeholders={index.stakeholders} dataBasedOnly={dataBasedOnly} />
-        )}
-      </Part>
-
-      <Part id={`${p}-sources`} title={tp.inputSources}>
-        {v.inputSources.length === 0 ? (
-          <Empty>{tp.inputSourcesNone}</Empty>
-        ) : (
-          <ul className="list-disc space-y-2 pl-5">
-            {v.inputSources.map((src, i) => (
-              <li key={i}>
-                <Markdown text={src.source} />
-                <span className="block text-sm">
-                  <span className="text-muted-foreground">{tp.inputFit}</span>
-                  <CellText cell={src.fit} />
-                </span>
-                {src.note !== null && (
-                  <span className="block text-sm text-muted-foreground">
-                    {tp.inputNote}
-                    <Markdown text={src.note} />
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-      </Part>
-    </section>
   )
 }

@@ -19,6 +19,12 @@ describe('dataFileLinks', () => {
     ])
   })
 
+  it('adds cross-issue.json after the issue files when it exists', () => {
+    const l = dataFileLinks(index, '/pumadebugthon/', repo, true)
+    expect(l.json.at(-1)).toEqual({ file: 'cross-issue.json', issue: null, href: '/pumadebugthon/data/cross-issue.json' })
+    expect(l.json).toHaveLength(links.json.length + 1)
+  })
+
   it('lists the CSV files on GitHub: stakeholders, each issue, then the other shared files', () => {
     const blob = `${repo}/blob/main/analysis`
     expect(links.csv).toEqual([

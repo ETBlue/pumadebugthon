@@ -3,12 +3,13 @@
 // the values at runtime.
 // Refresh the fixtures with: npm run fixtures
 import { describe, expect, it } from 'vitest'
+import crossJson from '@/test/fixtures/cross-issue.json'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
-import type { Cell, IndexFile, IssueFile } from '@/types'
+import type { Cell, CrossIssueFile, IndexFile, IssueFile } from '@/types'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
@@ -267,6 +268,40 @@ describe('特別關注族群 (focusGroups and focusGaps)', () => {
       const file = issues.find((f) => f.number === i.number)
       if (!file) continue
       expect(i.focusGaps).toEqual(file.focusGroups.filter((g) => g.stakeholders.length === 0).map((g) => g.tag))
+    }
+  })
+})
+
+describe('cross-issue.json', () => {
+  const cross = crossJson as CrossIssueFile
+
+  it('covers #1, #2 and #8 with 5 solutions, 7 X-N groups and 2 conflicts', () => {
+    expect(cross.issues).toEqual([1, 2, 8])
+    expect(cross.solutions.map((s) => s.code)).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
+    expect(cross.needGroups.map((g) => g.id)).toEqual(['X-N01', 'X-N02', 'X-N03', 'X-N04', 'X-N05', 'X-N06', 'X-N07'])
+    expect(cross.conflicts.map((c) => c.id)).toEqual(['X-C1', 'X-C2'])
+  })
+
+  it('has cells, priorities and refs of the right shape', () => {
+    for (const g of cross.needGroups) {
+      expectCell(g.reason)
+      expect(g.priority === null).toBe(g.prioritiesDiffer)
+      for (const m of g.needs) expect(PRIORITIES).toContain(m.priority)
+    }
+    for (const c of cross.conflicts) {
+      for (const cell of [c.text, c.wayOut, c.method, c.result]) expectCell(cell)
+      for (const r of [...c.sideA, ...c.sideB, ...c.issueConflicts]) expect(typeof r.issue).toBe('number')
+      for (const r of [...c.needsA, ...c.needsB]) expect(r.issue === null).toBe(r.id.startsWith('X-N'))
+    }
+    for (const s of cross.solutions) {
+      expect(TAGS).toContain(s.tag)
+      expect(s.added).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+      for (const cell of Object.values(s.detail)) expectCell(cell)
+      for (const m of s.measures) {
+        expectCell(m.baseline)
+        expect(typeof m.isNew).toBe('boolean')
+      }
+      for (const g of s.needs.crossIssue) expect(cross.needGroups.map((x) => x.id)).toContain(g)
     }
   })
 })

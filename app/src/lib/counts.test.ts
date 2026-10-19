@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import crossJson from '@/test/fixtures/cross-issue.json'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
-import type { IndexFile, IssueFile, Need, Story } from '@/types'
+import type { CrossIssueFile, IndexFile, IssueFile, Need, Story } from '@/types'
 import { issueCount, needCount, solutionCount, stakeholderCount, wantCount } from './counts'
 import { pickList } from './opinion'
 
@@ -28,6 +29,11 @@ describe('stakeholderCount', () => {
 describe('solutionCount', () => {
   it('sums the solutions of the analyzed issues', () => {
     expect(solutionCount(index)).toBe(5 + 5 + 5 + 5)
+    expect(solutionCount(index, null)).toBe(20)
+  })
+
+  it('adds the cross-issue solutions when the file exists (decision 51)', () => {
+    expect(solutionCount(index, crossJson as CrossIssueFile)).toBe(20 + 5)
   })
 })
 

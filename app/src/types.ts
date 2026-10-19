@@ -374,3 +374,153 @@ export interface IssueFile {
   solutions: Solution[]
   pending: Pending[]
 }
+
+// ---------- cross-issue.json ----------
+// Written by build_json.py from analysis/cross-issue/cross-issue-analysis.md
+// (design 3.18). The file does not exist when the Markdown file does not exist.
+
+/** A reference to an ID of one issue, for example { issue: 2, id: "N05" }.
+ * issue is null for the file's own IDs (an X-N group, for example "X-N02"). */
+export interface CrossRef {
+  issue: number | null
+  id: string
+}
+
+/** A reference to a solution of one issue, for example { issue: 1, code: "C" }. */
+export interface CrossPart {
+  issue: number
+  code: string
+}
+
+/** A stakeholder that is in more than one issue. */
+export interface CrossSharedStakeholder {
+  id: string
+  name: string
+  focus: string[]
+  issues: number[]
+  stories: CrossRef[]
+}
+
+/** The same need of one stakeholder in several issues. */
+export interface CrossRepeatedNeed {
+  stakeholder: string
+  summary: string
+  needs: CrossRef[]
+  note: Cell
+}
+
+/** A row of the 特別關注族群檢查 table over the issues. */
+export interface CrossFocusGroup {
+  tag: string
+  stakeholders: string[]
+  note: Cell | null
+}
+
+/** One issue need inside an X-N group, with its priority in that issue. */
+export interface CrossGroupNeed {
+  issue: number
+  /** The need ID of the issue (N05, or a story ID for a need with no group). */
+  id: string
+  priority: Priority
+}
+
+/** An X-N group: the same need in several issues. It has no page. */
+export interface CrossNeedGroup {
+  /** For example "X-N01". */
+  id: string
+  tag: Tag
+  summary: string
+  needs: CrossGroupNeed[]
+  stories: CrossRef[]
+  stakeholders: string[]
+  /** The shared priority, or null when the issues give different ones. */
+  priority: Priority | null
+  priorityTag: Tag
+  prioritiesDiffer: boolean
+  reason: Cell
+}
+
+/** A conflict across issues. */
+export interface CrossConflict {
+  /** For example "X-C1". */
+  id: string
+  text: Cell
+  /** The conflicts of the issues that this conflict joins. */
+  issueConflicts: CrossRef[]
+  /** Story IDs of each side. */
+  sideA: CrossRef[]
+  sideB: CrossRef[]
+  /** Need IDs of each side. An X-N group has issue null. */
+  needsA: CrossRef[]
+  needsB: CrossRef[]
+  /** 以需求為本的解方 */
+  wayOut: Cell
+  /** The cross-issue solution codes in wayOut, for example ["X-B", "X-A"]. */
+  wayOutSolutions: string[]
+  method: Cell
+  result: Cell
+}
+
+/** A row of 成效衡量 of a cross-issue solution. */
+export interface CrossMeasure {
+  indicator: string
+  baseline: Cell
+  source: string
+  /** The issue solutions that the indicator comes from. */
+  from: CrossPart[]
+  /** true: a new indicator, not from an issue solution. */
+  isNew: boolean
+}
+
+/** A cross-issue solution: it combines solutions of several issues. */
+export interface CrossSolution {
+  /** For example "X-A". */
+  code: string
+  name: string
+  tag: Tag
+  /** The issue solutions it combines. */
+  parts: CrossPart[]
+  spaces: string[]
+  /** 新增日期 (YYYY-MM-DD). */
+  added: string
+  summary: string
+  needs: {
+    must: CrossRef[]
+    shouldCould: CrossRef[]
+    /** X-N group IDs. */
+    crossIssue: string[]
+  }
+  measures: CrossMeasure[]
+  detail: { owner: Cell; laws: Cell; privacy: Cell; risks: Cell }
+}
+
+/** A 特別關注族群 note on some cross-issue solutions. */
+export interface CrossSolutionFocus {
+  tag: string
+  /** Cross-issue solution codes. */
+  solutions: string[]
+  note: Cell
+}
+
+export interface CrossPending {
+  text: string
+  section: string
+}
+
+export interface CrossIssueFile {
+  title: string
+  updated: string
+  /** The issues the file covers, for example [1, 2, 8]. */
+  issues: number[]
+  spaces: string[]
+  summary: SummaryTopic[]
+  sharedStakeholders: CrossSharedStakeholder[]
+  repeatedNeeds: CrossRepeatedNeed[]
+  focusGroups: CrossFocusGroup[]
+  needGroups: CrossNeedGroup[]
+  conflicts: CrossConflict[]
+  /** In code order (X-A, X-B, …). */
+  solutions: CrossSolution[]
+  solutionFocus: CrossSolutionFocus[]
+  pending: CrossPending[]
+}

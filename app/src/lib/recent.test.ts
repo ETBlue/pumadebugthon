@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
+import crossJson from '@/test/fixtures/cross-issue.json'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
-import type { AvailableIssueSummary, IndexFile, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
-import { homeRedirect, recentIssues, recentSolutions, recentStakeholders } from './recent'
+import type { AvailableIssueSummary, CrossIssueFile, IndexFile, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
+import { homeRedirect, recentIssues, recentSolutionItems, recentSolutions, recentStakeholders } from './recent'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
@@ -146,6 +147,28 @@ describe('recentSolutions', () => {
 
   it('keeps only the first items when a limit is given', () => {
     expect(recentSolutions([trees, trashcans, smokefree], 2).map(key)).toEqual(['8E', '8D'])
+  })
+})
+
+describe('recentSolutionItems', () => {
+  const cross = crossJson as CrossIssueFile
+  const key = (x: ReturnType<typeof recentSolutionItems>[number]) =>
+    x.kind === 'cross' ? x.solution.code : `${x.issueNumber}${x.solution.id}`
+
+  it('adds the cross-issue solutions by their added date (decision 51)', () => {
+    // X-A to X-E were added on 2026-10-20, after every issue solution.
+    expect(recentSolutionItems([trees, trashcans, smokefree], cross, 7).map(key)).toEqual([
+      'X-E', 'X-D', 'X-C', 'X-B', 'X-A', '8E', '8D',
+    ])
+  })
+
+  it('puts the cross-issue solutions first on the same date', () => {
+    const sameDay: CrossIssueFile = { ...cross, solutions: cross.solutions.map((s) => ({ ...s, added: '2026-10-18' })) }
+    expect(recentSolutionItems([smokefree], sameDay, 7).map(key)).toEqual(['X-E', 'X-D', 'X-C', 'X-B', 'X-A', '8E', '8D'])
+  })
+
+  it('is the issue solutions only without the file', () => {
+    expect(recentSolutionItems([trees, trashcans, smokefree], null, 3).map(key)).toEqual(['8E', '8D', '8C'])
   })
 })
 

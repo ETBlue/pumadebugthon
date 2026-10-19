@@ -1,9 +1,9 @@
 // Refresh the test fixtures in src/test/fixtures/ from the analysis files.
-// Runs analysis/scripts/build_json.py into a temp folder, then copies index.json and
-// issues/*.json. Fixture files for issues that are no longer built are removed.
+// Runs analysis/scripts/build_json.py into a temp folder, then copies index.json,
+// issues/*.json and cross-issue.json. Fixture files that are no longer built are removed.
 // Usage (in app/): npm run fixtures
 import { execFileSync } from 'node:child_process'
-import { cpSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -22,7 +22,11 @@ try {
     if (f.endsWith('.json') && !built.includes(f)) rmSync(join(fixtures, 'issues', f))
   }
   for (const f of built) cpSync(join(tmp, 'issues', f), join(fixtures, 'issues', f))
-  console.log(`copied index.json and ${built.join(', ')} to src/test/fixtures/`)
+  // cross-issue.json exists only when analysis/cross-issue/cross-issue-analysis.md exists.
+  const cross = join(tmp, 'cross-issue.json')
+  if (existsSync(cross)) cpSync(cross, join(fixtures, 'cross-issue.json'))
+  else rmSync(join(fixtures, 'cross-issue.json'), { force: true })
+  console.log(`copied index.json, ${built.join(', ')}${existsSync(cross) ? ' and cross-issue.json' : ''} to src/test/fixtures/`)
 } finally {
   rmSync(tmp, { recursive: true, force: true })
 }

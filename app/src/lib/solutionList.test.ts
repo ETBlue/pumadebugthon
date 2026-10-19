@@ -4,7 +4,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
-import type { IndexFile, IssueFile } from '@/types'
+import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import { coveredNeedCount, solutionGroups, solutionSpaceOptions } from './solutionList'
 import { solutionTabCounts } from './tabCounts'
 
@@ -58,6 +58,14 @@ describe('solutionSpaceOptions', () => {
     expect(new Set(codes)).toEqual(used)
     const order = index.spaceTypes.map((s) => s.code).filter((c) => used.has(c))
     expect(codes).toEqual(order)
+  })
+
+  it('adds the space types of the cross-issue solutions, once each, in the same order', () => {
+    const cross = { solutions: [{ spaces: ['utility', 'sidewalk'] }] } as unknown as CrossIssueFile
+    const codes = solutionSpaceOptions(index.spaceTypes, [trashcans], cross).map((s) => s.code)
+    const used = new Set([...trashcans.solutions.flatMap((s) => s.spaces), 'utility', 'sidewalk'])
+    expect(codes).toEqual(index.spaceTypes.map((s) => s.code).filter((c) => used.has(c)))
+    expect(solutionSpaceOptions(index.spaceTypes, [trashcans], null)).toEqual(solutionSpaceOptions(index.spaceTypes, [trashcans]))
   })
 })
 

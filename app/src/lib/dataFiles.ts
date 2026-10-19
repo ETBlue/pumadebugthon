@@ -13,8 +13,14 @@ export interface DataFileLink {
 }
 
 /** baseUrl is import.meta.env.BASE_URL (ends with "/"). repoUrl is the
- * GitHub repository URL. Issues are in number order. */
-export function dataFileLinks(index: IndexFile, baseUrl: string, repoUrl: string): { json: DataFileLink[]; csv: DataFileLink[] } {
+ * GitHub repository URL. Issues are in number order. hasCross: the site has
+ * cross-issue.json (design 3.18); it is listed after the issue files. */
+export function dataFileLinks(
+  index: IndexFile,
+  baseUrl: string,
+  repoUrl: string,
+  hasCross = false,
+): { json: DataFileLink[]; csv: DataFileLink[] } {
   const issues = availableIssues(index)
   const blob = `${repoUrl}/blob/main/analysis`
   const shared = (file: string): DataFileLink => ({ file, issue: null, href: `${blob}/data/${file}` })
@@ -26,6 +32,7 @@ export function dataFileLinks(index: IndexFile, baseUrl: string, repoUrl: string
         issue: i.number,
         href: `${baseUrl}data/issues/${encodeURIComponent(i.folder)}.json`,
       })),
+      ...(hasCross ? [{ file: 'cross-issue.json', issue: null, href: `${baseUrl}data/cross-issue.json` }] : []),
     ],
     csv: [
       shared('stakeholders.csv'),

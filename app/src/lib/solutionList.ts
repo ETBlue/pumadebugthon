@@ -1,7 +1,7 @@
 // The solution list page #/solutions (design 3.9).
 // Order: issue number, then the order of the issue file (A, B, …).
 // Never sorted by a count.
-import type { IssueFile, Solution, SpaceType } from '@/types'
+import type { CrossIssueFile, IssueFile, Solution, SpaceType } from '@/types'
 
 export interface SolutionGroup {
   issueNumber: number
@@ -33,9 +33,13 @@ export function solutionGroups(issues: IssueFile[], filter: SolutionFilter): Sol
 }
 
 /** The space types that at least one solution uses, in the order of
- * space-types.csv. For the space type filter. */
-export function solutionSpaceOptions(spaceTypes: SpaceType[], issues: IssueFile[]): SpaceType[] {
-  const used = new Set(issues.flatMap((i) => i.solutions.flatMap((s) => s.spaces)))
+ * space-types.csv. For the space type filter. cross adds the space types of
+ * the cross-issue solutions (null when cross-issue.json does not exist). */
+export function solutionSpaceOptions(spaceTypes: SpaceType[], issues: IssueFile[], cross: CrossIssueFile | null = null): SpaceType[] {
+  const used = new Set([
+    ...issues.flatMap((i) => i.solutions.flatMap((s) => s.spaces)),
+    ...(cross?.solutions.flatMap((s) => s.spaces) ?? []),
+  ])
   return spaceTypes.filter((s) => used.has(s.code))
 }
 

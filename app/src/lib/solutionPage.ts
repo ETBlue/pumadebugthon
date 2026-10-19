@@ -69,8 +69,10 @@ export function solutionConflicts(issue: IssueFile, solution: Solution): Solutio
 // needs is covered. The lists keep the order of step 5.2 or ID order.
 
 export interface CoveredNeed extends NeedItem {
-  /** The part of step 6.2 that lists the need for this solution. */
-  part: NeedSolution['part']
+  /** The part of step 6.2 that lists the need for this solution. A
+   * cross-issue solution (design 3.18) can also cover a need only through
+   * one of its X-N groups: then the part is 'crossIssue'. */
+  part: NeedSolution['part'] | 'crossIssue'
 }
 
 export interface NotCoveredNeed extends NeedItem {

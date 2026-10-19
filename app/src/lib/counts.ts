@@ -2,7 +2,7 @@
 // score. Nothing here sorts.
 // wantCount and needCount are not in the header any more (decision 30). They
 // give the 訴求 and 需求 tab labels (decision 40, tabCounts.ts).
-import type { IndexFile, IssueFile } from '@/types'
+import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import { availableIssues } from './issues'
 import { pickList } from './opinion'
 
@@ -16,9 +16,12 @@ export function stakeholderCount(index: IndexFile): number {
   return index.stakeholders.filter((s) => s.movedTo === null).length
 }
 
-/** 解法: the solutions of the analyzed issues, summed. */
-export function solutionCount(index: IndexFile): number {
-  return availableIssues(index).reduce((n, i) => n + i.counts.solutions, 0)
+/** 解法: the solutions of the analyzed issues, summed, plus the cross-issue
+ * solutions when cross-issue.json exists (decision 51). The header link goes
+ * to #/solutions, and that list shows both. */
+export function solutionCount(index: IndexFile, cross: CrossIssueFile | null = null): number {
+  const own = availableIssues(index).reduce((n, i) => n + i.counts.solutions, 0)
+  return own + (cross?.solutions.length ?? 0)
 }
 
 /** 訴求: each W group once, plus each story with no W group. These are the

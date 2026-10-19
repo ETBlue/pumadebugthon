@@ -1,0 +1,2594 @@
+{
+  "title": "跨議題分析：#1、#2、#8（試作）",
+  "updated": "2026-10-20",
+  "issues": [
+    1,
+    2,
+    8
+  ],
+  "spaces": [
+    "sidewalk",
+    "arcade",
+    "park",
+    "mrt-exit",
+    "utility"
+  ],
+  "summary": [
+    {
+      "topic": "難以取捨的決定",
+      "items": [
+        {
+          "item": "人行道設施帶的分配",
+          "text": {
+            "text": "樹、清潔箱與吸菸區都需要人多的人行道，但通行淨寬是三個議題共同的 Must 需求（X-N02）。較窄的路段放不下全部的設施，需要決定哪一樣改用其他空間。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "X-C1",
+            "X-N02",
+            "#1 C7",
+            "#2 C6",
+            "#8 C3",
+            "解法 X-B"
+          ]
+        },
+        {
+          "item": "清潔箱和吸菸區的距離",
+          "text": {
+            "text": "清潔箱和吸菸區都要設在人多的地方，但行人希望丟垃圾時不必經過菸味。距離要多遠，需要在現場試辦後決定。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "X-C2",
+            "#2 C9",
+            "#2 I01-US09",
+            "#8 I25-US01",
+            "解法 X-E"
+          ]
+        },
+        {
+          "item": "合併辦理或分開辦理",
+          "text": {
+            "text": "合併的選址討論可以讓里民不必為三種設施分別出席，但三個議題的主責局處不同（公園處、環保局、衛生局），時程也不同。需要決定由誰主辦、哪些地點合併辦理。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "解法 X-A",
+            "#1 解法 C",
+            "#2 解法 D",
+            "#8 解法 A"
+          ]
+        },
+        {
+          "item": "優先順序不同的共同需求",
+          "text": {
+            "text": "X-N06、X-N07 在各議題的優先順序不同。本文件不把它們合併成新的優先順序，需要各議題的利害關係人一起確認。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "X-N06",
+            "X-N07"
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "可能的爭議",
+      "items": [
+        {
+          "item": "合併的選址討論",
+          "text": {
+            "text": "一次討論三種設施，討論的事情變多；常出席的人聲音比較大，吸菸者與回收者可能比較少出席（#1、#2 的步驟 7 也提到代表性）。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "解法 X-A",
+            "X-N01",
+            "#8 I25-US01",
+            "#2 I11-US01"
+          ]
+        },
+        {
+          "item": "共同的檢查清單",
+          "text": {
+            "text": "同一張檢查清單加上淨寬、管線、出入口與學校的距離後，有些地區可能找不到可以放設施的地點；設施改到其他空間時，有人可能認為樹蔭、清潔箱或合法的吸菸地點變少了。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "解法 X-B",
+            "X-C1",
+            "#1 解法 D",
+            "#8 解法 A"
+          ]
+        },
+        {
+          "item": "共用的通報入口",
+          "text": {
+            "text": "同一個入口處理清潔箱、菸蒂、違規吸菸與危險樹木的通報。通報的照片可能拍到人臉，通報也可能變成鄰里之間的衝突；清潔隊員的手機回報涉及員工監督。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "解法 X-C",
+            "#8 解法 D",
+            "#2 解法 B",
+            "#2 I13-US02"
+          ]
+        },
+        {
+          "item": "整合的地圖",
+          "text": {
+            "text": "三個局處的資料更新時間不同。地圖上的資料沒有更新時，可能讓人白跑或誤會規定。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "解法 X-D",
+            "X-N04",
+            "X-N05"
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "受影響較大的弱勢族群",
+      "items": [
+        {
+          "item": "高齡",
+          "text": {
+            "text": "高齡者在三個議題都有故事。合併的選址討論需要用他們能參加的時間與方式。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "I05",
+            "解法 X-A"
+          ]
+        },
+        {
+          "item": "身心障礙",
+          "text": {
+            "text": "三個議題都有身心障礙者的通行需求（X-N02）。人行道設施帶的規則合併後，對他們的影響最大。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "I06",
+            "X-N02",
+            "解法 X-B"
+          ]
+        },
+        {
+          "item": "呼吸道疾病",
+          "text": {
+            "text": "只有 #8 納入過敏或呼吸道疾病者；#1、#2 的特別關注族群檢查把這一類列為待補。清潔箱和吸菸區的位置改變時，也會影響他們。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "#8 I27",
+            "#8 N01",
+            "解法 X-E"
+          ]
+        },
+        {
+          "item": "兒童與照顧者",
+          "text": {
+            "text": "推嬰兒車的家長在三個議題都需要安全通行，也不希望孩子吸到二手菸。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "I07",
+            "X-N02",
+            "#8 N03",
+            "解法 X-B"
+          ]
+        },
+        {
+          "item": "外籍",
+          "text": {
+            "text": "外國觀光客在 #2、#8 都需要看得懂規則（X-N05）；整合的地圖與標示需要英文與圖示。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "I03",
+            "X-N05",
+            "解法 X-D"
+          ]
+        },
+        {
+          "item": "經濟弱勢",
+          "text": {
+            "text": "無家者（#1、#8）與回收者（#2）很少出現在陳情資料裡。共用的通報入口可能讓稽查變多，需要先勸導與轉介（#8 C4）。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "I19",
+            "#2 I11",
+            "#8 C4",
+            "解法 X-A",
+            "解法 X-C"
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "法規上的障礙",
+      "items": [
+        {
+          "item": "道路與無障礙規範",
+          "text": {
+            "text": "樹、清潔箱與吸菸區放在人行道上，都要符合道路與無障礙的規定；吸菸區另有人行道保留 1.5 公尺淨寬的規定（#8 的設置及管理要點）。合併成一張檢查清單時，各規定是否一致，需要法務確認。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "#1 O12-US01",
+            "#2 O12-US01",
+            "#8 O12-US01",
+            "#8 O22-US02",
+            "解法 X-B"
+          ]
+        },
+        {
+          "item": "不同法律的稽查",
+          "text": {
+            "text": "違規吸菸由衛生局依菸害防制法稽查，亂丟菸蒂由環保局依廢棄物清理法稽查。共用的通報入口需要先談好分工。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "#8 O04-US01",
+            "#8 N07",
+            "解法 X-C"
+          ]
+        },
+        {
+          "item": "照片、定位與個人資料",
+          "text": {
+            "text": "通報的照片可能拍到人臉或車牌，清潔隊員的手機定位涉及員工監督，需要限定目的與最小蒐集。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "解法 X-C",
+            "#2 解法 B",
+            "#8 解法 D"
+          ]
+        },
+        {
+          "item": "合併辦理的權責",
+          "text": {
+            "text": "樹木保護、清潔箱與吸菸區的公告與審查，分屬不同的規定與局處。合併的選址討論能不能取代各自的公告或說明會，需要法務確認。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "解法 X-A",
+            "#1 解法 C",
+            "#8 O22-US02"
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "相依事項與現行政策的關係",
+      "items": [
+        {
+          "item": "以各議題的解法為基礎",
+          "text": {
+            "text": "合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "解法 X-A",
+            "解法 X-B",
+            "解法 X-C",
+            "解法 X-D",
+            "解法 X-E"
+          ]
+        },
+        {
+          "item": "現行的吸菸區設置要點",
+          "text": {
+            "text": "解法 X-B 的檢查清單，以 #8 的「臺北市吸菸區設置及管理要點」（115 年 10 月 1 日生效）的距離與淨寬規定為起點之一。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "#8 O22-US02",
+            "解法 X-B"
+          ]
+        },
+        {
+          "item": "現行的清潔箱做法",
+          "text": {
+            "text": "#2 的現行做法是依家戶垃圾違規棄置量評估清潔箱的裁撤或復設。合併的選址討論需要和這個做法銜接。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "#2 O04-US04",
+            "解法 X-A"
+          ]
+        },
+        {
+          "item": "開放資料的現況",
+          "text": {
+            "text": "清潔箱開放資料只涵蓋到 2018-01，禁菸範圍沒有開放資料，行道樹與樹穴資料沒有共同編號。整合的地圖要先處理這些缺口。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "refs": [
+            "#2 O07-US01",
+            "#8 O07-US01",
+            "#1 O07-US02",
+            "解法 X-D"
+          ]
+        }
+      ]
+    }
+  ],
+  "sharedStakeholders": [
+    {
+      "id": "O01",
+      "name": "商圈店家與攤商",
+      "focus": [],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O01-US01"
+        },
+        {
+          "issue": 1,
+          "id": "O01-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O01-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O01-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O01-US03"
+        },
+        {
+          "issue": 2,
+          "id": "O01-US04"
+        },
+        {
+          "issue": 8,
+          "id": "O01-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O01-US02"
+        }
+      ]
+    },
+    {
+      "id": "O03",
+      "name": "環保局清潔隊",
+      "focus": [],
+      "issues": [
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 2,
+          "id": "O03-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O03-US04"
+        },
+        {
+          "issue": 8,
+          "id": "O03-US01"
+        }
+      ]
+    },
+    {
+      "id": "O04",
+      "name": "環保局（環境清潔管理科）",
+      "focus": [],
+      "issues": [
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 2,
+          "id": "O04-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O04-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O04-US03"
+        },
+        {
+          "issue": 2,
+          "id": "O04-US04"
+        },
+        {
+          "issue": 2,
+          "id": "O04-US05"
+        },
+        {
+          "issue": 8,
+          "id": "O04-US01"
+        }
+      ]
+    },
+    {
+      "id": "O05",
+      "name": "里辦公處",
+      "focus": [],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O05-US01"
+        },
+        {
+          "issue": 1,
+          "id": "O05-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O05-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O05-US01"
+        }
+      ]
+    },
+    {
+      "id": "O06",
+      "name": "學術研究單位",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O06-US01"
+        },
+        {
+          "issue": 1,
+          "id": "O06-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O06-US01"
+        }
+      ]
+    },
+    {
+      "id": "O07",
+      "name": "公民科技社群",
+      "focus": [],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O07-US01"
+        },
+        {
+          "issue": 1,
+          "id": "O07-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O07-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O07-US01"
+        }
+      ]
+    },
+    {
+      "id": "O12",
+      "name": "工務局新建工程處（人行道管理）",
+      "focus": [],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O12-US01"
+        },
+        {
+          "issue": 1,
+          "id": "O12-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O12-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O12-US01"
+        }
+      ]
+    },
+    {
+      "id": "O13",
+      "name": "1999 市民熱線",
+      "focus": [],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O13-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O13-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O13-US01"
+        }
+      ]
+    },
+    {
+      "id": "I01",
+      "name": "通勤行人（捷運、公車乘客）",
+      "focus": [],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "I01-US01"
+        },
+        {
+          "issue": 1,
+          "id": "I01-US02"
+        },
+        {
+          "issue": 1,
+          "id": "I01-US03"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US02"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US03"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US04"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US05"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US06"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US07"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US08"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US09"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US02"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US03"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US04"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US05"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US06"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US07"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US08"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US09"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US10"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US11"
+        }
+      ]
+    },
+    {
+      "id": "I03",
+      "name": "外國觀光客",
+      "focus": [
+        "外籍"
+      ],
+      "issues": [
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 2,
+          "id": "I03-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I03-US01"
+        }
+      ]
+    },
+    {
+      "id": "I05",
+      "name": "高齡者",
+      "focus": [
+        "高齡"
+      ],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "I05-US01"
+        },
+        {
+          "issue": 1,
+          "id": "I05-US02"
+        },
+        {
+          "issue": 2,
+          "id": "I05-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I05-US01"
+        }
+      ]
+    },
+    {
+      "id": "I06",
+      "name": "身心障礙者（視障、輪椅使用者）",
+      "focus": [
+        "身心障礙"
+      ],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "I06-US01"
+        },
+        {
+          "issue": 1,
+          "id": "I06-US02"
+        },
+        {
+          "issue": 2,
+          "id": "I06-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I06-US02"
+        },
+        {
+          "issue": 8,
+          "id": "I06-US01"
+        }
+      ]
+    },
+    {
+      "id": "I07",
+      "name": "推嬰兒車的家長",
+      "focus": [
+        "兒童與照顧者"
+      ],
+      "issues": [
+        1,
+        2,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "I07-US01"
+        },
+        {
+          "issue": 1,
+          "id": "I07-US02"
+        },
+        {
+          "issue": 1,
+          "id": "I07-US03"
+        },
+        {
+          "issue": 2,
+          "id": "I07-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I07-US02"
+        },
+        {
+          "issue": 8,
+          "id": "I07-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I07-US02"
+        },
+        {
+          "issue": 8,
+          "id": "I07-US03"
+        }
+      ]
+    },
+    {
+      "id": "I13",
+      "name": "清潔隊員",
+      "focus": [],
+      "issues": [
+        1,
+        2
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "I13-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I13-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I13-US02"
+        }
+      ]
+    },
+    {
+      "id": "I17",
+      "name": "機車與自行車騎士",
+      "focus": [],
+      "issues": [
+        1,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "I17-US01"
+        },
+        {
+          "issue": 1,
+          "id": "I17-US02"
+        },
+        {
+          "issue": 1,
+          "id": "I17-US03"
+        },
+        {
+          "issue": 8,
+          "id": "I17-US01"
+        }
+      ]
+    },
+    {
+      "id": "I19",
+      "name": "無家者",
+      "focus": [
+        "經濟弱勢"
+      ],
+      "issues": [
+        1,
+        8
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "I19-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I19-US01"
+        }
+      ]
+    }
+  ],
+  "repeatedNeeds": [
+    {
+      "stakeholder": "O12",
+      "summary": "人行道上的設施不違反道路與無障礙相關規範",
+      "needs": [
+        {
+          "issue": 1,
+          "id": "O12-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O12-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O12-US01"
+        }
+      ],
+      "note": {
+        "text": "三個議題都是 Must。三個議題的設施（樹、清潔箱、吸菸區）常在同一段人行道上，所以新工處的同一個需求出現三次。解法 X-B 一起涵蓋",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    }
+  ],
+  "focusGroups": [
+    {
+      "tag": "高齡",
+      "stakeholders": [
+        "I05"
+      ],
+      "note": null
+    },
+    {
+      "tag": "身心障礙",
+      "stakeholders": [
+        "I06"
+      ],
+      "note": null
+    },
+    {
+      "tag": "呼吸道疾病",
+      "stakeholders": [],
+      "note": {
+        "text": "【待補：過敏或呼吸道疾病者（I27）只在 #8；#1、#2 的 1.3 也把這一類列為待補。請真人判斷 #1、#2 是否需要納入他們，再決定跨議題的解法是否要考慮他們】",
+        "tag": null,
+        "pending": true
+      }
+    },
+    {
+      "tag": "兒童與照顧者",
+      "stakeholders": [
+        "I07"
+      ],
+      "note": null
+    },
+    {
+      "tag": "外籍",
+      "stakeholders": [
+        "I03"
+      ],
+      "note": null
+    },
+    {
+      "tag": "經濟弱勢",
+      "stakeholders": [
+        "I19"
+      ],
+      "note": null
+    }
+  ],
+  "needGroups": [
+    {
+      "id": "X-N01",
+      "tag": "AI模擬",
+      "summary": "意見在設施設置、移除或種樹之前被聽到，不必在事後處理抱怨或一再陳情",
+      "needs": [
+        {
+          "issue": 1,
+          "id": "N05",
+          "priority": "M"
+        },
+        {
+          "issue": 2,
+          "id": "N05",
+          "priority": "M"
+        },
+        {
+          "issue": 8,
+          "id": "N09",
+          "priority": "M"
+        }
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O05-US01"
+        },
+        {
+          "issue": 1,
+          "id": "O17-US03"
+        },
+        {
+          "issue": 1,
+          "id": "I20-US03"
+        },
+        {
+          "issue": 1,
+          "id": "I20-US04"
+        },
+        {
+          "issue": 2,
+          "id": "O05-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I09-US04"
+        },
+        {
+          "issue": 2,
+          "id": "I09-US05"
+        },
+        {
+          "issue": 8,
+          "id": "O05-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I26-US03"
+        }
+      ],
+      "stakeholders": [
+        "O05",
+        "O17",
+        "I20",
+        "I09",
+        "I26"
+      ],
+      "priority": "M",
+      "priorityTag": "AI模擬",
+      "prioritiesDiffer": false,
+      "reason": {
+        "text": "三個議題都是 Must：沒有事先聽取意見，住戶與里辦公處只能在事後陳情或處理抱怨（#1、#2、#8 的 5.2）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "X-N02",
+      "tag": "AI模擬",
+      "summary": "在人行道上安全通行",
+      "needs": [
+        {
+          "issue": 1,
+          "id": "N08",
+          "priority": "M"
+        },
+        {
+          "issue": 2,
+          "id": "N07",
+          "priority": "M"
+        },
+        {
+          "issue": 8,
+          "id": "I06-US01",
+          "priority": "M"
+        }
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "I06-US01"
+        },
+        {
+          "issue": 1,
+          "id": "I06-US02"
+        },
+        {
+          "issue": 1,
+          "id": "I07-US01"
+        },
+        {
+          "issue": 1,
+          "id": "I07-US03"
+        },
+        {
+          "issue": 1,
+          "id": "I17-US02"
+        },
+        {
+          "issue": 2,
+          "id": "I06-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I07-US02"
+        },
+        {
+          "issue": 8,
+          "id": "I06-US01"
+        }
+      ],
+      "stakeholders": [
+        "I06",
+        "I07",
+        "I17"
+      ],
+      "priority": "M",
+      "priorityTag": "AI模擬",
+      "prioritiesDiffer": false,
+      "reason": {
+        "text": "三個議題都是 Must：身心障礙者、推嬰兒車的家長與騎士沒有安全的通行空間，會直接受到傷害",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "X-N03",
+      "tag": "AI模擬",
+      "summary": "通報、清運、稽查與派工的人力不白費，通報能很快交給負責的單位",
+      "needs": [
+        {
+          "issue": 1,
+          "id": "N15",
+          "priority": "S"
+        },
+        {
+          "issue": 2,
+          "id": "N03",
+          "priority": "S"
+        },
+        {
+          "issue": 8,
+          "id": "N07",
+          "priority": "S"
+        }
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O05-US02"
+        },
+        {
+          "issue": 1,
+          "id": "O13-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O03-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O03-US04"
+        },
+        {
+          "issue": 2,
+          "id": "O04-US05"
+        },
+        {
+          "issue": 2,
+          "id": "O13-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I13-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O04-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O13-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O22-US04"
+        }
+      ],
+      "stakeholders": [
+        "O05",
+        "O13",
+        "O03",
+        "O04",
+        "I13",
+        "O22"
+      ],
+      "priority": "S",
+      "priorityTag": "AI模擬",
+      "prioritiesDiffer": false,
+      "reason": {
+        "text": "三個議題都是 Should：現行的轉派、清運與稽查仍能運作，只是比較慢或重複",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "X-N04",
+      "tag": "AI模擬",
+      "summary": "能用可靠的資料做研究或開發工具",
+      "needs": [
+        {
+          "issue": 1,
+          "id": "N07",
+          "priority": "S"
+        },
+        {
+          "issue": 2,
+          "id": "N10",
+          "priority": "S"
+        },
+        {
+          "issue": 8,
+          "id": "O07-US01",
+          "priority": "S"
+        }
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O06-US01"
+        },
+        {
+          "issue": 1,
+          "id": "O07-US01"
+        },
+        {
+          "issue": 1,
+          "id": "O07-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O06-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O07-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O07-US01"
+        }
+      ],
+      "stakeholders": [
+        "O06",
+        "O07"
+      ],
+      "priority": "S",
+      "priorityTag": "AI模擬",
+      "prioritiesDiffer": false,
+      "reason": {
+        "text": "三個議題都是 Should：研究與工具可以第二階段再做",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "X-N05",
+      "tag": "AI模擬",
+      "summary": "看得懂規則，知道在哪裡可以做什麼，不擔心誤觸規定被罰",
+      "needs": [
+        {
+          "issue": 2,
+          "id": "N09",
+          "priority": "S"
+        },
+        {
+          "issue": 8,
+          "id": "N05",
+          "priority": "S"
+        }
+      ],
+      "stories": [
+        {
+          "issue": 2,
+          "id": "I03-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I04-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US10"
+        },
+        {
+          "issue": 8,
+          "id": "I03-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I19-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I25-US03"
+        }
+      ],
+      "stakeholders": [
+        "I03",
+        "I04",
+        "I01",
+        "I19",
+        "I25"
+      ],
+      "priority": "S",
+      "priorityTag": "AI模擬",
+      "prioritiesDiffer": false,
+      "reason": {
+        "text": "兩個議題都是 Should：沒有更清楚的資訊時，他們仍能從現場知道規定，但可能丟錯或要一處一處確認",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "X-N06",
+      "tag": "AI模擬",
+      "summary": "走路與生活的地方乾淨，路面沒有垃圾與菸蒂",
+      "needs": [
+        {
+          "issue": 2,
+          "id": "N06",
+          "priority": "M"
+        },
+        {
+          "issue": 8,
+          "id": "N08",
+          "priority": "S"
+        }
+      ],
+      "stories": [
+        {
+          "issue": 2,
+          "id": "I01-US02"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US08"
+        },
+        {
+          "issue": 2,
+          "id": "I09-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I09-US02"
+        },
+        {
+          "issue": 2,
+          "id": "I09-US03"
+        },
+        {
+          "issue": 2,
+          "id": "I23-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O03-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US09"
+        }
+      ],
+      "stakeholders": [
+        "I01",
+        "I09",
+        "I23",
+        "O03"
+      ],
+      "priority": null,
+      "priorityTag": "AI模擬",
+      "prioritiesDiffer": true,
+      "reason": {
+        "text": "#2 N06 是 Must，因為清潔箱滿溢或周邊髒亂直接影響每天經過與居住的地方；#8 N08 是 Should，因為現行的清掃仍能運作。兩邊的理由不同，所以不合併成新的優先順序。合併的解法依各議題的優先順序分別列出（見 4.2）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "X-N07",
+      "tag": "AI模擬",
+      "summary": "設施的設置、移除與政策的決定有清楚、查得到的理由",
+      "needs": [
+        {
+          "issue": 1,
+          "id": "N06",
+          "priority": "S"
+        },
+        {
+          "issue": 2,
+          "id": "N04",
+          "priority": "M"
+        },
+        {
+          "issue": 8,
+          "id": "O22-US03",
+          "priority": "S"
+        }
+      ],
+      "stories": [
+        {
+          "issue": 1,
+          "id": "O17-US04"
+        },
+        {
+          "issue": 1,
+          "id": "I20-US02"
+        },
+        {
+          "issue": 1,
+          "id": "I20-US05"
+        },
+        {
+          "issue": 2,
+          "id": "O04-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O04-US03"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US07"
+        },
+        {
+          "issue": 8,
+          "id": "O22-US03"
+        }
+      ],
+      "stakeholders": [
+        "O17",
+        "I20",
+        "O04",
+        "I01",
+        "O22"
+      ],
+      "priority": null,
+      "priorityTag": "AI模擬",
+      "prioritiesDiffer": true,
+      "reason": {
+        "text": "#2 N04 是 Must，因為環保局每次設或撤都需要能說明的理由；#1 N06 與 #8 O22-US03 是 Should，因為沒有它仍能從事前公告得到部分的好處，或需要先有基準值。兩邊的理由不同，所以不合併成新的優先順序",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    }
+  ],
+  "conflicts": [
+    {
+      "id": "X-C1",
+      "text": {
+        "text": "樹（#1）、清潔箱（#2）與吸菸區（#8）都想放在人多的人行道上；身心障礙者、推嬰兒車的家長與新工處需要連續的通行淨寬",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "issueConflicts": [
+        {
+          "issue": 1,
+          "id": "C7"
+        },
+        {
+          "issue": 2,
+          "id": "C6"
+        },
+        {
+          "issue": 8,
+          "id": "C3"
+        }
+      ],
+      "sideA": [
+        {
+          "issue": 1,
+          "id": "O14-US06"
+        },
+        {
+          "issue": 2,
+          "id": "I01-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I25-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I01-US05"
+        }
+      ],
+      "sideB": [
+        {
+          "issue": 1,
+          "id": "I06-US02"
+        },
+        {
+          "issue": 1,
+          "id": "I07-US03"
+        },
+        {
+          "issue": 1,
+          "id": "O12-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I06-US01"
+        },
+        {
+          "issue": 2,
+          "id": "I07-US02"
+        },
+        {
+          "issue": 2,
+          "id": "O12-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I06-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O12-US01"
+        }
+      ],
+      "needsA": [
+        {
+          "issue": 1,
+          "id": "O14-US06"
+        },
+        {
+          "issue": 2,
+          "id": "N01"
+        },
+        {
+          "issue": 8,
+          "id": "I25-US01"
+        },
+        {
+          "issue": 8,
+          "id": "N01"
+        }
+      ],
+      "needsB": [
+        {
+          "issue": null,
+          "id": "X-N02"
+        },
+        {
+          "issue": 1,
+          "id": "O12-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O12-US01"
+        },
+        {
+          "issue": 8,
+          "id": "O12-US01"
+        }
+      ],
+      "wayOut": {
+        "text": "解法 X-B、X-A：公園處的需要是窄的路段也能補植（#1 O14-US06），行人的需要是步行範圍內有地方丟垃圾（#2 N01），吸菸者的需要是有走得到的合法地點（#8 I25-US01）；另一邊的需要是安全通行（X-N02）與符合規範。三個議題的解方都說明，這些需要不要求某一樣設施一定放在某一段窄人行道上（#1 C7、#2 C6、#8 C3）。X-B 對每個候選點用同一張檢查清單，先畫出通行淨寬，再把樹、清潔箱與吸菸區放進同一條設施帶；放不下的設施改用其他方式：樹改種中小型樹或改用公園邊緣、退縮地（#1 解法 A、D），清潔箱由找桶指引補足（#2 解法 C），吸菸區改用公園邊緣、退縮地或室內吸菸室（#8 解法 A）。X-A 讓同一段人行道的三種設施一起討論",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "wayOutSolutions": [
+        "X-B",
+        "X-A"
+      ],
+      "method": {
+        "text": "備案（某些路段放不下所有設施時）：**跨議題的共同設計工作坊**（#1 C7 與 #8 C3 已提出），#1、#2、#8 的利害關係人一起參加：公園處、新工處、清潔隊、衛生局、管線單位、身障團體、推車家長與吸菸者代表，用人行道斷面圖討論每樣設施放在哪裡",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "先畫出通行淨寬，再把三種設施放進同一條設施帶；放不下的設施改用其他空間。三個議題的模擬結果都是這個方向（#1 C7、#2 C6、#8 C3）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "id": "X-C2",
+      "text": {
+        "text": "行人希望清潔箱離吸菸區遠一點；但清潔箱和吸菸區都要設在捷運站出口與商圈等人多的地方",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "issueConflicts": [
+        {
+          "issue": 2,
+          "id": "C9"
+        }
+      ],
+      "sideA": [
+        {
+          "issue": 2,
+          "id": "I01-US09"
+        }
+      ],
+      "sideB": [
+        {
+          "issue": 2,
+          "id": "I01-US01"
+        },
+        {
+          "issue": 2,
+          "id": "O01-US01"
+        },
+        {
+          "issue": 8,
+          "id": "I25-US01"
+        }
+      ],
+      "needsA": [
+        {
+          "issue": 2,
+          "id": "I01-US09"
+        }
+      ],
+      "needsB": [
+        {
+          "issue": 2,
+          "id": "N01"
+        },
+        {
+          "issue": 2,
+          "id": "N02"
+        },
+        {
+          "issue": 8,
+          "id": "I25-US01"
+        }
+      ],
+      "wayOut": {
+        "text": "解法 X-E、X-B：這位行人的需要是丟垃圾時不必忍受菸味（#2 I01-US09）；其他行人與店家的需要是人多的地方有地方丟（#2 N01、#2 N02），吸菸者的需要是有走得到的合法地點（#8 I25-US01）。X-E 讓清潔箱和吸菸區分開設置，菸蒂收集設備放在吸菸區內，兩者排入同一條清運路線；X-B 的檢查清單包含清潔箱和吸菸區的距離（#2 解法 A）。清潔箱和吸菸區仍在人多的地方，只是彼此分開",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "wayOutSolutions": [
+        "X-E",
+        "X-B"
+      ],
+      "method": {
+        "text": "備案（現場無法分開時）：**跨議題的利害關係人圓桌**（#2 C9 已提出），可以和 X-C1 的共同設計工作坊一起辦",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      "result": {
+        "text": "和 #2 C9 相同：一般垃圾的清潔箱和菸蒂收集設備分開設置；距離在現場試辦後一起決定",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    }
+  ],
+  "solutions": [
+    {
+      "code": "X-A",
+      "name": "同一段人行道的共同參與式選址",
+      "tag": "AI模擬",
+      "parts": [
+        {
+          "issue": 1,
+          "code": "C"
+        },
+        {
+          "issue": 2,
+          "code": "D"
+        },
+        {
+          "issue": 8,
+          "code": "A"
+        }
+      ],
+      "spaces": [
+        "sidewalk",
+        "arcade",
+        "park"
+      ],
+      "added": "2026-10-20",
+      "summary": "補植與移樹（#1）、清潔箱新設或撤除（#2）、吸菸區設置或移動（#8）的候選點，放在同一張地圖上公告，並在同一場以里為單位的工作坊一起討論。主動邀請高齡者、身障者、推車家長、外籍居民、回收者、無家者與吸菸者，請社會局與社工協助。危險樹木的緊急移除不等合併的工作坊。可以參考美國費城選點前和商圈團體一起評估人流的做法（見 #2 6.1）",
+      "needs": {
+        "must": [
+          {
+            "issue": 1,
+            "id": "N05"
+          },
+          {
+            "issue": 2,
+            "id": "N04"
+          },
+          {
+            "issue": 2,
+            "id": "N05"
+          },
+          {
+            "issue": 2,
+            "id": "N06"
+          },
+          {
+            "issue": 2,
+            "id": "O12-US01"
+          },
+          {
+            "issue": 8,
+            "id": "N03"
+          },
+          {
+            "issue": 8,
+            "id": "N09"
+          },
+          {
+            "issue": 8,
+            "id": "I25-US01"
+          },
+          {
+            "issue": 8,
+            "id": "I26-US02"
+          }
+        ],
+        "shouldCould": [
+          {
+            "issue": 1,
+            "id": "N11"
+          },
+          {
+            "issue": 1,
+            "id": "N12"
+          },
+          {
+            "issue": 2,
+            "id": "N02"
+          },
+          {
+            "issue": 2,
+            "id": "I11-US01"
+          },
+          {
+            "issue": 8,
+            "id": "O01-US02"
+          }
+        ],
+        "crossIssue": [
+          "X-N01",
+          "X-N06",
+          "X-N07"
+        ]
+      },
+      "measures": [
+        {
+          "indicator": "同一段人行道上，樹、清潔箱與吸菸區一起討論的選址案件數",
+          "baseline": {
+            "text": "【待補：試點後由 X-A 產生】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "公園處、環保局、衛生局、區公所",
+          "from": [],
+          "isNew": true
+        },
+        {
+          "indicator": "補植點中經過里民討論的比例",
+          "baseline": {
+            "text": "【待補：試點後由 #1 解法 C 產生】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "公園處、區公所",
+          "from": [
+            {
+              "issue": 1,
+              "code": "C"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "清潔箱新設點中，經過里民討論的比例",
+          "baseline": {
+            "text": "【待補：環保局或區公所是否已有紀錄；沒有的話，試點後由 #2 解法 D 產生】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "環保局、區公所",
+          "from": [
+            {
+              "issue": 2,
+              "code": "D"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "吸菸區設置或移動前經過里民討論的比例",
+          "baseline": {
+            "text": "【待補：衛生局或區公所是否已有紀錄；沒有的話，試點後由 #8 解法 A 產生】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "衛生局、區公所",
+          "from": [
+            {
+              "issue": 8,
+              "code": "A"
+            }
+          ],
+          "isNew": false
+        }
+      ],
+      "detail": {
+        "owner": {
+          "text": "需要一個主辦單位【待補：由公園處、環保局、衛生局或區公所主辦，需要市府決定】；協作：民政局與各區公所（里）、社會局（弱勢者參與）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "laws": {
+          "text": "臺北市樹木保護自治條例的公告與說明會規定（#1）；地方制度法與里長相關規定（#1、#2）；臺北市吸菸區設置及管理要點（#8）；個人資料保護法（工作坊報名資料）【待補：法務確認合併的工作坊能不能取代各自的公告或說明會】",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "privacy": {
+          "text": "工作坊與線上意見只公開彙總結果，不公開個人身分（#1、#2、#8 的步驟 7）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risks": {
+          "text": "三個局處的時程不同，合併後可能變慢；危險樹木的緊急移除不能等合併的工作坊；討論結果不被採用時會傷害信任，需事先說明決策方式（#1、#2）",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      }
+    },
+    {
+      "code": "X-B",
+      "name": "人行道設施帶的共同檢查清單",
+      "tag": "AI模擬",
+      "parts": [
+        {
+          "issue": 1,
+          "code": "A"
+        },
+        {
+          "issue": 1,
+          "code": "D"
+        },
+        {
+          "issue": 2,
+          "code": "A"
+        },
+        {
+          "issue": 8,
+          "code": "A"
+        }
+      ],
+      "spaces": [
+        "sidewalk",
+        "utility"
+      ],
+      "added": "2026-10-20",
+      "summary": "每個候選點用同一張檢查清單：通行淨寬（吸菸區另有保留 1.5 公尺淨寬的規定）、地下管線、建築物出入口與學校的距離、清潔箱和吸菸區的距離。先畫出通行淨寬，再把樹、清潔箱、管線箱與吸菸區放進同一條設施帶；設施帶太窄的路段，各議題改用其他空間。設施集中在綠帶的做法可以參考新加坡（見 #1 6.1，只有新聞報導，需真人查證）",
+      "needs": {
+        "must": [
+          {
+            "issue": 1,
+            "id": "N08"
+          },
+          {
+            "issue": 1,
+            "id": "O12-US01"
+          },
+          {
+            "issue": 1,
+            "id": "O16-US01"
+          },
+          {
+            "issue": 2,
+            "id": "N07"
+          },
+          {
+            "issue": 2,
+            "id": "O12-US01"
+          },
+          {
+            "issue": 8,
+            "id": "I06-US01"
+          },
+          {
+            "issue": 8,
+            "id": "O12-US01"
+          },
+          {
+            "issue": 8,
+            "id": "O22-US02"
+          }
+        ],
+        "shouldCould": [
+          {
+            "issue": 1,
+            "id": "N10"
+          },
+          {
+            "issue": 1,
+            "id": "O14-US06"
+          },
+          {
+            "issue": 2,
+            "id": "I01-US09"
+          }
+        ],
+        "crossIssue": [
+          "X-N02"
+        ]
+      },
+      "measures": [
+        {
+          "indicator": "人行道段數與總長度",
+          "baseline": {
+            "text": "15,053 段，約 1,214.8 公里",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "人行道範圍圖",
+          "from": [
+            {
+              "issue": 1,
+              "code": "D"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "「SWW_WTH」欄位小於 1.5 公尺的人行道段數",
+          "baseline": {
+            "text": "9,213 段（61%）；欄位意義未確認，見 #1 附錄",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "人行道範圍圖",
+          "from": [
+            {
+              "issue": 1,
+              "code": "D"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "樹、清潔箱、管線箱與路燈集中在設施帶，並留下連續淨寬的路段比例",
+          "baseline": {
+            "text": "【待補：需要現場走查或新工處的設施物資料】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "新工處、現場走查",
+          "from": [
+            {
+              "issue": 1,
+              "code": "D"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "吸菸區中，符合距離與淨寬規定的比例",
+          "baseline": {
+            "text": "【待補：要點 115-10-01 生效，需衛生局逐點檢查的結果】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "衛生局",
+          "from": [
+            {
+              "issue": 8,
+              "code": "A"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "同時通過淨寬、管線與設施距離檢查的候選點比例",
+          "baseline": {
+            "text": "【待補：試點後由 X-B 產生】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "新工處、公園處、環保局、衛生局",
+          "from": [],
+          "isNew": true
+        }
+      ],
+      "detail": {
+        "owner": {
+          "text": "工務局新建工程處；協作：公園路燈工程管理處、環保局、衛生局、各管線單位",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "laws": {
+          "text": "市區道路及附屬工程設計規範；身心障礙者權益保障法與無障礙設施相關規定（#1）；道路上設置物件的相關規定（#2）；臺北市吸菸區設置及管理要點（#8）【待補：法務確認各規定合併成一張檢查清單時是否一致】",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "privacy": {
+          "text": "只用設施資料，不含個資（#1）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risks": {
+          "text": "設施帶的規範只適用於新做或重做的人行道，改善速度慢（#1）；人行道寬度欄位的意義未確認（#1）；清潔箱開放資料只到 2018-01（#2）",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      }
+    },
+    {
+      "code": "X-C",
+      "name": "共用的通報入口與派工",
+      "tag": "AI模擬",
+      "parts": [
+        {
+          "issue": 1,
+          "code": "B"
+        },
+        {
+          "issue": 2,
+          "code": "B"
+        },
+        {
+          "issue": 8,
+          "code": "D"
+        }
+      ],
+      "spaces": [
+        "sidewalk",
+        "park",
+        "mrt-exit"
+      ],
+      "added": "2026-10-20",
+      "summary": "清潔箱滿溢、菸蒂、違規吸菸與危險樹木的通報，用同一個入口，帶有地點與時段，直接轉給負責的單位（環保局、衛生局或公園處）。兩種稽查的分工先談好；對經濟弱勢者先勸導與轉介",
+      "needs": {
+        "must": [
+          {
+            "issue": 2,
+            "id": "N06"
+          }
+        ],
+        "shouldCould": [
+          {
+            "issue": 1,
+            "id": "N15"
+          },
+          {
+            "issue": 2,
+            "id": "N03"
+          },
+          {
+            "issue": 2,
+            "id": "I13-US02"
+          },
+          {
+            "issue": 8,
+            "id": "N06"
+          },
+          {
+            "issue": 8,
+            "id": "N07"
+          },
+          {
+            "issue": 8,
+            "id": "N08"
+          }
+        ],
+        "crossIssue": [
+          "X-N03",
+          "X-N06"
+        ]
+      },
+      "measures": [
+        {
+          "indicator": "1999「路面清潔（含行人果皮箱、菸蒂、狗便）」每月件數",
+          "baseline": {
+            "text": "2026 年 7–9 月平均約 653 件／月",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "臺北市陳情系統類別資料",
+          "from": [
+            {
+              "issue": 2,
+              "code": "B"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "1999「路面清潔」類案件受理到結案的中位數",
+          "baseline": {
+            "text": "5.5–6.0 天",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "臺北市陳情系統類別資料",
+          "from": [
+            {
+              "issue": 2,
+              "code": "B"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "違規吸菸的通報件數與處理天數",
+          "baseline": {
+            "text": "【待補：1999 與衛生局的通報紀錄】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "1999、衛生局",
+          "from": [
+            {
+              "issue": 8,
+              "code": "D"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "同一個地點的清潔、菸蒂、違規吸菸與危險樹木通報，被轉派一次以上的比例",
+          "baseline": {
+            "text": "【待補：1999 與各局處的派工紀錄】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "1999 市民熱線、環保局、衛生局、公園處",
+          "from": [],
+          "isNew": true
+        }
+      ],
+      "detail": {
+        "owner": {
+          "text": "1999 市民熱線與各局處的派工【待補：由哪個單位統一受理，需要市府決定】；協作：環保局、衛生局、公園處、社會局",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "laws": {
+          "text": "個人資料保護法（回報者聯絡方式、照片）；資通安全管理法（#2）；菸害防制法第 22 條、第 40 條與廢棄物清理法第 27 條、第 50 條（兩種稽查，#8）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "privacy": {
+          "text": "照片可能拍到人臉或車牌，需模糊處理或只收位置與狀態；回報者聯絡方式應選填；清潔隊員的手機定位涉及員工監督，需和員工及工會溝通（#2、#8）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risks": {
+          "text": "回報量可能偏向會用手機的人（#2）；通報可能變成鄰里衝突（#8）；罰款對經濟弱勢者的影響較大，需要社工轉介（#8）",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      }
+    },
+    {
+      "code": "X-D",
+      "name": "街道設施的共同開放資料與地圖",
+      "tag": "AI模擬",
+      "parts": [
+        {
+          "issue": 1,
+          "code": "B"
+        },
+        {
+          "issue": 2,
+          "code": "C"
+        },
+        {
+          "issue": 8,
+          "code": "C"
+        }
+      ],
+      "spaces": [
+        "sidewalk",
+        "arcade",
+        "park",
+        "mrt-exit"
+      ],
+      "added": "2026-10-20",
+      "summary": "清潔箱、行道樹的移除與補植紀錄、吸菸區與禁菸範圍放在同一張地圖，也提供開放資料與 API；有英文與圖示。可以參考法國巴黎的砍樹、種樹互動地圖（見 #1 6.1），以及新加坡把吸菸區位置放進地圖與 app 的做法（見 #8 6.1）",
+      "needs": {
+        "must": [
+          {
+            "issue": 2,
+            "id": "N01"
+          }
+        ],
+        "shouldCould": [
+          {
+            "issue": 1,
+            "id": "N06"
+          },
+          {
+            "issue": 1,
+            "id": "N07"
+          },
+          {
+            "issue": 1,
+            "id": "O14-US05"
+          },
+          {
+            "issue": 2,
+            "id": "N08"
+          },
+          {
+            "issue": 2,
+            "id": "N09"
+          },
+          {
+            "issue": 2,
+            "id": "N10"
+          },
+          {
+            "issue": 8,
+            "id": "N05"
+          },
+          {
+            "issue": 8,
+            "id": "O07-US01"
+          }
+        ],
+        "crossIssue": [
+          "X-N04",
+          "X-N05",
+          "X-N07"
+        ]
+      },
+      "measures": [
+        {
+          "indicator": "清潔箱開放資料的資料時間涵蓋終點",
+          "baseline": {
+            "text": "2018-01-10",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "data.gov.tw 121355 後設資料",
+          "from": [
+            {
+              "issue": 2,
+              "code": "C"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "以開放資料公開的行道樹移除紀錄（含原因）",
+          "baseline": {
+            "text": "0 筆。題目原文說逐年移除紀錄與原因未完整開放；行道樹資料只有現存的樹",
+            "tag": "實證",
+            "pending": false
+          },
+          "source": "題目原文（#1）；data.gov.tw 128274 欄位",
+          "from": [
+            {
+              "issue": 1,
+              "code": "B"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "有開放資料的禁菸範圍",
+          "baseline": {
+            "text": "【待補：#8 沒有找到禁菸範圍的開放資料；衛生局網頁有「臺北市公告戶外禁菸公共場所」清單】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "衛生局",
+          "from": [
+            {
+              "issue": 8,
+              "code": "C"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "可以在同一張地圖查到樹、清潔箱、吸菸區與禁菸範圍的行政區數",
+          "baseline": {
+            "text": "【待補：資訊局確認目前是否有整合這些資料的地圖】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "資訊局",
+          "from": [],
+          "isNew": true
+        }
+      ],
+      "detail": {
+        "owner": {
+          "text": "資訊局（開放資料平台、台北通）；資料提供：公園處、環保局、衛生局；協作：觀光傳播局（多語言）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "laws": {
+          "text": "臺北市政府資料開放相關規定與政府資料開放授權條款；身心障礙者權益保障法（資訊無障礙，#2）；政府資訊公開法（#1）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "privacy": {
+          "text": "資料只含設施位置與範圍，不含個資；移除紀錄公開前，確認是否涉及私人申請者的個資（#1）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risks": {
+          "text": "三個局處的資料更新時間不同，資料不更新會讓人白跑或誤會，降低信任（#2、#8）；行道樹與樹穴資料沒有共同編號（#1）",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      }
+    },
+    {
+      "code": "X-E",
+      "name": "清潔箱與吸菸區分開設置、一起清運",
+      "tag": "AI模擬",
+      "parts": [
+        {
+          "issue": 2,
+          "code": "A"
+        },
+        {
+          "issue": 2,
+          "code": "B"
+        },
+        {
+          "issue": 8,
+          "code": "B"
+        }
+      ],
+      "spaces": [
+        "sidewalk",
+        "mrt-exit",
+        "park"
+      ],
+      "added": "2026-10-20",
+      "summary": "選址時檢查清潔箱和吸菸區的距離，兩者分開設置；菸蒂收集設備放在吸菸區內，不放在清潔箱上。清潔箱的動態清運（#2）和吸菸區的菸蒂清理（#8）排入同一條清運路線。距離在現場試辦後決定（見 X-C2）",
+      "needs": {
+        "must": [
+          {
+            "issue": 2,
+            "id": "N01"
+          },
+          {
+            "issue": 2,
+            "id": "N06"
+          },
+          {
+            "issue": 8,
+            "id": "N01"
+          },
+          {
+            "issue": 8,
+            "id": "O22-US02"
+          }
+        ],
+        "shouldCould": [
+          {
+            "issue": 2,
+            "id": "N03"
+          },
+          {
+            "issue": 2,
+            "id": "I01-US09"
+          },
+          {
+            "issue": 8,
+            "id": "N08"
+          },
+          {
+            "issue": 8,
+            "id": "I25-US02"
+          }
+        ],
+        "crossIssue": [
+          "X-N03",
+          "X-N06"
+        ]
+      },
+      "measures": [
+        {
+          "indicator": "清潔箱滿溢比例",
+          "baseline": {
+            "text": "【待補：題目說滿溢偵測資料不存在】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "試點後由 #2 解法 B 產生",
+          "from": [
+            {
+              "issue": 2,
+              "code": "B"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "吸菸區周邊的菸味或空氣品質",
+          "baseline": {
+            "text": "【待補：試點前後的現場量測】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "試點後由 #8 解法 B 產生",
+          "from": [
+            {
+              "issue": 8,
+              "code": "B"
+            }
+          ],
+          "isNew": false
+        },
+        {
+          "indicator": "清潔箱和最近的吸菸區之間的距離",
+          "baseline": {
+            "text": "【待補：確認清潔箱資料（data.gov.tw 121355）是否有座標，再和吸菸區資料（data.gov.tw 177504，有座標）計算距離；清潔箱主表只涵蓋到 2018-01】",
+            "tag": null,
+            "pending": true
+          },
+          "source": "data.gov.tw 121355、177504",
+          "from": [],
+          "isNew": true
+        }
+      ],
+      "detail": {
+        "owner": {
+          "text": "環保局（清潔箱與清運）與衛生局（吸菸區）【待補：兩個局處在同一條清運路線上的分工，需要市府決定】；協作：吸菸區的管理單位",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "laws": {
+          "text": "廢棄物清理法（菸蒂、清潔箱）；臺北市吸菸區設置及管理要點；政府採購法（設備）（#2、#8）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "privacy": {
+          "text": "量測只記錄環境數字，不拍可辨識的人臉（#8）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "risks": {
+          "text": "分開設置後，清潔箱或吸菸區可能離人多的地方遠一些；菸蒂收集設備需要維護（#8）",
+          "tag": "AI模擬",
+          "pending": false
+        }
+      }
+    }
+  ],
+  "solutionFocus": [
+    {
+      "tag": "高齡",
+      "solutions": [
+        "X-A"
+      ],
+      "note": {
+        "text": "合併的工作坊討論的事情變多、時間變長。需要用高齡者能參加的時段與方式（#1、#2 的步驟 7 也提到要主動邀請高齡者）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "tag": "身心障礙",
+      "solutions": [
+        "X-B",
+        "X-A"
+      ],
+      "note": {
+        "text": "X-B 先畫出通行淨寬，再放其他設施，直接影響輪椅使用者與視障者的通行（X-N02）。X-A 的工作坊需要無障礙的場地與訪談方式（#2 1.2）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "tag": "呼吸道疾病",
+      "solutions": [
+        "X-E"
+      ],
+      "note": {
+        "text": "X-E 讓清潔箱和吸菸區分開，會改變行人經過菸味的地點，也會影響 #8 的過敏或呼吸道疾病者（#8 N01）。#1、#2 尚未納入這一類（見 1.3）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "tag": "兒童與照顧者",
+      "solutions": [
+        "X-B",
+        "X-A"
+      ],
+      "note": {
+        "text": "推嬰兒車的家長需要連續的通行淨寬（X-N02）；X-B 的檢查清單也包含吸菸區和學校、幼兒園的距離（#8 N03）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "tag": "外籍",
+      "solutions": [
+        "X-D",
+        "X-A"
+      ],
+      "note": {
+        "text": "X-D 的地圖與標示需要英文與圖示（X-N05）；X-A 的工作坊需要主動邀請外籍居民（#2 的步驟 7）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    },
+    {
+      "tag": "經濟弱勢",
+      "solutions": [
+        "X-A",
+        "X-C"
+      ],
+      "note": {
+        "text": "X-A 需要請社會局與社工協助回收者與無家者參與（#2 C7、#1 的步驟 7）。X-C 的通報可能讓稽查變多；對經濟弱勢者先勸導與轉介（#8 C4）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    }
+  ],
+  "pending": [
+    {
+      "text": "【待補：#3–#7 完成分析後，檢查它們和 #1、#2、#8 共用的利害關係人；#8 提到和 #5 共用公車站】",
+      "section": "範圍與方法"
+    },
+    {
+      "text": "【待補：過敏或呼吸道疾病者（I27）只在 #8；#1、#2 的 1.3 也把這一類列為待補。請真人判斷 #1、#2 是否需要納入他們，再決定跨議題的解法是否要考慮他們】",
+      "section": "1.3 特別關注族群檢查"
+    },
+    {
+      "text": "【待補：真人訪談後，確認是否還有跨議題的衝突，例如公園裡的樹蔭、清潔箱與吸菸區的位置】",
+      "section": "3 跨議題的衝突"
+    },
+    {
+      "text": "【待補：試點後由 X-A 產生】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：試點後由 #1 解法 C 產生】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：環保局或區公所是否已有紀錄；沒有的話，試點後由 #2 解法 D 產生】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：衛生局或區公所是否已有紀錄；沒有的話，試點後由 #8 解法 A 產生】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：需要現場走查或新工處的設施物資料】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：要點 115-10-01 生效，需衛生局逐點檢查的結果】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：試點後由 X-B 產生】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：1999 與衛生局的通報紀錄】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：1999 與各局處的派工紀錄】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：#8 沒有找到禁菸範圍的開放資料；衛生局網頁有「臺北市公告戶外禁菸公共場所」清單】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：資訊局確認目前是否有整合這些資料的地圖】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：題目說滿溢偵測資料不存在】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：試點前後的現場量測】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：確認清潔箱資料（data.gov.tw 121355）是否有座標，再和吸菸區資料（data.gov.tw 177504，有座標）計算距離；清潔箱主表只涵蓋到 2018-01】",
+      "section": "4.3 成效衡量"
+    },
+    {
+      "text": "【待補：由公園處、環保局、衛生局或區公所主辦，需要市府決定】",
+      "section": "4.5 資源、法規、隱私與風險"
+    },
+    {
+      "text": "【待補：法務確認合併的工作坊能不能取代各自的公告或說明會】",
+      "section": "4.5 資源、法規、隱私與風險"
+    },
+    {
+      "text": "【待補：法務確認各規定合併成一張檢查清單時是否一致】",
+      "section": "4.5 資源、法規、隱私與風險"
+    },
+    {
+      "text": "【待補：由哪個單位統一受理，需要市府決定】",
+      "section": "4.5 資源、法規、隱私與風險"
+    },
+    {
+      "text": "【待補：兩個局處在同一條清運路線上的分工，需要市府決定】",
+      "section": "4.5 資源、法規、隱私與風險"
+    }
+  ]
+}

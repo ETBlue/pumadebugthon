@@ -1,7 +1,7 @@
 // The "recent" lists of the home page (design 3.1).
 // Sort rule: by date, newest first. Items with the same date: by ID, highest
 // first. An item with no date goes last. Never by a count.
-import type { AvailableIssueSummary, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
+import type { AvailableIssueSummary, CrossIssueFile, CrossSolution, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
 import { compareIds } from './ids'
 
 /** Newest date first. A missing date (null or "") goes last. Dates are
@@ -50,6 +50,35 @@ export function recentSolutions(issues: IssueFile[], limit?: number): IssueSolut
         (a.solution.id < b.solution.id ? 1 : a.solution.id > b.solution.id ? -1 : 0),
     )
   return take(list, limit)
+}
+
+/** One item of 最近分析出的解法: an issue solution or a cross-issue solution. */
+export type RecentSolution =
+  | ({ kind: 'issue' } & IssueSolution)
+  | { kind: 'cross'; solution: CrossSolution }
+
+/** 最近分析出的解法 with the cross-issue solutions (decision 51): every
+ * solution by `added`, newest first. On the same date the cross-issue
+ * solutions come first (code, highest first), then the issue solutions in
+ * the order of recentSolutions. cross is null when cross-issue.json does
+ * not exist. */
+export function recentSolutionItems(issues: IssueFile[], cross: CrossIssueFile | null, limit?: number): RecentSolution[] {
+  const crossItems: RecentSolution[] = [...(cross?.solutions ?? [])]
+    .sort((a, b) => compareDatesDesc(a.added, b.added) || (a.code < b.code ? 1 : a.code > b.code ? -1 : 0))
+    .map((solution) => ({ kind: 'cross', solution }))
+  const issueItems: RecentSolution[] = recentSolutions(issues).map((x) => ({ kind: 'issue', ...x }))
+  // Merge the two lists, which are both in date order. A cross-issue
+  // solution goes before an issue solution of the same date.
+  const out: RecentSolution[] = []
+  let i = 0
+  let j = 0
+  while (i < crossItems.length || j < issueItems.length) {
+    const c = crossItems[i]
+    const s = issueItems[j]
+    if (c && (!s || compareDatesDesc(c.solution.added, s.solution.added) <= 0)) out.push(crossItems[i++])
+    else out.push(issueItems[j++])
+  }
+  return take(out, limit)
 }
 
 /** The home page used to hold the stakeholder list, so links like

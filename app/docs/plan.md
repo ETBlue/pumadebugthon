@@ -362,7 +362,7 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
 | N1, N2a, N2b, N2c, N2d, N3, N4, N5, N6, N7, N8, N9 | Done, merged into `main` |
 | N10 | Done. It also did the follow-ups from the reviews of N4–N9: the story list of a need follows 「只看有資料根據」, unused code removed, two-line tab labels on phones (design 3.2), design decisions 58 and 59, and the fixtures refreshed with issue #9 |
 | N11 | Done: cross-issue solutions (design 3.18, decision 60) |
-| N12 | Not started |
+| N12 | Done: 129 URLs at 360, 375, 768 and 1280 px in both themes pass (one h1, heading order, unique IDs, no sideways scroll, no console errors, accessible names, axe WCAG AA and best practice). Keyboard checks pass (tabs, the phone stakeholder menu, `?focus=`). Fixes: the `?focus=` outline shows only after a jump, the search input contrast in the dark theme, unique names for nested sections |
 
 ### Task N1: refresh the fixtures and fix the broken tests (test first for `summary.ts`)
 

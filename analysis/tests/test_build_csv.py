@@ -35,7 +35,7 @@ class BuildCsvTest(unittest.TestCase):
         with open(MD, encoding="utf-8") as f:
             text = f.read()
         # Change the priority cell of the first story row to a letter that is not MoSCoW.
-        start = text.index("\n| O01-US01 |") + 1
+        start = text.index("\n| O01-US01 | 商圈店家與攤商 |") + 1
         end = text.index("\n", start)
         row = text[start:end]
         cells = row.split(" | ")
@@ -53,7 +53,7 @@ class BuildCsvTest(unittest.TestCase):
         # [AI整理] is the third source tag. The CSV keeps it without backticks.
         with open(MD, encoding="utf-8") as f:
             text = f.read()
-        start = text.index("\n| O01-US01 |") + 1
+        start = text.index("\n| O01-US01 | 商圈店家與攤商 |") + 1
         end = text.index("\n", start)
         md = os.path.join(self._tmp.name, "issue-analysis.md")
         with open(md, "w", encoding="utf-8") as f:
@@ -66,6 +66,32 @@ class BuildCsvTest(unittest.TestCase):
         self.assertEqual((r["我想要標記"], r["以便標記"], r["優先順序標記"]), ("[AI整理]",) * 3)
         self.assertEqual(r["我想要…"], "商圈有足夠的清潔箱")
         self.assertEqual(r["優先順序"], "S")
+
+    def test_needs_format_has_the_need_group_column(self):
+        # #2 uses the needs-based format: a 相同需求編號 column after 以便標記.
+        # 優先順序 is the priority of the story's need.
+        code, output = run(MD, self.out)
+        self.assertEqual(code, 0, output)
+        with open(self.out, encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.reader(f))
+        self.assertEqual(rows[0], ["故事編號", "利害關係人編號", "身為…", "我想要…", "我想要標記", "相同訴求編號", "以便…", "以便標記",
+                                   "相同需求編號", "來源", "優先順序", "優先順序標記"])
+        by_id = {r[0]: dict(zip(rows[0], r)) for r in rows[1:]}
+        self.assertEqual(by_id["I01-US03"]["相同需求編號"], "N01")
+        self.assertEqual(by_id["I01-US03"]["優先順序"], "M")
+        self.assertEqual(by_id["I01-US09"]["相同需求編號"], "—")
+
+    def test_old_format_keeps_11_columns(self):
+        # #8 still uses the old format until a later task moves it.
+        md = os.path.join(ANALYSIS, "8-smokefree", "issue-analysis.md")
+        code, output = run(md, self.out)
+        self.assertEqual(code, 0, output)
+        with open(self.out, encoding="utf-8-sig", newline="") as f:
+            header = next(csv.reader(f))
+        self.assertEqual(len(header), 11)
+        self.assertNotIn("相同需求編號", header)
+        with open(self.out, "rb") as a, open(os.path.join(ANALYSIS, "8-smokefree", "user-stories.csv"), "rb") as b:
+            self.assertEqual(a.read(), b.read())
 
     def test_bare_tag_word_without_brackets_exits_1(self):
         with open(MD, encoding="utf-8") as f:

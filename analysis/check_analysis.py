@@ -4,10 +4,11 @@ from collections import Counter, defaultdict
 
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from analysis_common import (CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
-                             SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, cross_refs, focus_tables, issue_ids, parse_ref,
-                             section, split_cells as cells, split_focus, split_refs, step1_tables, summary_lines,
-                             summary_topics, tables, without_cross_refs)
+from analysis_common import (CONFLICT_HEADER, CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, NEED_GROUP_HEADING,
+                             NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
+                             SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, WAY_OUT_NONE, conflict_heading, cross_refs,
+                             focus_tables, issue_ids, needs_format, parse_ref, section, split_cells as cells, split_focus,
+                             split_refs, step1_tables, summary_lines, summary_topics, tables, without_cross_refs)
 
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
 # 新增日期: the date a stakeholder (stakeholders.csv) or a solution (6.1) was added.
@@ -34,6 +35,256 @@ def step1_rows(t):
     next heading), the same as in sync_stakeholders.py and build_json.py."""
     found = step1_tables(t)
     return [r for _, rows in found for r in rows], [h for h, _ in found]
+
+
+def check_old_priority(text, step4, err, local_only):
+    """The old format (#1 and #8 for now): the 5.2 MoSCoW table lists the
+    stories per category, and 6.2 maps solutions to stories and W groups."""
+    sec5 = text.split("### 5.2", 1)[1].split("### 5.3", 1)[0]
+    # Must count claimed in 6.2 summary
+    mm = re.search(r"全部 (\d+) 則 Must", text)
+    nm = sum(1 for r in step4 if r[6].endswith(" M"))
+    if not mm or int(mm.group(1)) != nm: err(f"6.2 Must summary count wrong: {mm and mm.group(1)} vs {nm}")
+    names = {"Must": "M", "Should": "S", "Could": "C", "Won't": "W"}
+    mos = {}
+    for line in sec5.splitlines():
+
+        m = re.match(rf"^\| `\[(?:{TAG_NAMES})\]` (Must|Should|Could|Won't)[^|]* \| (\d+) \| ([^|]+) \|", line)
+        if m:
+            local_only(f"5.2 MoSCoW {m.group(1)}", m.group(3))
+            l = re.findall(r"[OI]\d\d-US\d\d", m.group(3))
+            if int(m.group(2)) != len(l): err(f"MoSCoW {m.group(1)} count {m.group(2)} != {len(l)}")
+            for i in l: mos[i] = names[m.group(1)]
+    for r in step4:
+        p = r[6].split(" ")[-1]
+        if mos.get(r[0]) != p: err(f"MoSCoW mismatch {r[0]}: table {mos.get(r[0])} step4 {p}")
+
+    # 8. Must covered by a solution; solution columns in correct priority.
+    # 6.2 columns are found by header name. 代號 is one capital letter and
+    # must be a code from 6.1.
+    STEP62_HEADER = ["代號", "解法", "涵蓋的 Must", "涵蓋的 Should / Could", "涵蓋的相同訴求群組"]
+    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if re.match(r"^\| [A-Z] \|", l)]
+    covered = set()
+    prio = {r[0]: r[6].split(" ")[-1] for r in step4}
+    allw = defaultdict(list)
+    for r in step4:
+        if r[3] != "—": allw[r[3]].append(r[0])
+    t62 = tables(section(text, "### 6.2") or [])
+    if len(t62) != 1 or t62[0][0] != STEP62_HEADER:
+        err(f"6.2: expected one table with the header {' | '.join(STEP62_HEADER)}, found {[' | '.join(h) for h, _ in t62]}")
+    codes62 = []
+    for c in (t62[0][1] if len(t62) == 1 and t62[0][0] == STEP62_HEADER else []):
+        if len(c) != len(STEP62_HEADER): err(f"6.2 row {c[0]} has {len(c)} cells, expected {len(STEP62_HEADER)}"); continue
+        sol = c[0]
+        col = dict(zip(STEP62_HEADER, c))
+        if not re.fullmatch(r"[A-Z]", sol): err(f"6.2: 代號 must be one capital letter: {sol!r}"); continue
+        if sol not in codes61: err(f"6.2: solution {sol} is not in 6.1")
+        if sol in codes62: err(f"6.2: solution {sol} is listed twice")
+        codes62.append(sol)
+        local_only(f"6.2 {sol}", " ".join(c[2:]))
+        must = re.findall(r"[OI]\d\d-US\d\d", col["涵蓋的 Must"]); sc = re.findall(r"[OI]\d\d-US\d\d", col["涵蓋的 Should / Could"])
+        for i in must:
+            if prio.get(i) != "M": err(f"6.2 {sol}: {i} in Must column but is {prio.get(i)}")
+        for i in sc:
+            if prio.get(i) not in ("S", "C"): err(f"6.2 {sol}: {i} in Should/Could column but is {prio.get(i)}")
+        covered |= set(must) | set(sc)
+        # W coverage claims
+        wcell = col["涵蓋的相同訴求群組"]
+        for w, kind in re.findall(r"(W\d\d)（(全部|部分)", wcell):
+            inn = [i for i in allw[w] if i in must + sc]
+            if kind == "全部" and len(inn) != len(allw[w]): err(f"6.2 {sol} {w} claims 全部 but covers {inn}")
+            if kind == "部分" and not (0 < len(inn) < len(allw[w])): err(f"6.2 {sol} {w} claims 部分 but covers {inn}")
+        claimed = set(re.findall(r"W\d\d", wcell))
+        actual = {r[3] for r in step4 if r[3] != "—" and r[0] in must + sc}
+        if claimed != actual: err(f"6.2 {sol} W list {sorted(claimed)} != actual {sorted(actual)}")
+    for sol in codes61:
+        if sol not in codes62: err(f"6.2: solution {sol} from 6.1 has no row")
+    for i, p in prio.items():
+        if p == "M" and i not in covered: err(f"Must {i} not covered by a solution")
+
+
+def need_rows(text, err):
+    """The step 5 need table (header NEED_PRIORITY_HEADER), or [] after an error."""
+    found = [(h, rows) for h, rows in tables(section(text, "### 5.2") or []) if h == NEED_PRIORITY_HEADER]
+    if len(found) != 1:
+        err(f"5.2: expected one table with the header {' | '.join(NEED_PRIORITY_HEADER)}, found {len(found)}")
+        return []
+    out = []
+    for c in found[0][1]:
+        if len(c) != len(NEED_PRIORITY_HEADER): err(f"5.2 row 「{c[0]}」 has {len(c)} cells, expected {len(NEED_PRIORITY_HEADER)}"); continue
+        out.append(c)
+    return out
+
+
+def check_needs(text, step4, need_of, err, local_only):
+    """The needs-based format (see method.md and analysis_common).
+
+    - 相同需求編號 in step 4 is an N ID or 「—」. Every N group has 2 or more
+      stories, and the 「### 相同需求群組」 table lists the same stories and
+      stakeholders.
+    - The 5.2 table has one row per need: each N group once, and each story
+      that is in no group once (by its story ID). A story in a group has no
+      row of its own. Each row has exactly one priority (a tag and M, S, C or W).
+    - The priority of each story in step 4 is the priority of its need.
+    - 6.2 (NEED_MAP_HEADER) lists only existing N IDs, or story IDs of
+      stories that are in no group. A need in the Must column is M; in the
+      Should / Could column it is S or C. Every Must need is covered.
+    - 「全部 n 項 Must 需求」 gives the number of Must needs.
+    Returns nothing; problems go to err."""
+    known = {r[0] for r in step4}
+    groups = defaultdict(list)
+    for r in step4:
+        n = need_of.get(r[0], "")
+        if n == "—": continue
+        if not re.fullmatch(r"N\d\d", n): err(f"{r[0]}: bad 相同需求編號 「{n}」 (expected N01… or 「—」)"); continue
+        groups[n].append(r[0])
+    for n, ids in groups.items():
+        if len(ids) < 2: err(f"{n} has only {len(ids)} story; a 相同需求群組 needs 2 or more stories")
+    seen = set()
+    for h, rows in tables(section(text, NEED_GROUP_HEADING) or []):
+        if h[:3] != ["群組", "以便（摘要）", "故事編號"]: continue
+        for c in rows:
+            m = re.fullmatch(rf"`\[(?:{TAG_NAMES})\]` (N\d\d)", c[0])
+            if not m: err(f"相同需求群組: first cell must be a tag and an N ID: {c[0]!r}"); continue
+            n = m.group(1)
+            if n in seen: err(f"相同需求群組: {n} is listed twice")
+            seen.add(n)
+            local_only(f"相同需求群組 {n}", " ".join(c[2:]))
+            ids = re.findall(r"[OI]\d\d-US\d\d", c[2])
+            if sorted(ids) != sorted(groups.get(n, [])): err(f"相同需求群組 {n} mismatch: {ids} vs step 4 {groups.get(n, [])}")
+            want_st = []
+            for i in ids:
+                if i[:3] not in want_st: want_st.append(i[:3])
+            if len(c) > 3 and re.findall(r"[OI]\d\d", c[3]) != want_st: err(f"相同需求群組 {n}: stakeholder list wrong (expected {'、'.join(want_st)})")
+    for n in groups:
+        if n not in seen: err(f"N group {n} is missing from the 相同需求群組 table")
+
+    # 5.2: one row per need, one priority each.
+    solo = [r[0] for r in step4 if need_of.get(r[0]) == "—"]
+    need_prio = {}
+    for c in need_rows(text, err):
+        nid, _, ids_cell, pri = c[0], c[1], c[2], c[3]
+        if nid in need_prio: err(f"5.2: need {nid} has two rows (a need has exactly one priority)"); continue
+        m = re.fullmatch(rf"`\[(?:{TAG_NAMES})\]` ([MSCW])", pri)
+        if not m: err(f"5.2 {nid}: 優先順序 must be a tag and M, S, C or W: {pri!r}"); continue
+        local_only(f"5.2 {nid}", ids_cell)
+        ids = re.findall(r"[OI]\d\d-US\d\d", ids_cell)
+        if re.fullmatch(r"N\d\d", nid):
+            if nid not in groups: err(f"5.2: {nid} is not a 相同需求群組 in step 4")
+            elif sorted(ids) != sorted(groups[nid]): err(f"5.2 {nid}: 故事編號 {ids} != the group's stories {groups[nid]}")
+        elif re.fullmatch(r"[OI]\d\d-US\d\d", nid):
+            if nid not in known: err(f"5.2: story {nid} is not in step 4")
+            elif nid not in solo: err(f"5.2: story {nid} is in {need_of.get(nid)}; give the priority on the group row, not on the story")
+            elif ids != [nid]: err(f"5.2 {nid}: 故事編號 must be {nid}")
+        else:
+            err(f"5.2: 需求 must be an N ID or a story ID: {nid!r}"); continue
+        need_prio[nid] = m.group(1)
+    for n in groups:
+        if n not in need_prio: err(f"5.2: need {n} has no priority row")
+    for sid in solo:
+        if sid not in need_prio: err(f"5.2: the need of {sid} (in no group) has no priority row")
+    for r in step4:
+        n = need_of.get(r[0])
+        key = r[0] if n == "—" else n
+        if key in need_prio and r[6].split(" ")[-1] != need_prio[key]:
+            err(f"{r[0]}: priority in step 4 is {r[6].split(' ')[-1]}, but its need {key} is {need_prio[key]} in 5.2")
+
+    # 6.2: solutions -> needs.
+    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if re.match(r"^\| [A-Z] \|", l)]
+    t62 = tables(section(text, "### 6.2") or [])
+    if len(t62) != 1 or t62[0][0] != NEED_MAP_HEADER:
+        err(f"6.2: expected one table with the header {' | '.join(NEED_MAP_HEADER)}, found {[' | '.join(h) for h, _ in t62]}")
+        return
+    covered, codes62 = set(), []
+    for c in t62[0][1]:
+        if len(c) != len(NEED_MAP_HEADER): err(f"6.2 row {c[0]} has {len(c)} cells, expected {len(NEED_MAP_HEADER)}"); continue
+        sol = c[0]
+        if not re.fullmatch(r"[A-Z]", sol): err(f"6.2: 代號 must be one capital letter: {sol!r}"); continue
+        if sol not in codes61: err(f"6.2: solution {sol} is not in 6.1")
+        if sol in codes62: err(f"6.2: solution {sol} is listed twice")
+        codes62.append(sol)
+        local_only(f"6.2 {sol}", " ".join(c[2:]))
+        for col, allowed in ((2, ("M",)), (3, ("S", "C"))):
+            body = re.sub(rf"`\[(?:{TAG_NAMES})\]`", "", c[col]).strip()
+            if body in ("", "—"): continue
+            for ref in body.split("、"):
+                ref = ref.strip()
+                if ref not in need_prio:
+                    if re.fullmatch(r"[OI]\d\d-US\d\d", ref) and need_of.get(ref, "—") != "—":
+                        err(f"6.2 {sol}: {ref} is in {need_of[ref]}; write {need_of[ref]}")
+                    else:
+                        err(f"6.2 {sol}: 「{ref}」 is not a need (an N ID, or the story ID of a need in no group)")
+                    continue
+                if need_prio[ref] not in allowed:
+                    err(f"6.2 {sol}: {ref} is {need_prio[ref]}, so it does not belong in the {NEED_MAP_HEADER[col]} column")
+                covered.add(ref)
+    for sol in codes61:
+        if sol not in codes62: err(f"6.2: solution {sol} from 6.1 has no row")
+    musts = [k for k, v in need_prio.items() if v == "M"]
+    for k in musts:
+        if k not in covered: err(f"Must need {k} is not covered by a solution in 6.2")
+    mm = re.search(r"全部 (\d+) 項 Must 需求", text)
+    if not mm or int(mm.group(1)) != len(musts): err(f"6.2 Must summary count wrong: {mm and mm.group(1)} vs {len(musts)} Must needs")
+
+
+WAY_OUT_CODES = re.compile(r"^`\[(?:" + TAG_NAMES + r")\]` 解法 ([A-Z](?:、[A-Z])*)：")
+
+
+def check_conflicts(text, known_stories, need_ids, solo_stories, codes61, err, local_only, other_issue):
+    """The conflict table 「### 6.4」 in the needs-based format (CONFLICT_HEADER).
+    - 相關故事 has exactly one 「 vs 」, and each side lists stories of step 4.
+    - 雙方的需求 lists N IDs or story IDs of needs, with one 「 vs 」.
+    - 以需求為本的解方 starts with a tag and 「解法 X：」 (codes from 6.1,
+      several separated by 「、」), or with a tag and 「未找到」. 「#n 解法 X」
+      in the cell is a solution of another issue and must exist there.
+    - 可能的審議方法 starts with a tag. For 「未找到」 it is the main way, so
+      it must not be empty."""
+    found = [(h, rows) for h, rows in tables(section(text, "### 6.4") or []) if h and h[0] == "#"]
+    if len(found) != 1 or found[0][0] != CONFLICT_HEADER:
+        err(f"6.4: expected one table with the header {' | '.join(CONFLICT_HEADER)}, found {[' | '.join(h) for h, _ in found]}")
+        return
+    ids = []
+    for c in found[0][1]:
+        if len(c) != len(CONFLICT_HEADER): err(f"6.4 row {c[0]} has {len(c)} cells, expected {len(CONFLICT_HEADER)}"); continue
+        col = dict(zip(CONFLICT_HEADER, c))
+        cid = col["#"]
+        if not re.fullmatch(r"C\d+", cid): err(f"6.4: bad conflict ID {cid!r}"); continue
+        if cid in ids: err(f"6.4: {cid} is listed twice")
+        ids.append(cid)
+        local_only(f"6.4 {cid}", col["相關故事"])
+        sides = col["相關故事"].split(" vs ")
+        if len(sides) != 2: err(f"6.4 {cid}: 相關故事 must have exactly one 「 vs 」")
+        else:
+            for side in sides:
+                s_ids = re.findall(r"[OI]\d\d-US\d\d", side)
+                if not s_ids: err(f"6.4 {cid}: one side of 「 vs 」 has no story ID")
+                for s in s_ids:
+                    if s not in known_stories: err(f"6.4 {cid}: story {s} is not in step 4")
+        nsides = col["雙方的需求"].split(" vs ")
+        if len(nsides) != 2: err(f"6.4 {cid}: 雙方的需求 must have exactly one 「 vs 」")
+        for side in nsides:
+            for ref in [x.strip() for x in side.split("、") if x.strip()]:
+                if ref not in need_ids and ref not in solo_stories:
+                    err(f"6.4 {cid}: 雙方的需求 「{ref}」 is not a need (an N ID, or the story ID of a need in no group)")
+        way = col["以需求為本的解方"]
+        m = WAY_OUT_CODES.match(way)
+        if m:
+            for code in m.group(1).split("、"):
+                if code not in codes61: err(f"6.4 {cid}: 以需求為本的解方 names 解法 {code}, which is not in 6.1")
+        elif not re.match(rf"^`\[(?:{TAG_NAMES})\]` {WAY_OUT_NONE}", way):
+            err(f"6.4 {cid}: 以需求為本的解方 must start with a tag and 「解法 X：」, or with a tag and 「{WAY_OUT_NONE}」: {way[:30]!r}")
+        for num, code in re.findall(r"#(\d+) 解法 ([A-Z])", way):
+            ids_other = other_issue(f"#{num} 解法 {code}", int(num), code)
+            if ids_other is not None and code not in ids_other["solution"]:
+                err(f"6.4 {cid}: #{num} 解法 {code} is not in issue #{num}")
+        method = col["可能的審議方法"]
+        if not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", method):
+            if WAY_OUT_NONE in way.split("：")[0] or not m:
+                err(f"6.4 {cid}: no solution was found, so 可能的審議方法 must start with a tag and name a method")
+            elif method not in ("—",):
+                err(f"6.4 {cid}: 可能的審議方法 must start with a tag, or be 「—」")
+        for name in ("衝突", "模擬結果"):
+            if not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", col[name]): err(f"6.4 {cid}: {name} must start with a tag")
 
 
 def main(md_path, csv_path):
@@ -105,14 +356,22 @@ def main(md_path, csv_path):
     old += re.findall(r"(?<![A-Za-z0-9])S\d\d(?:-US\d\d)?", csv_raw)
     if old: err(f"old S IDs remain: {sorted(set(old))}")
 
-    # step 4 table
+    # The needs-based format (a 「### 相同需求群組」 section) or the old format.
+    # #1 and #8 still use the old format until a later task moves them.
+    needs = needs_format(text)
+
+    # step 4 table. In the needs-based format, the 相同需求編號 column (after
+    # 以便…) is moved out of the row into need_of, so the other checks see the
+    # same 7 cells in both formats.
     sec4 = text.split("## 步驟 4：使用者故事總表", 1)[1].split("### 相同訴求群組", 1)[0]
     step4 = []
+    need_of = {}
     for line in sec4.splitlines():
         if re.match(r"^\| [OI]\d\d-US\d\d \|", line):
             # Markdown cells may wrap tags in backticks; the CSV has plain tags.
             c = [x.strip().replace("`", "") for x in line.strip().strip("|").split(" | ")]
-            if len(c) != 7: err(f"step4 row has {len(c)} cells: {line[:40]}")
+            if len(c) != (8 if needs else 7): err(f"step4 row has {len(c)} cells: {line[:40]}"); continue
+            if needs: need_of[c[0]] = c.pop(5)
             step4.append(c)
     ids4 = [r[0] for r in step4]
     if len(ids4) != len(set(ids4)): err("duplicate story IDs in step 4")
@@ -149,14 +408,17 @@ def main(md_path, csv_path):
     if not raw.startswith(b"\xef\xbb\xbf"): err("CSV has no BOM")
     rows = list(csv.reader(open(csv_path, encoding="utf-8-sig", newline="")))
     hdr = ["故事編號", "利害關係人編號", "身為…", "我想要…", "我想要標記", "相同訴求編號", "以便…", "以便標記", "來源", "優先順序", "優先順序標記"]
+    if needs: hdr.insert(8, "相同需求編號")
     if rows[0] != hdr: err(f"CSV header wrong: {rows[0]}")
     for r in rows[1:]:
-        if len(r) != 11: err(f"CSV row {r[0]} has {len(r)} fields")
+        if len(r) != len(hdr): err(f"CSV row {r[0]} has {len(r)} fields")
     # 我想要… and 以便… start with a tag; a 【待補】 cell has no tag.
     def split_tag(cell):
         m = re.match(rf"^(\[(?:{TAG_NAMES})\]) (.+)$", cell)
         return (m.group(2), m.group(1)) if m else (cell, "")
     exp = [[c[0], c[0][:3], c[1], *split_tag(c[2]), c[3], *split_tag(c[4]), c[5], c[6].split(" ")[1], c[6].split(" ")[0]] for c in step4]
+    if needs:
+        for row in exp: row.insert(8, need_of.get(row[0], ""))
     if rows[1:] != exp:
         err("CSV does not match step 4 table")
         for a, b in zip(rows[1:], exp):
@@ -186,73 +448,19 @@ def main(md_path, csv_path):
     want_tags = Counter(split_tag(r[2])[1] or "【待補】" for r in step4)
     so_tags = Counter(split_tag(r[4])[1] or "【待補】" for r in step4)
 
-    # 7. MoSCoW
-    sec5 = text.split("### 5.2", 1)[1].split("### 5.3", 1)[0]
+    # 7. MoSCoW. The cell format is the same in both formats.
     # priority column is a tag, then the MoSCoW letter
     for r in step4:
         if not re.fullmatch(rf"\[(?:{TAG_NAMES})\] [MSCW]", r[6]): err(f"{r[0]} bad priority value {r[6]}")
         for name, cell in (("我想要", r[2]), ("以便", r[4])):
             if not split_tag(cell)[1] and not cell.startswith("【待補"): err(f"{r[0]} {name} cell has no tag: {cell}")
         if re.match(rf"^\[(?:{TAG_NAMES})\]", r[5]): err(f"{r[0]} 來源 cell should not have a tag: {r[5]}")
-    # Must count claimed in 6.2 summary
-    mm = re.search(r"全部 (\d+) 則 Must", text)
-    nm = sum(1 for r in step4 if r[6].endswith(" M"))
-    if not mm or int(mm.group(1)) != nm: err(f"6.2 Must summary count wrong: {mm and mm.group(1)} vs {nm}")
-    names = {"Must": "M", "Should": "S", "Could": "C", "Won't": "W"}
-    mos = {}
-    for line in sec5.splitlines():
-        m = re.match(rf"^\| `\[(?:{TAG_NAMES})\]` (Must|Should|Could|Won't)[^|]* \| (\d+) \| ([^|]+) \|", line)
-        if m:
-            local_only(f"5.2 MoSCoW {m.group(1)}", m.group(3))
-            l = re.findall(r"[OI]\d\d-US\d\d", m.group(3))
-            if int(m.group(2)) != len(l): err(f"MoSCoW {m.group(1)} count {m.group(2)} != {len(l)}")
-            for i in l: mos[i] = names[m.group(1)]
-    for r in step4:
-        p = r[6].split(" ")[-1]
-        if mos.get(r[0]) != p: err(f"MoSCoW mismatch {r[0]}: table {mos.get(r[0])} step4 {p}")
-
-    # 8. Must covered by a solution; solution columns in correct priority.
-    # 6.2 columns are found by header name. 代號 is one capital letter and
-    # must be a code from 6.1.
-    STEP62_HEADER = ["代號", "解法", "涵蓋的 Must", "涵蓋的 Should / Could", "涵蓋的相同訴求群組"]
-    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if re.match(r"^\| [A-Z] \|", l)]
-    covered = set()
+    if needs:
+        check_needs(text, step4, need_of, err, local_only)
+    else:
+        check_old_priority(text, step4, err, local_only)
     prio = {r[0]: r[6].split(" ")[-1] for r in step4}
-    allw = defaultdict(list)
-    for r in step4:
-        if r[3] != "—": allw[r[3]].append(r[0])
-    t62 = tables(section(text, "### 6.2") or [])
-    if len(t62) != 1 or t62[0][0] != STEP62_HEADER:
-        err(f"6.2: expected one table with the header {' | '.join(STEP62_HEADER)}, found {[' | '.join(h) for h, _ in t62]}")
-    codes62 = []
-    for c in (t62[0][1] if len(t62) == 1 and t62[0][0] == STEP62_HEADER else []):
-        if len(c) != len(STEP62_HEADER): err(f"6.2 row {c[0]} has {len(c)} cells, expected {len(STEP62_HEADER)}"); continue
-        sol = c[0]
-        col = dict(zip(STEP62_HEADER, c))
-        if not re.fullmatch(r"[A-Z]", sol): err(f"6.2: 代號 must be one capital letter: {sol!r}"); continue
-        if sol not in codes61: err(f"6.2: solution {sol} is not in 6.1")
-        if sol in codes62: err(f"6.2: solution {sol} is listed twice")
-        codes62.append(sol)
-        local_only(f"6.2 {sol}", " ".join(c[2:]))
-        must = re.findall(r"[OI]\d\d-US\d\d", col["涵蓋的 Must"]); sc = re.findall(r"[OI]\d\d-US\d\d", col["涵蓋的 Should / Could"])
-        for i in must:
-            if prio.get(i) != "M": err(f"6.2 {sol}: {i} in Must column but is {prio.get(i)}")
-        for i in sc:
-            if prio.get(i) not in ("S", "C"): err(f"6.2 {sol}: {i} in Should/Could column but is {prio.get(i)}")
-        covered |= set(must) | set(sc)
-        # W coverage claims
-        wcell = col["涵蓋的相同訴求群組"]
-        for w, kind in re.findall(r"(W\d\d)（(全部|部分)", wcell):
-            inn = [i for i in allw[w] if i in must + sc]
-            if kind == "全部" and len(inn) != len(allw[w]): err(f"6.2 {sol} {w} claims 全部 but covers {inn}")
-            if kind == "部分" and not (0 < len(inn) < len(allw[w])): err(f"6.2 {sol} {w} claims 部分 but covers {inn}")
-        claimed = set(re.findall(r"W\d\d", wcell))
-        actual = {r[3] for r in step4 if r[3] != "—" and r[0] in must + sc}
-        if claimed != actual: err(f"6.2 {sol} W list {sorted(claimed)} != actual {sorted(actual)}")
-    for sol in codes61:
-        if sol not in codes62: err(f"6.2: solution {sol} from 6.1 has no row")
-    for i, p in prio.items():
-        if p == "M" and i not in covered: err(f"Must {i} not covered by a solution")
+    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if re.match(r"^\| [A-Z] \|", l)]
 
     # 9. anchors
     def slug(h):
@@ -296,7 +504,8 @@ def main(md_path, csv_path):
     m37 = re.search(r"^### (3\.\d+) 新增的利害關係人\s*$", text, re.M)
     if not m37: err("step 3: no heading 「### 3.n 新增的利害關係人」")
     n37 = m37.group(1) if m37 else "3.n"
-    sec37 = text[m37.end():].split("\n## ", 1)[0] if m37 else ""
+    # The section ends at the next ## or ### heading (for example 3.9).
+    sec37 = "\n".join(section(text, "### " + m37.group(1)) or []) if m37 else ""
     ls37 = sec37.splitlines()
     h37 = [cells(ls37[i - 1]) for i, l in enumerate(ls37) if i > 0 and SEPARATOR.match(l)]
     if m37 and (len(h37) != 1 or h37[0] != STEP37_HEADER): err(f"{n37} table header wrong: {h37} (expected {' | '.join(STEP37_HEADER)})")
@@ -448,8 +657,9 @@ def main(md_path, csv_path):
                 for word in ("見下表", "見上表"):
                     if word in v: err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 「{word}」 does not work on the solution page; give the key numbers and name the section of the full table")
 
-    # 17. 5.4 相關故事 holds local stories only
-    for h, rows in tables(section(text, "### 5.4") or []):
+    # 17. the 相關故事 of the conflict table (5.4, or 6.4 in the needs-based
+    # format) holds local stories only
+    for h, rows in tables(section(text, conflict_heading(text)) or []):
         if "相關故事" in h:
             for c in rows:
                 if len(c) == len(h): local_only(f"5.4 {c[0]}", c[h.index("相關故事")])
@@ -478,6 +688,17 @@ def main(md_path, csv_path):
         if "-US" in rid:
             if rid not in ids_other["story"]: err(f"{ref}: story {rid} is not in step 4 of issue #{num} ({num_folder[num]})")
         elif rid not in ids_other["stakeholder"]: err(f"{ref}: stakeholder {rid} is not in step 1 of issue #{num} ({num_folder[num]})")
+
+    # 18b. the needs-based format: the conflict table in 6.4, and every N ID
+    # in the text is a 相同需求群組 of step 4.
+    if needs:
+        need_ids = {n for n in need_of.values() if n != "—"}
+        solo = {k for k, v in need_of.items() if v == "—"}
+        check_conflicts(text, set(ids4), need_ids, solo, codes61, err, local_only, other_issue)
+        for n in sorted(set(NEED_ID.findall(text_refs)) - need_ids):
+            err(f"{n} is referenced but is not a 相同需求群組 in step 4")
+        if section(text, "### 5.4") is not None:
+            err("the needs-based format has the conflicts in 「### 6.4」; remove 「### 5.4」")
 
     # 19. open-data.csv lists every open dataset (on data.gov.tw or data.taipei)
     # that the appendix of this issue cites, and every row that lists this
@@ -574,7 +795,8 @@ def main(md_path, csv_path):
     # 「、」 (「—」 for none). A row with a tag has at least one reference.
     # Every reference exists: in this issue, or in issue #n for 「#n …」.
     SW = "分析摘要"
-    KIND_WHERE = {"story": "step 4", "stakeholder": "step 1", "conflict": "5.4", "group": "相同訴求群組", "solution": "6.1"}
+    KIND_WHERE = {"story": "step 4", "stakeholder": "step 1", "conflict": conflict_heading(text)[4:], "group": "相同訴求群組",
+                  "need": "相同需求群組", "solution": "6.1"}
     own_ids = issue_ids(text)
     s_lines = summary_lines(text)
     if s_lines is None:
@@ -615,7 +837,7 @@ def main(md_path, csv_path):
                 for ref in refs_s:
                     p_ = parse_ref(ref)
                     if p_ is None:
-                        err(f"{rw}: 「{ref}」 is not a reference (write IDs like I01-US01, I05, C3, W01 or 解法 A, separated by 「、」; 「#n 」 before an ID of another issue)"); continue
+                        err(f"{rw}: 「{ref}」 is not a reference (write IDs like I01-US01, I05, C3, W01, N01 or 解法 A, separated by 「、」; 「#n 」 before an ID of another issue)"); continue
                     num, kind, rid = p_
                     if num is None:
                         if rid not in own_ids[kind]: err(f"{rw}: {ref} is not in {KIND_WHERE[kind]} of this issue")
@@ -625,7 +847,8 @@ def main(md_path, csv_path):
                             err(f"{rw}: {ref} is not in issue #{num} ({KIND_WHERE[kind]})")
 
     print(f"stakeholders: {len(stake)} (O {sum(k[0]=='O' for k in stake)}, I {sum(k[0]=='I' for k in stake)})")
-    print(f"stories: {len(step4)}; 我想要 tags: {dict(want_tags)}; 以便 tags: {dict(so_tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}")
+    print(f"stories: {len(step4)}; 我想要 tags: {dict(want_tags)}; 以便 tags: {dict(so_tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}"
+          + (f"; N groups: {len(set(need_of.values()) - {'—'})}" if needs else "; format: old (story priority)"))
     anchors = sorted(set(re.findall(r"\]\(#([^)]+)\)", text))); print("anchors checked:", anchors)
     if errors:
         print("FAIL"); [print(" -", e) for e in errors]

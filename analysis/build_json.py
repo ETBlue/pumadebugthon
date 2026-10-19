@@ -53,6 +53,29 @@ stakeholders.csv. index.json gets focusGaps for each analyzed issue: the
 groups with no stakeholder, in the same order (null for an issue without an
 analysis).
 
+Two formats (analysis_common.needs_format). The needs-based format (#2)
+has a 「### 相同需求群組」 section; #1 and #8 still use the old format. The
+JSON keeps every field of the old format, with the same meaning, so the app
+works with both:
+- format: "needs" or "stories" (the old format).
+- stories[].priority / priorityTag: the priority of the story's need (needs
+  format) or of the story itself (old format). stories[].needGroup: the
+  相同需求編號 (N01) or null (always null in the old format).
+- needGroups: the 「### 相同需求群組」 rows: {id, summary, tag, stories}.
+  [] in the old format.
+- needs: the 5.2 rows, one per need: {id (N01, or the story ID of a need in
+  no group), kind ("group" or "story"), summary, stories, priority,
+  priorityTag, reason (a Cell)}. [] in the old format.
+- conflicts: the 「### 6.4」 table (needs format) or the 「### 5.4」 table.
+  sideA / sideB are the stories of 相關故事, as before. New: needsA / needsB
+  (the 雙方的需求 cell, split on 「 vs 」), wayOut (the 以需求為本的解方
+  Cell) and wayOutSolutions (the local solution codes in it; [] for
+  「未找到」). In the old format: [], [], null and [].
+- solutions[].stories: the stories whose need the solution covers in 6.2
+  (needs format), or the stories of the 6.2 row (old format).
+  solutions[].needs: {must, shouldCould}, the need IDs of the 6.2 row, or
+  null in the old format.
+
 Markdown inside cells (for example **bold** and [links](...)) stays as written
 in the Cell text and in other text fields. The app renders it.
 """
@@ -372,8 +395,74 @@ def summary_range(lines):
     return 0, 0
 
 
+def parse_needs(text, stories):
+    """The needs-based format: the 相同需求群組 table and the 5.2 need table.
+    Returns (needGroups, needs). Checks that each N group has 2 or more
+    stories, that each need has exactly one row in 5.2, and that the priority
+    of each story is the priority of its need."""
+    known = {s["id"] for s in stories}
+    groups = []
+    for r in table_rows(common.tables(section(text, common.NEED_GROUP_HEADING, "相同需求群組")), "相同需求群組",
+                        ["群組", "以便（摘要）", "故事編號"]):
+        c = cell(r["群組"], "相同需求群組", r["群組"])
+        if not re.fullmatch(r"N\d\d", c["text"]):
+            raise ReadError("相同需求群組", f"bad group ID 「{r['群組']}」")
+        ids = local_ids(STORY_ID, r["故事編號"], "相同需求群組", c["text"])
+        for sid in ids:
+            if sid not in known:
+                raise ReadError("相同需求群組", f"{c['text']}: story {sid} is not in step 4")
+        if len(ids) < 2:
+            raise ReadError("相同需求群組", f"{c['text']}: a group needs 2 or more stories")
+        groups.append({"id": c["text"], "summary": r["以便（摘要）"], "tag": c["tag"], "stories": ids})
+    no_duplicates([g["id"] for g in groups], "相同需求群組", "group")
+    by_group = {g["id"]: g for g in groups}
+    for s in stories:
+        n = s["needGroup"]
+        if n is not None and (n not in by_group or s["id"] not in by_group[n]["stories"]):
+            raise ReadError("步驟 4", f"{s['id']}: 相同需求編號 {n} does not match the 相同需求群組 table")
+    for g in groups:
+        for sid in g["stories"]:
+            if next(s for s in stories if s["id"] == sid)["needGroup"] != g["id"]:
+                raise ReadError("相同需求群組", f"{g['id']}: story {sid} has another 相同需求編號 in step 4")
+
+    needs = []
+    for r in table_rows(common.tables(section(text, "### 5.2", "5.2")), "5.2", common.NEED_PRIORITY_HEADER):
+        nid = r["需求"].strip()
+        p = re.fullmatch(rf"`?{common.TAG_RE}`? ([MSCW])", r["優先順序"])
+        if not p:
+            raise ReadError("5.2", f"{nid}: bad 優先順序 cell 「{r['優先順序']}」 (expected a tag and M, S, C or W)")
+        ids = local_ids(STORY_ID, r["故事編號"], "5.2", nid)
+        if nid in by_group:
+            kind = "group"
+            if sorted(ids) != sorted(by_group[nid]["stories"]):
+                raise ReadError("5.2", f"{nid}: 故事編號 does not match the 相同需求群組 table")
+        elif STORY_ID.fullmatch(nid):
+            kind = "story"
+            s = next((s for s in stories if s["id"] == nid), None)
+            if s is None:
+                raise ReadError("5.2", f"story {nid} is not in step 4")
+            if s["needGroup"] is not None:
+                raise ReadError("5.2", f"story {nid} is in {s['needGroup']}; its priority is on the group row")
+            if ids != [nid]:
+                raise ReadError("5.2", f"{nid}: 故事編號 must be {nid}")
+        else:
+            raise ReadError("5.2", f"「{nid}」 is not a need (an N ID or a story ID)")
+        needs.append({"id": nid, "kind": kind, "summary": r["以便（摘要）"], "stories": ids,
+                      "priority": p.group(2), "priorityTag": p.group(1), "reason": cell(r["理由"], "5.2", nid)})
+    no_duplicates([n["id"] for n in needs], "5.2", "need")
+    by_need = {n["id"]: n for n in needs}
+    for s in stories:
+        key = s["needGroup"] or s["id"]
+        if key not in by_need:
+            raise ReadError("5.2", f"the need of {s['id']} ({key}) has no row")
+        if (s["priority"], s["priorityTag"]) != (by_need[key]["priority"], by_need[key]["priorityTag"]):
+            raise ReadError("步驟 4", f"{s['id']}: 優先順序 is not the priority of its need {key} in 5.2")
+    return groups, needs
+
+
 def parse_issue(text, space_codes):
     lines = text.splitlines()
+    needs_format = common.needs_format(text)
 
     if not lines or not lines[0].startswith("# "):
         raise ReadError("title", "the first line is not a 「# 」 title")
@@ -416,7 +505,7 @@ def parse_issue(text, space_codes):
 
     # step 4 stories
     stories = []
-    cols4 = ["故事編號", "我想要…", "相同訴求編號", "以便…", "來源", "優先順序"]
+    cols4 = ["故事編號", "我想要…", "相同訴求編號", "以便…", "來源", "優先順序"] + (["相同需求編號"] if needs_format else [])
     for r in table_rows(common.tables(section(text, "## 步驟 4", "步驟 4")), "步驟 4", cols4):
         sid = r["故事編號"]
         if not re.fullmatch(STORY_ID, sid):
@@ -427,11 +516,14 @@ def parse_issue(text, space_codes):
         group = dash_to_none(r["相同訴求編號"])
         if group is not None and not re.fullmatch(r"W\d\d", group):
             raise ReadError("步驟 4", f"{sid}: bad 相同訴求編號 「{group}」")
+        need_group = dash_to_none(r["相同需求編號"]) if needs_format else None
+        if need_group is not None and not re.fullmatch(r"N\d\d", need_group):
+            raise ReadError("步驟 4", f"{sid}: bad 相同需求編號 「{need_group}」")
         stories.append({
             "id": sid, "stakeholder": sid.split("-")[0],
             "want": cell(r["我想要…"], "步驟 4", sid), "group": group,
             "soThat": cell(r["以便…"], "步驟 4", sid), "source": dash_to_none(r["來源"]),
-            "priority": p.group(2), "priorityTag": p.group(1),
+            "priority": p.group(2), "priorityTag": p.group(1), "needGroup": need_group,
         })
 
     # 相同訴求群組
@@ -458,22 +550,48 @@ def parse_issue(text, space_codes):
         if s["group"] is not None and s["group"] not in group_ids:
             raise ReadError("步驟 4", f"{s['id']}: group {s['group']} has no row in 相同訴求群組")
 
-    # 5.4 conflicts
+    # needs-based format: 相同需求群組 and the 5.2 need table
+    need_groups, needs = parse_needs(text, stories) if needs_format else ([], [])
+    need_ids = {n["id"] for n in needs}
+
+    # conflicts: 6.4 (needs format) or 5.4 (old format)
+    chead = common.conflict_heading(text)
+    cname = chead[4:]
+    ccols = ["#", "衝突", "相關故事", "可能的審議方法", "模擬結果"] + (["雙方的需求", "以需求為本的解方"] if needs_format else [])
     conflicts = []
-    for r in table_rows(common.tables(section(text, "### 5.4", "5.4")), "5.4", ["#", "衝突", "相關故事", "可能的審議方法", "模擬結果"]):
+    for r in table_rows(common.tables(section(text, chead, cname)), cname, ccols):
         cid = r["#"]
         sides = r["相關故事"].split(" vs ")
         if len(sides) != 2:
-            raise ReadError("5.4", f"{cid}: 相關故事 must have exactly one 「 vs 」, found {len(sides) - 1}")
-        a, b = (local_ids(STORY_ID, s, "5.4", cid) for s in sides)
+            raise ReadError(cname, f"{cid}: 相關故事 must have exactly one 「 vs 」, found {len(sides) - 1}")
+        a, b = (local_ids(STORY_ID, s, cname, cid) for s in sides)
         if not a or not b:
-            raise ReadError("5.4", f"{cid}: one side of 「 vs 」 has no story ID")
+            raise ReadError(cname, f"{cid}: one side of 「 vs 」 has no story ID")
         for sid in a + b:
             if sid not in known:
-                raise ReadError("5.4", f"{cid}: story {sid} is not in step 4")
-        conflicts.append({"id": cid, "text": cell(r["衝突"], "5.4", cid), "sideA": a, "sideB": b,
-                          "method": cell(r["可能的審議方法"], "5.4", cid), "result": cell(r["模擬結果"], "5.4", cid)})
-    no_duplicates([c["id"] for c in conflicts], "5.4", "conflict")
+                raise ReadError(cname, f"{cid}: story {sid} is not in step 4")
+        item = {"id": cid, "text": cell(r["衝突"], cname, cid), "sideA": a, "sideB": b,
+                "method": cell(r["可能的審議方法"], cname, cid), "result": cell(r["模擬結果"], cname, cid),
+                "needsA": [], "needsB": [], "wayOut": None, "wayOutSolutions": []}
+        if needs_format:
+            nsides = r["雙方的需求"].split(" vs ")
+            if len(nsides) != 2:
+                raise ReadError(cname, f"{cid}: 雙方的需求 must have exactly one 「 vs 」")
+            na, nb = ([x.strip() for x in s.split("、") if x.strip()] for s in nsides)
+            for ref in na + nb:
+                if ref not in need_ids:
+                    raise ReadError(cname, f"{cid}: 雙方的需求 「{ref}」 is not a need in 5.2")
+            way = cell(r["以需求為本的解方"], cname, cid)
+            m = re.match(r"解法 ([A-Z](?:、[A-Z])*)：", way["text"])
+            if m:
+                codes = m.group(1).split("、")
+            elif way["text"].startswith(common.WAY_OUT_NONE):
+                codes = []
+            else:
+                raise ReadError(cname, f"{cid}: 以需求為本的解方 must start with 「解法 X：」 or 「{common.WAY_OUT_NONE}」")
+            item.update({"needsA": na, "needsB": nb, "wayOut": way, "wayOutSolutions": codes})
+        conflicts.append(item)
+    no_duplicates([c["id"] for c in conflicts], cname, "conflict")
 
     # 6.1 solutions
     solutions = []
@@ -488,19 +606,40 @@ def parse_issue(text, space_codes):
                 raise ReadError("6.1", f"solution {sol}: space code {code} is not in the issue's 空間類型 line")
         solutions.append({"id": sol, "name": cell(r["解法"], "6.1", sol), "summary": r["一句話說明"],
                           "spaces": codes, "added": check_date(r["新增日期"], "6.1", f"solution {sol}"),
-                          "stories": []})
+                          "stories": [], "needs": None})
     no_duplicates([s["id"] for s in solutions], "6.1", "solution")
     by_sol = {s["id"]: s for s in solutions}
     in_62 = []
 
-    # 6.2 stories per solution
-    for r in table_rows(common.tables(section(text, "### 6.2", "6.2")), "6.2", ["代號", "解法", "涵蓋的 Must", "涵蓋的 Should / Could"]):
+    # 6.2 stories (old format) or needs (needs format) per solution
+    by_need = {n["id"]: n for n in needs}
+    cols62 = common.NEED_MAP_HEADER if needs_format else ["代號", "解法", "涵蓋的 Must", "涵蓋的 Should / Could"]
+    for r in table_rows(common.tables(section(text, "### 6.2", "6.2")), "6.2", cols62):
         sol = r["代號"]
         if not re.fullmatch(r"[A-Z]", sol):
             raise ReadError("6.2", f"bad solution code 「{sol}」 (expected one capital letter)")
         if sol not in by_sol:
             raise ReadError("6.2", f"solution 「{sol}」 is not in 6.1")
         in_62.append(sol)
+        if needs_format:
+            covered = {}
+            for key, col, allowed in (("must", "涵蓋的 Must 需求", "M"), ("shouldCould", "涵蓋的 Should / Could 需求", "SC")):
+                value = r[col]
+                if common.CROSS_REF.search(value):
+                    raise ReadError("6.2", f"solution {sol}: 「{common.CROSS_REF.search(value).group(0)}」 refers to another issue")
+                body = TAG.sub("", value).strip()
+                refs = [] if body in ("", "—") else [x.strip() for x in body.split("、")]
+                for ref in refs:
+                    if ref not in by_need:
+                        raise ReadError("6.2", f"solution {sol}: 「{ref}」 is not a need in 5.2")
+                    if by_need[ref]["priority"] not in allowed:
+                        raise ReadError("6.2", f"solution {sol}: {ref} is {by_need[ref]['priority']}, not in the column {col}")
+                covered[key] = refs
+            by_sol[sol]["needs"] = covered
+            # The old field: the stories whose need this solution covers.
+            by_sol[sol]["stories"] = unique(sid for ref in covered["must"] + covered["shouldCould"]
+                                            for sid in by_need[ref]["stories"])
+            continue
         ids = (local_ids(STORY_ID, r["涵蓋的 Must"], "6.2", f"solution {sol}")
                + local_ids(STORY_ID, r["涵蓋的 Should / Could"], "6.2", f"solution {sol}"))
         for sid in ids:
@@ -610,9 +749,10 @@ def parse_issue(text, space_codes):
             for c in owners:
                 by_sol[c]["pending"].append(item)
 
-    return {"spaces": spaces, "summary": summary, "summaryCross": summary_cross, "stakeholders": stakeholders, "inputSources": input_sources,
-            "focusGroups": focus_groups, "stories": stories, "groups": groups, "conflicts": conflicts,
-            "solutions": solutions, "pending": pending}
+    return {"spaces": spaces, "format": "needs" if needs_format else "stories", "summary": summary,
+            "summaryCross": summary_cross, "stakeholders": stakeholders, "inputSources": input_sources,
+            "focusGroups": focus_groups, "stories": stories, "groups": groups, "needGroups": need_groups,
+            "needs": needs, "conflicts": conflicts, "solutions": solutions, "pending": pending}
 
 
 # ---------- whole build ----------

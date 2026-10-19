@@ -136,8 +136,8 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_6_2_old_layout_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md",
-                  "| 代號 | 解法 | 涵蓋的 Must | 涵蓋的 Should / Could | 涵蓋的相同訴求群組 |\n|---|---|---|---|---|",
-                  "| 解法 | 涵蓋的 Must | 涵蓋的 Should / Could | 涵蓋的相同訴求群組 |\n|---|---|---|---|")
+                  "| 代號 | 解法 | 涵蓋的 Must 需求 | 涵蓋的 Should / Could 需求 |\n|---|---|---|---|",
+                  "| 解法 | 涵蓋的 Must 需求 | 涵蓋的 Should / Could 需求 |\n|---|---|---|")
         self.assertFails("6.2: expected one table with the header")
 
     def test_6_2_any_capital_letter_code(self):
@@ -151,6 +151,12 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(md, "| D | 新設點中", "| K | 新設點中")
         self.edit(md, "| D | 設置後 3 個月", "| K | 設置後 3 個月")
         self.edit(md, "O04-US04、解法 A、解法 D |", "O04-US04、解法 A、解法 K |")
+        # Every other 「解法 D」, also in a list such as 「解法 A、B、D：」.
+        path = os.path.join(self.dir, md)
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(re.sub(r"(解法 (?:[A-Z]、)*)D(?![A-Za-z])", r"\1K", text))
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
@@ -173,7 +179,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_broken_method_link(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", "(../method.md#排序方法)", "(../method.md#沒有這一節)")
+        self.edit(f"{ISSUE}/issue-analysis.md", "(../method.md#步驟-5依需求排序)", "(../method.md#沒有這一節)")
         self.assertFails("broken method link ../method.md#沒有這一節")
 
     def test_pending_in_backticks_is_allowed(self):
@@ -237,17 +243,17 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("5.4", "#2 O01-US01", folder="1-trees")
 
     def test_cross_issue_reference_in_6_2_cell(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 | `[AI模擬]` O04-US01",
-                  "| D | 參與式選址流程 | `[AI模擬]` #1 O01-US01、O04-US01")
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 | `[AI模擬]` N04",
+                  "| D | 參與式選址流程 | `[AI模擬]` #1 O01-US01、N04")
         self.assertFails("6.2", "#1 O01-US01")
 
 
     # The third source tag, [AI整理] (owner decision 2026-10-18): AI summarized it
     # from real data, with counts. It is accepted wherever [實證] and [AI模擬] are.
     ROW_MD = ("| O01-US01 | 商圈店家與攤商 | `[AI模擬]` 商圈有足夠的清潔箱 | — | "
-              "`[AI模擬]` 客人不會把垃圾放在店門口或花台 | 可詢問商圈發展協會；市民留言約 118 則提到同樣訴求"
+              "`[AI模擬]` 店門口與花台保持乾淨，不必替客人收拾垃圾 | N02 | 可詢問商圈發展協會；市民留言約 118 則提到同樣訴求"
               "（「市長，你給我聽好了」資料，關鍵字估算） | `[AI模擬]` S |")
-    ROW_CSV = ("商圈有足夠的清潔箱,[AI模擬],—,客人不會把垃圾放在店門口或花台,[AI模擬],可詢問商圈發展協會；"
+    ROW_CSV = ("商圈有足夠的清潔箱,[AI模擬],—,店門口與花台保持乾淨，不必替客人收拾垃圾,[AI模擬],N02,可詢問商圈發展協會；"
                "市民留言約 118 則提到同樣訴求（「市長，你給我聽好了」資料，關鍵字估算）,S,[AI模擬]")
 
     def test_ai_summary_tag_passes(self):
@@ -260,7 +266,7 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_ai_summary_tag_in_group_and_moscow_rows_passes(self):
         md = f"{ISSUE}/issue-analysis.md"
         self.edit(md, "| `[AI模擬]` W01 |", "| `[AI整理]` W01 |")
-        self.edit(md, "| `[AI模擬]` Must | 16 |", "| `[AI整理]` Must | 16 |")
+        self.edit(md, "| `[AI模擬]` N10 |", "| `[AI整理]` N10 |")
         self.edit(md, "| I11 | `[AI模擬]` 資源回收個體業者", "| I11 | `[AI整理]` 資源回收個體業者")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
@@ -536,10 +542,11 @@ class CheckAnalysisTest(unittest.TestCase):
 
     # ---------- 分析摘要 ----------
     # A row of the #2 summary, used by the tests below.
-    SUMMARY_ROW = "| 誰負責清理 | `[AI模擬]` 店家希望不要預設由店家清理清潔箱；住戶與便利商店店員希望周邊保持乾淨。 | C5、O01-US02、I09-US02、I12-US01 |"
+    SUMMARY_ROW = ("| 選址討論的速度與代表性 | `[AI模擬]` 解法 D 的里民討論會讓設置變慢；常出席的人聲音比較大；"
+                   "討論結果如果不被採用，可能傷害信任。 | 解法 D、N05、O05-US01 |")
 
     def summary_row(self, text, refs):
-        return f"| 誰負責清理 | {text} | {refs} |"
+        return f"| 選址討論的速度與代表性 | {text} | {refs} |"
 
     def test_summary_passes_in_every_issue(self):
         for folder in ("1-trees", "2-trashcans", "8-smokefree"):
@@ -576,18 +583,18 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_summary_row_without_tag_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
                   self.summary_row("店家希望不要預設由店家清理清潔箱。", "C5、O01-US02"))
-        self.assertFails("分析摘要 可能的爭議", "誰負責清理", "tag")
+        self.assertFails("分析摘要 可能的爭議", "選址討論的速度與代表性", "tag")
 
     def test_summary_pending_row_passes(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
-                  self.summary_row("【待補：需要真人確認誰負責清理】", "—"))
+                  self.summary_row("【待補：需要真人確認選址討論的方式】", "—"))
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
     def test_summary_tagged_row_without_refs_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
                   self.summary_row("`[AI模擬]` 店家希望不要預設由店家清理清潔箱。", "—"))
-        self.assertFails("分析摘要 可能的爭議", "誰負責清理", "相關編號")
+        self.assertFails("分析摘要 可能的爭議", "選址討論的速度與代表性", "相關編號")
 
     def test_summary_bad_ref_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.SUMMARY_ROW,
@@ -619,6 +626,104 @@ class CheckAnalysisTest(unittest.TestCase):
                   self.summary_row("`[AI模擬]` 店家希望不要預設由店家清理清潔箱。", "C5、#8 解法 B、#8 C3、#1 I06-US02、#8 W03"))
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
+
+
+    # ---------- the needs-based format (#2; owner decision 2026-10-20) ----------
+    MD = f"{ISSUE}/issue-analysis.md"
+    I06_ROW = "| `[AI模擬]` 安全通行，不會撞到 | N07 | 可詢問身障團體 | `[AI模擬]` M |"
+    I01_US03_PRIO = "（關鍵字估算） | `[AI模擬]` M |\n| I01-US04 |"
+
+    def test_old_format_issues_still_pass(self):
+        for folder in ("1-trees", "8-smokefree"):
+            with self.subTest(folder=folder):
+                code, out = self.run_check(folder)
+                self.assertEqual(code, 0, out)
+                self.assertIn("format: old", out)
+
+    def test_need_group_with_one_story_fails(self):
+        self.edit(self.MD, self.I06_ROW, self.I06_ROW.replace("N07", "N11"))
+        self.assertFails("N11 has only 1 story")
+
+    def test_story_priority_must_be_its_need_priority(self):
+        self.edit(self.MD, self.I01_US03_PRIO, self.I01_US03_PRIO.replace("` M |", "` S |"))
+        self.assertFails("I01-US03: priority in step 4 is S, but its need N01 is M")
+
+    def test_need_with_two_priority_rows_fails(self):
+        row = "| N07 | 在人行道上安全通行 | I06-US01、I07-US02 | `[AI模擬]` M |"
+        self.edit(self.MD, row, row.replace("N07 | 在人行道上安全通行 | I06-US01、I07-US02 | `[AI模擬]` M |",
+                                            "N07 | 在人行道上安全通行 | I06-US01、I07-US02 | `[AI模擬]` S | `[AI模擬]` x |\n" + row))
+        self.assertFails("need N07 has two rows")
+
+    def test_need_without_priority_row_fails(self):
+        path = os.path.join(self.dir, self.MD)
+        with open(path, encoding="utf-8") as f:
+            lines = f.read().split("\n")
+        kept = [l for l in lines if not l.startswith("| N07 | 在人行道上安全通行 |")]
+        self.assertEqual(len(kept), len(lines) - 1)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("\n".join(kept))
+        self.assertFails("5.2: need N07 has no priority row")
+
+    def test_grouped_story_cannot_have_its_own_priority_row(self):
+        row = "| I24-US01 | 趕不上垃圾車時，也能依規定丟家用垃圾 | I24-US01 |"
+        self.edit(self.MD, row, "| I06-US01 | 安全通行 | I06-US01 | `[AI模擬]` M | `[AI模擬]` x |\n" + row)
+        self.assertFails("5.2: story I06-US01 is in N07")
+
+    def test_6_2_unknown_need_fails(self):
+        self.edit(self.MD, "| C | 找桶指引與開放資料 | `[AI模擬]` N01 |", "| C | 找桶指引與開放資料 | `[AI模擬]` N01、N99 |")
+        self.assertFails("6.2 C: 「N99」 is not a need", "N99 is referenced but is not a 相同需求群組")
+
+    def test_6_2_story_of_a_group_fails(self):
+        self.edit(self.MD, "| C | 找桶指引與開放資料 | `[AI模擬]` N01 |", "| C | 找桶指引與開放資料 | `[AI模擬]` N01、I06-US01 |")
+        self.assertFails("6.2 C: I06-US01 is in N07; write N07")
+
+    def test_6_2_should_need_in_must_column_fails(self):
+        self.edit(self.MD, "| C | 找桶指引與開放資料 | `[AI模擬]` N01 |", "| C | 找桶指引與開放資料 | `[AI模擬]` N01、N08 |")
+        self.assertFails("6.2 C: N08 is S")
+
+    def test_6_2_old_header_in_needs_format_fails(self):
+        self.edit(self.MD, "| 代號 | 解法 | 涵蓋的 Must 需求 | 涵蓋的 Should / Could 需求 |",
+                  "| 代號 | 解法 | 涵蓋的 Must | 涵蓋的 Should / Could |")
+        self.assertFails("6.2: expected one table with the header 代號 | 解法 | 涵蓋的 Must 需求")
+
+    def test_must_need_not_covered_fails(self):
+        self.edit(self.MD, "| E | 家用垃圾的彈性收集點（題目外的配套） | `[AI模擬]` N01、O04-US02、I24-US01 |",
+                  "| E | 家用垃圾的彈性收集點（題目外的配套） | `[AI模擬]` N01、O04-US02 |")
+        self.assertFails("Must need I24-US01 is not covered")
+
+    def test_conflict_side_with_unknown_story_fails(self):
+        self.edit(self.MD, "| `[AI模擬]` I01-US01 vs O08-US02 |", "| `[AI模擬]` I01-US01 vs O08-US09 |")
+        self.assertFails("6.4 C3: story O08-US09 is not in step 4")
+
+    def test_conflict_needs_must_exist(self):
+        self.edit(self.MD, "| N01 vs O08-US02 |", "| N01 vs N99 |")
+        self.assertFails("6.4 C3: 雙方的需求 「N99」 is not a need")
+
+    def test_way_out_must_be_filled(self):
+        old = "| `[AI模擬]` 未找到：本文件的解法沒有處理源頭減量"
+        self.edit(self.MD, old, "| `[AI模擬]` 本文件的解法沒有處理源頭減量")
+        self.assertFails("6.4 C3: 以需求為本的解方 must start with a tag and 「解法 X：」")
+
+    def test_way_out_not_found_needs_a_method(self):
+        self.edit(self.MD, "| `[AI模擬]` 全市線上意見地圖，例如 **Pol.is**（vTaiwan 曾使用的工具），找出各方都同意的說法 |", "| — |")
+        self.assertFails("6.4 C3: no solution was found, so 可能的審議方法 must start with a tag")
+
+    def test_way_out_unknown_solution_fails(self):
+        self.edit(self.MD, "| `[AI模擬]` 解法 E、D：E 的收集點", "| `[AI模擬]` 解法 E、Z：E 的收集點")
+        self.assertFails("6.4 C8: 以需求為本的解方 names 解法 Z, which is not in 6.1")
+
+    def test_way_out_cross_issue_solution_must_exist(self):
+        self.edit(self.MD, "菸蒂收集設備放在吸菸區內（#8 解法 B） | `[AI模擬]` 備案", "菸蒂收集設備放在吸菸區內（#8 解法 Z） | `[AI模擬]` 備案")
+        self.assertFails("#8 解法 Z")
+
+    def test_summary_need_ref_passes_and_unknown_fails(self):
+        self.edit(self.MD, self.SUMMARY_ROW,
+                  self.summary_row("`[AI模擬]` 解法 D 的里民討論會讓設置變慢。", "解法 D、N99"))
+        self.assertFails("分析摘要 可能的爭議", "N99 is not in 相同需求群組")
+
+    def test_csv_must_have_need_group_column(self):
+        self.edit(f"{ISSUE}/user-stories.csv", "以便標記,相同需求編號,來源", "以便標記,來源")
+        self.assertFails("CSV header wrong")
 
 
 if __name__ == "__main__":

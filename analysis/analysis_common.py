@@ -33,6 +33,12 @@ Rules:
   is a story (I01-US01), a stakeholder (I05), a conflict (C3), a group (W01)
   or a solution (解法 A). A reference to another issue starts with 「#」, the
   issue number and one space: 「#8 解法 B」, 「#2 C9」 (SUMMARY_REF).
+  A 相同需求群組 (N01) is a reference too.
+- Two formats exist for now (see method.md). The needs-based format has a
+  "### 相同需求群組" section (needs_format). In it, step 5 gives one MoSCoW
+  priority per need, 6.2 maps solutions to needs, and the conflicts are in
+  "### 6.4". The old format puts the conflicts in "### 5.4" and the
+  priority on each story. #1 and #8 still use the old format.
 """
 import re
 
@@ -65,7 +71,20 @@ SUMMARY_HEADER = ["項目", "說明", "相關編號"]
 # One reference in a 相關編號 cell. Group 1 is the issue number of another
 # issue (or None), group 2 the ID: a story, a stakeholder, a conflict, a group
 # or 「解法 X」.
-SUMMARY_REF = re.compile(r"(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|解法 [A-Z])")
+SUMMARY_REF = re.compile(r"(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|N\d\d|解法 [A-Z])")
+
+# The needs-based format (see the rules above and method.md).
+NEED_GROUP_HEADING = "### 相同需求群組"
+# A 相同需求群組 ID, for example N01.
+NEED_ID = re.compile(r"(?<![A-Za-z0-9])N\d\d(?![0-9])")
+# The step 5 table: one row per need (an N group, or a story whose need is in no group).
+NEED_PRIORITY_HEADER = ["需求", "以便（摘要）", "故事編號", "優先順序", "理由"]
+# The 6.2 table in the needs-based format.
+NEED_MAP_HEADER = ["代號", "解法", "涵蓋的 Must 需求", "涵蓋的 Should / Could 需求"]
+# The conflict table in the needs-based format ("### 6.4").
+CONFLICT_HEADER = ["#", "衝突", "相關故事", "雙方的需求", "以需求為本的解方", "可能的審議方法", "模擬結果"]
+# The 以需求為本的解方 cell when no solution was found. It then needs a 審議 method.
+WAY_OUT_NONE = "未找到"
 
 SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
 HEADING = re.compile(r"^(#{2,3}) (.+)$")
@@ -162,12 +181,36 @@ def focus_tables(text):
     return None if head is None else tables(section(text, head))
 
 
+def needs_format(text):
+    """True if the file uses the needs-based format: it has a
+    "### 相同需求群組" section."""
+    return section(text, NEED_GROUP_HEADING) is not None
+
+
+def conflict_heading(text):
+    """The heading prefix of the conflict section: "### 6.4" in the
+    needs-based format, "### 5.4" in the old format."""
+    return "### 6.4" if needs_format(text) else "### 5.4"
+
+
+def need_group_ids(text):
+    """The N IDs in the first cell of the 相同需求群組 table rows, in file order."""
+    out = []
+    for h, rows in tables(section(text, NEED_GROUP_HEADING) or []):
+        for r in rows:
+            m = re.search(r"N\d\d", r[0])
+            if m:
+                out.append(m.group(0))
+    return out
+
+
 def issue_ids(text):
     """The IDs that a 相關編號 reference can point to in one issue file:
-    {"story", "stakeholder", "conflict", "group", "solution"} -> set of IDs.
-    A conflict is the first cell of a 5.4 row (C1), a group the W ID of a
-    相同訴求群組 row (W01), a solution the 代號 of a 6.1 row (A)."""
-    conflicts = {r[0] for h, rows in tables(section(text, "### 5.4") or []) if h and h[0] == "#" for r in rows}
+    {"story", "stakeholder", "conflict", "group", "need", "solution"} -> set of IDs.
+    A conflict is the first cell of a row of the conflict table (C1; see
+    conflict_heading), a group the W ID of a 相同訴求群組 row (W01), a need
+    the N ID of a 相同需求群組 row (N01), a solution the 代號 of a 6.1 row (A)."""
+    conflicts = {r[0] for h, rows in tables(section(text, conflict_heading(text)) or []) if h and h[0] == "#" for r in rows}
     groups = set()
     for h, rows in tables(section(text, "### 相同訴求群組") or []):
         for r in rows:
@@ -177,7 +220,7 @@ def issue_ids(text):
     solutions = {r[0] for h, rows in tables(section(text, "### 6.1") or []) if h and h[0] == "代號"
                  for r in rows if re.fullmatch(r"[A-Z]", r[0])}
     return {"story": set(step4_ids(text)), "stakeholder": set(step1_ids(text)),
-            "conflict": conflicts, "group": groups, "solution": solutions}
+            "conflict": conflicts, "group": groups, "need": set(need_group_ids(text)), "solution": solutions}
 
 
 def summary_lines(text):
@@ -216,7 +259,7 @@ def split_refs(value):
 def parse_ref(ref):
     """One 相關編號 reference -> (issue number or None, kind, ID), or None when
     it is not a reference. kind is story, stakeholder, conflict, group or
-    solution. The ID of a solution is its code: 「解法 B」 -> "B"."""
+    solution, or need (N01). The ID of a solution is its code: 「解法 B」 -> "B"."""
     m = SUMMARY_REF.fullmatch(ref)
     if not m:
         return None
@@ -228,4 +271,4 @@ def parse_ref(ref):
         return num, "story", rid
     if rid[0] in "OI":
         return num, "stakeholder", rid
-    return num, ("conflict" if rid[0] == "C" else "group"), rid
+    return num, {"C": "conflict", "W": "group", "N": "need"}[rid[0]], rid

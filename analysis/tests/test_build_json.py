@@ -79,10 +79,10 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_index_counts(self):
         item = next(i for i in self.index["issues"] if i["number"] == 2)
-        # cells: want + soThat. 實證 7+3, AI整理 11+10, AI模擬 34+38, 待補 0+1.
+        # cells: want + soThat. 實證 7+1, AI整理 11+12, AI模擬 34+38, 待補 0+1.
         self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 15, "stories": 52,
                                           "conflicts": 9, "solutions": 5,
-                                          "cells": {"evidence": 10, "aiSummary": 21, "aiSimulated": 72,
+                                          "cells": {"evidence": 8, "aiSummary": 23, "aiSimulated": 72,
                                                     "pending": 1}})
         self.assertEqual(item["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
         self.assertEqual(item["title"], "找回消失的垃圾桶")
@@ -178,7 +178,7 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_solution_keys(self):
         self.assertEqual(list(self.solution("A")),
-                         ["id", "name", "summary", "spaces", "added", "stories",
+                         ["id", "name", "summary", "spaces", "added", "stories", "needs",
                           "measures", "detail", "overview", "ideas", "pending"])
 
     def test_solution_fields_in_other_issues(self):
@@ -300,10 +300,73 @@ class BuildJsonOutputTest(unittest.TestCase):
             "want": {"text": "清潔箱不要擋住人行道與導盲磚", "tag": "AI模擬", "pending": False},
             "group": "W08",
             "soThat": {"text": "安全通行，不會撞到", "tag": "AI模擬", "pending": False},
-            "source": "可詢問身障團體", "priority": "M", "priorityTag": "AI模擬"})
+            "source": "可詢問身障團體", "priority": "M", "priorityTag": "AI模擬", "needGroup": "N07"})
         o0402 = self.story("O01-US02")
         self.assertIsNone(o0402["group"])
         self.assertIsNone(o0402["source"])
+
+    # ---------- the needs-based format (#2) ----------
+    def test_format(self):
+        self.assertEqual(self.issue["format"], "needs")
+        for folder in ("1-trees", "8-smokefree"):
+            with open(os.path.join(self.out, "issues", f"{folder}.json"), encoding="utf-8") as f:
+                other = json.load(f)
+            self.assertEqual(other["format"], "stories")
+            self.assertEqual((other["needGroups"], other["needs"]), ([], []))
+            self.assertTrue(all(s["needGroup"] is None for s in other["stories"]))
+            self.assertTrue(all(s["needs"] is None for s in other["solutions"]))
+            self.assertTrue(all(c["wayOut"] is None and c["wayOutSolutions"] == [] for c in other["conflicts"]))
+
+    def test_need_groups(self):
+        groups = self.issue["needGroups"]
+        self.assertEqual([g["id"] for g in groups], [f"N{n:02d}" for n in range(1, 11)])
+        n07 = next(g for g in groups if g["id"] == "N07")
+        self.assertEqual(n07, {"id": "N07", "summary": "在人行道上安全通行", "tag": "AI模擬",
+                               "stories": ["I06-US01", "I07-US02"]})
+        for g in groups:
+            self.assertGreaterEqual(len(g["stories"]), 2)
+
+    def test_needs_have_one_priority_each(self):
+        needs = self.issue["needs"]
+        ids = [n["id"] for n in needs]
+        self.assertEqual(len(ids), len(set(ids)))
+        # Every story is in exactly one need.
+        stories = [s for n in needs for s in n["stories"]]
+        self.assertEqual(sorted(stories), sorted(s["id"] for s in self.issue["stories"]))
+        n01 = next(n for n in needs if n["id"] == "N01")
+        self.assertEqual((n01["kind"], n01["priority"], n01["priorityTag"]), ("group", "M", "AI模擬"))
+        solo = next(n for n in needs if n["id"] == "O09-US01")
+        self.assertEqual((solo["kind"], solo["stories"], solo["priority"]), ("story", ["O09-US01"], "W"))
+        self.assertEqual(solo["reason"]["tag"], "AI模擬")
+        self.assertEqual(list(n01), ["id", "kind", "summary", "stories", "priority", "priorityTag", "reason"])
+
+    def test_story_priority_is_the_need_priority(self):
+        by_need = {n["id"]: n for n in self.issue["needs"]}
+        for s in self.issue["stories"]:
+            self.assertEqual(s["priority"], by_need[s["needGroup"] or s["id"]]["priority"], s["id"])
+        self.assertEqual(self.story("I01-US03")["priority"], "M")  # N01
+
+    def test_solution_needs_and_stories(self):
+        a = self.solution("A")
+        self.assertEqual(a["needs"], {"must": ["N01", "N04", "N05", "N07", "O04-US02", "O12-US01"],
+                                      "shouldCould": ["N02", "O04-US04", "I01-US09"]})
+        # stories: the stories whose need the solution covers (the old field).
+        n07 = next(g for g in self.issue["needGroups"] if g["id"] == "N07")
+        for sid in n07["stories"] + ["O04-US02", "I01-US09"]:
+            self.assertIn(sid, a["stories"])
+        self.assertEqual(len(a["stories"]), len(set(a["stories"])))
+        e = self.solution("E")
+        self.assertEqual(e["needs"]["shouldCould"], [])
+
+    def test_conflict_way_out(self):
+        c = {x["id"]: x for x in self.issue["conflicts"]}
+        self.assertEqual(c["C1"]["wayOutSolutions"], ["A", "B", "D"])
+        self.assertEqual((c["C1"]["needsA"], c["C1"]["needsB"]), (["N01"], ["N06"]))
+        self.assertEqual(c["C3"]["wayOutSolutions"], [])
+        self.assertTrue(c["C3"]["wayOut"]["text"].startswith("未找到"))
+        self.assertEqual(c["C3"]["method"]["tag"], "AI模擬")
+        self.assertEqual(list(c["C1"]), ["id", "text", "sideA", "sideB", "method", "result",
+                                         "needsA", "needsB", "wayOut", "wayOutSolutions"])
 
     def test_pending_cell(self):
         so = self.story("O04-US04")["soThat"]

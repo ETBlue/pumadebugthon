@@ -45,6 +45,8 @@ class AnalysisCommonTest(unittest.TestCase):
         self.assertEqual(p("解法 A"), (None, "solution", "A"))
         self.assertEqual(p("#8 解法 B"), (8, "solution", "B"))
         self.assertEqual(p("#2 C6"), (2, "conflict", "C6"))
+        self.assertEqual(p("N01"), (None, "need", "N01"))
+        self.assertEqual(p("#2 N03"), (2, "need", "N03"))
         for bad in ("解法A", "A", "#8解法 B", "C5，O01-US02", "I01-US3", ""):
             self.assertIsNone(p(bad), bad)
 
@@ -58,9 +60,25 @@ class AnalysisCommonTest(unittest.TestCase):
         self.assertEqual(sorted(ids["conflict"]), [f"C{n}" for n in range(1, 10)])
         self.assertEqual(sorted(ids["solution"]), ["A", "B", "C", "D", "E"])
         self.assertIn("W11", ids["group"])
+        self.assertEqual(sorted(ids["need"]), [f"N{n:02d}" for n in range(1, 11)])
         self.assertIn("I24", ids["stakeholder"])
         topics = self.common.summary_topics(self.common.summary_lines(text))
         self.assertEqual(tuple(name for name, _ in topics), self.common.SUMMARY_TOPICS)
+
+    def test_needs_format(self):
+        # #2 uses the needs-based format (a 相同需求群組 section). #1 and #8
+        # still use the old format until a later task moves them.
+        self.assertTrue(self.common.needs_format(read("2-trashcans")))
+        self.assertFalse(self.common.needs_format(read("1-trees")))
+        self.assertFalse(self.common.needs_format(read("8-smokefree")))
+        self.assertEqual(self.common.conflict_heading(read("2-trashcans")), "### 6.4")
+        self.assertEqual(self.common.conflict_heading(read("8-smokefree")), "### 5.4")
+
+    def test_old_format_issue_ids(self):
+        # The conflicts of an old-format file are still found in 5.4; it has no needs.
+        ids = self.common.issue_ids(read("8-smokefree"))
+        self.assertIn("C3", ids["conflict"])
+        self.assertEqual(ids["need"], set())
 
     def test_tags(self):
         # The three source tags, in display order: 實證, AI整理, AI模擬.

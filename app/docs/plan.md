@@ -355,6 +355,14 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
 | 8 | N11 | No. It reuses the solution tab components of N9. The data already exists (`cross-issue.json`). |
 | 9 | N12 | No. The final check. |
 
+**Status (2026-10-20):**
+
+| Task | Status |
+|---|---|
+| N1, N2a, N2b, N2c, N2d, N3, N4, N5, N6, N7, N8, N9 | Done, merged into `main` |
+| N10 | Done. It also did the follow-ups from the reviews of N4–N9: the story list of a need follows 「只看有資料根據」, unused code removed, two-line tab labels on phones (design 3.2), design decisions 58 and 59, and the fixtures refreshed with issue #9 |
+| N11, N12 | Not started |
+
 ### Task N1: refresh the fixtures and fix the broken tests (test first for `summary.ts`)
 
 **Files:** `src/test/fixtures/index.json`, `src/test/fixtures/issues/1-trees.json`, `2-trashcans.json`, `8-smokefree.json`, `src/types.ts`, `src/types.test.ts`, `src/lib/summary.ts`, `src/lib/summary.test.ts`, and the tests that fail (expected: `types.test` #2 counts, `cellBasis`, `issuePage`, `priority`, `solutionPage` ×4, `spaces`, `summary`; about 11).

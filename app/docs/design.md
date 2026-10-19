@@ -87,6 +87,7 @@ Rules for the tab labels:
 - A count is a plain number, also in the accessible name (「訴求 39・衝突 9」). It is not a score.
 - The counts are the totals of the issue. They do not change when a filter is on (3.14, decision 49).
 - On a phone the tab list wraps onto two rows. It never scrolls sideways.
+- A label with counts has two parts (`TabLabel` in `src/lib/tabLabel.ts`): the name and the counts. Below `md` the second part is on its own line under the first, in smaller text, for example 「訴求 39」 over 「衝突 9」, and 「需求」 over 「涵蓋 9・未涵蓋 12」 on the solution page. Neither part breaks inside. From `md` the label is one line. The tab's `aria-label` is the one-line text, so every count stays in the accessible name. (Review of N4–N9, 2026-10-20: the one-part label broke onto 3 lines at 360 px.)
 
 Above the tabs: the h1 (「#2 找回消失的垃圾桶」), the space types and the update date, as before.
 
@@ -171,9 +172,9 @@ The page covers every analyzed issue the stakeholder is in. Each tab has one h2 
 Rules for the tab labels:
 - The counts come from `stakeholderTabCounts` in `src/lib/tabCounts.ts`. They are summed over the issues, because they count items (wants, conflicts, needs, solutions), not priorities (decision 48). The rule 「never summed across issues」 in 3.4 is about priority counts, and it still holds.
 - 訴求: the different want keys of its stories (3.16), per issue. 衝突: the conflicts with one of its stories on a side. 需求: the different need keys of its stories (3.16). 解法: the solutions that cover at least one of its needs.
-- Example I06: #1 has wants W06, W08, need N08, conflicts C1, C7, solution D. #2 has W08, W11, needs N07, N08, conflict C6, solutions A, C. #8 has W07, need I06-US01, conflict C3, solution A. So: 訴求 5・衝突 4, 需求 4, 解法 4.
+- Example I06: #1 has wants W06, W08, need N08, conflicts C1, C7, solution D. #2 has W08, W11, needs N07, N08, conflict C6, solutions A, C. #8 has W07, need I06-US01, conflict C3, solution A. So: 訴求 5・衝突 4, 需求 4, 解法 4. Since #9 was added (2026-10-20), I06 is also in #9, with the want key I06-US01 (no W group), need N06 and solution E. So the page now shows 訴求 6・衝突 4, 需求 5, 解法 5. The tests still use the example above, on the fixtures of #1, #2 and #8.
 
-Layout: the stakeholder menu (3.14) is on the left from the `lg` breakpoint, and above the tabs on smaller screens.
+Layout: the stakeholder menu (3.14) is on the left from the `lg` breakpoint, and above the tabs on smaller screens. On this page the menu comes before the tabs (decision 58).
 
 Above the tabs: the h1 (the name), the ID, 分類路徑 (as names), 特別關注, and the issues it appears in (links). The note 「O02 已改為 I12」 after a redirect stays.
 
@@ -192,6 +193,7 @@ Above the tabs: the h1 (the name), the ID, 分類路徑 (as names), 特別關注
 **解法.** Per issue:
 - the solutions that cover at least one of its needs, as compact `SolutionCard`s, each with 「涵蓋的需求：」 and the stakeholder's needs it covers
 - 「尚未有解法涵蓋的需求」: its needs that no solution covers. This replaces 「沒有解法涵蓋的故事」.
+- With 「只看有資料根據」 on, a need with no data basis (`dataBasedNeeds`) is hidden, and a solution with no need left is hidden too (decision 59).
 
 **Moved IDs.** A moved ID (for example `#/stakeholders/O02`, also with a tab or a story page) redirects to the new ID with the rest of the path kept, plus `?from=O02` for the note. On a story sub-page, a story ID that starts with the old ID gets the new ID (`O02-US01` → `I12-US01`). Any other story ID is kept, and the page shows "not found" when it does not exist.
 
@@ -349,7 +351,7 @@ The list pages `#/wants` (訴求列表) and `#/needs` (需求列表) were remove
 | Card | `detailed` | `compact` |
 |---|---|---|
 | `IssueCard` (`src/components/IssueCard.tsx`) | `#/issues`: a box with all the fields in the issue table above, with 資料根據 and the 特別關注族群 line. Props: `shared`, `headingLevel`. | Home 「最近更新的議題」 and the space page: the title link, 更新日期 and 空間類型, in a smaller box (decision 26) |
-| `SolutionCard` (`src/components/SolutionCard.tsx`) | `#/solutions`: the code and name, the summary, 空間類型, 新增日期 and the story count. Prop: `spaceTypes`. | Home 「最近分析出的解法」, the space page, the stakeholder page and the opinion check result: the code and name, and the one-line summary |
+| `SolutionCard` (`src/components/SolutionCard.tsx`) | `#/solutions`: the code and name, the summary, 空間類型, 新增日期 and the number of covered needs (「涵蓋 9 個需求」, decision 54). Props: `spaceTypes`, `coveredNeeds` (from `coveredNeedCount` in `src/lib/solutionList.ts`). | Home 「最近分析出的解法」, the space page, the stakeholder page and the opinion check result: the code and name, and the one-line summary |
 | `StakeholderCard` (`src/components/StakeholderCard.tsx`) | `#/stakeholders` and the 「利害關係人」 section of the issue's 總覽 tab: the name link, the ID, the 特別關注 badges, then one line per issue with the story counts by priority. Prop: `entries` (from `storyCountsByStakeholder`). | Home 「最近加入分析的族群」 (with 出現的議題 and 加入日期 as `children`), the solution page's 利害關係人 tab, the stakeholder page's 訴求 and 需求 tabs (「同樣想要的人」, 「同樣需要的人」), the space page (both lists) and the opinion check 「這個意見沒有直接提到的人」: the name link, the ID and the 特別關注 badges. `children` add 「也出現在 #1」 (`AlsoInLine`) or, on the space page's shared list, the issue numbers. |
 
 Every card is a box. `detailed` uses `rounded-lg border p-4` (`StakeholderCard` uses `p-3` on a phone, because the tree has many cards). `compact` uses `rounded-md border p-3`, the same box for all three cards, so the home blocks look alike. An issue that is 製作中 has a dashed border in both variants. Compact cards are stacked with a gap (`space-y-3`), not split by lines. Inline issue links inside a sentence or a field are references, not lists, so they stay plain links: the 「議題」 field on the stakeholder page and 「同空間的其他議題」 on the 總覽 tab. The same rule applies to stakeholders: the members of a W group (solution page, stakeholder page) and the 特別關注族群 rows on the 總覽 tab stay plain links.
@@ -454,7 +456,7 @@ The full stakeholder list is a menu next to the content of the issue page and th
 
 | | Issue page | Stakeholder page |
 |---|---|---|
-| Shown on | The 訴求, 需求 and 解法 tabs (the 總覽 tab already lists the stakeholders) | Every tab |
+| Shown on | The 訴求, 需求 and 解法 tabs (the 總覽 tab already lists the stakeholders). The menu is part of the tab content, after the tab list (decision 58). | Every tab. The menu is before the tab list. |
 | Items | 「全部利害關係人」, then the stakeholders of this issue | Every active stakeholder of the analyzed issues (51 today) |
 | A click | Sets `?stakeholder=<id>` on the same tab (「全部」 removes it). Keeps `?evidence=1`. | Goes to the same tab of that stakeholder's page. Keeps `?evidence=1`. |
 | Current item | `aria-current="true"` | `aria-current="page"` |
@@ -468,8 +470,9 @@ Rules:
 - An unknown or moved ID in `?stakeholder=` is resolved with `resolveId` (a moved ID becomes the new ID). An ID that is not in the issue is ignored, and the filter is off.
 - With a filter on, a status line above the list says what is shown, for example 「篩選：I06 身心障礙者（視障、輪椅使用者）。顯示 2 個訴求、1 個衝突。」, with a link 「清除篩選」. It has `role="status"`.
 - Layout from `lg` (1024 px): a left column, 16rem wide, sticky at the top, with its own scroll when it is taller than the window. The tabs and the content are on the right.
-- Layout below `lg`: a Collapsible button above the tabs, closed by default: 「利害關係人：全部」 or 「利害關係人：I06 身心障礙者（視障、輪椅使用者）」. Open, it shows the same list. No sideways scroll at 360 px.
-- Keyboard order: the menu comes before the tabs, in both layouts.
+- Layout below `lg`: a Collapsible button, closed by default (on the issue page it is under the tab list, at the top of the tab content; on the stakeholder page it is above the tabs): 「利害關係人：全部」 or 「利害關係人：I06 身心障礙者（視障、輪椅使用者）」. Open, it shows the same list. No sideways scroll at 360 px.
+- Keyboard order (decision 58): on the issue page, the tab list, then the menu, then the tab content. On the stakeholder page, the menu, then the tab list, then the tab content. Both in both layouts.
+- Links in a filtered list keep the filter. For example a conflict link (「有衝突：C6」) goes to `#/issues/<n>/wants?focus=C6` and keeps `?stakeholder=` and `?evidence=1` (decision 59).
 
 ### 3.15 Story page
 
@@ -892,6 +895,8 @@ Required by the hackathon rules:
 55. Every story ID in the app links to its story page, like solutions (3.15). (Q13; ETBlue, 2026-10-20)
 56. Solutions get their own path, because solutions and issues are many-to-many: a cross-issue solution combines several issues. An issue solution is `#/solutions/<n>-<code>` (for example `#/solutions/2-A`). A cross-issue solution uses the same format with its own code (for example `#/solutions/X-A`) and the same page shape. Tabs are `#/solutions/2-A/<tab>`. The old URLs `#/issues/<n>/solutions/<code>[/<tab>]` redirect to the new ones, with the tab and the query kept. The draft `#/solutions/cross/<code>` is not used. Solution pages are under the header link 解法, not 議題. This replaces the URL part of decisions 18, 19 and 39 (3.7, 3.12, 3.18, 3.19). (ETBlue, 2026-10-20)
 57. A link to one want or one need goes to the issue's 訴求 or 需求 tab with `?focus=<key>` (for example `#/issues/2/wants?focus=W08`, `#/issues/2/needs?focus=N07`). A link to a stakeholder in a want or need list goes to that stakeholder's page on the same tab (`#/stakeholders/I06/wants`). This is the simplest rule: it uses the `?focus=` parameter that already exists, and needs no new page (3.16). (ETBlue, 2026-10-20)
+58. On the issue page, the stakeholder menu is inside the content of the 訴求, 需求 and 解法 tabs, after the tab list. The keyboard order is: tabs, then the menu, then the content. The reason: the 總覽 tab has no menu, and a wrapper around the tabs would build the tabs again on each tab change, so the keyboard focus would be lost. On the stakeholder page the menu is on every tab, so it stays before the tabs (3.3, 3.14). (Coordinator, after the N4 review, 2026-10-20)
+59. On the stakeholder page's 解法 tab, the 「只看有資料根據」 filter hides a need with no data basis (`dataBasedNeeds`), and hides a solution that has no need left. A conflict link in a filtered list keeps `?stakeholder=` and `?evidence=1` (3.3, 3.14). (Coordinator, after the N4 review, 2026-10-20)
 
 ## 14. Open questions
 

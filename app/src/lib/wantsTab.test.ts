@@ -5,7 +5,7 @@ import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { IssueFile } from '@/types'
 import { dataBasedPickList } from './dataBasis'
 import { issueWants } from './wantList'
-import { issueStakeholderIds, pickSearch, wantsTabView } from './wantsTab'
+import { pickSearch, wantsTabView } from './wantsTab'
 
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
@@ -73,15 +73,6 @@ describe('wantsTabView', () => {
     const view = wantsTabView(smokefree, 'I06', false)
     expect(keys(view.wants)).toEqual(['W07'])
     for (const w of view.wants) expect(w.stakeholders).toContain('I06')
-  })
-})
-
-describe('issueStakeholderIds', () => {
-  it('lists the stakeholders of the issue (step 1 list)', () => {
-    const ids = issueStakeholderIds(trashcans)
-    expect(ids).toHaveLength(27)
-    expect(ids).toContain('I06')
-    expect(ids).toContain('O01')
   })
 })
 

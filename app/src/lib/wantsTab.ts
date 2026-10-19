@@ -40,11 +40,6 @@ export function wantsTabView(issue: IssueFile, stakeholder: string | null, dataB
   return { wants, conflicts }
 }
 
-/** The stakeholder IDs of the issue (its step 1 list), for the menu. */
-export function issueStakeholderIds(issue: IssueFile): string[] {
-  return issue.stakeholders.map((s) => s.id)
-}
-
 /** The search part after a pick in the opinion check: ?pick=<key>, plus
  * evidence and stakeholder when they are set. focus is dropped. */
 export function pickSearch(params: URLSearchParams, key: string): string {

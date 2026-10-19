@@ -156,7 +156,9 @@ export const t = {
     stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,
     stories: '使用者故事',
     storiesValue: (n: number) => `${n} 則`,
+    wants: '訴求',
     conflicts: '衝突',
+    needs: '需求',
     solutions: '解法',
     itemsValue: (n: number) => `${n} 個`,
     shared: '跨議題共用的利害關係人',
@@ -226,7 +228,9 @@ export const t = {
     stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,
     stories: '使用者故事',
     storiesValue: (n: number) => `${n} 則`,
+    wants: '訴求',
     conflicts: '衝突',
+    needs: '需求',
     solutions: '解法',
     itemsValue: (n: number) => `${n} 個`,
     legendHeading: '標記說明',
@@ -252,6 +256,8 @@ export const t = {
     pendingNone: '這個議題沒有待補的項目。',
     noSection: '其他',
     issueLink: (n: number) => `#${n}`,
+    /** The last section of the tab: the issue's stakeholders (decision 38). */
+    stakeholdersHeading: '利害關係人',
   },
   /** 資料根據 (design 3.2, 3.9): the story cells (我想要… and 以便…) by tag. */
   basis: {
@@ -287,17 +293,35 @@ export const t = {
     /** No conflict has a story of the picked stakeholder on a side. */
     conflictsNoneFiltered: '這位利害關係人沒有出現在衝突的任何一方。',
   },
+  /** The issue page's 解法 tab (design 3.2). */
   solutionsTab: {
     spaces: '空間類型',
-    stories: '涵蓋的使用者故事',
+    needs: '涵蓋的需求',
+    /** The two parts of step 6.2. */
+    must: '必須有',
+    shouldCould: '應該有、可以有',
+    needsNone: '分析裡沒有列出這個解法涵蓋的需求。',
+    /** The stakeholders of a need, as plain IDs. */
+    needStakeholders: '利害關係人：',
+    wayOut: '解開的衝突',
+    /** With a stakeholder picked: a link to the solution's 需求 tab. */
+    otherNeeds: (n: number) => `這個解法還涵蓋其他 ${n} 個需求`,
+    dataEmpty: '這位利害關係人在這個解法的需求，都沒有標記 [實證] 或 [AI整理]。',
     none: '這個議題沒有列出解法。',
+    noneForStakeholder: '沒有解法涵蓋這位利害關係人的需求。',
+  },
+  /** The issue page's 需求 tab (design 3.2). */
+  needsTab: {
+    intro: '需求是利害關係人得到的好處（以便…）。需求之間不會衝突。優先順序（MoSCoW）是這些利害關係人有多需要它，不是利害關係人之間的排名。',
+    /** Decision 52: an issue in the old format has no needs list. */
+    oldFormat: '本議題使用舊格式，沒有需求列表',
+    none: '這個議題沒有列出需求。',
+    noneForStakeholder: '這位利害關係人在本議題沒有需求。',
+    dataEmpty: '這裡沒有以便… 標記 [實證] 或 [AI整理] 的需求。',
   },
   opinion: {
-    intro: '從清單選一個你想要的事，看看誰也想要、誰可能有不同意見、有哪些解法，以及還有誰沒有被提到。',
-    searchLabel: '搜尋想要的事',
     searchHint: '輸入文字，篩選下面的清單。',
     matchCount: (n: number, total: number) => `符合 ${n} 項（共 ${total} 項）`,
-    listLabel: '選一個你想要的事',
     noMatch: '沒有符合的項目。請換一個詞再試。',
     storyCount: (n: number) => `${n} 則故事`,
     unknownPick: '找不到網址裡選的項目。請從清單重新選一次。',
@@ -381,6 +405,37 @@ export const t = {
     stakeholderLink: (id: string, name: string) => `看 ${id} ${name} 的頁面`,
     issueLink: (title: string) => `看 ${title}`,
     backHome: '回到首頁',
+    /** The story itself: three labeled lines (design 3.15). */
+    storyHeading: '故事內容',
+    asA: '身為',
+    want: '我想要…',
+    soThat: '以便…',
+    /** The fields under the story. */
+    source: '來源',
+    priority: '優先順序',
+    priorityNote: '這是這則故事的需求的優先順序。',
+    issue: '議題',
+    /** 訴求 and 需求 (design 3.15, 3.16). */
+    wantHeading: '訴求',
+    wantLink: (n: number, key: string) => `在 #${n} 的訴求分頁看 ${key}`,
+    wantGroup: (id: string) => `相同訴求群組 ${id}：`,
+    wantOthers: '同樣想要的人',
+    wantOthersNone: '沒有其他利害關係人有這個訴求。',
+    wantNoGroup: '這則故事不在任何相同訴求群組裡。',
+    needHeading: '需求',
+    needLink: (n: number, key: string) => `在 #${n} 的需求分頁看 ${key}`,
+    needGroup: (id: string) => `相同需求群組 ${id}：`,
+    needOthers: '同樣需要的人',
+    needOthersNone: '沒有其他利害關係人有這個需求。',
+    needNoGroup: '這則故事不在任何相同需求群組裡。',
+    conflictsHeading: '衝突',
+    conflictsNone: '這則故事沒有出現在衝突裡。',
+    solutionsHeading: '解法',
+    solutionsIntro: '涵蓋這則故事的需求的解法：',
+    solutionsNone: '尚未有解法涵蓋這則故事的需求。',
+    solutionsWontDo: '這則故事的需求這次不做，所以沒有解法涵蓋。',
+    moreHeading: '更多',
+    pickLink: (n: number) => `到 #${n} 做意見健檢`,
   },
   /** The solution page #/solutions/<n>-<code> (design 3.12). */
   solutionPage: {

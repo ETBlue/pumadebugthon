@@ -1,16 +1,15 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
+import { NeedsTab } from '@/components/issue/NeedsTab'
 import { OverviewTab } from '@/components/issue/OverviewTab'
 import { SolutionsTab } from '@/components/issue/SolutionsTab'
-import { StakeholdersTab } from '@/components/issue/StakeholdersTab'
 import { WantsTab } from '@/components/issue/WantsTab'
 import type { IssueTabProps } from '@/components/issue/types'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { SpaceLinks } from '@/components/SpaceLinks'
-import { PageTabs, TabComing } from '@/components/PageTabs'
-import { focusTargetClass, linkClass } from '@/components/styles'
-import { cn } from '@/lib/utils'
+import { PageTabs } from '@/components/PageTabs'
+import { linkClass } from '@/components/styles'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
@@ -21,30 +20,10 @@ import type { AvailableIssueSummary, IndexFile } from '@/types'
 
 const ti = t.issue
 
-// For now (plan Task N3) the tabs reuse the old tab parts. Tasks N5 and N6
-// replace them.
-
-/** 總覽: the old overview, then the old 利害關係人 tab as its last section (decision 38). */
-function OverviewWithStakeholders(props: IssueTabProps) {
-  return (
-    <>
-      <OverviewTab {...props} />
-      <section id="focus-stakeholders" tabIndex={-1} aria-labelledby="stakeholders-heading" className={cn('mt-8', focusTargetClass)}>
-        <h3 id="stakeholders-heading" className="text-lg font-semibold">{ti.stakeholdersHeading}</h3>
-        <div className="mt-2"><StakeholdersTab {...props} /></div>
-      </section>
-    </>
-  )
-}
-
-function NeedsFrame() {
-  return <TabComing text={ti.tabComing} />
-}
-
 const TAB_CONTENT: Record<IssueTab, (props: IssueTabProps) => ReactNode> = {
-  overview: OverviewWithStakeholders,
+  overview: OverviewTab,
   wants: WantsTab,
-  needs: NeedsFrame,
+  needs: NeedsTab,
   solutions: SolutionsTab,
 }
 

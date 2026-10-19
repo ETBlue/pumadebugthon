@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router'
 import { useDataBasisFilter, useTabTo } from '@/components/DataBasisToggle'
 import { CellBasis } from '@/components/CellBasis'
@@ -5,7 +6,6 @@ import { CellText } from '@/components/CellText'
 import { Field } from '@/components/Field'
 import { METHOD_URL } from '@/components/links'
 import { Markdown } from '@/components/Markdown'
-import { linkClass } from '@/components/styles'
 import { TagBadge, type TagKind } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
 import { issueFocusPath } from '@/lib/entityPaths'
@@ -14,13 +14,19 @@ import { spaceTypeNames } from '@/lib/issues'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
 import { sameSpaceIssues } from '@/lib/spaces'
 import { summaryRefTo } from '@/lib/summary'
+import { issueTabCounts } from '@/lib/tabCounts'
+import { focusTargetProps } from '@/components/FocusTarget'
+import { focusTargetClass, linkClass } from '@/components/styles'
+import { StakeholdersTab } from './StakeholdersTab'
 import type { IssueTabProps } from './types'
 
 const to = t.overview
 const TAG_KINDS: TagKind[] = ['實證', 'AI整理', 'AI模擬', 'pending']
 
-/** 總覽 (design 3.2): 分析摘要, counts, 資料根據, 特別關注族群, tag legend, 使用相同空間的議題 and 待補清單. */
-export function OverviewTab({ index, summary, issue }: IssueTabProps) {
+/** 總覽 (design 3.2): 分析摘要, counts, 資料根據, 特別關注族群, tag legend,
+ * 使用相同空間的議題, 待補清單 and, at the end, 利害關係人 (decision 38). */
+export function OverviewTab(props: IssueTabProps) {
+  const { index, summary, issue } = props
   const c = summary.counts
   const n = summary.number
   const sameSpace = sameSpaceIssues(index, n)
@@ -29,6 +35,7 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const tabTo = useTabTo()
   const focus = focusRows(issue, index.stakeholders)
   const [dataBasedOnly] = useDataBasisFilter()
+  const tabCounts = useMemo(() => issueTabCounts(issue), [issue])
 
   return (
     <div className="space-y-8">
@@ -73,11 +80,16 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
               {to.stakeholdersValue(c.stakeholdersO, c.stakeholdersI)}
             </Link>
           </Field>
-          <Field label={to.stories}>
-            <Link to={tabTo(n, 'wants')} className={linkClass}>{to.storiesValue(c.stories)}</Link>
+          {/* 使用者故事 has no tab, so its count is plain text (design 3.2). */}
+          <Field label={to.stories}>{to.storiesValue(c.stories)}</Field>
+          <Field label={to.wants}>
+            <Link to={tabTo(n, 'wants')} className={linkClass}>{to.itemsValue(tabCounts.wants)}</Link>
           </Field>
           <Field label={to.conflicts}>
             <Link to={issueFocusPath(n, 'wants', 'conflicts', dataBasedOnly)} className={linkClass}>{to.itemsValue(c.conflicts)}</Link>
+          </Field>
+          <Field label={to.needs}>
+            <Link to={tabTo(n, 'needs')} className={linkClass}>{to.itemsValue(tabCounts.needs)}</Link>
           </Field>
           <Field label={to.solutions}>
             <Link to={tabTo(n, 'solutions')} className={linkClass}>{to.itemsValue(c.solutions)}</Link>
@@ -200,6 +212,12 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
             ))}
           </>
         )}
+      </section>
+
+      {/* The old 利害關係人 tab (decision 38). ?focus=stakeholders scrolls here. */}
+      <section {...focusTargetProps('stakeholders')} aria-labelledby="stakeholders-heading" className={focusTargetClass}>
+        <h3 id="stakeholders-heading" className="text-lg font-semibold">{to.stakeholdersHeading}</h3>
+        <div className="mt-2"><StakeholdersTab {...props} /></div>
       </section>
     </div>
   )

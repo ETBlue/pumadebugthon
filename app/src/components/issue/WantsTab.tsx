@@ -1,15 +1,15 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
-import { StakeholderMenu, StakeholderMenuLayout } from '@/components/StakeholderMenu'
 import { focusTargetClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
-import { stakeholderFilterOf } from '@/lib/stakeholderFilter'
-import { issueStakeholderIds, wantsTabView } from '@/lib/wantsTab'
+import { wantsTabView } from '@/lib/wantsTab'
 import { ConflictsTab } from './ConflictsTab'
+import { IssueFilterLayout } from './IssueFilterLayout'
 import { OpinionTab } from './OpinionTab'
 import type { IssueTabProps } from './types'
+import { useIssueStakeholder } from './useIssueStakeholder'
 
 const tw = t.wantsTab
 
@@ -22,25 +22,19 @@ const tw = t.wantsTab
 export function WantsTab(props: IssueTabProps) {
   const { index, issue } = props
   const [params] = useSearchParams()
-  const ids = useMemo(() => issueStakeholderIds(issue), [issue])
   // The resolved filter (a moved ID becomes the new ID, an ID not in the
   // issue turns the filter off), never the raw ?stakeholder= value.
-  const stakeholder = stakeholderFilterOf(params, ids, index.stakeholders)
+  const stakeholder = useIssueStakeholder(index, issue)
   const dataBasedOnly = isDataBasisFilterOn(params)
   const view = useMemo(() => wantsTabView(issue, stakeholder, dataBasedOnly), [issue, stakeholder, dataBasedOnly])
 
-  const menu = (
-    <StakeholderMenu
-      mode="filter"
-      ids={ids}
-      stakeholders={index.stakeholders}
+  return (
+    <IssueFilterLayout
+      index={index}
+      issue={issue}
       current={stakeholder}
       shown={t.stakeholderMenu.shownWants(view.wants.length, view.conflicts.length)}
-    />
-  )
-
-  return (
-    <StakeholderMenuLayout menu={menu}>
+    >
       <div className="space-y-10">
         <DataBasisToggle />
 
@@ -66,6 +60,6 @@ export function WantsTab(props: IssueTabProps) {
           />
         </section>
       </div>
-    </StakeholderMenuLayout>
+    </IssueFilterLayout>
   )
 }

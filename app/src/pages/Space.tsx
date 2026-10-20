@@ -8,7 +8,7 @@ import { LoadState } from '@/components/LoadState'
 import { SolutionCard } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { StakeholderCard } from '@/components/StakeholderCard'
-import { linkClass } from '@/components/styles'
+import { linkClass, proseClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
@@ -57,7 +57,7 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
         <Field label={tp.group}>{space.group}</Field>
         {space.description && <Field label={tp.description}>{space.description}</Field>}
       </dl>
-      <p className="mt-4 leading-relaxed">{tp.intro}</p>
+      <p className={`mt-4 leading-relaxed ${proseClass}`}>{tp.intro}</p>
 
       <div className="mt-8 space-y-10">
         <section aria-labelledby="space-issues">

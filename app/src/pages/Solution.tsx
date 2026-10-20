@@ -7,7 +7,7 @@ import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
 import { PageTitle } from '@/components/PageTitle'
 import { SpaceLinks } from '@/components/SpaceLinks'
-import { linkClass } from '@/components/styles'
+import { linkClass, proseClass } from '@/components/styles'
 import { CrossIssueLinks } from '@/components/solution/CrossSolutionCard'
 import { CrossOverviewTab } from '@/components/solution/CrossOverviewTab'
 import { CrossNeedsTab, CrossStakeholdersTab } from '@/components/solution/CrossTabs'
@@ -112,7 +112,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
         {tp.issueLine}
         <Link to={{ pathname: tabPath(n, 'overview'), search }} className={linkClass}>{issueTitle}</Link>
       </p>
-      <p className="mt-3 leading-relaxed"><Markdown text={sol.summary} /></p>
+      <p className={`mt-3 leading-relaxed ${proseClass}`}><Markdown text={sol.summary} /></p>
       <dl className="mt-3 space-y-1.5 text-sm">
         {sol.spaces.length > 0 && (
           <Field label={tp.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={sol.spaces} /></Field>
@@ -209,7 +209,7 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
         {tx.issueLine}
         <CrossIssueLinks solution={sol} />
       </p>
-      <p className="mt-3 leading-relaxed"><Markdown text={sol.summary} /></p>
+      <p className={`mt-3 leading-relaxed ${proseClass}`}><Markdown text={sol.summary} /></p>
       <dl className="mt-3 space-y-1.5 text-sm">
         {sol.spaces.length > 0 && (
           <Field label={tp.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={sol.spaces} /></Field>

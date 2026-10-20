@@ -7,7 +7,7 @@ import { Markdown } from '@/components/Markdown'
 import { PageTitle } from '@/components/PageTitle'
 import { PriorityLegend } from '@/components/PriorityCounts'
 import { SolutionCard } from '@/components/SolutionCard'
-import { linkClass } from '@/components/styles'
+import { linkClass, proseClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
@@ -112,7 +112,7 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
 
       <Section heading={ts.storyHeading}>
         {/* Three labeled lines, so each tag stays next to its own text. */}
-        <dl className="mt-2 space-y-2 rounded-lg border p-3 md:p-4">
+        <dl className={`mt-2 space-y-2 rounded-lg border p-3 md:p-4 ${proseClass}`}>
           <div className={row}>
             <dt className={label}>{ts.asA}</dt>
             <dd className="min-w-0">

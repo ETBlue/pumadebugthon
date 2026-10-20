@@ -4,7 +4,7 @@ import { t } from '@/i18n/zh-TW'
 import { availableIssues, filterIssuesBySpace, sharedStakeholders, usedSpaceTypes } from '@/lib/issues'
 import type { IndexFile } from '@/types'
 import { IssueCard } from './IssueCard'
-import { toggleOnClass } from './styles'
+import { proseClass, toggleOnClass } from './styles'
 import { ToggleCheck } from './ToggleCheck'
 
 const th = t.issueList
@@ -21,7 +21,7 @@ export function IssueList({ index, headingLevel }: { index: IndexFile; headingLe
     <>
       {spaceOptions.length > 0 && (
         <div className="mt-3 space-y-2">
-          <p id={spaceLabelId} className="text-sm text-muted-foreground">
+          <p id={spaceLabelId} className={`text-sm text-muted-foreground ${proseClass}`}>
             {th.spaceFilter}
             <span className="block text-xs">{th.spaceFilterHint}</span>
           </p>
@@ -45,7 +45,7 @@ export function IssueList({ index, headingLevel }: { index: IndexFile; headingLe
       {shownIssues.length === 0 ? (
         <p className="mt-4">{th.noIssues}</p>
       ) : (
-        <ul className="mt-4 grid gap-4 md:grid-cols-2">
+        <ul className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {shownIssues.map((issue) => (
             <li key={issue.number}>
               <IssueCard

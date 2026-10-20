@@ -4,7 +4,7 @@ import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
-import { linkClass, toggleOnClass } from '@/components/styles'
+import { linkClass, proseClass, toggleOnClass } from '@/components/styles'
 import { ToggleCheck } from '@/components/ToggleCheck'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
@@ -26,7 +26,7 @@ export default function Solutions() {
     <>
       <PageTitle parts={[tl.solutionsTitle]} />
       <h1 className="text-2xl font-bold md:text-3xl">{tl.solutionsTitle}</h1>
-      <p className="mt-2 leading-relaxed">{tl.solutionsIntro}</p>
+      <p className={`mt-2 leading-relaxed ${proseClass}`}>{tl.solutionsIntro}</p>
       <div className="mt-4">
         {index.status === 'ready' ? <SolutionList index={index.data} /> : <LoadState state={index} />}
       </div>
@@ -45,7 +45,7 @@ function ChipFilter({ label, hint, options, value, onChange }: {
   const labelId = useId()
   return (
     <div className="space-y-2">
-      <p id={labelId} className="text-sm text-muted-foreground">
+      <p id={labelId} className={`text-sm text-muted-foreground ${proseClass}`}>
         {label}
         <span className="block text-xs">{hint}</span>
       </p>
@@ -103,8 +103,8 @@ function SolutionList({ index }: { index: IndexFile }) {
           {cross && crossShown.length > 0 && (
             <section aria-labelledby="solutions-cross">
               <h2 id="solutions-cross" className="text-xl font-bold">{t.crossIssue.groupHeading}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">{t.crossIssue.groupIntro}</p>
-              <ul className="mt-3 grid gap-3 md:grid-cols-2">
+              <p className={`mt-1 text-sm text-muted-foreground ${proseClass}`}>{t.crossIssue.groupIntro}</p>
+              <ul className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {crossShown.map((sol) => (
                   <li key={sol.code}>
                     <CrossSolutionCard
@@ -127,7 +127,7 @@ function SolutionList({ index }: { index: IndexFile }) {
               <h2 id={`solutions-${g.issueNumber}`} className="text-xl font-bold">
                 <Link to={`/issues/${g.issueNumber}`} className={linkClass}>{tl.issueHeading(g.issueNumber, g.title)}</Link>
               </h2>
-              <ul className="mt-3 grid gap-3 md:grid-cols-2">
+              <ul className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {g.solutions.map((sol) => (
                   <li key={sol.id}>
                     <SolutionCard

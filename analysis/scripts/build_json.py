@@ -49,8 +49,12 @@ in pending.
 focusGroups: the 「### 1.n 特別關注族群檢查」 table, one item per group in
 analysis_common.FOCUS_GROUPS, in that fixed order: {tag, stakeholders, note}.
 The IDs must be the step 1 stakeholders that have the group in
-stakeholders.csv. index.json gets focusGaps for each analyzed issue: the
-groups with no stakeholder, in the same order (null for an issue without an
+stakeholders.csv. excluded is True for a group that a person decided not
+to include (「（無）」 and a 說明 that starts with a tag and
+「不納入（name，YYYY-MM-DD）：」, see analysis_common.FOCUS_EXCLUDED).
+index.json gets focusGaps for each analyzed issue: the groups with no
+stakeholder and no decision yet, in the same order; and focusExcluded: the
+groups a person decided not to include (both null for an issue without an
 analysis).
 
 Two formats (analysis_common.needs_format). The needs-based format has a
@@ -321,7 +325,9 @@ FOCUS = "特別關注族群檢查"
 def parse_focus(text, step1):
     """The 特別關注族群檢查 table -> [{"tag", "stakeholders", "note"}], one
     item per group in common.FOCUS_GROUPS, in that order. stakeholders is []
-    for 「（無）」. note is a Cell, or None for 「—」. Each ID must be in step1."""
+    for 「（無）」. note is a Cell, or None for 「—」. Each ID must be in step1.
+    excluded is True when a person decided not to include the group: 「（無）」
+    and a 說明 that starts with a tag and 「不納入（name，YYYY-MM-DD）：」."""
     found = common.focus_tables(text)
     if found is None:
         raise ReadError(FOCUS, f"no heading 「### 1.n {FOCUS}」")
@@ -343,7 +349,10 @@ def parse_focus(text, step1):
             if sid not in step1:
                 raise ReadError(FOCUS, f"{tag}: {sid} is not in step 1")
         note = None if r["說明"].strip() in ("", "—") else cell(r["說明"], FOCUS, tag)
-        out.append({"tag": tag, "stakeholders": ids, "note": note})
+        excluded = not ids and common.focus_excluded(r["說明"])
+        if ids and common.focus_excluded(r["說明"]):
+            raise ReadError(FOCUS, f"{tag}: the group has stakeholders, so 說明 must not say 「不納入」")
+        out.append({"tag": tag, "stakeholders": ids, "note": note, "excluded": excluded})
     return out
 
 
@@ -390,7 +399,8 @@ def parse_summary(text, ids):
             if text_cell["tag"] is None and not text_cell["pending"]:
                 raise ReadError(SUMMARY, f"{where}: 說明 must start with a tag, or be one 【待補：…】 item")
             refs = common.split_refs(r["相關編號"])
-            if text_cell["tag"] is not None and not refs:
+            # A group that a person decided not to include may have no reference (as in check_analysis.py).
+            if text_cell["tag"] is not None and not refs and not (name == "受影響較大的弱勢族群" and common.focus_excluded(r["說明"])):
                 raise ReadError(SUMMARY, f"{where}: 相關編號 is empty")
             for ref in refs:
                 parsed = common.parse_ref(ref)
@@ -805,7 +815,7 @@ def build(analysis_dir):
         md = os.path.join(analysis_dir, folder, "issue-analysis.md")
         if not os.path.exists(md):
             index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": False,
-                                 "spaces": [], "updated": None, "counts": None, "focusGaps": None})
+                                 "spaces": [], "updated": None, "counts": None, "focusGaps": None, "focusExcluded": None})
             continue
         with open(md, encoding="utf-8") as f:
             text = f.read()
@@ -831,8 +841,10 @@ def build(analysis_dir):
         }
         index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": True,
                              "spaces": data["spaces"], "updated": updated, "counts": counts,
-                             # The groups with no stakeholder, in the fixed order (for the issue card).
-                             "focusGaps": [g["tag"] for g in data["focusGroups"] if not g["stakeholders"]]})
+                             # The groups with no stakeholder and no decision yet, and the groups a
+                             # person decided not to include, in the fixed order (for the issue card).
+                             "focusGaps": [g["tag"] for g in data["focusGroups"] if not g["stakeholders"] and not g["excluded"]],
+                             "focusExcluded": [g["tag"] for g in data["focusGroups"] if g["excluded"]]})
         issue_files[folder] = {"number": num, "folder": folder, "title": title,
                                "spaces": data["spaces"], "updated": updated, **{k: v for k, v in data.items() if k != "spaces"}}
 

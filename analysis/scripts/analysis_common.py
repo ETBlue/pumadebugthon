@@ -86,6 +86,16 @@ FOCUS_HEADING = re.compile(r"^### 1\.\d+ 特別關注族群檢查\s*$")
 FOCUS_HEADER = ["特別關注", "納入的利害關係人", "說明"]
 # The 納入的利害關係人 cell of a group with no stakeholder in the issue.
 FOCUS_NONE = "（無）"
+# The 說明 of a group that a person decided not to include: a tag, then
+# 「不納入（<person>，YYYY-MM-DD）：」 and the reason. Only a person decides
+# that a group does not apply (method.md, 特別關注族群檢查), so the cell names
+# the person and the date. Without a decision, the 說明 is a 【待補：…】 item.
+FOCUS_EXCLUDED = re.compile(rf"^`\[(?:{TAG_NAMES})\]` 不納入（[^，（）]+，\d{{4}}-\d\d-\d\d）：\S")
+
+
+def focus_excluded(note):
+    """True if a 說明 cell records a person's decision not to include the group."""
+    return FOCUS_EXCLUDED.match(note.strip()) is not None
 
 # The 分析摘要 section near the top of each issue file (see method.md, 分析摘要).
 SUMMARY_HEADING = "## 分析摘要"

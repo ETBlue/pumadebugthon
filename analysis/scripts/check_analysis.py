@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, NEED_GROUP_HEADING,
                              NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, NO_SPACE_CELL, NO_SPACE_LINE, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
                              SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, WAY_OUT_NONE, conflict_heading, cross_refs,
-                             focus_tables, issue_ids, needs_format, parse_ref, section, split_cells as cells, split_focus,
+                             focus_excluded, focus_tables, issue_ids, needs_format, parse_ref, section, split_cells as cells, split_focus,
                              split_refs, step1_tables, summary_lines, summary_topics, tables, without_cross_refs)
 
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
@@ -760,7 +760,9 @@ def main(md_path, csv_path):
     # in FOCUS_GROUPS, in that order. 納入的利害關係人 lists the step 1
     # stakeholders that have the group in stakeholders.csv (both ways), split
     # by 「、」, or 「（無）」 when there is none. For 「（無）」, 說明 is a
-    # 【待補：…】 item: only a person decides that a group does not apply. For
+    # 【待補：…】 item: only a person decides that a group does not apply.
+    # After a person decided, 說明 records it: a tag, then
+    # 「不納入（<person>，YYYY-MM-DD）：」 and the reason (FOCUS_EXCLUDED). For
     # an included group, 說明 is 「—」 or a short note that starts with a tag.
     FW = "特別關注族群檢查"
     ft = focus_tables(text)
@@ -798,8 +800,11 @@ def main(md_path, csv_path):
             if not listed_f:
                 if note in ("", "—"):
                     err(f"{FW} {g}: no stakeholder, so 說明 must not be empty; write a 【待補：…】 item that asks a person to decide")
-                elif not re.fullmatch(r"【待補：[^】]+】", note):
-                    err(f"{FW} {g}: no stakeholder, so 說明 must be one 【待補：…】 item (only a person decides that a group does not apply): {note!r}")
+                elif not re.fullmatch(r"【待補：[^】]+】", note) and not focus_excluded(note):
+                    err(f"{FW} {g}: no stakeholder, so 說明 must be one 【待補：…】 item (only a person decides that a group does not apply), "
+                        f"or record that person's decision: a tag, then 「不納入（name，YYYY-MM-DD）：」 and the reason: {note!r}")
+            elif focus_excluded(note):
+                err(f"{FW} {g}: the group has stakeholders, so it is included; remove 「不納入」 from 說明")
             elif note != "—" and not note.startswith("【待補") and not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", note):
                 err(f"{FW} {g}: 說明 must be 「—」 or start with a tag in backticks: {note!r}")
 
@@ -847,7 +852,8 @@ def main(md_path, csv_path):
                 if not tagged and not re.fullmatch(r"【待補：[^】]+】", note):
                     err(f"{rw}: 說明 must start with a tag in backticks, or be one 【待補：…】 item: {note[:30]!r}")
                 refs_s = split_refs(refs_cell)
-                if tagged and not refs_s:
+                # A group that a person decided not to include (FOCUS_EXCLUDED) may have no reference.
+                if tagged and not refs_s and not (name == "受影響較大的弱勢族群" and focus_excluded(note)):
                     err(f"{rw}: 相關編號 is empty; list the stories, conflicts or solutions the item comes from")
                 for ref in refs_s:
                     p_ = parse_ref(ref)

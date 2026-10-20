@@ -579,6 +579,35 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_RESP, "| 呼吸道疾病 | （無） | `[AI模擬]` 與本題無關 |\n")
         self.assertFails("特別關注族群檢查", "呼吸道疾病", "【待補：")
 
+    # After a person decided, the note records the decision: a tag, 「不納入（name，date）：」 and the reason.
+    FOCUS_RESP_EXCLUDED = "| 呼吸道疾病 | （無） | `[實證]` 不納入（ETBlue，2026-10-20）：本題的故事都和呼吸道疾病無關 |\n"
+
+    def test_focus_none_with_a_persons_decision_passes(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_RESP, self.FOCUS_RESP_EXCLUDED)
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_focus_decision_without_person_and_date_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_RESP, "| 呼吸道疾病 | （無） | `[實證]` 不納入：本題的故事都和呼吸道疾病無關 |\n")
+        self.assertFails("特別關注族群檢查", "呼吸道疾病", "不納入（name，YYYY-MM-DD）")
+
+    def test_focus_decision_on_included_group_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN,
+                  "| 外籍 | I03、I04 | `[實證]` 不納入（ETBlue，2026-10-20）：沒有關係 |\n")
+        self.assertFails("特別關注族群檢查", "外籍", "不納入")
+
+    def test_summary_row_of_excluded_group_may_have_no_reference(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_RESP, self.FOCUS_RESP_EXCLUDED)
+        self.edit(f"{ISSUE}/issue-analysis.md", "| 呼吸道疾病（尚未納入） | 【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】 | — |",
+                  "| 呼吸道疾病（不納入） | `[實證]` 不納入（ETBlue，2026-10-20）：本題的故事都和呼吸道疾病無關 | — |")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_summary_row_with_a_tag_and_no_reference_still_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| 呼吸道疾病（尚未納入） | 【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】 | — |",
+                  "| 呼吸道疾病（尚未納入） | `[AI模擬]` 本題的故事都和呼吸道疾病無關 | — |")
+        self.assertFails("受影響較大的弱勢族群", "相關編號")
+
     def test_focus_note_of_included_group_needs_a_tag(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.FOCUS_FOREIGN, "| 外籍 | I03、I04 | 需要多語言 |\n")
         self.assertFails("特別關注族群檢查", "外籍", "tag")

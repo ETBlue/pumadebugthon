@@ -252,12 +252,12 @@ class BuildJsonOutputTest(unittest.TestCase):
         # The 1.3 特別關注族群檢查 table: all 6 groups, in the fixed order.
         none = lambda text: {"text": text, "tag": None, "pending": True}
         self.assertEqual(self.issue["focusGroups"], [
-            {"tag": "高齡", "stakeholders": ["I05", "I11"], "note": None},
-            {"tag": "身心障礙", "stakeholders": ["I06"], "note": None},
-            {"tag": "呼吸道疾病", "stakeholders": [], "note": none("【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】")},
-            {"tag": "兒童與照顧者", "stakeholders": ["I07"], "note": None},
-            {"tag": "外籍", "stakeholders": ["I03", "I04"], "note": None},
-            {"tag": "經濟弱勢", "stakeholders": ["I11"], "note": None},
+            {"tag": "高齡", "stakeholders": ["I05", "I11"], "note": None, "excluded": False},
+            {"tag": "身心障礙", "stakeholders": ["I06"], "note": None, "excluded": False},
+            {"tag": "呼吸道疾病", "stakeholders": [], "note": none("【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】"), "excluded": False},
+            {"tag": "兒童與照顧者", "stakeholders": ["I07"], "note": None, "excluded": False},
+            {"tag": "外籍", "stakeholders": ["I03", "I04"], "note": None, "excluded": False},
+            {"tag": "經濟弱勢", "stakeholders": ["I11"], "note": None, "excluded": False},
         ])
 
     def test_focus_groups_in_other_issues(self):
@@ -277,10 +277,25 @@ class BuildJsonOutputTest(unittest.TestCase):
                        "context": "外籍"}, trees["pending"])
 
     def test_index_focus_gaps(self):
-        # focusGaps: the groups with no stakeholder, in the fixed order. null for an issue without an analysis.
+        # focusGaps: the groups with no stakeholder and no decision yet, in the fixed order.
+        # focusExcluded: the groups a person decided not to include (#9, ETBlue 2026-10-20).
+        # Both null for an issue without an analysis.
         gaps = {i["number"]: i["focusGaps"] for i in self.index["issues"]}
         self.assertEqual(gaps, {1: ["呼吸道疾病", "外籍"], 2: ["呼吸道疾病"], 3: None, 4: None,
-                                5: None, 6: None, 8: [], 9: ["呼吸道疾病", "兒童與照顧者"]})
+                                5: None, 6: None, 8: [], 9: []})
+        excluded = {i["number"]: i["focusExcluded"] for i in self.index["issues"]}
+        self.assertEqual(excluded, {1: [], 2: [], 3: None, 4: None, 5: None, 6: None, 8: [],
+                                    9: ["呼吸道疾病", "兒童與照顧者"]})
+
+    def test_excluded_focus_groups(self):
+        # A group with 「（無）」 and a 說明 that records a person's decision is excluded, not a gap.
+        with open(os.path.join(self.out, "issues", "9-policydiscovery.json"), encoding="utf-8") as f:
+            nine = json.load(f)
+        self.assertEqual([(g["tag"], g["excluded"]) for g in nine["focusGroups"]],
+                         [("高齡", False), ("身心障礙", False), ("呼吸道疾病", True),
+                          ("兒童與照顧者", True), ("外籍", False), ("經濟弱勢", False)])
+        self.assertTrue(nine["focusGroups"][2]["note"]["text"].startswith("不納入（ETBlue，2026-10-20）："))
+        self.assertEqual(nine["focusGroups"][2]["note"]["tag"], "實證")
 
     def test_index_issue_source(self):
         # 來源 in issues.csv becomes "source": 主辦單位 for the host's issues,

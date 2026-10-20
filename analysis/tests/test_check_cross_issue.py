@@ -149,8 +149,8 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-N06", "2 or more issues")
 
     def test_need_group_stories_wrong(self):
-        self.edit("| #1 N07、#2 N10、#8 O07-US01、#9 N01、#9 O06-US01 | #1 O06-US01、#1 O07-US01、#1 O07-US02、",
-                  "| #1 N07、#2 N10、#8 O07-US01、#9 N01、#9 O06-US01 | #1 O06-US01、#1 O07-US01、")
+        self.edit("| #1 N07、#2 N10、#8 O07-US01、#9 N01 | #1 O06-US01、#1 O07-US01、#1 O07-US02、",
+                  "| #1 N07、#2 N10、#8 O07-US01、#9 N01 | #1 O06-US01、#1 O07-US01、")
         self.assertFails("X-N04", "故事編號")
 
     def test_priority_raised(self):

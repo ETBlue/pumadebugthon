@@ -32,6 +32,14 @@ export function sharedStakeholders(stakeholders: Stakeholder[], issueNumber: num
   return { count: shared.length, issues: [...others].sort((a, b) => a - b) }
 }
 
+/** The 跨議題共用的利害關係人 of one issue card (design 3.9, decision 72).
+ * Null when the issue is 製作中 or fewer than 2 issues are analyzed; then
+ * the card leaves the field out. */
+export function sharedForCard(index: IndexFile, issue: IssueSummary): Shared | null {
+  if (!issue.available || availableIssues(index).length < 2) return null
+  return sharedStakeholders(index.stakeholders, issue.number)
+}
+
 /** The space types that at least one analyzed issue uses, in the order of
  * space-types.csv. */
 export function usedSpaceTypes(index: IndexFile): SpaceType[] {

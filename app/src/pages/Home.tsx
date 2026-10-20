@@ -10,7 +10,7 @@ import { StakeholderCard } from '@/components/StakeholderCard'
 import { containerClass, linkClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { availableIssues } from '@/lib/issues'
+import { availableIssues, sharedForCard } from '@/lib/issues'
 import { homeRedirect, recentIssues, recentSolutionItems, recentStakeholders, type RecentSolution } from '@/lib/recent'
 import type { IndexFile } from '@/types'
 
@@ -86,13 +86,17 @@ function HomeBlocks({ index }: { index: IndexFile }) {
           {issues.length === 0 ? (
             <p>{th.issuesNone}</p>
           ) : (
-            <ul className="space-y-3">
-              {issues.map((issue) => (
-                <li key={issue.number}>
-                  <IssueCard variant="compact" issue={issue} spaceTypes={index.spaceTypes} />
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-3">
+                {issues.map((issue) => (
+                  <li key={issue.number}>
+                    <IssueCard variant="compact" issue={issue} spaceTypes={index.spaceTypes} shared={sharedForCard(index, issue)} />
+                  </li>
+                ))}
+              </ul>
+              {/* The 資料根據 explanation, once under the list (decision 72). */}
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote}</p>
+            </>
           )}
         </Block>
 

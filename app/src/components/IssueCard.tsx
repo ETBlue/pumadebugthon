@@ -14,18 +14,20 @@ const tc = t.issueCard
 /** The props of IssueCard. Each variant has its own props.
  * - detailed: the issue list (#/issues). shared is null when fewer than 2
  *   issues are available; then the 跨議題 field is left out.
- * - compact: short lists, for example the home page and the space page. */
+ * - compact: short lists, for example the home page and the space page.
+ *   shared works as in detailed. */
 export type IssueCardProps =
   | { variant: 'detailed'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null; headingLevel?: 2 | 3 }
-  | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[] }
+  | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null }
 
 /** One issue in a list (design 3.9). Two variants:
  * - detailed: a box with all the counts, 資料根據, 特別關注族群 (the groups not
  *   included yet), 更新日期 and 空間類型.
- * - compact: the title link, 更新日期 and 空間類型, in a smaller box. It uses
+ * - compact: the title link, 跨議題共用的利害關係人, 資料根據 (counts and bar
+ *   only, decision 72), 更新日期 and 空間類型, in a smaller box. It uses
  *   the same box as the compact SolutionCard, so the home blocks look alike.
  *   The home page and the space page list only analyzed issues, but an issue
- *   that is 製作中 still shows its badge and a dashed border.
+ *   that is 製作中 still shows its badge and a dashed border, and no fields.
  * An issue without an analysis shows 製作中, with no numbers and no link. */
 export function IssueCard(props: IssueCardProps) {
   const { issue, spaceTypes } = props
@@ -34,6 +36,14 @@ export function IssueCard(props: IssueCardProps) {
   const spaces = issue.spaces.length > 0 && (
     <Field label={tc.spaces}>
       <SpaceLinks spaceTypes={spaceTypes} codes={issue.spaces} />
+    </Field>
+  )
+  // The same text and link in both variants (decision 72).
+  const sharedField = props.shared && (
+    <Field label={tc.shared}>
+      <Link to={{ pathname: '/stakeholders', search: '?cross=1' }} className={linkClass}>
+        {tc.sharedValue(props.shared.count, props.shared.issues)}
+      </Link>
     </Field>
   )
   const titleLink = issue.available && (
@@ -47,10 +57,16 @@ export function IssueCard(props: IssueCardProps) {
           {titleLink || title}
           {!issue.available && <Badge variant="secondary" className="ml-2 rounded-sm">{tc.inProgress}</Badge>}
         </p>
-        <dl className="mt-1 space-y-1 text-sm">
-          {updated}
-          {spaces}
-        </dl>
+        {issue.available && (
+          <dl className="mt-1 space-y-1 text-sm">
+            {sharedField}
+            <Field label={t.basis.label}>
+              <CellBasis cells={issue.counts.cells} stories={issue.counts.stories} compact inlineLabel={false} />
+            </Field>
+            {updated}
+            {spaces}
+          </dl>
+        )}
       </article>
     )
   }
@@ -81,13 +97,7 @@ export function IssueCard(props: IssueCardProps) {
         <Field label={tc.stories}>{tc.storiesValue(c.stories)}</Field>
         <Field label={tc.conflicts}>{tc.itemsValue(c.conflicts)}</Field>
         <Field label={tc.solutions}>{tc.itemsValue(c.solutions)}</Field>
-        {props.shared && (
-          <Field label={tc.shared}>
-            <Link to={{ pathname: '/stakeholders', search: '?cross=1' }} className={linkClass}>
-              {tc.sharedValue(props.shared.count, props.shared.issues)}
-            </Link>
-          </Field>
-        )}
+        {sharedField}
         <Field label={t.basis.label}>
           <CellBasis cells={c.cells} stories={c.stories} />
         </Field>

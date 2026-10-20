@@ -12,7 +12,7 @@ import { linkClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
-import { availableIssues } from '@/lib/issues'
+import { availableIssues, sharedForCard } from '@/lib/issues'
 import {
   findSpaceType, issuesBySpace, otherSpaces, solutionsBySpace, stakeholdersBySpace, stakeholdersInSeveralIssues,
 } from '@/lib/spaces'
@@ -65,13 +65,17 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
           {summaries.length === 0 ? (
             <p className="mt-2">{tp.issuesNone}</p>
           ) : (
-            <ul className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {summaries.map((i) => (
-                <li key={i.number}>
-                  <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} />
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {summaries.map((i) => (
+                  <li key={i.number}>
+                    <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} shared={sharedForCard(index, i)} />
+                  </li>
+                ))}
+              </ul>
+              {/* The 資料根據 explanation, once under the list (decision 72). */}
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote}</p>
+            </>
           )}
         </section>
 

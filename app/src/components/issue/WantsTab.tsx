@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
-import { focusTargetClass } from '@/components/styles'
+import { focusTargetClass, proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { wantsTabView } from '@/lib/wantsTab'
@@ -40,7 +40,7 @@ export function WantsTab(props: IssueTabProps) {
 
         <section aria-labelledby="wants-check-heading" className="space-y-4">
           <h3 id="wants-check-heading" className="text-lg font-semibold">{tw.checkHeading}</h3>
-          <p className="leading-relaxed">{tw.intro}</p>
+          <p className={`leading-relaxed ${proseClass}`}>{tw.intro}</p>
           <OpinionTab {...props} wants={view.wants} filtered={stakeholder !== null} />
         </section>
 

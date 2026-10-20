@@ -140,7 +140,7 @@ export function StakeholderMenuLayout({ menu, className, children }: {
 }) {
   if (menu === null) return <div className={className}>{children}</div>
   return (
-    <div className={cn('lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-8', className)}>
+    <div className={cn('lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[18rem_minmax(0,1fr)] lg:items-start lg:gap-8', className)}>
       {/* The grid item itself is sticky. Its parent (the grid) is as tall as
           the content, so it can stay at the top while the page scrolls. */}
       <div className="mb-4 lg:sticky lg:top-4 lg:mb-0 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:p-1">{menu}</div>

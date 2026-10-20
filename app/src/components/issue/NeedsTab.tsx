@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { NeedItem } from '@/components/NeedItem'
+import { proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { needsTabView } from '@/lib/issueTabs'
 import { priorityLabel } from '@/lib/priority'
@@ -28,7 +29,7 @@ export function NeedsTab({ index, issue }: IssueTabProps) {
       shown={stakeholder === null ? undefined : tm.shownNeeds(view.shown)}
     >
       <DataBasisToggle className="mb-4" />
-      <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{tn.intro}</p>
+      <p className={`mb-6 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{tn.intro}</p>
       {view.shown === 0 && (
         <p className="text-muted-foreground">
           {dataBasedOnly ? tn.dataEmpty : stakeholder !== null ? tn.noneForStakeholder : tn.none}

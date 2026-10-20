@@ -16,7 +16,7 @@ import { sameSpaceIssues } from '@/lib/spaces'
 import { summaryRefTo } from '@/lib/summary'
 import { issueTabCounts } from '@/lib/tabCounts'
 import { focusTargetProps } from '@/components/FocusTarget'
-import { focusTargetClass, linkClass } from '@/components/styles'
+import { focusTargetClass, linkClass, proseClass } from '@/components/styles'
 import { StakeholdersTab } from './StakeholdersTab'
 import type { IssueTabProps } from './types'
 
@@ -41,12 +41,12 @@ export function OverviewTab(props: IssueTabProps) {
     <div className="space-y-8">
       <section aria-labelledby="summary-heading">
         <h3 id="summary-heading" className="text-lg font-semibold">{to.summaryHeading}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{to.summaryIntro}</p>
+        <p className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{to.summaryIntro}</p>
         {/* The topics keep the fixed order of the issue file (decision 29). */}
         {issue.summary.map((topic, ti) => (
           <div key={topic.topic} className="mt-4">
             <h4 id={`summary-topic-${ti}`} className="font-medium">{topic.topic}</h4>
-            <ul aria-labelledby={`summary-topic-${ti}`} className="mt-2 space-y-2">
+            <ul aria-labelledby={`summary-topic-${ti}`} className={`mt-2 space-y-2 ${proseClass}`}>
               {topic.items.map((item) => (
                 <li key={item.item} className="min-w-0 rounded-md border p-3 text-sm">
                   <p className="font-medium">{item.item}</p>
@@ -102,12 +102,12 @@ export function OverviewTab(props: IssueTabProps) {
         <div className="mt-2">
           <CellBasis cells={c.cells} stories={c.stories} />
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.basis.note}</p>
+        <p className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{t.basis.note}</p>
       </section>
 
       <section aria-labelledby="focus-heading">
         <h3 id="focus-heading" className="text-lg font-semibold">{to.focusHeading}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{to.focusIntro}</p>
+        <p className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{to.focusIntro}</p>
         {/* Always the 6 groups in the fixed order (FOCUS_ORDER), never by count (design 13). */}
         <ul className="mt-3 grid gap-3 md:grid-cols-2">
           {focus.map((g) => (
@@ -194,7 +194,7 @@ export function OverviewTab(props: IssueTabProps) {
           <p className="mt-2">{to.pendingNone}</p>
         ) : (
           <>
-            <p className="mt-2 text-muted-foreground">{to.pendingIntro}</p>
+            <p className={`mt-2 text-muted-foreground ${proseClass}`}>{to.pendingIntro}</p>
             {pending.map((g) => (
               <div key={g.section ?? ''} className="mt-4">
                 <h4 className="font-medium">{g.section ?? to.noSection}</h4>

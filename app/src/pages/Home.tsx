@@ -7,7 +7,7 @@ import { IssueCard } from '@/components/IssueCard'
 import { SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
 import { StakeholderCard } from '@/components/StakeholderCard'
-import { containerClass, linkClass } from '@/components/styles'
+import { containerClass, linkClass, proseClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { availableIssues, sharedForCard } from '@/lib/issues'
@@ -37,7 +37,7 @@ export default function Home() {
         <div className={`${containerClass} py-10 md:py-16`}>
           <h1 className="text-3xl font-bold md:text-4xl">{t.appTitle}</h1>
           <p className="mt-2 text-lg font-medium md:text-xl">{t.appSubtitle}</p>
-          <div className="mt-5 max-w-3xl space-y-2 leading-relaxed">
+          <div className={`mt-5 space-y-2 leading-relaxed ${proseClass}`}>
             <p>{th.intro}</p>
             <p>{th.audience}</p>
           </div>

@@ -13,8 +13,15 @@ export const toggleOnClass =
 export const codeClass = 'rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.9em] text-foreground break-words'
 
 /** The centered page column. The header, the footer and most pages use it.
- * The home page hero is full width, with this column inside it. */
-export const containerClass = 'mx-auto w-full max-w-5xl px-4 md:px-8'
+ * The home page hero is full width, with this column inside it.
+ * At most 1440 px wide (design 3.22, decision 61). On a wider window the
+ * column stays 1440 px and is centered. */
+export const containerClass = 'mx-auto w-full max-w-[90rem] px-4 md:px-8'
+
+/** Long text (intro lines, paragraphs, summaries, story text) is at most
+ * 48rem wide, so a line is not too long to read (design 3.22). Cards,
+ * tables and grids do not use it. They use the full width. */
+export const proseClass = 'max-w-3xl'
 
 /** A part of a page that ?focus= can scroll to (design 3.2). It gets
  * tabIndex={-1}. The page moves focus to it with a script, and

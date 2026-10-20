@@ -38,8 +38,15 @@ information architecture:
   * solution
 * the issue page should include
   * a tab menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count
+* the stakeholders page should include
+  * a side menu showing all stakeholders
+  * when clicking on a stakeholder, go to stakeholder page
+  * render stakeholder statistics in the main block when no stakeholder is selected
 * the stakeholder page should include
-  * a tab menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count
+  * a side menu showing all stakeholders, same as its parent page
+  * the main block
+    * title and metadata 
+    * a tab menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count
 * the solution page should include
   * a tab menu: overview, user needs with fulfilled / not fulfilled count, stakeholders with covered / not covered count
 
@@ -47,3 +54,5 @@ visual:
 * for the UI, use design tokens for theme maintainence. apply "solarized light" theme to the app, with "solarized dark" theme togglable
 * render a watermark on the app, so every screenshot can see it. the watermark could be: "市政 debug 松參加者作品・展示用 MVP"
 * for all "議題", "利害關係人" and "解法" in list view, reuse shared card components. e.g. IssueCard, SolutionCard. the card components support 2 variations: detailed view and compact view
+* for issue card, show cross issue info and data source bar in compact view
+* the shared stakeholder side menu should render all organization and individual stakeholder groups in tree shape, with expand / collapse buttons for each group

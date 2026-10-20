@@ -5,11 +5,11 @@ import { FilterStatus } from '@/components/FilterStatus'
 import { LoadState } from '@/components/LoadState'
 import { PageTabs } from '@/components/PageTabs'
 import { PageTitle } from '@/components/PageTitle'
-import { StakeholderMenu, StakeholderMenuLayout } from '@/components/StakeholderMenu'
 import type { StakeholderTabProps } from '@/components/stakeholder/IssueSection'
 import { NeedsTab } from '@/components/stakeholder/NeedsTab'
 import { OverviewTab } from '@/components/stakeholder/OverviewTab'
 import { SolutionsTab } from '@/components/stakeholder/SolutionsTab'
+import { useStakeholdersOutlet } from '@/components/stakeholder/StakeholdersLayout'
 import { WantsTab } from '@/components/stakeholder/WantsTab'
 import { linkClass } from '@/components/styles'
 import { Badge } from '@/components/ui/badge'
@@ -18,11 +18,8 @@ import { t } from '@/i18n/zh-TW'
 import { parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
-import { sideMenuCounts, type SideMenuContext } from '@/lib/sideMenu'
-import { menuIdsFor, sideBarFiltersOf, specialOptions } from '@/lib/stakeholderFilter'
-import {
-  movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers, stakeholderMenuIds,
-} from '@/lib/stakeholderPage'
+import { sideBarFiltersOf } from '@/lib/stakeholderFilter'
+import { movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers } from '@/lib/stakeholderPage'
 import { resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
@@ -84,30 +81,13 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   }, [index, s])
   const folders = useMemo(() => shown.map((i) => i.folder), [shown])
   const issues = useIssues(folders)
-  const allIds = useMemo(() => stakeholderMenuIds(index), [index])
+  const { menuIds } = useStakeholdersOutlet()
   const filters = sideBarFiltersOf(params)
-  const menuIds = useMemo(
-    () => menuIdsFor(allIds, index.stakeholders, filters, s.id),
-    // filters is a new object on each render; its parts are the real inputs.
-    [allIds, index.stakeholders, filters.crossIssueOnly, filters.special.join(','), s.id],
-  )
-  const menuFilters = useMemo(() => {
-    const listed = index.stakeholders.filter((x) => allIds.includes(x.id))
-    return { showCrossIssue: availableIssues(index).length >= 2, specialOptions: specialOptions(listed) }
-  }, [index, allIds])
-  // The menu counts are summed over every analyzed issue (decision 66).
-  const allFolders = useMemo(() => availableIssues(index).map((i) => i.folder), [index])
-  const allIssues = useIssues(allFolders)
   const trail = pathTrail(s.path, index.pathLabels)
   const tab = parseStakeholderTab(useParams().tab)
   const counts = useMemo(
     () => (issues.status === 'ready' ? stakeholderTabCounts(issues.data, s.id) : null),
     [issues, s.id],
-  )
-  const menuContext: SideMenuContext = `stakeholder-${tab ?? 'overview'}`
-  const menuCounts = useMemo(
-    () => (allIssues.status === 'ready' ? sideMenuCounts(menuContext, allIssues.data, menuIds, filters.dataBasedOnly) : null),
-    [allIssues, menuContext, menuIds, filters.dataBasedOnly],
   )
   const filtersOn = filters.crossIssueOnly || filters.special.length > 0
 
@@ -172,25 +152,9 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         </Field>
       </dl>
 
-      {/* The menu goes to the same tab of another stakeholder (design 3.21).
-          For an unknown tab it goes to the overview. Task S4 moves the menu
-          next to the whole main block. */}
-      <StakeholderMenuLayout
-        className="mt-6"
-        menu={
-          <StakeholderMenu
-            mode="switch"
-            ids={menuIds}
-            stakeholders={index.stakeholders}
-            pathLabels={index.pathLabels}
-            context={menuContext}
-            counts={menuCounts}
-            current={s.id}
-            tab={tab ?? 'overview'}
-            filters={menuFilters}
-          />
-        }
-      >
+      {/* The side bar is in the layout route (StakeholdersLayout). The tab
+          list comes after the metadata, in the main block. */}
+      <div className="mt-6">
         <PageTabs
           label={tp.tabsLabel}
           tabs={STAKEHOLDER_TABS}
@@ -204,7 +168,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         >
           {content}
         </PageTabs>
-      </StakeholderMenuLayout>
+      </div>
     </>
   )
 }

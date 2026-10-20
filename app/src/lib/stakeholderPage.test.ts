@@ -7,7 +7,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import {
   movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
-  stakeholderIssueView, stakeholderMenuIds, stakeholderSolutionsView,
+  stakeholderIssueView, stakeholderMenuIds, stakeholderSideMenuState, stakeholderSolutionsView,
 } from './stakeholderPage'
 import { stakeholderTabCounts } from './tabCounts'
 
@@ -191,5 +191,30 @@ describe('stakeholderSolutionsView', () => {
 
   it('is empty for a stakeholder that is not in the issue', () => {
     expect(stakeholderSolutionsView(trees, 'I12')).toEqual({ solutions: [], uncovered: [] })
+  })
+})
+
+describe('stakeholderSideMenuState', () => {
+  const state = (id?: string, tab?: string) => stakeholderSideMenuState(index.stakeholders, id, tab)
+
+  it('is link mode on #/stakeholders (no ID): the counts are stories', () => {
+    expect(state()).toEqual({ mode: 'link', context: 'stakeholders' })
+  })
+
+  it('is switch mode on a stakeholder page, with the tab and its count context', () => {
+    expect(state('I06')).toEqual({ mode: 'switch', current: 'I06', tab: 'overview', context: 'stakeholder-overview' })
+    expect(state('I06', 'wants')).toEqual({ mode: 'switch', current: 'I06', tab: 'wants', context: 'stakeholder-wants' })
+    expect(state('I06', 'needs')).toEqual({ mode: 'switch', current: 'I06', tab: 'needs', context: 'stakeholder-needs' })
+    expect(state('I06', 'solutions')).toEqual({ mode: 'switch', current: 'I06', tab: 'solutions', context: 'stakeholder-solutions' })
+  })
+
+  it('uses the overview for an unknown tab, so the menu links go to the overview', () => {
+    expect(state('I06', 'nope')).toEqual({ mode: 'switch', current: 'I06', tab: 'overview', context: 'stakeholder-overview' })
+  })
+
+  it('is null for a moved ID (the page redirects) and for an unknown ID (not found)', () => {
+    expect(state('O02')).toBeNull()
+    expect(state('O02', 'wants')).toBeNull()
+    expect(state('X99')).toBeNull()
   })
 })

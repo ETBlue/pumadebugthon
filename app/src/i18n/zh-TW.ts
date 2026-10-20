@@ -63,7 +63,10 @@ export const t = {
     issuesTitle: '議題',
     issuesIntro: '所有議題，依編號排列。還在製作中的議題不能打開。',
     stakeholdersTitle: '利害關係人',
-    stakeholdersIntro: '所有議題的利害關係人，依分類和編號排列。',
+    /** #/stakeholders (design 3.20). */
+    stakeholdersIntro: '選一位利害關係人，看他在各議題的訴求、需求和解法。',
+    /** The note on counts, once under the intro line. */
+    stakeholdersCountNote: '這些數字只表示分析寫了多少，不代表重要程度或優先順序。',
     solutionsTitle: '解法',
     solutionsIntro: '所有已完成分析的議題的解法，依議題編號和解法代號排列。',
     solutionsFilters: '篩選解法',
@@ -390,6 +393,35 @@ export const t = {
     },
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',
+  },
+  /** The statistics on #/stakeholders (design 3.20, decision 63). Plain
+   * counts only: no percent, no rank. */
+  stakeholderStats: {
+    totals: '總數',
+    stakeholdersLabel: '利害關係人',
+    stakeholders: (n: number, orgs: number, people: number) => `${n} 位（組織 ${orgs}、個人 ${people}）`,
+    crossIssueLabel: '出現在 2 個以上議題',
+    crossIssue: (n: number) => `${n} 位`,
+    storiesLabel: '使用者故事',
+    stories: (n: number) => `${n} 則`,
+    byCategory: '依分類',
+    categoryColumn: '分類',
+    stakeholdersColumn: '利害關係人',
+    storiesColumn: '使用者故事',
+    /** The caption of the 依分類 table, for screen readers. */
+    categoryCaption: '依分類路徑第一層的利害關係人數和使用者故事數',
+    roots: {
+      O: '組織',
+      I: '個人',
+    },
+    byFocusGroup: '特別關注族群',
+    focusCount: (n: number) => `${n} 位`,
+    focusNone: '目前沒有利害關係人',
+    byIssue: '各議題',
+    issueLink: (n: number, title: string) => `#${n} ${title}`,
+    issueStakeholders: (n: number, orgs: number, people: number) => `利害關係人 ${n} 位（組織 ${orgs}、個人 ${people}）`,
+    /** No stakeholder matches the side bar filters. */
+    none: '沒有符合篩選的利害關係人。',
   },
   /** The story page #/stakeholders/:id/stories/:number/:storyId (design 3.15). */
   storyPage: {

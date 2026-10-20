@@ -1,11 +1,15 @@
 // Lookups for the stakeholder page (design 3.3).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
 import type { Cell, IndexFile, InputSource, IssueFile, Solution, Stakeholder, Story } from '@/types'
-import { movedStakeholderTarget, stakeholderTabPath, type PathTarget } from './entityPaths'
+import {
+  movedStakeholderTarget, parseStakeholderTab, stakeholderTabPath, type PathTarget, type StakeholderTab,
+} from './entityPaths'
 import { compareIds } from './ids'
 import { availableIssues } from './issues'
 import { dataBasedNeeds, needsOfStakeholder, type StakeholderNeedItem } from './needs'
 import { priorityCounts, type TagPriorityCounts } from './priority'
+// Type only: sideMenu.ts imports this file, so no import at run time.
+import type { SideMenuContext } from './sideMenu'
 import { resolveId } from './stakeholders'
 import { storyStakeholderOf } from './stories'
 import { conflictsForStakeholder, conflictView, type ConflictView } from './wantList'
@@ -71,6 +75,28 @@ export function stakeholderMenuIds(index: IndexFile): string[] {
     .filter((s) => s.movedTo === null && s.issues.some((n) => available.has(n)))
     .map((s) => s.id)
     .sort(compareIds)
+}
+
+/** The side menu of the shared layout of #/stakeholders and
+ * #/stakeholders/:id/:tab? (design 3.20, 3.21, decision 64). */
+export type StakeholderSideMenuState =
+  | { mode: 'link'; context: 'stakeholders' }
+  | { mode: 'switch'; current: string; tab: StakeholderTab; context: SideMenuContext }
+
+/** The mode of the side menu from the URL parts. No ID: #/stakeholders,
+ * link mode, the counts are stories. An active ID: switch mode on that tab.
+ * An unknown tab counts as the overview, so the menu links go to the
+ * overview. null for a moved ID (the page redirects) and an unknown ID (the
+ * page shows "not found"): no side menu then. */
+export function stakeholderSideMenuState(
+  stakeholders: Stakeholder[],
+  id: string | undefined,
+  tab: string | undefined,
+): StakeholderSideMenuState | null {
+  if (id === undefined) return { mode: 'link', context: 'stakeholders' }
+  if (!stakeholders.some((s) => s.id === id && s.movedTo === null)) return null
+  const name = parseStakeholderTab(tab) ?? 'overview'
+  return { mode: 'switch', current: id, tab: name, context: `stakeholder-${name}` }
 }
 
 /** The redirect target for a page of a moved stakeholder ID (design 3.3).

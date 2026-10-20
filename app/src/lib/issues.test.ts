@@ -28,11 +28,11 @@ describe('isParticipantIssue', () => {
 
 describe('sharedStakeholders', () => {
   it('counts the stakeholders of an issue that are also in another issue', () => {
-    // #9 shares O06, O07, I04, I05 and I06 with the other issues.
+    // #9 shares O06, O07, I04, I05, I06 and I27 with the other issues.
     expect(sharedStakeholders(index.stakeholders, 2)).toEqual({ count: 15, issues: [1, 8, 9] })
     expect(sharedStakeholders(index.stakeholders, 1)).toEqual({ count: 13, issues: [2, 8, 9] })
-    expect(sharedStakeholders(index.stakeholders, 8)).toEqual({ count: 14, issues: [1, 2, 9] })
-    expect(sharedStakeholders(index.stakeholders, 9)).toEqual({ count: 5, issues: [1, 2, 8] })
+    expect(sharedStakeholders(index.stakeholders, 8)).toEqual({ count: 15, issues: [1, 2, 9] })
+    expect(sharedStakeholders(index.stakeholders, 9)).toEqual({ count: 6, issues: [1, 2, 8] })
   })
 
   it('leaves out moved IDs and lists other issues in number order', () => {

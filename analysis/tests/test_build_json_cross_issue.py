@@ -68,7 +68,7 @@ class CrossIssueJsonTest(unittest.TestCase):
 
     def test_shared_stakeholders(self):
         shared = self.data["sharedStakeholders"]
-        self.assertEqual(len(shared), 17)
+        self.assertEqual(len(shared), 18)
         o03 = next(s for s in shared if s["id"] == "O03")
         self.assertEqual(o03["issues"], [2, 8])
         self.assertIn({"issue": 8, "id": "O03-US01"}, o03["stories"])
@@ -76,6 +76,10 @@ class CrossIssueJsonTest(unittest.TestCase):
         i04 = next(s for s in shared if s["id"] == "I04")
         self.assertEqual(i04["issues"], [2, 9])
         self.assertEqual(i04["stories"], [{"issue": 2, "id": "I04-US01"}, {"issue": 9, "id": "I04-US01"}])
+        # I27 is shared by #8 and #9 (#9 added it for the 呼吸道疾病 group, 2026-10-20).
+        i27 = next(s for s in shared if s["id"] == "I27")
+        self.assertEqual(i27["issues"], [8, 9])
+        self.assertIn({"issue": 9, "id": "I27-US02"}, i27["stories"])
 
     def test_issue_9_part_has_no_space(self):
         # #9 uses no city space. X-D gets its spaces from its other parts.

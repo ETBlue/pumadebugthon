@@ -145,21 +145,18 @@
       "updated": "2026-10-20",
       "counts": {
         "stakeholdersO": 9,
-        "stakeholdersI": 9,
-        "stories": 35,
-        "conflicts": 4,
+        "stakeholdersI": 11,
+        "stories": 39,
+        "conflicts": 5,
         "solutions": 5,
         "cells": {
           "evidence": 2,
           "aiSummary": 0,
-          "aiSimulated": 68,
+          "aiSimulated": 76,
           "pending": 0
         }
       },
-      "focusGaps": [
-        "呼吸道疾病",
-        "兒童與照顧者"
-      ]
+      "focusGaps": []
     }
   ],
   "stakeholders": [
@@ -766,7 +763,8 @@
         "呼吸道疾病"
       ],
       "issues": [
-        8
+        8,
+        9
       ],
       "movedTo": null,
       "added": "2026-10-18"
@@ -921,6 +919,19 @@
       "name": "本專案作者（市政提案小幫手的作者）",
       "path": "res",
       "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-20"
+    },
+    {
+      "id": "I35",
+      "name": "照顧孩子的家長與照顧者",
+      "path": "res",
+      "focus": [
+        "兒童與照顧者"
+      ],
       "issues": [
         9
       ],

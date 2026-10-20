@@ -20,9 +20,9 @@ describe('issueCount', () => {
 
 describe('stakeholderCount', () => {
   it('counts active stakeholders and leaves out moved IDs', () => {
-    // 65 rows, one of them (O02) moved to I12. #9 added O25–O31 and I29–I34.
-    expect(index.stakeholders).toHaveLength(65)
-    expect(stakeholderCount(index)).toBe(64)
+    // 66 rows, one of them (O02) moved to I12. #9 added O25–O31 and I29–I35.
+    expect(index.stakeholders).toHaveLength(66)
+    expect(stakeholderCount(index)).toBe(65)
   })
 })
 

@@ -69,6 +69,13 @@ describe('focusRows', () => {
   it('#8 includes every group', () => {
     expect(focusRows(smokefree, index.stakeholders).every((r) => r.included)).toBe(true)
   })
+
+  it('#9 includes every group, with I27 and I35 for 呼吸道疾病 and 兒童與照顧者', () => {
+    const rows = focusRows(policy, index.stakeholders)
+    expect(rows.every((r) => r.included)).toBe(true)
+    expect(rows.find((r) => r.tag === '呼吸道疾病')?.stakeholders.map((s) => s.id)).toEqual(['I27'])
+    expect(rows.find((r) => r.tag === '兒童與照顧者')?.stakeholders.map((s) => s.id)).toEqual(['I35'])
+  })
 })
 
 describe('focusGapsText', () => {
@@ -81,6 +88,7 @@ describe('focusGapsText', () => {
 
   it('says every group is included when there is no gap', () => {
     expect(focusGapsText(summary(8))).toEqual({ kind: 'all' })
+    expect(focusGapsText(summary(9))).toEqual({ kind: 'all' })
   })
 
   it('is null for an issue without an analysis', () => {

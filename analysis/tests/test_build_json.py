@@ -280,7 +280,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         # focusGaps: the groups with no stakeholder, in the fixed order. null for an issue without an analysis.
         gaps = {i["number"]: i["focusGaps"] for i in self.index["issues"]}
         self.assertEqual(gaps, {1: ["呼吸道疾病", "外籍"], 2: ["呼吸道疾病"], 3: None, 4: None,
-                                5: None, 6: None, 8: [], 9: ["呼吸道疾病", "兒童與照顧者"]})
+                                5: None, 6: None, 8: [], 9: []})
 
     def test_index_issue_source(self):
         # 來源 in issues.csv becomes "source": 主辦單位 for the host's issues,

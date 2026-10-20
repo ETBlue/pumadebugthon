@@ -195,9 +195,9 @@ describe('filterStakeholders', () => {
   it('crossIssueOnly keeps only stakeholders with 2 or more issues', () => {
     const ids = filterStakeholders(list, { crossIssueOnly: true, focus: [] }).map((s) => s.id)
     expect(ids).toEqual([
-      'O01', 'O03', 'O04', 'O05', 'O06', 'O07', 'O12', 'O13', 'I01', 'I03', 'I04', 'I05', 'I06', 'I07', 'I13', 'I17', 'I19',
+      'O01', 'O03', 'O04', 'O05', 'O06', 'O07', 'O12', 'O13', 'I01', 'I03', 'I04', 'I05', 'I06', 'I07', 'I13', 'I17', 'I19', 'I27',
     ])
-    // I04 is in #2 and #9.
+    // I04 is in #2 and #9. I27 is in #8 and #9.
     expect(ids).not.toContain('O02')
   })
 

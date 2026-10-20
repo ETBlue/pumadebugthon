@@ -74,12 +74,12 @@ describe('recentIssues', () => {
 
 describe('recentStakeholders', () => {
   it('lists active stakeholders by added date, then by ID, highest first', () => {
-    // The #9 rows (O25–O31, I29–I34) have 2026-10-20, so they come first.
+    // The #9 rows (O25–O31, I29–I35) have 2026-10-20, so they come first.
     // The other rows have 2026-10-18. Inside one date the ID decides: I
     // before O, high numbers first.
     const ids = recentStakeholders(index.stakeholders).map((s) => s.id)
-    expect(ids.slice(0, 8)).toEqual(['I34', 'I33', 'I32', 'I31', 'I30', 'I29', 'O31', 'O30'])
-    expect(ids.slice(13, 16)).toEqual(['I28', 'I27', 'I26'])
+    expect(ids.slice(0, 9)).toEqual(['I35', 'I34', 'I33', 'I32', 'I31', 'I30', 'I29', 'O31', 'O30'])
+    expect(ids.slice(14, 17)).toEqual(['I28', 'I27', 'I26'])
     expect(ids.indexOf('I01')).toBe(ids.indexOf('O24') - 1)
     expect(ids.at(-1)).toBe('O01')
   })
@@ -87,7 +87,7 @@ describe('recentStakeholders', () => {
   it('leaves out moved IDs', () => {
     const ids = recentStakeholders(index.stakeholders).map((s) => s.id)
     expect(ids).not.toContain('O02')
-    expect(ids).toHaveLength(64)
+    expect(ids).toHaveLength(65)
   })
 
   it('puts a newer date first, whatever the ID', () => {
@@ -113,7 +113,7 @@ describe('recentStakeholders', () => {
   })
 
   it('keeps only the first items when a limit is given', () => {
-    expect(recentStakeholders(index.stakeholders, 3).map((s) => s.id)).toEqual(['I34', 'I33', 'I32'])
+    expect(recentStakeholders(index.stakeholders, 3).map((s) => s.id)).toEqual(['I35', 'I34', 'I33'])
   })
 })
 

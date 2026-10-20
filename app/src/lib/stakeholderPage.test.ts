@@ -85,9 +85,9 @@ describe('stakeholderIssueView', () => {
 
 describe('stakeholderMenuIds', () => {
   it('gives every active stakeholder of the available issues, in ID order', () => {
-    // 64 active rows, all in an available issue (#9 added 13).
+    // 65 active rows, all in an available issue (#9 added 14).
     const list = stakeholderMenuIds(index)
-    expect(list).toHaveLength(64)
+    expect(list).toHaveLength(65)
     expect(list).not.toContain('O02')
     expect(list.slice(0, 2)).toEqual(['O01', 'O03'])
     expect(list).toContain('I12')

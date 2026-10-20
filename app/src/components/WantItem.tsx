@@ -13,7 +13,7 @@ import { Field } from './Field'
 import { focusTargetProps } from './FocusTarget'
 import { Heading, type HeadingLevel } from './Heading'
 import { PickLabel } from './PickLabel'
-import { focusTargetClass, linkClass } from './styles'
+import { focusTargetClass, linkClass, targetLinkClass } from './styles'
 import { TagBadge } from './TagBadge'
 import { ItemKey } from './ItemKey'
 
@@ -115,7 +115,7 @@ export function WantItem({
                 <li key={id}>
                   <Link
                     to={{ pathname: stakeholderTabPath(id, 'wants'), search: dataBasisFilterSearch(params) }}
-                    className={linkClass}
+                    className={targetLinkClass}
                   >
                     <span className="font-mono">{id}</span> {stakeholderName(stakeholders, id)}
                   </Link>
@@ -131,7 +131,7 @@ export function WantItem({
             <ul className="inline-flex flex-wrap gap-x-3 gap-y-1">
               {item.conflicts.map((c) => (
                 <li key={c.id}>
-                  <Link to={conflictFocusPath(issueNumber, c.id, params)} className={cn(linkClass, 'font-mono')}>
+                  <Link to={conflictFocusPath(issueNumber, c.id, params)} className={cn(targetLinkClass, 'font-mono')}>
                     {c.id}
                   </Link>
                 </li>
@@ -143,7 +143,7 @@ export function WantItem({
 
       {has('pickLink') && (
         <p className="mt-2 text-sm">
-          <Link to={opinionPickTo(issueNumber, item.key, dataBasedOnly)} className={linkClass}>
+          <Link to={opinionPickTo(issueNumber, item.key, dataBasedOnly)} className={targetLinkClass}>
             {tw.pickLink(issueNumber)}
           </Link>
         </p>

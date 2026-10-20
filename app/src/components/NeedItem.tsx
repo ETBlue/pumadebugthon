@@ -16,7 +16,7 @@ import { Field } from './Field'
 import { focusTargetProps } from './FocusTarget'
 import { Heading, type HeadingLevel } from './Heading'
 import { SolutionTitleLink } from './SolutionCard'
-import { focusTargetClass, linkClass } from './styles'
+import { focusTargetClass, linkClass, targetLinkClass, targetSizeClass } from './styles'
 import { TagBadge } from './TagBadge'
 import { ItemKey } from './ItemKey'
 
@@ -129,7 +129,7 @@ export function NeedItem({
         )}
       </Heading>
       {has('id') && (
-        <p className="mt-0.5 text-xs text-muted-foreground"><ItemKey issueNumber={issueNumber} value={need.id} /></p>
+        <p className="mt-0.5 text-xs text-muted-foreground"><ItemKey issueNumber={issueNumber} value={need.id} className={targetSizeClass} /></p>
       )}
 
       <dl className="mt-2 space-y-1.5 text-sm">
@@ -147,7 +147,7 @@ export function NeedItem({
                   {stakeholderLinks ? (
                     <Link
                       to={{ pathname: stakeholderTabPath(id, 'needs'), search: dataBasisFilterSearch(params) }}
-                      className={linkClass}
+                      className={targetLinkClass}
                     >
                       <span className="font-mono">{id}</span> {name(id)}
                     </Link>
@@ -195,7 +195,7 @@ export function NeedItem({
             <ul className="flex flex-wrap gap-x-3 gap-y-1">
               {item.conflicts.map((c) => (
                 <li key={c.id}>
-                  <Link to={conflictFocusPath(issueNumber, c.id, params)} className={cn(linkClass, 'font-mono')}>
+                  <Link to={conflictFocusPath(issueNumber, c.id, params)} className={cn(targetLinkClass, 'font-mono')}>
                     {c.id}
                   </Link>
                 </li>
@@ -216,7 +216,7 @@ export function NeedItem({
               {shownStories.map((s) => (
                 <li key={s.id}>
                   <p className="flex flex-wrap items-baseline gap-x-2">
-                    <Link to={storyPath(issueNumber, s.id)} className={cn(linkClass, 'font-mono')}>{s.id}</Link>
+                    <Link to={storyPath(issueNumber, s.id)} className={cn(targetLinkClass, 'font-mono')}>{s.id}</Link>
                     <span className="text-muted-foreground">{name(s.stakeholder)}</span>
                   </p>
                   <p className="mt-0.5"><CellText cell={s.want} /></p>

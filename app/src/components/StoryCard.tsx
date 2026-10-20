@@ -9,7 +9,7 @@ import { storyPriority } from '@/lib/needs'
 import type { IssueFile, Story } from '@/types'
 import { CellText } from './CellText'
 import { Markdown } from './Markdown'
-import { linkClass } from './styles'
+import { targetLinkClass } from './styles'
 import { TagBadge } from './TagBadge'
 
 export interface StoryCardProps {
@@ -47,10 +47,10 @@ export function StoryCard({
   return (
     <article className={cn('rounded-md border text-sm', compact ? 'p-3' : 'p-4')}>
       <p className="flex flex-wrap items-baseline gap-x-2">
-        <Link to={storyPath(issueNumber, story.id)} className={cn(linkClass, 'font-mono font-semibold')}>
+        <Link to={storyPath(issueNumber, story.id)} className={cn(targetLinkClass, 'font-mono font-semibold')}>
           {story.id}
         </Link>
-        <Link to={`/stakeholders/${story.stakeholder}`} className={linkClass}>
+        <Link to={`/stakeholders/${story.stakeholder}`} className={targetLinkClass}>
           {stakeholderName}
         </Link>
         {stakeholderNote}
@@ -82,12 +82,12 @@ export function StoryCard({
       {(wantKey !== undefined || needKey !== undefined) && (
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
           {wantKey !== undefined && (
-            <Link to={wantFocusPath(issueNumber, wantKey, dataBasedOnly)} className={linkClass}>
+            <Link to={wantFocusPath(issueNumber, wantKey, dataBasedOnly)} className={targetLinkClass}>
               {t.story.wantLink(wantKey)}
             </Link>
           )}
           {needKey !== undefined && (
-            <Link to={needFocusPath(issueNumber, needKey, dataBasedOnly)} className={linkClass}>
+            <Link to={needFocusPath(issueNumber, needKey, dataBasedOnly)} className={targetLinkClass}>
               {t.story.needLink(needKey)}
             </Link>
           )}

@@ -5,7 +5,7 @@ import { ConflictView } from '@/components/ConflictView'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { Markdown } from '@/components/Markdown'
-import { linkClass } from '@/components/styles'
+import { linkClass, targetLinkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
@@ -45,7 +45,7 @@ export function WayOutConflicts({ views, issue, index }: { views: ConflictData[]
               focusTarget={false}
             />
             <p className="mt-2 text-sm">
-              <Link to={conflictFocusPath(issue.number, view.conflict.id, dataBasedOnly)} className={linkClass}>
+              <Link to={conflictFocusPath(issue.number, view.conflict.id, dataBasedOnly)} className={targetLinkClass}>
                 {tp.wayOutLink(issue.number, view.conflict.id)}
               </Link>
             </p>
@@ -98,7 +98,7 @@ export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile;
           </>
         )}
         <p className="mt-3">
-          <Link to={issueFocusPath(n, 'wants', 'conflicts', dataBasedOnly)} className={linkClass}>{tp.conflictsLink(n)}</Link>
+          <Link to={issueFocusPath(n, 'wants', 'conflicts', dataBasedOnly)} className={targetLinkClass}>{tp.conflictsLink(n)}</Link>
         </p>
       </SolutionPart>
 
@@ -125,7 +125,7 @@ export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile;
                     <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
                       {members.map((id) => (
                         <li key={id}>
-                          <Link to={{ pathname: stakeholderTabPath(id, 'wants'), search }} className={linkClass}>
+                          <Link to={{ pathname: stakeholderTabPath(id, 'wants'), search }} className={targetLinkClass}>
                             {name(id)}
                           </Link>
                         </li>
@@ -242,8 +242,8 @@ export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile;
       <nav aria-labelledby="solution-more" className="border-t pt-6">
         <h3 id="solution-more" className="text-xl font-bold">{tp.moreHeading}</h3>
         <ul className="mt-3 space-y-1">
-          <li><Link to={{ pathname: tabPath(n, 'solutions'), search }} className={linkClass}>{tp.issueSolutionsLink(n)}</Link></li>
-          <li><Link to={{ pathname: '/solutions', search }} className={linkClass}>{tp.allSolutionsLink}</Link></li>
+          <li><Link to={{ pathname: tabPath(n, 'solutions'), search }} className={targetLinkClass}>{tp.issueSolutionsLink(n)}</Link></li>
+          <li><Link to={{ pathname: '/solutions', search }} className={targetLinkClass}>{tp.allSolutionsLink}</Link></li>
         </ul>
       </nav>
     </div>

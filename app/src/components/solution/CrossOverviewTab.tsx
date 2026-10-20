@@ -9,7 +9,7 @@ import { Markdown } from '@/components/Markdown'
 import { NeedPriority, NeedSummaryLink } from '@/components/NeedItem'
 import { SolutionTitleLink } from '@/components/SolutionCard'
 import { StoryCard } from '@/components/StoryCard'
-import { linkClass } from '@/components/styles'
+import { targetLinkClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import {
   crossConflictView, crossSolutionFocus, crossWayOutConflicts, findCrossSolution,
@@ -154,7 +154,7 @@ function CrossConflictCard({ view, data, index, issues, dataBasedOnly }: {
                 {r.issue === null ? (
                   <span className="font-mono">{r.id}</span>
                 ) : (
-                  <Link to={conflictFocusPath(r.issue, r.id, dataBasedOnly)} className={cn(linkClass, 'font-mono')}>
+                  <Link to={conflictFocusPath(r.issue, r.id, dataBasedOnly)} className={cn(targetLinkClass, 'font-mono')}>
                     {`#${r.issue} ${r.id}`}
                   </Link>
                 )}
@@ -190,7 +190,7 @@ export function CrossOverviewTab({ data, index, issues, solution: sol }: {
     return found ? (
       <SolutionTitleLink solution={found} issueNumber={n} showIssue />
     ) : (
-      <Link to={{ pathname: solutionPath(n, code), search }} className={cn(linkClass, 'font-mono')}>{t.solutionId(n, code)}</Link>
+      <Link to={{ pathname: solutionPath(n, code), search }} className={cn(targetLinkClass, 'font-mono')}>{t.solutionId(n, code)}</Link>
     )
   }
 
@@ -263,7 +263,7 @@ export function CrossOverviewTab({ data, index, issues, solution: sol }: {
                       {m.from.map((f, j) => (
                         <span key={`${f.issue}-${f.code}`}>
                           {j > 0 && t.listSeparator}
-                          <Link to={{ pathname: solutionPath(f.issue, f.code), search }} className={cn(linkClass, 'font-mono')}>
+                          <Link to={{ pathname: solutionPath(f.issue, f.code), search }} className={cn(targetLinkClass, 'font-mono')}>
                             {t.solutionId(f.issue, f.code)}
                           </Link>
                         </span>
@@ -297,7 +297,7 @@ export function CrossOverviewTab({ data, index, issues, solution: sol }: {
       <nav aria-labelledby="cross-more" className="border-t pt-6">
         <h3 id="cross-more" className="text-xl font-bold">{tp.moreHeading}</h3>
         <ul className="mt-3 space-y-1">
-          <li><Link to={{ pathname: '/solutions', search }} className={linkClass}>{tp.allSolutionsLink}</Link></li>
+          <li><Link to={{ pathname: '/solutions', search }} className={targetLinkClass}>{tp.allSolutionsLink}</Link></li>
         </ul>
       </nav>
     </div>

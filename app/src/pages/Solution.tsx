@@ -7,7 +7,7 @@ import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
 import { PageTitle } from '@/components/PageTitle'
 import { SpaceLinks } from '@/components/SpaceLinks'
-import { linkClass, proseClass } from '@/components/styles'
+import { linkClass, proseClass, targetLinkClass } from '@/components/styles'
 import { CrossIssueLinks } from '@/components/solution/CrossSolutionCard'
 import { CrossOverviewTab } from '@/components/solution/CrossOverviewTab'
 import { CrossNeedsTab, CrossStakeholdersTab } from '@/components/solution/CrossTabs'
@@ -40,11 +40,11 @@ function NotFound({ title, body, issueNumber }: { title: string; body: string; i
       <p className="mt-3">{body}</p>
       <ul className="mt-3 space-y-1">
         {issueNumber !== undefined && (
-          <li><Link to={tabPath(issueNumber, 'solutions')} className={linkClass}>{tp.issueSolutionsLink(issueNumber)}</Link></li>
+          <li><Link to={tabPath(issueNumber, 'solutions')} className={targetLinkClass}>{tp.issueSolutionsLink(issueNumber)}</Link></li>
         )}
-        <li><Link to="/solutions" className={linkClass}>{tp.allSolutionsLink}</Link></li>
-        {issueNumber === undefined && <li><Link to="/issues" className={linkClass}>{tp.issuesLink}</Link></li>}
-        <li><Link to="/" className={linkClass}>{tp.backHome}</Link></li>
+        <li><Link to="/solutions" className={targetLinkClass}>{tp.allSolutionsLink}</Link></li>
+        {issueNumber === undefined && <li><Link to="/issues" className={targetLinkClass}>{tp.issuesLink}</Link></li>}
+        <li><Link to="/" className={targetLinkClass}>{tp.backHome}</Link></li>
       </ul>
     </>
   )
@@ -96,9 +96,9 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
       <PageTitle parts={[solutionTitle(n, sol), tab && tab !== 'overview' ? tp.tabs[tab] : null, tp.titlePart]} />
       <nav aria-label={tp.breadcrumb}>
         <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
-          <li><Link to="/" className={linkClass}>{tp.home}</Link></li>
+          <li><Link to="/" className={targetLinkClass}>{tp.home}</Link></li>
           <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li><Link to={{ pathname: '/solutions', search }} className={linkClass}>{tp.solutions}</Link></li>
+          <li><Link to={{ pathname: '/solutions', search }} className={targetLinkClass}>{tp.solutions}</Link></li>
           <li aria-hidden="true" className="text-muted-foreground">›</li>
           <li aria-current="page" className="font-mono">{t.solutionId(n, sol.id)}</li>
         </ol>
@@ -192,9 +192,9 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
       <PageTitle parts={[crossSolutionTitle(sol), tab && tab !== 'overview' ? tp.tabs[tab] : null, tp.titlePart]} />
       <nav aria-label={tp.breadcrumb}>
         <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
-          <li><Link to="/" className={linkClass}>{tp.home}</Link></li>
+          <li><Link to="/" className={targetLinkClass}>{tp.home}</Link></li>
           <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li><Link to={{ pathname: '/solutions', search }} className={linkClass}>{tp.solutions}</Link></li>
+          <li><Link to={{ pathname: '/solutions', search }} className={targetLinkClass}>{tp.solutions}</Link></li>
           <li aria-hidden="true" className="text-muted-foreground">›</li>
           <li aria-current="page" className="font-mono">{sol.code}</li>
         </ol>

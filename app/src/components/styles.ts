@@ -3,6 +3,15 @@
 /** A text link in the accent color. Underlined, so it is not shown by color only. */
 export const linkClass = 'text-link underline underline-offset-4 hover:decoration-2 rounded-sm'
 
+/** Extra classes that make a link at least 24 x 24 px (WCAG 2.2 target size,
+ * 2.5.8). Use them for a link that stands alone: in a list of links, in a
+ * card header, in a heading, or on its own line. A link inside a sentence
+ * keeps linkClass only, because WCAG has an exception for inline links. */
+export const targetSizeClass = 'inline-block min-h-6 min-w-6 py-0.5'
+
+/** linkClass for a link that stands alone (see targetSizeClass). */
+export const targetLinkClass = `${linkClass} ${targetSizeClass}`
+
 /** Extra classes for a toggle or toggle group item: a clear "on" state.
  * The check icon (see ToggleCheck) shows the state without color. */
 export const toggleOnClass =

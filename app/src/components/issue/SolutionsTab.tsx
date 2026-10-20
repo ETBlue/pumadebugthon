@@ -7,7 +7,7 @@ import { NeedSummaryLink } from '@/components/NeedItem'
 import { SolutionTitleLink } from '@/components/SolutionCard'
 import { CrossSolutionLink } from '@/components/solution/CrossSolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
-import { linkClass } from '@/components/styles'
+import { targetLinkClass } from '@/components/styles'
 import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { crossSolutionsOfIssue } from '@/lib/crossIssue'
@@ -125,7 +125,7 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
                   <p className="mt-3 text-sm">
                     <Link
                       to={{ pathname: solutionPath(n, sol.id, 'needs'), search: dataBasisFilterSearch(params) }}
-                      className={linkClass}
+                      className={targetLinkClass}
                     >
                       {ts.otherNeeds(item.otherNeeds)}
                     </Link>
@@ -138,7 +138,7 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
                     <ul aria-labelledby={`${key}-wayout`} className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-sm">
                       {item.wayOutConflicts.map((c) => (
                         <li key={c.id}>
-                          <Link to={conflictFocusPath(n, c.id, params)} className={cn(linkClass, 'font-mono')}>
+                          <Link to={conflictFocusPath(n, c.id, params)} className={cn(targetLinkClass, 'font-mono')}>
                             {c.id}
                           </Link>
                         </li>

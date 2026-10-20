@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useTabTo } from '@/components/DataBasisToggle'
 import { LabelledSection } from '@/components/LabelledSection'
-import { linkClass } from '@/components/styles'
+import { targetLinkClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import type { IndexFile, IssueFile } from '@/types'
 
@@ -24,7 +24,7 @@ export function IssueSection({ issue, tab, children }: { issue: IssueFile; tab: 
   return (
     <LabelledSection headingId={headingId} className="space-y-6 border-t pt-6">
       <h2 id={headingId} className="text-xl font-bold">
-        <Link to={tabTo(issue.number, 'overview')} className={linkClass}>
+        <Link to={tabTo(issue.number, 'overview')} className={targetLinkClass}>
           {t.issueCard.numberTitle(issue.number, issue.title)}
         </Link>
       </h2>

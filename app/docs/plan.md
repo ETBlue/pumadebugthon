@@ -570,6 +570,15 @@ From ETBlue's new notes in `human-inputs.md` (commits 487bac6 and 8c4bd4b), 2026
 | 3 | S4, S5 | Yes, but only in separate worktrees. S4 changes the stakeholder pages, S5 the issue tabs. |
 | 4 | S7 | No. The final check. |
 
+**Status (2026-10-21):**
+
+| Task | Status |
+|---|---|
+| S1, S2, S6 | Done, merged into `main` |
+| S3 | Done, merged into `main` (the side menu component) |
+| S4, S5 | Done, merged into `main` |
+| S7 | Done: 134 URLs at 360, 375, 768, 1280, 1440 and 1920 px in both themes pass (1608 page loads; axe WCAG 2.2 AA and best practice at 360, 1280 and 1920 px, and on the open phone side bar at 360 px). Keyboard checks pass (side bar groups with Enter and Space, the skip link, the phone side bar, tabs, `?focus=`). Fixed order spot checks pass. Fix: links that stand alone (in link lists, card headers, headings, on their own line) are now at least 24 × 24 px (`targetLinkClass` in `src/components/styles.ts`, WCAG 2.2 target size) |
+
 ### Task S1: side menu logic and statistics (test first)
 
 **Files (new):** `src/lib/sideMenu.ts`, `src/lib/sideMenu.test.ts`, `src/lib/stakeholderStats.ts`, `src/lib/stakeholderStats.test.ts`. **Change:** `src/lib/stakeholderFilter.ts` (+ test).

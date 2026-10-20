@@ -74,6 +74,9 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
    * (FOCUS_ORDER). Empty when every group is included. For the issue card.
    * Never sort, rank or filter issues by it (design 13). */
   focusGaps: string[]
+  /** 特別關注 groups a person decided not to include, in the fixed order.
+   * They are not in focusGaps. For the issue card. */
+  focusExcluded: string[]
 }
 
 /** An issue without an analysis yet (shown as 製作中). */
@@ -83,6 +86,7 @@ export interface UnavailableIssueSummary extends IssueSummaryBase {
   updated: null
   counts: null
   focusGaps: null
+  focusExcluded: null
 }
 
 export type IssueSummary = AvailableIssueSummary | UnavailableIssueSummary
@@ -165,8 +169,12 @@ export interface FocusGroup {
    * Empty when the table says 「（無）」. */
   stakeholders: string[]
   /** 說明. null for 「—」. For a group with no stakeholder, a 【待補】 cell
-   * that asks a person to decide if the group should be included. */
+   * that asks a person to decide if the group should be included, or a cell
+   * that records a person's decision not to include it (「不納入（name，date）：…」). */
   note: Cell | null
+  /** True when a person decided not to include the group (no stakeholder,
+   * and the note records the decision). Such a group is not a gap. */
+  excluded: boolean
 }
 
 /** A row of the step 4 table. */

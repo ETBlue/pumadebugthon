@@ -29,7 +29,8 @@
       "focusGaps": [
         "呼吸道疾病",
         "外籍"
-      ]
+      ],
+      "focusExcluded": []
     },
     {
       "number": 2,
@@ -59,7 +60,8 @@
       },
       "focusGaps": [
         "呼吸道疾病"
-      ]
+      ],
+      "focusExcluded": []
     },
     {
       "number": 3,
@@ -70,7 +72,8 @@
       "spaces": [],
       "updated": null,
       "counts": null,
-      "focusGaps": null
+      "focusGaps": null,
+      "focusExcluded": null
     },
     {
       "number": 4,
@@ -81,7 +84,8 @@
       "spaces": [],
       "updated": null,
       "counts": null,
-      "focusGaps": null
+      "focusGaps": null,
+      "focusExcluded": null
     },
     {
       "number": 5,
@@ -92,7 +96,8 @@
       "spaces": [],
       "updated": null,
       "counts": null,
-      "focusGaps": null
+      "focusGaps": null,
+      "focusExcluded": null
     },
     {
       "number": 6,
@@ -103,7 +108,8 @@
       "spaces": [],
       "updated": null,
       "counts": null,
-      "focusGaps": null
+      "focusGaps": null,
+      "focusExcluded": null
     },
     {
       "number": 8,
@@ -133,7 +139,8 @@
           "pending": 0
         }
       },
-      "focusGaps": []
+      "focusGaps": [],
+      "focusExcluded": []
     },
     {
       "number": 9,
@@ -156,7 +163,8 @@
           "pending": 0
         }
       },
-      "focusGaps": [
+      "focusGaps": [],
+      "focusExcluded": [
         "呼吸道疾病",
         "兒童與照顧者"
       ]

@@ -754,14 +754,16 @@
         "I05",
         "I11"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "身心障礙",
       "stakeholders": [
         "I06"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "呼吸道疾病",
@@ -770,14 +772,16 @@
         "text": "【待補：本議題是否需要納入過敏或呼吸道疾病者的觀點】",
         "tag": null,
         "pending": true
-      }
+      },
+      "excluded": false
     },
     {
       "tag": "兒童與照顧者",
       "stakeholders": [
         "I07"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "外籍",
@@ -785,14 +789,16 @@
         "I03",
         "I04"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "經濟弱勢",
       "stakeholders": [
         "I11"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     }
   ],
   "stories": [

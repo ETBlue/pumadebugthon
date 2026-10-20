@@ -129,7 +129,9 @@ describe('issue files', () => {
           expect(typeof item.item).toBe('string')
           expectCell(item.text)
           // A row with a tag lists where it comes from; a 【待補】 row may list nothing.
-          if (item.text.tag !== null) expect(item.refs.length).toBeGreaterThan(0)
+          // So may a 受影響較大的弱勢族群 row of a group a person decided not to include (#9).
+          const excludedGroup = topic.topic === '受影響較大的弱勢族群' && item.text.text.startsWith('不納入（')
+          if (item.text.tag !== null && !excludedGroup) expect(item.refs.length).toBeGreaterThan(0)
           for (const ref of item.refs) expect(typeof ref).toBe('string')
         }
       }
@@ -253,32 +255,41 @@ describe('特別關注族群 (focusGroups and focusGaps)', () => {
       for (const g of issue.focusGroups) {
         for (const id of g.stakeholders) expect(own.has(id)).toBe(true)
         if (g.note !== null) expectCell(g.note)
-        // A group with no stakeholder always has a 【待補】 note for a person to decide.
-        if (g.stakeholders.length === 0) expect(g.note?.pending).toBe(true)
+        // A group with no stakeholder has a 【待補】 note for a person to decide,
+        // or a note that records the person's decision (excluded).
+        if (g.stakeholders.length === 0 && !g.excluded) expect(g.note?.pending).toBe(true)
+        if (g.excluded) {
+          expect(g.stakeholders).toEqual([])
+          expect(g.note?.text).toMatch(/^不納入（[^，]+，\d{4}-\d{2}-\d{2}）：/)
+        }
       }
     }
   })
 
-  it('focusGaps in index.json are the groups with no stakeholder; null without an analysis', () => {
+  it('focusGaps are the groups with no stakeholder and no decision; focusExcluded the decided ones; null without an analysis', () => {
     for (const i of index.issues) {
       if (!i.available) {
         expect(i.focusGaps).toBeNull()
+        expect(i.focusExcluded).toBeNull()
         continue
       }
       const file = issues.find((f) => f.number === i.number)
       if (!file) continue
-      expect(i.focusGaps).toEqual(file.focusGroups.filter((g) => g.stakeholders.length === 0).map((g) => g.tag))
+      expect(i.focusGaps).toEqual(file.focusGroups.filter((g) => g.stakeholders.length === 0 && !g.excluded).map((g) => g.tag))
+      expect(i.focusExcluded).toEqual(file.focusGroups.filter((g) => g.excluded).map((g) => g.tag))
     }
+    // ETBlue decided on 2026-10-20 that two groups are not related to #9.
+    expect(index.issues.find((i) => i.number === 9)?.focusExcluded).toEqual(['呼吸道疾病', '兒童與照顧者'])
   })
 })
 
 describe('cross-issue.json', () => {
   const cross = crossJson as CrossIssueFile
 
-  it('covers #1, #2 and #8 with 5 solutions, 7 X-N groups and 2 conflicts', () => {
-    expect(cross.issues).toEqual([1, 2, 8])
+  it('covers #1, #2, #8 and #9 with 5 solutions, 8 X-N groups and 2 conflicts', () => {
+    expect(cross.issues).toEqual([1, 2, 8, 9])
     expect(cross.solutions.map((s) => s.code)).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
-    expect(cross.needGroups.map((g) => g.id)).toEqual(['X-N01', 'X-N02', 'X-N03', 'X-N04', 'X-N05', 'X-N06', 'X-N07'])
+    expect(cross.needGroups.map((g) => g.id)).toEqual(['X-N01', 'X-N02', 'X-N03', 'X-N04', 'X-N05', 'X-N06', 'X-N07', 'X-N08'])
     expect(cross.conflicts.map((c) => c.id)).toEqual(['X-C1', 'X-C2'])
   })
 

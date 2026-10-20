@@ -4,6 +4,7 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import {
   crossConflictView, crossCoverageIssueNumbers, crossIssueNumbers, crossNeedCoverage, crossNeedGroupsOf, crossSolutionFocus,
@@ -18,6 +19,7 @@ const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
+const policy = policyJson as IssueFile
 // Out of order on purpose: the functions must use issue number order.
 const files = [smokefree, trashcans, trees]
 
@@ -66,8 +68,12 @@ describe('crossSolutionsOfIssue', () => {
     expect(codes(crossSolutionsOfIssue(cross, 1))).toEqual(['X-A', 'X-B', 'X-C', 'X-D'])
   })
 
+  it('lists the one solution with a #9 part (X-D)', () => {
+    expect(codes(crossSolutionsOfIssue(cross, 9))).toEqual(['X-D'])
+  })
+
   it('is empty for an issue the file does not cover, and without the file', () => {
-    expect(crossSolutionsOfIssue(cross, 9)).toEqual([])
+    expect(crossSolutionsOfIssue(cross, 3)).toEqual([])
     expect(crossSolutionsOfIssue(null, 2)).toEqual([])
   })
 })
@@ -136,6 +142,23 @@ describe('cross-issue coverage of an issue that is not in parts (X-E, #1 N15)', 
     expect(crossIssueNumbers(xe)).toEqual([2, 8])
     expect(crossCoverageIssueNumbers(cross, xe)).toEqual([1, 2, 8])
     expect(crossCoverageIssueNumbers(cross, xa)).toEqual([1, 2, 8])
+  })
+
+  // #9 has no city space. X-D has #9 解法 D as a part; X-C has no #9 part, but
+  // it lists X-N08, and X-N08 has #9 N02. So both pages load the #9 file.
+  it('loads #9 for X-D (a part) and for X-C (through X-N08)', () => {
+    const xc = findCrossSolution(cross, 'X-C')!
+    const xd = findCrossSolution(cross, 'X-D')!
+    expect(crossIssueNumbers(xd)).toEqual([1, 2, 8, 9])
+    expect(crossCoverageIssueNumbers(cross, xc)).toContain(9)
+    const withPolicy = [policy, ...files]
+    const d9 = crossNeedCoverage(cross, xd, withPolicy).find((c) => c.issueNumber === 9)!
+    expect(d9.inParts).toBe(true)
+    expect(d9.coverage.covered.map((i) => i.need.id)).toEqual(expect.arrayContaining(['N01', 'N02', 'N05']))
+    const c9 = crossNeedCoverage(cross, xc, withPolicy).find((c) => c.issueNumber === 9)!
+    expect(c9.inParts).toBe(false)
+    expect(c9.coverage.covered.map((i) => [i.need.id, i.part])).toEqual([['N02', 'crossIssue']])
+    expect(c9.coverage.notCovered).toEqual([])
   })
 
   it('lists #1 N15 as covered through X-N03, with no not covered need in #1', () => {
@@ -256,7 +279,8 @@ describe('crossSolutionGroup (#/solutions)', () => {
 
   it('keeps a solution when one of its issues is picked', () => {
     expect(codes(crossSolutionGroup(cross, { spaces: [], issues: [1] }))).toEqual(['X-A', 'X-B', 'X-C', 'X-D'])
-    expect(codes(crossSolutionGroup(cross, { spaces: [], issues: [9] }))).toEqual([])
+    expect(codes(crossSolutionGroup(cross, { spaces: [], issues: [9] }))).toEqual(['X-D'])
+    expect(codes(crossSolutionGroup(cross, { spaces: [], issues: [3] }))).toEqual([])
   })
 
   it('keeps a solution that uses any picked space type', () => {
@@ -270,8 +294,8 @@ describe('crossSolutionGroup (#/solutions)', () => {
 })
 
 describe('fixture', () => {
-  it('covers #1, #2 and #8, which are analyzed issues', () => {
-    expect(cross.issues).toEqual([1, 2, 8])
+  it('covers #1, #2, #8 and #9, which are analyzed issues', () => {
+    expect(cross.issues).toEqual([1, 2, 8, 9])
     const available = index.issues.filter((i) => i.available).map((i) => i.number)
     for (const n of cross.issues) expect(available).toContain(n)
   })

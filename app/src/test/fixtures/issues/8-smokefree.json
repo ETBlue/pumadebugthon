@@ -754,42 +754,48 @@
       "stakeholders": [
         "I05"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "身心障礙",
       "stakeholders": [
         "I06"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "呼吸道疾病",
       "stakeholders": [
         "I27"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "兒童與照顧者",
       "stakeholders": [
         "I07"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "外籍",
       "stakeholders": [
         "I03"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     },
     {
       "tag": "經濟弱勢",
       "stakeholders": [
         "I19"
       ],
-      "note": null
+      "note": null,
+      "excluded": false
     }
   ],
   "stories": [

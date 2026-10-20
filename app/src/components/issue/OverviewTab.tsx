@@ -135,7 +135,7 @@ export function OverviewTab(props: IssueTabProps) {
                 </div>
               ) : (
                 <div className="mt-1 space-y-1.5 text-sm">
-                  <p className="font-medium">{to.focusNotIncluded}</p>
+                  <p className="font-medium">{g.excluded ? to.focusExcluded : to.focusNotIncluded}</p>
                   {g.note && <p><CellText cell={g.note} /></p>}
                 </div>
               )}

@@ -16,8 +16,11 @@ export interface FocusRow {
   cells: CellCounts
   /** 說明. null for 「—」. */
   note: Cell | null
-  /** False when the group has no stakeholder in this issue (「本議題尚未納入」). */
+  /** False when the group has no stakeholder in this issue. */
   included: boolean
+  /** True when a person decided not to include the group (「本議題不納入」).
+   * False for a group that is included, or not included yet (「本議題尚未納入」). */
+  excluded: boolean
 }
 
 /** The position of a group in FOCUS_ORDER. An unknown group goes last. */
@@ -47,15 +50,20 @@ export function focusRows(issue: IssueFile, stakeholders: Stakeholder[]): FocusR
       cells: storyCells(stories),
       note: g.note,
       included: ids.length > 0,
+      excluded: ids.length === 0 && g.excluded,
     }
   })
 }
 
-/** The 特別關注族群 line of the issue card: the groups not included yet, in the
- * fixed order, or 'all' when every group is included. null for an issue
- * without an analysis. Never a count like "4 of 6": it would read like a score. */
-export function focusGapsText(issue: IssueSummary): { kind: 'gaps'; groups: string[] } | { kind: 'all' } | null {
+/** The 特別關注族群 lines of the issue card, in the fixed order: the groups not
+ * included yet (gaps), and the groups a person decided not to include
+ * (excluded). 'all' when every group is included. null for an issue without
+ * an analysis. Never a count like "4 of 6": it would read like a score. */
+export function focusGapsText(
+  issue: IssueSummary,
+): { kind: 'gaps'; groups: string[]; excluded: string[] } | { kind: 'all' } | null {
   if (!issue.available) return null
-  if (issue.focusGaps.length === 0) return { kind: 'all' }
-  return { kind: 'gaps', groups: inFocusOrder(issue.focusGaps, (g) => g) }
+  const excluded = inFocusOrder(issue.focusExcluded, (g) => g)
+  if (issue.focusGaps.length === 0 && excluded.length === 0) return { kind: 'all' }
+  return { kind: 'gaps', groups: inFocusOrder(issue.focusGaps, (g) => g), excluded }
 }

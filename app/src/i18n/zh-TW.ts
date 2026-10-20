@@ -173,6 +173,8 @@ export const t = {
     /** 特別關注族群 (design 3.9). Never a count like 「4／6」: it reads like a score. */
     focusGaps: '尚未納入的特別關注族群',
     focusGapsValue: (groups: string[]) => groups.join('、'),
+    /** Groups a person decided not to include (not gaps). */
+    focusExcluded: '不納入的特別關注族群',
     focusAll: '特別關注族群',
     focusAllValue: '都已納入',
   },
@@ -245,10 +247,11 @@ export const t = {
     sameSpaceSeparator: '：',
     /** 特別關注族群 (design 3.2): 6 rows, always in the fixed order. */
     focusHeading: '特別關注族群',
-    focusIntro: '列出 6 類特別關注族群在本議題的利害關係人與故事。尚未納入的族群，需要由真人判斷是否應該納入。',
+    focusIntro: '列出 6 類特別關注族群在本議題的利害關係人與故事。尚未納入的族群，需要由真人判斷是否應該納入；真人判斷不納入的族群，寫出理由。',
     focusStakeholders: '利害關係人',
     focusStories: (n: number) => `${n} 則故事`,
     focusNotIncluded: '本議題尚未納入',
+    focusExcluded: '本議題不納入（真人判斷）',
     focusStakeholderLink: (id: string, name: string) => `${id} ${name}`,
     pendingHeading: '待補清單',
     pendingIntro: '這些地方還需要真人提供資訊。',

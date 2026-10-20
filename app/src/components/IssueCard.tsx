@@ -70,7 +70,8 @@ export function IssueCard(props: IssueCardProps) {
     )
   }
   const c = issue.counts
-  // 特別關注族群: the groups not included yet, or 都已納入. Never a count (design 13).
+  // 特別關注族群: the groups not included yet, the groups a person decided not to
+  // include, or 都已納入. Never a count (design 13).
   const gaps = focusGapsText(issue)
   return (
     <article className="h-full rounded-lg border p-4">
@@ -94,7 +95,10 @@ export function IssueCard(props: IssueCardProps) {
         {gaps && (gaps.kind === 'all' ? (
           <Field label={tc.focusAll}>{tc.focusAllValue}</Field>
         ) : (
-          <Field label={tc.focusGaps}>{tc.focusGapsValue(gaps.groups)}</Field>
+          <>
+            {gaps.groups.length > 0 && <Field label={tc.focusGaps}>{tc.focusGapsValue(gaps.groups)}</Field>}
+            {gaps.excluded.length > 0 && <Field label={tc.focusExcluded}>{tc.focusGapsValue(gaps.excluded)}</Field>}
+          </>
         ))}
         {updated}
         {spaces}

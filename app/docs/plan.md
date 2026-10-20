@@ -547,3 +547,106 @@ Design 3.12: the header above the tabs (breadcrumb, h1, the issue line), 總覽 
 5. Fix what fails, then run all the checks again.
 
 **Done when:** every check passes on every page, `npm test` and `npm run build` pass, and the report lists what was fixed.
+
+## Phase S: stakeholder side menu, stakeholders page, wide screens (design 3.20–3.22)
+
+From ETBlue's new notes in `human-inputs.md` (commits 487bac6 and 8c4bd4b), 2026-10-20. Design decisions 61–73. Six open questions (Q14–Q19, design section 14) each have a recommended answer, and the design already uses it.
+
+**GATE before Task S3:** ETBlue answers Q14–Q19, or accepts the recommended answers. Tasks S1, S2 and S6 do not depend on the answers and can start first.
+
+**Rules for this phase** (on top of the rules at the top of this file and the Phase N rules):
+- Pure logic goes in `src/lib/`, with Vitest tests written first. Components only show what `src/lib/` returns.
+- All UI text goes in `src/i18n/zh-TW.ts`. Each task adds its own block (the block name is given in the task).
+- No scores, weights, ranks or formulas. Counts may be shown, but every list keeps the tree order, the ID order or another fixed order. Never sort by a count. Neutral wording.
+- Solarized tokens only, light and dark themes. Headings in order, `aria` names, keyboard use, no sideways scroll at 360 px with the 16 px gutter.
+- Every task ends with `npm test`, `npx tsc -b` and `npm run build` in `app/`, all passing, and a local commit. Do not push.
+
+**Order and parallel groups:**
+
+| Step | Tasks | Can run in parallel? |
+|---|---|---|
+| 1 | S1, S2, S6 | Yes. S1 only adds files in `src/lib/`. S2 changes the layout classes. S6 changes `IssueCard` and its two pages. Use separate worktrees; a merge may need a small fix in `zh-TW.ts`. |
+| 2 | S3 | No. It needs S1. **GATE** before it. |
+| 3 | S4, S5 | Yes, but only in separate worktrees. S4 changes the stakeholder pages, S5 the issue tabs. |
+| 4 | S7 | No. The final check. |
+
+### Task S1: side menu logic and statistics (test first)
+
+**Files (new):** `src/lib/sideMenu.ts`, `src/lib/sideMenu.test.ts`, `src/lib/stakeholderStats.ts`, `src/lib/stakeholderStats.test.ts`. **Change:** `src/lib/stakeholderFilter.ts` (+ test).
+
+1. `sideMenuTree(ids, stakeholders, pathLabels)` (design 3.21, decision 65): two roots (O, I), then the 分類路徑 levels with names. In each level: its stakeholders in ID order, then its child levels in the order of `buildTree`. Levels with no stakeholder are left out. Each group has `stakeholderCount` (all levels below). A stakeholder with no path is under its root. Reuse `buildTree` where it fits.
+2. `sideMenuCounts(context, …)` → `Map<id, number>` (decision 66). The contexts: `stakeholders` (stories over the analyzed issues), `stakeholder-overview`, `stakeholder-wants`, `stakeholder-needs`, `stakeholder-solutions` (summed over the issues, as `stakeholderTabCounts`), `issue-wants`, `issue-needs`, `issue-solutions` (one issue). It takes `dataBasedOnly`. Test the rule: for each context, the count equals the length of the list that the tab view shows for that stakeholder with the same filter. Use I06 on #2 (wants W08 and W11, needs N07 and N08, solutions A and C, so 2, 2 and 2 without the filter) and I06 on the stakeholder page (the same numbers as `stakeholderTabCounts` on the fixtures).
+3. Side bar filters in the URL (decision 67): `CROSS_PARAM = 'cross'`, `SPECIAL_PARAM = 'special'`. `sideBarFiltersOf(params)` → `{ dataBasedOnly, crossIssueOnly, special: string[] }` (`special` in the fixed `FOCUS_ORDER`; unknown values are dropped). `menuIdsFor(ids, stakeholders, filters, current)` (the current stakeholder is always kept). `keptSearch` also keeps `cross` and `special`. `clearFiltersSearch(params)` removes `stakeholder`, `evidence`, `cross` and `special` and keeps nothing else that is a filter (decision 68). `filterStatusParts(...)` → the parts of the status line.
+4. `stakeholderStats(stakeholders, issues, filters)` (design 3.20, decision 63) → `{ totals, byCategory, byFocusGroup, byIssue }`. `byCategory` in `FIRST_LEVEL_ORDER`, rows with 0 stakeholders left out. `byFocusGroup` in `FOCUS_ORDER`, with the stakeholder IDs in ID order. `byIssue` in issue number order. With `dataBasedOnly`, only the story counts change. Test that no list is in count order when the fixed order differs from it.
+
+**Done when:** the tests above pass, and nothing in these files sorts by a count.
+
+### Task S2: wide screens up to 1440 px — parallel group 1
+
+**Files:** `src/components/styles.ts` (`containerClass`, and a new `proseClass = 'max-w-3xl'`), `src/components/IssueList.tsx`, `src/pages/Solutions.tsx`, the pages and components with long intro text (`Home.tsx`, `Issues.tsx`, `Stakeholders.tsx`, `About.tsx`, the issue 總覽 tab and the tab intro lines), `src/components/StakeholderMenu.tsx` (only the column width class), `src/lib/layout.test.ts` if it checks the class.
+
+Design 3.22, decision 61:
+1. `containerClass`: `max-w-[90rem]` instead of `max-w-5xl`. Gutter stays `px-4 md:px-8`.
+2. Long text blocks get `proseClass`. Cards, tables and grids stay full width.
+3. `#/issues` and `#/solutions` grids: add `xl:grid-cols-3`.
+4. Side bar column: `lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[18rem_minmax(0,1fr)]`.
+
+**Done when:** at 1440 px the column is 1440 px wide; at 1920 px it is centered; at 360 px nothing scrolls sideways; text lines are not wider than 48rem.
+
+### Task S6: compact issue card — parallel group 1
+
+**Files:** `src/components/IssueCard.tsx`, `src/pages/Home.tsx`, `src/pages/Space.tsx`, `src/i18n/zh-TW.ts` (block `issueCard`, only if a new string is needed).
+
+Design 3.9 shared cards table, decision 72:
+1. The `compact` variant gets the prop `shared: Shared | null`. It shows 跨議題共用的利害關係人 with the same text and link as `detailed` (only when `shared` is not null), and 資料根據 with `<CellBasis compact … />` (counts and bar, no totals, no 實證 percent). The order of the fields: 跨議題共用的利害關係人, 資料根據, 更新日期, 空間類型. An issue that is 製作中 shows none of them.
+2. Home block 「最近更新的議題」 and the space page pass `sharedStakeholders(...)` (null with fewer than 2 analyzed issues), and show the 資料根據 explanation line (`t.basis` explanation) once under the list.
+3. The home sort stays by date (`recentIssues`). Nothing is sorted by these numbers.
+
+**Done when:** the home block and `#/spaces/sidewalk` show the two new fields on each analyzed issue card; the bar is `aria-hidden` and the text carries the meaning; 360 px has no sideways scroll; the old `#/stakeholders?cross=1` link from the card works.
+
+### Task S3: the side menu component — **GATE** before it
+
+**Files:** `src/components/StakeholderMenu.tsx` (rewrite; it can keep its name, or become `SideMenu.tsx` with the old file removed), new `src/components/FilterStatus.tsx`, `src/components/DataBasisToggle.tsx` (a variant for the side bar), `src/i18n/zh-TW.ts` (block `sideMenu`; move the strings of `stakeholderMenu` that are still used).
+
+Design 3.21, decisions 65–69:
+1. The side bar: the skip link 「跳過利害關係人選單」, the filters group 「篩選」 (only the filters of the page: 只看有資料根據 always; 只看跨議題 and 特別關注 chips on the stakeholder pages), the count line (「數字：…」), then the tree from `sideMenuTree`.
+2. The tree: nested `<ul>` in a `<nav>`; a Collapsible per group, open by default, with the name and the number of stakeholders; the groups above the current item always open; each stakeholder is a link with its count (`sideMenuCounts`) and hidden text for the unit; 0 in muted text; `aria-current` as before. In filter mode, 「全部利害關係人」 first, with no count.
+3. Every link keeps `evidence`, `cross` and `special`.
+4. `FilterStatus`: the `role="status"` line for the main block, with all filters that are on and 「清除篩選」 (`clearFiltersSearch`). Empty when no filter is on.
+5. Layout: from `lg` the sticky left column (16rem, 18rem from `xl`) with its own scroll. Below `lg` one Collapsible for the whole side bar, button text 「利害關係人與篩選：…」, closed by default (a prop `defaultOpen` for `#/stakeholders`), closed after a pick.
+
+**Done when:** the component builds with both modes; the keyboard can open and close every group, use every filter and reach every link; at 360 px a 5-level path fits with no sideways scroll.
+
+### Task S4: stakeholders page and stakeholder page — parallel group 3
+
+**Files:** `src/router.tsx` (one layout route for `stakeholders` and `stakeholders/:id/:tab?`; the story route stays outside it), new `src/components/stakeholder/StakeholdersLayout.tsx`, `src/pages/Stakeholders.tsx`, `src/pages/Stakeholder.tsx`, `src/components/stakeholder/*Tab.tsx` (remove the `DataBasisToggle` from the tab content), `src/components/AllStakeholders.tsx` (remove if unused, decision 73), `src/i18n/zh-TW.ts` (blocks `stakeholderStats`, `stakeholderPage`, `lists`).
+
+1. The layout route shows the side bar (switch mode on a stakeholder page, link mode on `#/stakeholders`) and an `<Outlet>` for the main block. Moved IDs still redirect (design 3.3).
+2. `#/stakeholders` (design 3.20): the h1, the intro line, the note on counts, `FilterStatus`, and the four statistics parts from `stakeholderStats`, each an h2, as lists or simple tables. No chart.
+3. The stakeholder page (design 3.3): the main block is the moved note, the h1, the metadata, the tab list and the tab content, with `FilterStatus` at the top of the tab content. The 只看有資料根據 toggle is in the side bar.
+4. `#/stakeholders?cross=1` turns on 只看跨議題.
+
+**Done when:** `#/stakeholders` shows the tree with story counts and the statistics; a click on I06 opens `#/stakeholders/I06` and the side bar keeps its open and closed groups; on `#/stakeholders/I06/needs` the side menu shows the need counts, and the count of I06 equals the number in its 需求 tab label; `?evidence=1&cross=1&special=高齡` stays when switching stakeholders and tabs; 「清除篩選」 removes them; `#/stakeholders/O02/wants` still lands on `#/stakeholders/I12/wants?from=O02`.
+
+### Task S5: issue page tabs — parallel group 3
+
+**Files:** `src/components/issue/IssueFilterLayout.tsx`, `src/components/issue/WantsTab.tsx`, `NeedsTab.tsx`, `SolutionsTab.tsx` (remove the `DataBasisToggle` from the content; add `FilterStatus` at the top of the content), `src/i18n/zh-TW.ts` (block `wantsTab`, `needsTab`, `solutionsTab` only if a string changes).
+
+Design 3.2 (Side bar paragraph), 3.21, decisions 66–68 and 70:
+1. The side bar in filter mode with the issue's stakeholders, the counts of the tab (`issue-wants`, `issue-needs`, `issue-solutions`) and the 只看有資料根據 toggle.
+2. `FilterStatus` at the top of the tab content, with the stakeholder, the data filter and what is shown.
+3. The 總覽 tab does not change. The keyboard order stays: tab list, side bar, tab content (decision 58).
+
+**Done when:** `#/issues/2/wants` shows the tree with the want count next to each stakeholder, and the count of I06 equals the wants shown with `?stakeholder=I06`; with `?evidence=1` the counts change and the tab labels do not; 「清除篩選」 removes `stakeholder` and `evidence`; the cross-issue box on the 解法 tab still shows.
+
+### Task S7: accessibility, phone and wide screen check (Playwright)
+
+**Files:** a script in the scratchpad only (not in the repo); fixes in any app file.
+
+The same method as Task N12, with these changes:
+1. Widths: 360, 375, 768, 1280, 1440 and 1920 px, both themes.
+2. Pages: the N12 list, plus `#/stakeholders`, `#/stakeholders?cross=1&special=高齡`, `#/stakeholders/I06/needs?evidence=1`, `#/issues/2/needs?stakeholder=I06&evidence=1`, `#/spaces/sidewalk`.
+3. Extra checks: the side bar groups open and close with Enter and Space and have `aria-expanded`; the skip link moves focus to the main block; the filter status line is in the main block and says the filters that are on; at 360 px the side bar is one closed Collapsible (open on `#/stakeholders`); at 1920 px the column is 1440 px and centered; no list is in count order where the fixed order differs (spot check the side menu and the statistics).
+4. Screenshots at 360, 1440 and 1920 px of `#/stakeholders`, `#/stakeholders/I06/wants` and `#/issues/2/wants`. Look at them.
+
+**Done when:** every check passes on every page, `npm test` and `npm run build` pass, and the report lists what was fixed.

@@ -12,12 +12,13 @@ import { useIssueStakeholder } from './useIssueStakeholder'
 
 const tw = t.wantsTab
 
-/** The 訴求 tab of the issue page (design 3.2, decision 38). The stakeholder
- * menu (filter mode) is inside the tab content, so the keyboard order is
- * tabs, menu, content (coordinator decision after the N4 review). From top
- * to bottom: the 「只看有資料根據」 toggle, 「訴求與意見健檢」 (the opinion check
- * with the wants as its pick list), then 「衝突」. With ?stakeholder=<id>, only the
- * wants and the conflicts with a story of that stakeholder show. */
+/** The 訴求 tab of the issue page (design 3.2, decision 38). IssueFilterLayout
+ * puts the side bar (with the 「只看有資料根據」 toggle) inside the tab content,
+ * so the keyboard order is tab list, side bar, content (decision 58). From
+ * top to bottom the content is: the filter status line, 「訴求與意見健檢」
+ * (the opinion check with the wants as its pick list), then 「衝突」. With
+ * ?stakeholder=<id>, only the wants and the conflicts with a story of that
+ * stakeholder show. */
 export function WantsTab(props: IssueTabProps) {
   const { index, issue } = props
   const [params] = useSearchParams()

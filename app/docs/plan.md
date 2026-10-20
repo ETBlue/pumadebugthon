@@ -550,9 +550,9 @@ Design 3.12: the header above the tabs (breadcrumb, h1, the issue line), 總覽 
 
 ## Phase S: stakeholder side menu, stakeholders page, wide screens (design 3.20–3.22)
 
-From ETBlue's new notes in `human-inputs.md` (commits 487bac6 and 8c4bd4b), 2026-10-20. Design decisions 61–73. Six open questions (Q14–Q19, design section 14) each have a recommended answer, and the design already uses it.
+From ETBlue's new notes in `human-inputs.md` (commits 487bac6 and 8c4bd4b), 2026-10-20. Design decisions 61–73. ETBlue answered Q14–Q19 (design section 14) on 2026-10-21.
 
-**GATE before Task S3:** ETBlue answers Q14–Q19, or accepts the recommended answers. Tasks S1, S2 and S6 do not depend on the answers and can start first.
+**GATE before Task S3:** passed. ETBlue answered Q14–Q19 on 2026-10-21: the recommended answers, except Q17. For Q17, the side bar is closed by default on every page on a phone, also on `#/stakeholders` (design decision 69). Tasks S1, S2 and S6 did not depend on the answers.
 
 **Rules for this phase** (on top of the rules at the top of this file and the Phase N rules):
 - Pure logic goes in `src/lib/`, with Vitest tests written first. Components only show what `src/lib/` returns.
@@ -566,7 +566,7 @@ From ETBlue's new notes in `human-inputs.md` (commits 487bac6 and 8c4bd4b), 2026
 | Step | Tasks | Can run in parallel? |
 |---|---|---|
 | 1 | S1, S2, S6 | Yes. S1 only adds files in `src/lib/`. S2 changes the layout classes. S6 changes `IssueCard` and its two pages. Use separate worktrees; a merge may need a small fix in `zh-TW.ts`. |
-| 2 | S3 | No. It needs S1. **GATE** before it. |
+| 2 | S3 | No. It needs S1. The **GATE** before it is passed (2026-10-21). |
 | 3 | S4, S5 | Yes, but only in separate worktrees. S4 changes the stakeholder pages, S5 the issue tabs. |
 | 4 | S7 | No. The final check. |
 
@@ -604,7 +604,7 @@ Design 3.9 shared cards table, decision 72:
 
 **Done when:** the home block and `#/spaces/sidewalk` show the two new fields on each analyzed issue card; the bar is `aria-hidden` and the text carries the meaning; 360 px has no sideways scroll; the old `#/stakeholders?cross=1` link from the card works.
 
-### Task S3: the side menu component — **GATE** before it
+### Task S3: the side menu component — **GATE** before it (passed, 2026-10-21)
 
 **Files:** `src/components/StakeholderMenu.tsx` (rewrite; it can keep its name, or become `SideMenu.tsx` with the old file removed), new `src/components/FilterStatus.tsx`, `src/components/DataBasisToggle.tsx` (a variant for the side bar), `src/i18n/zh-TW.ts` (block `sideMenu`; move the strings of `stakeholderMenu` that are still used).
 
@@ -613,7 +613,7 @@ Design 3.21, decisions 65–69:
 2. The tree: nested `<ul>` in a `<nav>`; a Collapsible per group, open by default, with the name and the number of stakeholders; the groups above the current item always open; each stakeholder is a link with its count (`sideMenuCounts`) and hidden text for the unit; 0 in muted text; `aria-current` as before. In filter mode, 「全部利害關係人」 first, with no count.
 3. Every link keeps `evidence`, `cross` and `special`.
 4. `FilterStatus`: the `role="status"` line for the main block, with all filters that are on and 「清除篩選」 (`clearFiltersSearch`). Empty when no filter is on.
-5. Layout: from `lg` the sticky left column (16rem, 18rem from `xl`) with its own scroll. Below `lg` one Collapsible for the whole side bar, button text 「利害關係人與篩選：…」, closed by default (a prop `defaultOpen` for `#/stakeholders`), closed after a pick.
+5. Layout: from `lg` the sticky left column (16rem, 18rem from `xl`) with its own scroll. Below `lg` one Collapsible for the whole side bar, button text 「利害關係人與篩選：…」, closed by default on every page, also on `#/stakeholders` (no `defaultOpen` prop is needed; decision 69), closed after a pick.
 
 **Done when:** the component builds with both modes; the keyboard can open and close every group, use every filter and reach every link; at 360 px a 5-level path fits with no sideways scroll.
 
@@ -646,7 +646,7 @@ Design 3.2 (Side bar paragraph), 3.21, decisions 66–68 and 70:
 The same method as Task N12, with these changes:
 1. Widths: 360, 375, 768, 1280, 1440 and 1920 px, both themes.
 2. Pages: the N12 list, plus `#/stakeholders`, `#/stakeholders?cross=1&special=高齡`, `#/stakeholders/I06/needs?evidence=1`, `#/issues/2/needs?stakeholder=I06&evidence=1`, `#/spaces/sidewalk`.
-3. Extra checks: the side bar groups open and close with Enter and Space and have `aria-expanded`; the skip link moves focus to the main block; the filter status line is in the main block and says the filters that are on; at 360 px the side bar is one closed Collapsible (open on `#/stakeholders`); at 1920 px the column is 1440 px and centered; no list is in count order where the fixed order differs (spot check the side menu and the statistics).
+3. Extra checks: the side bar groups open and close with Enter and Space and have `aria-expanded`; the skip link moves focus to the main block; the filter status line is in the main block and says the filters that are on; at 360 px the side bar is one closed Collapsible on every page, also on `#/stakeholders`; at 1920 px the column is 1440 px and centered; no list is in count order where the fixed order differs (spot check the side menu and the statistics).
 4. Screenshots at 360, 1440 and 1920 px of `#/stakeholders`, `#/stakeholders/I06/wants` and `#/issues/2/wants`. Look at them.
 
 **Done when:** every check passes on every page, `npm test` and `npm run build` pass, and the report lists what was fixed.

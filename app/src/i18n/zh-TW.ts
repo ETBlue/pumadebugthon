@@ -589,8 +589,8 @@ export const t = {
     trigger: (current: string | null) => `利害關係人與篩選：${current ?? '全部'}`,
     /** The line above the tree: what the number next to each stakeholder means. */
     countLine: {
-      'stakeholders': '數字：各議題的使用者故事數合計',
-      'stakeholder-overview': '數字：各議題的使用者故事數合計',
+      'stakeholders': '數字：使用者故事數',
+      'stakeholder-overview': '數字：使用者故事數',
       'stakeholder-wants': '數字：各議題的訴求數合計',
       'stakeholder-needs': '數字：各議題的需求數合計',
       'stakeholder-solutions': '數字：各議題的解法數合計',

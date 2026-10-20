@@ -69,36 +69,14 @@ describe('focusRows', () => {
   it('#8 includes every group', () => {
     expect(focusRows(smokefree, index.stakeholders).every((r) => r.included)).toBe(true)
   })
-
-  it('marks the groups a person decided not to include in #9 as excluded, not as gaps', () => {
-    const rows = focusRows(policy, index.stakeholders)
-    expect(rows.map((r) => [r.tag, r.included, r.excluded])).toEqual([
-      ['高齡', true, false],
-      ['身心障礙', true, false],
-      ['呼吸道疾病', false, true],
-      ['兒童與照顧者', false, true],
-      ['外籍', true, false],
-      ['經濟弱勢', true, false],
-    ])
-    expect(rows[2].note?.text).toMatch(/^不納入（ETBlue，2026-10-20）：/)
-  })
-
-  it('a group not included yet in #1 is not excluded', () => {
-    const resp = focusRows(trees, index.stakeholders).find((r) => r.tag === '呼吸道疾病')
-    expect([resp?.included, resp?.excluded]).toEqual([false, false])
-  })
 })
 
 describe('focusGapsText', () => {
   const summary = (n: number) => index.issues.find((i) => i.number === n) as IssueSummary
 
   it('lists the groups not included yet, in the fixed order', () => {
-    expect(focusGapsText(summary(1))).toEqual({ kind: 'gaps', groups: ['呼吸道疾病', '外籍'], excluded: [] })
-    expect(focusGapsText(summary(2))).toEqual({ kind: 'gaps', groups: ['呼吸道疾病'], excluded: [] })
-  })
-
-  it('lists the groups a person decided not to include, and does not say 都已納入 (#9)', () => {
-    expect(focusGapsText(summary(9))).toEqual({ kind: 'gaps', groups: [], excluded: ['呼吸道疾病', '兒童與照顧者'] })
+    expect(focusGapsText(summary(1))).toEqual({ kind: 'gaps', groups: ['呼吸道疾病', '外籍'] })
+    expect(focusGapsText(summary(2))).toEqual({ kind: 'gaps', groups: ['呼吸道疾病'] })
   })
 
   it('says every group is included when there is no gap', () => {
@@ -110,7 +88,7 @@ describe('focusGapsText', () => {
   })
 
   it('sorts the gaps in the fixed order, not in file order', () => {
-    const s = { ...summary(1), focusGaps: ['外籍', '呼吸道疾病'], focusExcluded: ['經濟弱勢', '高齡'] } as IssueSummary
-    expect(focusGapsText(s)).toEqual({ kind: 'gaps', groups: ['呼吸道疾病', '外籍'], excluded: ['高齡', '經濟弱勢'] })
+    const s = { ...summary(1), focusGaps: ['外籍', '呼吸道疾病'] } as IssueSummary
+    expect(focusGapsText(s)).toEqual({ kind: 'gaps', groups: ['呼吸道疾病', '外籍'] })
   })
 })

@@ -7,8 +7,10 @@ import { compareIds } from './ids'
 import { stakeholderMenuIds } from './stakeholderPage'
 import {
   clearFiltersSearch, CROSS_PARAM, filterStatusParts, keptSearch, menuGroups, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
-  STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch, withStakeholderFilter, type SideBarFilters,
+  sideMenuLinkSearch, specialOptions, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch,
+  withCrossIssueFilter, withSpecialFilter, withStakeholderFilter, type SideBarFilters,
 } from './stakeholderFilter'
+import { FOCUS_ORDER } from './issues'
 
 const index = indexJson as IndexFile
 const trashcans = trashcansJson as IssueFile
@@ -253,5 +255,60 @@ describe('filterStatusParts', () => {
       { kind: 'dataBased' },
     ])
     expect(filterStatusParts(filters({ crossIssueOnly: true }), null)).toEqual([{ kind: 'crossIssue' }])
+  })
+})
+
+describe('sideMenuLinkSearch', () => {
+  const of = (search: string) => sideMenuLinkSearch(new URLSearchParams(search))
+
+  it('keeps evidence, cross and every special value', () => {
+    expect(of('evidence=1&cross=1&special=高齡&special=外籍')).toBe(
+      `?evidence=1&cross=1&special=${encodeURIComponent('高齡')}&special=${encodeURIComponent('外籍')}`,
+    )
+  })
+
+  it('drops stakeholder, pick, focus and other values', () => {
+    expect(of('stakeholder=I06&pick=W01&focus=C6&from=O02&evidence=1')).toBe('?evidence=1')
+    expect(of('stakeholder=I06')).toBe('')
+    expect(of('')).toBe('')
+  })
+})
+
+describe('withCrossIssueFilter', () => {
+  it('sets cross=1 or removes it, and keeps other values', () => {
+    expect(withCrossIssueFilter(new URLSearchParams('evidence=1'), true).toString()).toBe(`evidence=1&${CROSS_PARAM}=1`)
+    expect(withCrossIssueFilter(new URLSearchParams('cross=1&evidence=1'), false).toString()).toBe('evidence=1')
+  })
+})
+
+describe('withSpecialFilter', () => {
+  it('writes the groups in FOCUS_ORDER, each once, and keeps other values', () => {
+    const next = withSpecialFilter(new URLSearchParams('special=外籍&evidence=1'), ['外籍', '高齡', '高齡'])
+    expect(next.getAll(SPECIAL_PARAM)).toEqual(['高齡', '外籍'])
+    expect(next.get('evidence')).toBe('1')
+  })
+
+  it('drops unknown groups, and an empty list removes the value', () => {
+    expect(withSpecialFilter(new URLSearchParams('special=高齡'), ['不明']).getAll(SPECIAL_PARAM)).toEqual([])
+    expect(withSpecialFilter(new URLSearchParams('special=高齡&cross=1'), []).toString()).toBe('cross=1')
+  })
+})
+
+describe('specialOptions', () => {
+  it('lists the groups of FOCUS_ORDER that a stakeholder has, in that order', () => {
+    const ss = index.stakeholders
+    const used = new Set(ss.filter((s) => s.movedTo === null).flatMap((s) => s.focus))
+    const options = specialOptions(ss)
+    expect(options).toEqual(FOCUS_ORDER.filter((f) => used.has(f)))
+    expect(options.length).toBeGreaterThan(0)
+  })
+
+  it('leaves out unknown groups and moved stakeholders', () => {
+    const base = index.stakeholders[0]
+    const ss: Stakeholder[] = [
+      { ...base, id: 'I90', focus: ['外籍', '不明'], movedTo: null },
+      { ...base, id: 'I91', focus: ['高齡'], movedTo: 'I90' },
+    ]
+    expect(specialOptions(ss)).toEqual(['外籍'])
   })
 })

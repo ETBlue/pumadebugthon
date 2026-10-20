@@ -134,6 +134,42 @@ export function clearFiltersSearch(params: URLSearchParams): string {
   return s ? `?${s}` : ''
 }
 
+/** The search part of a side menu link to a stakeholder page (switch and
+ * link mode): evidence, cross and every special value. stakeholder is not
+ * kept, because a stakeholder page does not use it. "" when nothing is kept. */
+export function sideMenuLinkSearch(params: URLSearchParams): string {
+  const next = new URLSearchParams(keptSearch(params))
+  next.delete(STAKEHOLDER_PARAM)
+  const s = next.toString()
+  return s ? `?${s}` : ''
+}
+
+/** A copy of params with 只看跨議題 on (cross=1) or off. Other values are kept. */
+export function withCrossIssueFilter(params: URLSearchParams, on: boolean): URLSearchParams {
+  const next = new URLSearchParams(params)
+  if (on) next.set(CROSS_PARAM, '1')
+  else next.delete(CROSS_PARAM)
+  return next
+}
+
+/** A copy of params with these 特別關注 groups (special=, once per group, in
+ * FOCUS_ORDER). Unknown groups are dropped. An empty list removes the value.
+ * Other values are kept. */
+export function withSpecialFilter(params: URLSearchParams, groups: string[]): URLSearchParams {
+  const next = new URLSearchParams(params)
+  next.delete(SPECIAL_PARAM)
+  for (const f of FOCUS_ORDER) if (groups.includes(f)) next.append(SPECIAL_PARAM, f)
+  return next
+}
+
+/** The 特別關注 chips of the side bar: the groups of FOCUS_ORDER that at least
+ * one of these stakeholders has (moved IDs left out), in FOCUS_ORDER. Unknown
+ * groups are left out, because sideBarFiltersOf drops them. */
+export function specialOptions(stakeholders: Stakeholder[]): string[] {
+  const used = new Set(stakeholders.filter((s) => s.movedTo === null).flatMap((s) => s.focus))
+  return FOCUS_ORDER.filter((f) => used.has(f))
+}
+
 /** One filter in the filter status line. */
 export type FilterStatusPart =
   | { kind: 'stakeholder'; id: string; name: string }

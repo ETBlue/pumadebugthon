@@ -4,6 +4,7 @@ import { Toggle } from '@/components/ui/toggle'
 import { t } from '@/i18n/zh-TW'
 import { dataBasisFilterSearch, isDataBasisFilterOn, withDataBasisFilter } from '@/lib/dataBasis'
 import { tabPath, type IssueTab } from '@/lib/issuePage'
+import { cn } from '@/lib/utils'
 import { toggleOnClass } from './styles'
 import { ToggleCheck } from './ToggleCheck'
 
@@ -25,17 +26,28 @@ export function useTabTo(): (issueNumber: number, tab: IssueTab) => To {
   return (issueNumber, tab) => ({ pathname: tabPath(issueNumber, tab), search })
 }
 
-/** The 「只看有資料根據」 toggle with a short hint. */
-export function DataBasisToggle({ className }: { className?: string }) {
+/** The 「只看有資料根據」 toggle with a short hint. variant 'page' (default):
+ * the toggle at the top of a content block. 'sideBar': the toggle in the
+ * filters group of the side menu (design 3.21). It is smaller, as wide as
+ * the side bar, and its text can wrap. */
+export function DataBasisToggle({ className, variant = 'page' }: { className?: string; variant?: 'page' | 'sideBar' }) {
   const [on, setOn] = useDataBasisFilter()
   const hintId = useId()
+  const side = variant === 'sideBar'
   return (
     <div className={className}>
-      <Toggle variant="outline" pressed={on} onPressedChange={setOn} aria-describedby={hintId} className={toggleOnClass}>
+      <Toggle
+        variant="outline"
+        size={side ? 'sm' : 'default'}
+        pressed={on}
+        onPressedChange={setOn}
+        aria-describedby={hintId}
+        className={cn(toggleOnClass, side && 'h-auto min-h-8 w-full justify-start py-1 text-left whitespace-normal')}
+      >
         <ToggleCheck />
         {tf.label}
       </Toggle>
-      <p id={hintId} className="mt-1 text-sm text-muted-foreground">{tf.hint}</p>
+      <p id={hintId} className={cn('mt-1 text-muted-foreground', side ? 'text-xs' : 'text-sm')}>{tf.hint}</p>
     </div>
   )
 }

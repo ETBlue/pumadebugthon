@@ -1,7 +1,7 @@
 import { useMemo, type ComponentType } from 'react'
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router'
-import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
+import { FilterStatus } from '@/components/FilterStatus'
 import { LoadState } from '@/components/LoadState'
 import { PageTabs } from '@/components/PageTabs'
 import { PageTitle } from '@/components/PageTitle'
@@ -18,6 +18,8 @@ import { t } from '@/i18n/zh-TW'
 import { parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
+import { sideMenuCounts, type SideMenuContext } from '@/lib/sideMenu'
+import { menuIdsFor, sideBarFiltersOf, specialOptions } from '@/lib/stakeholderFilter'
 import {
   movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers, stakeholderMenuIds,
 } from '@/lib/stakeholderPage'
@@ -82,13 +84,32 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   }, [index, s])
   const folders = useMemo(() => shown.map((i) => i.folder), [shown])
   const issues = useIssues(folders)
-  const menuIds = useMemo(() => stakeholderMenuIds(index), [index])
+  const allIds = useMemo(() => stakeholderMenuIds(index), [index])
+  const filters = sideBarFiltersOf(params)
+  const menuIds = useMemo(
+    () => menuIdsFor(allIds, index.stakeholders, filters, s.id),
+    // filters is a new object on each render; its parts are the real inputs.
+    [allIds, index.stakeholders, filters.crossIssueOnly, filters.special.join(','), s.id],
+  )
+  const menuFilters = useMemo(() => {
+    const listed = index.stakeholders.filter((x) => allIds.includes(x.id))
+    return { showCrossIssue: availableIssues(index).length >= 2, specialOptions: specialOptions(listed) }
+  }, [index, allIds])
+  // The menu counts are summed over every analyzed issue (decision 66).
+  const allFolders = useMemo(() => availableIssues(index).map((i) => i.folder), [index])
+  const allIssues = useIssues(allFolders)
   const trail = pathTrail(s.path, index.pathLabels)
   const tab = parseStakeholderTab(useParams().tab)
   const counts = useMemo(
     () => (issues.status === 'ready' ? stakeholderTabCounts(issues.data, s.id) : null),
     [issues, s.id],
   )
+  const menuContext: SideMenuContext = `stakeholder-${tab ?? 'overview'}`
+  const menuCounts = useMemo(
+    () => (allIssues.status === 'ready' ? sideMenuCounts(menuContext, allIssues.data, menuIds, filters.dataBasedOnly) : null),
+    [allIssues, menuContext, menuIds, filters.dataBasedOnly],
+  )
+  const filtersOn = filters.crossIssueOnly || filters.special.length > 0
 
   const content = (name: StakeholderTab) => {
     if (shown.length === 0) return <p>{tp.noIssues}</p>
@@ -96,7 +117,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
     const Content = TAB_CONTENT[name]
     return (
       <>
-        <DataBasisToggle className="mb-6" />
+        <FilterStatus filters={filters} stakeholder={null} shown={filtersOn ? t.sideMenu.shownMenu(menuIds.length) : undefined} />
         <Content index={index} issues={issues.data} id={s.id} />
       </>
     )
@@ -151,12 +172,23 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         </Field>
       </dl>
 
-      {/* The menu goes to the same tab of another stakeholder (design 3.14).
-          For an unknown tab it goes to the overview. */}
+      {/* The menu goes to the same tab of another stakeholder (design 3.21).
+          For an unknown tab it goes to the overview. Task S4 moves the menu
+          next to the whole main block. */}
       <StakeholderMenuLayout
         className="mt-6"
         menu={
-          <StakeholderMenu mode="switch" ids={menuIds} stakeholders={index.stakeholders} current={s.id} tab={tab ?? 'overview'} />
+          <StakeholderMenu
+            mode="switch"
+            ids={menuIds}
+            stakeholders={index.stakeholders}
+            pathLabels={index.pathLabels}
+            context={menuContext}
+            counts={menuCounts}
+            current={s.id}
+            tab={tab ?? 'overview'}
+            filters={menuFilters}
+          />
         }
       >
         <PageTabs

@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
+import { useDataBasisFilter } from '@/components/DataBasisToggle'
 import { NeedItem } from '@/components/NeedItem'
 import { proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
@@ -10,7 +10,7 @@ import type { IssueTabProps } from './types'
 import { useIssueStakeholder } from './useIssueStakeholder'
 
 const tn = t.needsTab
-const tm = t.stakeholderMenu
+const tm = t.sideMenu
 
 /** 需求 (design 3.2): the needs of the issue, grouped by priority in the
  * fixed order 必須有, 應該有, 可以有, 這次不做. Inside a group, the order of
@@ -26,9 +26,9 @@ export function NeedsTab({ index, issue }: IssueTabProps) {
       index={index}
       issue={issue}
       current={stakeholder}
-      shown={stakeholder === null ? undefined : tm.shownNeeds(view.shown)}
+      context="issue-needs"
+      shown={tm.shownNeeds(view.shown)}
     >
-      <DataBasisToggle className="mb-4" />
       <p className={`mb-6 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{tn.intro}</p>
       {view.shown === 0 && (
         <p className="text-muted-foreground">

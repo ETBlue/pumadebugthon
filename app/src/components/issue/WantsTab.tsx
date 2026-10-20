@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router'
-import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { focusTargetClass, proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
@@ -33,10 +32,10 @@ export function WantsTab(props: IssueTabProps) {
       index={index}
       issue={issue}
       current={stakeholder}
-      shown={t.stakeholderMenu.shownWants(view.wants.length, view.conflicts.length)}
+      context="issue-wants"
+      shown={t.sideMenu.shownWants(view.wants.length, view.conflicts.length)}
     >
       <div className="space-y-10">
-        <DataBasisToggle />
 
         <section aria-labelledby="wants-check-heading" className="space-y-4">
           <h3 id="wants-check-heading" className="text-lg font-semibold">{tw.checkHeading}</h3>

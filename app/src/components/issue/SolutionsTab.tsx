@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
+import { useDataBasisFilter } from '@/components/DataBasisToggle'
 import { LabelledSection, SectionLabelScope } from '@/components/LabelledSection'
 import { Markdown } from '@/components/Markdown'
 import { NeedSummaryLink } from '@/components/NeedItem'
@@ -21,7 +21,7 @@ import type { IssueTabProps } from './types'
 import { useIssueStakeholder } from './useIssueStakeholder'
 
 const ts = t.solutionsTab
-const tm = t.stakeholderMenu
+const tm = t.sideMenu
 const tx = t.crossIssue
 
 /** The box 「本議題也在跨議題解法中」 (design 3.18): each cross-issue solution
@@ -90,10 +90,10 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
       index={index}
       issue={issue}
       current={stakeholder}
-      shown={stakeholder === null ? undefined : tm.shownSolutions(view.length)}
+      context="issue-solutions"
+      shown={tm.shownSolutions(view.length)}
     >
       <CrossIssueBox issueNumber={n} />
-      <DataBasisToggle className="mb-6" />
       {view.length === 0 && <p className="text-muted-foreground">{ts.noneForStakeholder}</p>}
       <ul className="space-y-6">
         {view.map((item) => {

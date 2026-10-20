@@ -561,26 +561,68 @@ export const t = {
     notFoundBody: '網址可能打錯了，或這一頁已經移除。',
     backHome: '回到首頁',
   },
-  /** The stakeholder menu (design 3.14). */
-  stakeholderMenu: {
-    /** The <nav> name on the issue page (filter mode). */
-    filterLabel: '依利害關係人篩選',
-    /** The <nav> name on the stakeholder page (switch mode). */
-    switchLabel: '切換利害關係人',
+  /** The stakeholder side menu (SideMenu, design 3.21) and the filter status
+   * line (FilterStatus, decision 68). */
+  sideMenu: {
+    /** The skip link at the top of the side bar. It moves focus to the main block. */
+    skip: '跳過利害關係人選單',
+    /** The <nav> name of the tree. filter: the issue page. switch: a
+     * stakeholder page. link: #/stakeholders. */
+    navLabels: {
+      filter: '依利害關係人篩選',
+      switch: '切換利害關係人',
+      link: '選擇利害關係人',
+    },
+    /** The name of the filters group. */
+    filters: '篩選',
+    crossIssueOnly: '只看跨議題',
+    special: '特別關注',
+    /** The first item in filter mode. It has no count. */
     all: '全部利害關係人',
-    groups: {
+    roots: {
       O: '組織',
       I: '個人',
     },
     /** One item: 「I06 身心障礙者（視障、輪椅使用者）」. */
     item: (id: string, name: string) => `${id} ${name}`,
     /** The Collapsible button below lg. current is 「I06 名稱」, or null for 全部. */
-    trigger: (current: string | null) => `利害關係人：${current ?? '全部'}`,
-    /** The status line with a filter on. The tab adds what it shows (shown…). */
-    status: (id: string, name: string) => `篩選：${id} ${name}。`,
+    trigger: (current: string | null) => `利害關係人與篩選：${current ?? '全部'}`,
+    /** The line above the tree: what the number next to each stakeholder means. */
+    countLine: {
+      'stakeholders': '數字：各議題的使用者故事數合計',
+      'stakeholder-overview': '數字：各議題的使用者故事數合計',
+      'stakeholder-wants': '數字：各議題的訴求數合計',
+      'stakeholder-needs': '數字：各議題的需求數合計',
+      'stakeholder-solutions': '數字：各議題的解法數合計',
+      'issue-wants': '數字：在本議題的訴求數',
+      'issue-needs': '數字：在本議題的需求數',
+      'issue-solutions': '數字：在本議題的解法數',
+    },
+    /** Hidden text before a count, for screen readers. The link name is then
+     * 「I06 身心障礙者（視障、輪椅使用者），訴求 2」. */
+    countUnit: {
+      'stakeholders': '，使用者故事 ',
+      'stakeholder-overview': '，使用者故事 ',
+      'stakeholder-wants': '，訴求 ',
+      'stakeholder-needs': '，需求 ',
+      'stakeholder-solutions': '，解法 ',
+      'issue-wants': '，訴求 ',
+      'issue-needs': '，需求 ',
+      'issue-solutions': '，解法 ',
+    },
+    /** Hidden text before the number of stakeholders of a group: 「臺北市，利害關係人 12」. */
+    groupUnit: '，利害關係人 ',
+    /** The filter status line: 「篩選：I06 名稱、只看有資料根據。」 The page adds
+     * what it shows (shown…). */
+    status: (parts: string[]) => `篩選：${parts.join('、')}。`,
+    statusStakeholder: (id: string, name: string) => `${id} ${name}`,
+    statusDataBased: '只看有資料根據',
+    statusCrossIssue: '只看跨議題',
+    statusSpecial: (groups: string[]) => `特別關注：${groups.join('、')}`,
     shownWants: (wants: number, conflicts: number) => `顯示 ${wants} 個訴求、${conflicts} 個衝突。`,
     shownNeeds: (n: number) => `顯示 ${n} 個需求。`,
     shownSolutions: (n: number) => `顯示 ${n} 個解法。`,
+    shownMenu: (n: number) => `選單顯示 ${n} 位利害關係人。`,
     clear: '清除篩選',
   },
   /** One need (需求) in a list (NeedItem, design 3.2, 3.3). */

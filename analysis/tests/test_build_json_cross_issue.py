@@ -59,7 +59,7 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.out, "issues", "2-trashcans.json")))
 
     def test_top_level_fields(self):
-        self.assertEqual(self.data["issues"], [1, 2, 8])
+        self.assertEqual(self.data["issues"], [1, 2, 8, 9])
         for key in ("title", "updated", "spaces", "summary", "sharedStakeholders", "repeatedNeeds", "focusGroups",
                     "needGroups", "conflicts", "solutions", "solutionFocus", "pending"):
             self.assertIn(key, self.data)
@@ -68,10 +68,22 @@ class CrossIssueJsonTest(unittest.TestCase):
 
     def test_shared_stakeholders(self):
         shared = self.data["sharedStakeholders"]
-        self.assertEqual(len(shared), 16)
+        self.assertEqual(len(shared), 17)
         o03 = next(s for s in shared if s["id"] == "O03")
         self.assertEqual(o03["issues"], [2, 8])
         self.assertIn({"issue": 8, "id": "O03-US01"}, o03["stories"])
+        # I04 is shared by #2 and #9 only.
+        i04 = next(s for s in shared if s["id"] == "I04")
+        self.assertEqual(i04["issues"], [2, 9])
+        self.assertEqual(i04["stories"], [{"issue": 2, "id": "I04-US01"}, {"issue": 9, "id": "I04-US01"}])
+
+    def test_issue_9_part_has_no_space(self):
+        # #9 uses no city space. X-D gets its spaces from its other parts.
+        d = self.solution("X-D")
+        self.assertIn({"issue": 9, "code": "D"}, d["parts"])
+        self.assertEqual(d["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
+        self.assertIn({"issue": 9, "id": "N05"}, d["needs"]["must"])
+        self.assertIn("X-N08", d["needs"]["crossIssue"])
 
     def test_combined_solution_parts_and_needs(self):
         a = self.solution("X-A")

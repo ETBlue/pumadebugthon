@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import type { IndexFile, IssueSummary, Stakeholder } from '@/types'
 import {
-  availableIssues, filterIssuesBySpace, focusOptions, isParticipantIssue, sharedStakeholders, spaceTypeNames, usedSpaceTypes,
+  availableIssues, filterIssuesBySpace, focusOptions, isParticipantIssue, sharedForCard, sharedStakeholders, spaceTypeNames, usedSpaceTypes,
 } from './issues'
 
 const index = indexJson as IndexFile
@@ -23,6 +23,24 @@ describe('isParticipantIssue', () => {
     expect(isParticipantIssue(byNumber(8))).toBe(true)
     expect(isParticipantIssue(byNumber(9))).toBe(true)
     for (const n of [1, 2, 3, 4, 5, 6]) expect(isParticipantIssue(byNumber(n))).toBe(false)
+  })
+})
+
+describe('sharedForCard', () => {
+  const byNumber = (n: number) => index.issues.find((i) => i.number === n)!
+
+  it('gives the shared stakeholders of an analyzed issue when 2 or more issues are analyzed', () => {
+    expect(sharedForCard(index, byNumber(2))).toEqual({ count: 15, issues: [1, 8, 9] })
+    expect(sharedForCard(index, byNumber(9))).toEqual({ count: 6, issues: [1, 2, 8] })
+  })
+
+  it('is null for an issue that is 製作中', () => {
+    expect(sharedForCard(index, byNumber(3))).toBeNull()
+  })
+
+  it('is null when fewer than 2 issues are analyzed', () => {
+    const one: IndexFile = { ...index, issues: index.issues.map((i) => (i.number === 2 ? i : { ...i, available: false }) as IssueSummary) }
+    expect(sharedForCard(one, byNumber(2))).toBeNull()
   })
 })
 

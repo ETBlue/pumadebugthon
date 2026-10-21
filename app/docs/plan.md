@@ -660,124 +660,208 @@ The same method as Task N12, with these changes:
 
 **Done when:** every check passes on every page, `npm test` and `npm run build` pass, and the report lists what was fixed.
 
-## Phase L: list pages with a sort and filter bar (design 3.23)
+## Phase L: list pages with a search, sort and filter bar (design 3.23)
 
-From ETBlue's notes in `human-inputs.md` (commits ef77fec and a325fcb: 「including cross-issue」 and the card view / tree view toggle) and ETBlue's decisions of 2026-10-22. Design decisions 79–94. ETBlue answered Q20 (no side bar on the stakeholder page, decision 94) and the 「跨議題」 part of Q24 on 2026-10-22. Open questions Q21–Q24 (design section 14).
+From ETBlue's notes in `human-inputs.md` (commits ef77fec, a325fcb and e879ba7) and ETBlue's decisions of 2026-10-22. Design decisions 79–99. ETBlue answered Q20–Q24 (design section 14) on 2026-10-22:
+- Q20: the stakeholder page has no side bar (decision 94).
+- Q21: way C for the dates (decision 90).
+- Q22: the statistics of `#/stakeholders` are removed (decision 88).
+- Q23: (a) yes and (b) yes (decisions 83 and 84).
+- Q24: (a) a 「跨議題」 choice in the 議題 filter (decision 85); (b) no 依編號 sort (decision 82).
 
-**GATE A, before Tasks L1 and L2:** ETBlue answers Q21 (how to add the dates), Q23 (two coverage details) and Q24 (the 依編號 sort).
-**GATE B, before Task L6:** ETBlue answers Q22 (the statistics of `#/stakeholders`). Q20 is answered: the stakeholder page has no side bar (decision 94).
-Tasks L3 and L4 do not depend on any answer, so they can start before the GATEs.
+**GATEs:** none left. GATE A (Q21, Q23, Q24) and GATE B (Q22) are passed (2026-10-22). Every task can start when the tasks it needs are done.
 
 **Rules for this phase** (on top of the rules at the top of this file and the Phase N and S rules):
 - Pure logic goes in `src/lib/`, with Vitest tests written first. Components only show what `src/lib/` returns.
 - All UI text goes in `src/i18n/zh-TW.ts`. Each task adds its own block (the block name is given in the task).
-- Count-based sorts are allowed **only** as the reader-picked sorts on `#/issues`, `#/stakeholders` and `#/solutions` (decision 81). The default is by date. The only number is the plain share. No scores, weights or formulas. Everywhere else, never sort by a count.
-- Every sort and filter is in the URL (decision 85). Use the param names of design 3.23.5 only.
+- Count-based sorts are allowed **only** as the reader-picked sorts on `#/issues`, `#/stakeholders` and `#/solutions` (decision 81). The default is by date. The only number is the plain share. No scores, weights or formulas. Everywhere else, never sort by a count. The search never changes the order (decision 96).
+- There is no `id` sort (Q24). The fixed ID order is used only for ties, for items with no value, and where no sort applies (the tree view).
+- Every sort, filter and search is in the URL (decisions 85 and 97). Use the param names of design 3.23.5 and 3.23.13 only.
 - Solarized tokens only, light and dark themes. Headings in order, `aria` names, keyboard use, no sideways scroll at 360 px with the 16 px gutter, targets at least 24 × 24 px.
-- Every task ends with `npm test`, `npx tsc -b` and `npm run build` in `app/` (and the Python tests for L2), all passing, and a local commit. Do not push.
+- **Checks for every app task**, in `app/`, all passing: `npm run data`, `npx vitest run`, `npx tsc -b`, `npx vite build`.
+- **Checks for a task that changes the analysis scripts** (L2), from the repo root, all passing: `CI=true analysis/scripts/build_all.sh <scratch dir>` and `python3 -I -m unittest discover -s analysis/tests -t . -p 'test_*.py'`, then the app checks above.
+- Each task ends with a local commit. Do not push.
 
 **Order and parallel groups:**
 
 | Step | Tasks | Can run in parallel? |
 |---|---|---|
-| 1 | L3, L4 | Yes, in separate worktrees. L3 adds the bar component, L4 the stakeholder picker and the shared tree. No GATE. |
-| 2 | **GATE A**, then L1, L2 | Yes. L1 only adds files in `src/lib/`. L2 changes the Python scripts and the data. Use separate worktrees. |
-| 3 | L5, L7 | Yes, in separate worktrees. L5 changes `#/issues`, L7 `#/solutions`. A merge may need a small fix in `zh-TW.ts`. |
-| 3 | **GATE B**, then L6 | Yes, next to L5 and L7, in its own worktree. |
-| 4 | L8 | No. Home links, old links, clean-up. |
-| 5 | L9 | No. The final check. |
+| 1 | L1, L2, L3, L4, L10, L11 | Yes, in separate worktrees. L1 and L10 only add files in `src/lib/`. L2 changes the Python scripts and the data. L3 adds the bar, L4 the stakeholder picker and the shared tree, L11 the breadcrumb. A merge may need a small fix in `zh-TW.ts` or `src/types.ts`. |
+| 2 | L5, L6, L7 | Yes, in separate worktrees. L5 changes `#/issues`, L6 `#/stakeholders` and the stakeholder page, L7 `#/solutions`. Each needs L1, L3 and L10; L5 and L7 also need L4; L6 also needs L11. The date sorts show real dates only after L2. |
+| 3 | L8 | No. Home links, old links, clean-up. |
+| 4 | L9 | No. The final check. |
 
-**Status (2026-10-22):** design draft. Waits for GATE A (Q21, Q23, Q24) and GATE B (Q22). L3 and L4 can start.
+L10 and L11 were added on 2026-10-22, after L1–L9 were written. They keep their numbers so the old references stay right. The table above says when they run.
 
-### Task L1: sorts, coverage, filters and URL params (test first) — after GATE A
+**Status (2026-10-22):** design done (no open questions). No task has started.
+
+### Task L1: sorts, coverage, filters and URL params (test first)
 
 **Files (new):** `src/lib/coverage.ts`, `src/lib/listSort.ts`, `src/lib/listFilter.ts`, `src/lib/listParams.ts`, each with its `.test.ts`. **Change:** `src/types.ts` (the new `added` and `updated` fields as optional, so this task does not need L2's data).
 
-Design 3.23.3–3.23.5, decisions 81–85 and 89:
-1. `coverage.ts`: `evidenceShare(cells)` → `{ part, total } | null` (part = 實證 + AI整理; null when total is 0). `stakeholderCells(issues, id)`. `solutionCells(issue, solution)` and `crossSolutionCells(cross, solution, issues)` (the stories of the covered needs, each once; the definition depends on Q23). `stakeholderSolutionCoverage(issues, cross, id)` → `{ covered, total }` (這次不做 by Q23). `sharePercent(share)` (the rounding of `evidencePercent`). `compareShares(a, b)` by cross-multiplying. Tests: the issue shares on the fixtures equal the 資料根據 bar counts; I06 has 1 of 12 cells and 5 of 5 needs covered on the current data (use the fixture numbers in the test); 1 of 3 and 33 of 100 are not equal; a story in two covered needs counts once.
-2. `listSort.ts`: `sortIssues(issues, sort)`, `sortStakeholders(list, sort, ctx)`, `sortSolutions(items, sort, ctx)`. Dates newest first with the home tie rule; the date sorts give the same first 5 as `recentIssues`, `recentStakeholders` and `recentSolutionItems` (test this). Shares highest first, ties in the fixed ID order, no share last. `id` sort (if Q24 (b) is yes). No date last. Test that each share sort really differs from the ID order on the fixtures, so the test proves the sort is used.
-3. `listFilter.ts`: `filterIssues`, `filterStakeholders`, `filterSolutions` with the rules of 3.23.5: ANY inside one filter, ALL between filters; 「跨議題」 (`issue=X`) as in design 3.23.5; a cross-issue solution matches an issue in its `parts` or in its covered needs (X-E matches #1); the 利害關係人 filter on solutions uses the same rule as the issue's 解法 tab.
-4. `listParams.ts`: `listParamsOf(page, params, index)` (drops unknown values, resolves moved IDs), `listSearch(page, state)`, `clearListFilters(params)` (keeps `sort` and `view`), `legacyListRedirect(page, search)` (`cross=1` → `issue=X`, `special=` → `specialonly=1`, drops `evidence`). Test that no param name clashes with `stakeholder`, `evidence`, `cross`, `special`, `focus`, `pick`, `from`.
+Design 3.23.3–3.23.5, decisions 81–85, 89 and 97:
+1. `coverage.ts`: `evidenceShare(cells)` → `{ part, total } | null` (part = 實證 + AI整理; null when total is 0). `stakeholderCells(issues, id)`. `solutionCells(issue, solution)` and `crossSolutionCells(cross, solution, issues)`: both cells of each story of the covered needs, each story once (Q23 (a)). `stakeholderSolutionCoverage(issues, cross, id)` → `{ covered, total }`, with 這次不做 needs in the total (Q23 (b)). `sharePercent(share)` (the rounding of `evidencePercent`). `compareShares(a, b)` by cross-multiplying.
+2. `listSort.ts`: `sortIssues(issues, sort)`, `sortStakeholders(list, sort, ctx)`, `sortSolutions(items, sort, ctx)`. The sorts are `updated` (default), `added`, `evidence`, and `solutions` on stakeholders only. There is no `id` sort. Dates newest first with the home tie rule. Shares highest first, ties in the fixed ID order, no share last. No date last, in the fixed ID order.
+3. `listFilter.ts`: `filterIssues`, `filterStakeholders`, `filterSolutions` with the rules of 3.23.5: ANY inside one filter, ALL between filters; 「跨議題」 (`issue=X`) as in design 3.23.5; a cross-issue solution matches an issue in its `parts` or in its covered needs (X-E matches #1); the 利害關係人 filter on solutions uses the same rule as the issue's 解法 tab. The text search is not here: it is in L10, and the pages apply both.
+4. `listParams.ts`: `listParamsOf(page, params, index)` → `{ sort, issues, crossChoice, spaces, who, specialOnly, view, q }` (drops unknown values, also `sort=id`; resolves moved IDs; `q` trimmed, cut at 100 characters, dropped when empty). `listUrlSearch(page, state)` (was `listSearch` in the first draft; renamed, decision 95). `clearListFilters(params)` (removes every filter and `q`; keeps `sort` and `view`). `legacyListRedirect(page, search)` (`cross=1` → `issue=X`, `special=` → `specialonly=1`, drops `evidence`).
+
+**Tests (first):**
+- The issue shares on the fixtures equal the 資料根據 bar counts. I06 has 1 of 12 cells and 5 of 5 needs covered on the current data (use the fixture numbers in the test). 1 of 3 and 33 of 100 are not equal. A story in two covered needs counts once. A 這次不做 need is in the total and not covered.
+- The date sorts give the same first 5 as `recentIssues`, `recentStakeholders` and `recentSolutionItems`. Each share sort really differs from the ID order on the fixtures, so the test proves the sort is used.
+- `?sort=id` gives the default sort, and `listParamsOf` reports that the URL needs a `replace` without it.
+- `q`: `'  無菸 '` becomes `'無菸'`; `'   '` is dropped; 101 characters are cut to 100. `clearListFilters` removes `q` and keeps `sort` and `view`.
+- No param name clashes with `stakeholder`, `evidence`, `cross`, `special`, `focus`, `pick`, `from`.
+
+**Checks:** the app checks (`npm run data`, `npx vitest run`, `npx tsc -b`, `npx vite build`).
 
 **Done when:** the tests above pass, and nothing outside these sorts sorts by a count.
 
-### Task L2: dates in the data (test first) — after GATE A, **needs ETBlue's OK on Q21**
+### Task L2: dates in the data (test first)
 
-The steps below are for answer C (the recommendation). If ETBlue picks A or B, rewrite this task first.
+ETBlue chose way C (Q21, 2026-10-22).
 
 **Files:** `analysis/data/issues.csv` (new column 新增日期), new `analysis/data/updated-dates.csv`, new `analysis/scripts/update_dates.py`, `analysis/scripts/analysis_common.py` (the fingerprint function), `analysis/scripts/build_json.py`, `analysis/scripts/check_analysis.py`, `analysis/scripts/build_all.sh`, tests in `analysis/tests/`, `analysis/docs/method.md` (the rule text of design 3.23.8), this file (the rule 「After any change to an `issue-analysis.md`」 at the top: add `sync_stakeholders.py` and `update_dates.py`), `app/src/types.ts`, `app/src/test/fixtures/` (refresh).
 
 Design 3.23.8, decision 90:
-1. Tests first: the fingerprint ignores format (the same content in two layouts gives the same fingerprint) and changes with a text or tag change; a new item gets 更新日期 = 新增日期; a changed item gets today; a removed item loses its row; `check_analysis.py` fails on a missing row, an extra row, a wrong fingerprint, a bad date, a date after today, and 更新日期 before 新增日期; `issues.csv` 新增日期 is required for an analyzed issue.
+1. Tests first (below).
 2. `update_dates.py` and the checks. `build_all.sh` runs `update_dates.py` after `sync_stakeholders.py` and `build_csv.py`; with `CI=true` it fails when the file would change.
 3. `build_json.py` writes `added` on each analyzed issue in `index.json`, `updated` on each stakeholder, each solution and each cross-issue solution.
 4. First values: a one-time script in the scratchpad (not in the repo) fills 更新日期 from git history, as in 3.23.8. Issue 新增日期: #1 2026-10-18, #2 2026-10-16, #8 2026-10-18, #9 2026-10-20. Show ETBlue the values in the report.
 5. `method.md`: replace the section 「新增日期」 with the rule text of 3.23.8.
 
-**Done when:** `analysis/scripts/build_all.sh` passes; with `CI=true` it passes on a clean checkout; changing one story's text and running the checks without `update_dates.py` fails with 「請執行 update_dates.py」; the JSON has the new fields.
+**Tests (first):** the fingerprint ignores format (the same content in two layouts gives the same fingerprint) and changes with a text or tag change; a new item gets 更新日期 = 新增日期; a changed item gets today; a removed item loses its row; `check_analysis.py` fails on a missing row, an extra row, a wrong fingerprint, a bad date, a date after today, and 更新日期 before 新增日期; `issues.csv` 新增日期 is required for an analyzed issue.
 
-### Task L3: the bar component — parallel group 1 (no GATE)
+**Checks:** `CI=true analysis/scripts/build_all.sh <scratch dir>` and `python3 -I -m unittest discover -s analysis/tests -t . -p 'test_*.py'` from the repo root; then the app checks.
 
-**Files (new):** `src/components/ListBar.tsx`, `src/components/ui/dialog.tsx` and `src/components/ui/popover.tsx` (shadcn, Radix), `src/components/ResultLine.tsx`. **Change:** `src/i18n/zh-TW.ts` (block `listBar`).
+**Done when:** the checks pass; with `CI=true` the build passes on a clean checkout; changing one story's text and running the checks without `update_dates.py` fails with 「請執行 update_dates.py」; the JSON has the new fields.
 
-Design 3.23.2 and 3.23.6, decision 80:
-1. `ListBar` takes the sort options, the current sort, the filters (each a multi-choice list, a toggle, or a slot for the stakeholder picker), an optional view switch, and a callback that gets a new search string. It does not know the pages.
-2. From `md`: the row with the native `<select>`, the popover buttons (checkboxes in a `<fieldset>` with a `<legend>`), the toggles (`aria-pressed`) and the slots. Below `md`: the `<select>`, the optional view switch and the 「篩選」 button with the number of filters that are on, which opens the bottom sheet (Dialog). The sheet has the result line (`role="status"`), 「清除篩選」 and 「完成」.
-3. `ResultLine`: 「顯示 N 個…，共 M 個。」, the filters that are on, and 「清除篩選」. Always in the page.
-4. A small demo is not needed. Test it through L5 and the L9 check.
+### Task L3: the bar component and the search box
 
-**Done when:** it builds; at 360 px the row fits with no sideways scroll; the sheet traps focus, closes with Escape, 「完成」 and the close button, and returns focus to 「篩選」; the popovers return focus to their buttons.
+**Files (new):** `src/components/ListBar.tsx`, `src/components/ListSearchBox.tsx`, `src/components/ui/dialog.tsx` and `src/components/ui/popover.tsx` (shadcn, Radix), `src/components/ResultLine.tsx`. **Change:** `src/i18n/zh-TW.ts` (blocks `listBar` and `listSearch`).
 
-### Task L4: the stakeholder picker and the tree dialog — parallel group 1 (no GATE)
+Design 3.23.2, 3.23.6 and 3.23.13, decisions 80, 97 and 98:
+1. `ListBar` takes the search box props (the page name for the label and the placeholder, the current `q`), the sort options, the current sort, the filters (each a multi-choice list, a toggle, or a slot for the stakeholder picker), an optional view switch, and a callback that gets a new search string and the history mode (`push` or `replace`). It does not know the pages. Its name is 「搜尋、排序與篩選」.
+2. From `md`: the search box first, then the native `<select>`, the popover buttons (checkboxes in a `<fieldset>` with a `<legend>`), the toggles (`aria-pressed`) and the slots. Below `md`: the search box on its own full-width row; then the `<select>`, the optional view switch and the 「篩選」 button with the number of filters that are on (the search does not count), which opens the bottom sheet (Dialog). The sheet has the filters, the result line (`role="status"`), 「清除篩選」 and 「完成」. The search box is not in the sheet.
+3. `ListSearchBox`: `<div role="search">`, the visible label 「搜尋」 with the hidden page name, `<input type="search" enterkeyhint="search">`, the placeholder, and the clear button 「清除搜尋」. It keeps its own text. It calls the callback 300 ms after the last key press, or at once on Enter. The first call after the box gets focus uses `push`; the later calls until blur use `replace`. Escape and the clear button remove `q` and keep the focus in the box. When `q` changes from outside (for example 「清除篩選」 or the back button), the box shows the new value.
+4. `ResultLine`: 「顯示 N 個…，共 M 個。」, the search and the filters that are on (the search first: 「篩選：搜尋「無菸」；…」), and 「清除篩選」. Always in the page.
+5. A small demo is not needed. Test it through L5 and the L9 check.
+
+**Tests:** no pure logic in this task, so no new Vitest file. The behavior is checked in L5–L7 and L9.
+
+**Checks:** the app checks.
+
+**Done when:** it builds; at 360 px the search row and the sort row fit with no sideways scroll; the sheet traps focus, closes with Escape, 「完成」 and the close button, and returns focus to 「篩選」; the popovers return focus to their buttons.
+
+### Task L4: the stakeholder picker and the tree dialog
 
 **Files (new):** `src/lib/stakeholderPicker.ts` (+ test), `src/components/StakeholderPicker.tsx`, `src/components/StakeholderTree.tsx`. **Change:** `src/components/StakeholderMenu.tsx` (use `StakeholderTree`; no visible change), `src/i18n/zh-TW.ts` (block `stakeholderPicker`). Needs `ui/dialog.tsx`: if L3 is not merged yet, add it in this task and let the merge keep one copy.
 
 Design 3.23.7, decision 86:
-1. Test first: `pickerOptions(stakeholders, query)` → the 組織 and 個人 groups in ID order, matching the ID (any case) or the name; empty query gives all listed stakeholders (`isListed`). `pickerKey(state, key)` → the next state for Down, Up, Enter, Escape, Tab.
-2. `StakeholderTree`: the tree part of `StakeholderMenu`, with a prop for what each item is (a link with a target, optional count). The side menu keeps working exactly as before (its tests and the S7 checks).
-3. `StakeholderPicker`: the combobox (ARIA 1.2, 3.23.7), the clear button, the hidden live count, and the 「瀏覽」 button that opens the Dialog with `StakeholderTree` (all listed stakeholders, 「全部利害關係人」 first, links that set `who`). It takes an `inline` prop for the phone sheet.
+1. `StakeholderTree`: the tree part of `StakeholderMenu`, with a prop for what each item is (a link with a target, optional count) and a prop to force every group open (for the search in L6). The side menu keeps working exactly as before (its tests and the S7 checks).
+2. `StakeholderPicker`: the combobox (ARIA 1.2, 3.23.7), the clear button, the hidden live count, and the 「瀏覽」 button that opens the Dialog with `StakeholderTree` (all listed stakeholders, 「全部利害關係人」 first, links that set `who`). It takes an `inline` prop for the phone sheet.
 
-**Done when:** the tests pass; the side menu on the issue and stakeholder pages looks and works as before; with the keyboard only, a reader can search, pick, clear, open the dialog, pick from the tree, and land back on 「瀏覽」.
+**Tests (first):** `pickerOptions(stakeholders, query)` → the 組織 and 個人 groups in ID order, matching the ID (any case) or the name; empty query gives all listed stakeholders (`isListed`). `pickerKey(state, key)` → the next state for Down, Up, Enter, Escape, Tab.
 
-### Task L5: `#/issues` — parallel group 3
+**Checks:** the app checks.
+
+**Done when:** the tests pass; the side menu on the issue tabs looks and works as before; with the keyboard only, a reader can search, pick, clear, open the dialog, pick from the tree, and land back on 「瀏覽」.
+
+### Task L10: the text search logic (test first)
+
+**Files (new):** `src/lib/listSearch.ts`, `src/lib/listSearch.test.ts`.
+
+Design 3.23.13, decisions 95 and 96:
+1. `parseListQuery(q)` → `{ text, key } | null`. `text`: NFKC, lower case, trimmed (for the title). `key`: `text` without spaces, 「#」 and 「-」 (for the number). Null when both are empty.
+2. `issueMatches(issue, query)`: the number (leading zeros ignored) or the title.
+3. `stakeholderMatches(stakeholder, query)`: the ID (the same letter and the same number, leading zeros ignored) or the name.
+4. `solutionMatches(item, query)`: the letter alone (also X-A for `A`), `<n><letter>` for an issue solution, `x<letter>` for a cross-issue solution, or the name.
+5. Each function is true when the query is null. The whole number or code must match; the title matches any part.
+
+**Tests (first):** `8`, `#8`, `＃８`, `08` find #8; 「無菸」 finds #8; `1` does not find a #10 (a test item); `i6`, `I06`, `I 06` find I06; `I1` does not find I12; 「身心」 finds I06; `A` finds every solution A and X-A; `X-A` and `xa` find only X-A; `2-A`, `2A`, `#2 A` find only #2 A; 「建議地圖」 finds only #2 A; an empty query and `#` alone find every item; `2` does not find the solutions of #2 by number.
+
+**Checks:** the app checks.
+
+**Done when:** the tests pass, and the functions never return a score or change an order (they return true or false only).
+
+### Task L11: the shared breadcrumb and the issue page breadcrumb
+
+**Files (new):** `src/components/Breadcrumb.tsx`. **Change:** `src/pages/Issue.tsx` (the breadcrumb above the h1, also on the page of a 製作中 issue), `src/pages/Solution.tsx` (both breadcrumbs use the component), `src/pages/StakeholderStory.tsx` (uses the component), `src/i18n/zh-TW.ts` (new block `breadcrumb` with 「頁面位置」, 「首頁」, 「議題」; remove `breadcrumb` and `home` from `storyPage` and `solutionPage` when nothing else uses them).
+
+Design 3.2 (Breadcrumb), decision 99:
+1. `Breadcrumb` takes `items: { label, to? }[]`. It writes `<nav aria-label="頁面位置">` with an `<ol>`, a 「›」 `<li aria-hidden="true">` in muted text between items, links with `targetLinkClass`, and the last item as plain text with `aria-current="page"`. A label can be set to `font-mono` (for IDs).
+2. The issue page: 首頁 › 議題 › #8 on every tab. 議題 links to `#/issues` with no params. The "not found" message has no breadcrumb.
+3. The solution pages and the story page: the same items as today, now through the component. No visible change.
+
+**Tests:** no pure logic, so no new Vitest file. Check by hand in the dev server and in L9: the old breadcrumbs look the same (compare a screenshot of `#/solutions/2-A` and `#/stakeholders/I06/stories/2/I06-US01` before and after).
+
+**Checks:** the app checks.
+
+**Done when:** `#/issues/8` and `#/issues/8/wants` show 首頁 › 議題 › #8; the solution and story breadcrumbs look and work as before; the keyboard order on the issue page is breadcrumb, h1 area, tab list, tab content; 360 px has no sideways scroll.
+
+### Task L5: `#/issues`
+
+Needs L1, L3, L4 and L10.
 
 **Files:** `src/pages/Issues.tsx`, `src/components/IssueList.tsx` (filters out of the component; remove the page-state space filter), `src/components/IssueCard.tsx` (新增日期; the percent while the share sort is on), `src/i18n/zh-TW.ts` (blocks `lists`, `issueCard`).
 
-Design 3.23.1–3.23.6 and 3.23.9, decisions 79, 81, 82, 85, 92:
-1. The h1 with `sr-only`, the bar (sort: 最近更新, 最近新增, 依資料根據比例, 依編號 if Q24 (b); filters: 空間類型, 利害關係人), the result line, the notes, the cards.
-2. The legacy redirect and the empty state.
+Design 3.23.1–3.23.6, 3.23.9 and 3.23.13, decisions 79, 81, 82, 85, 92, 95–98:
+1. The h1 with `sr-only`, the bar (search 「搜尋議題」 with 「輸入編號或標題」; sort: 最近更新, 最近新增, 依資料根據比例; filters: 空間類型, 利害關係人), the result line, the notes, the cards.
+2. The list is: filter (L1), then search (`issueMatches`, L10), then sort (L1). The search does not change the order.
+3. The legacy redirect and the empty states, with the search versions (「找不到符合「…」的議題。」).
 
-**Done when:** `#/issues` shows #9, #2, #1, #8, then #3–#6 (最近更新 on the current data; check the real dates); `?sort=evidence` shows #8, #2, #1, #9, then #3–#6 with the note and the percents; `?space=sidewalk&who=I06` shows only the issues with both; the back button undoes the last change; 360 px has no sideways scroll.
+**Tests:** the logic is tested in L1 and L10. Add no page test.
 
-### Task L6: `#/stakeholders` — after GATE B, parallel group 3
+**Checks:** the app checks.
 
-**Files:** `src/router.tsx`, `src/pages/Stakeholders.tsx` (rewrite), `src/components/StakeholderCard.tsx` (prop `listFields`), `src/components/stakeholder/StakeholdersLayout.tsx` (remove, decision 94), `src/pages/Stakeholder.tsx` and `src/components/stakeholder/*Tab.tsx` (breadcrumb; the filter row with 只看有資料根據 and `FilterStatus` at the top of the tab content), `src/lib/sideMenu.ts`, `src/lib/stakeholderPage.ts`, `src/lib/stakeholderFilter.ts` and `src/components/StakeholderMenu.tsx` (remove the stakeholder contexts and the `switch` and `link` modes, with their tests), `src/lib/stakeholderStats.ts` and its test (remove if Q22 says so), `src/i18n/zh-TW.ts` (blocks `lists`, `stakeholderCard`, `stakeholderStats`).
+**Done when:** `#/issues` shows #9, #2, #1, #8, then #3–#6 (最近更新 on the current data; check the real dates); `?sort=evidence` shows #8, #2, #1, #9, then #3–#6 with the note and the percents; `?sort=id` lands on `#/issues` (the param is dropped with `replace`); `?space=sidewalk&who=I06` shows only the issues with both; `?q=8` and `?q=%238` show only #8; `?q=無菸` shows only #8; `?q=無菸&space=utility` shows the empty state 「找不到符合「無菸」和目前篩選的議題。」 with 「清除搜尋」 and 「清除篩選」 (#8 has no `utility`); typing 「無菸」 and then pressing back once goes back to the list without the search; 「清除篩選」 removes `q` and keeps `sort`; 360 px has no sideways scroll.
 
-Design 3.23.9–3.23.11, decisions 87, 88, 92, 93, 94:
-1. `#/stakeholders` outside the side bar layout: the h1 with `sr-only`, the bar (sort: 最近更新, 最近新增, 依資料根據比例, 依解法涵蓋比例, 依編號 if Q24 (b); filters: 議題 with 「跨議題」, 只看特別關注族群; the view switch), the result line, the notes, then the cards or the tree view (two columns from `md`).
-2. The stakeholder page (decision 94): no side bar; the breadcrumb 首頁 › 利害關係人 › <name>; the filter row at the top of the tab content; tab links keep only `evidence`; `cross` and `special` are dropped with `replace`. The page of a stakeholder with no issue (decision 78) has no side menu.
-3. The statistics by the answer to Q22.
-4. The legacy redirects (`cross=1`, `special=`, `evidence=1`).
+### Task L6: `#/stakeholders` and the stakeholder page
 
-**Done when:** `#/stakeholders?sort=added` shows the same first 5 as the home block; `?sort=solutions` shows the percents and the note; `?issue=X` lists only the stakeholders in 2 or more issues; `?view=tree` shows 組織 and 個人 side by side from `md` and stacked at 360 px, with the sort disabled; `#/stakeholders?cross=1` lands on `?issue=X`; `#/stakeholders/O02/wants` still lands on `#/stakeholders/I12/wants?from=O02`; `#/stakeholders/I06/needs?evidence=1` has no side bar and shows the toggle on in the filter row, and the 需求 tab label still shows the total; the issue tabs keep their side bar and their counts.
+Needs L1, L3, L10 and L11.
 
-### Task L7: `#/solutions` — parallel group 3
+**Files:** `src/router.tsx`, `src/pages/Stakeholders.tsx` (rewrite), `src/components/StakeholderCard.tsx` (prop `listFields`), `src/components/stakeholder/StakeholdersLayout.tsx` (remove, decision 94), `src/pages/Stakeholder.tsx` and `src/components/stakeholder/*Tab.tsx` (the breadcrumb with `Breadcrumb` from L11; the filter row with 只看有資料根據 and `FilterStatus` at the top of the tab content), `src/lib/sideMenu.ts`, `src/lib/stakeholderPage.ts`, `src/lib/stakeholderFilter.ts` and `src/components/StakeholderMenu.tsx` (remove the stakeholder contexts and the `switch` and `link` modes, with their tests), `src/lib/stakeholderStats.ts` and `src/lib/stakeholderStats.test.ts` (remove, decision 88), `src/i18n/zh-TW.ts` (blocks `lists`, `stakeholderCard`; remove `stakeholderStats`).
 
-**Files:** `src/pages/Solutions.tsx` (rewrite: one flat list), `src/components/SolutionCard.tsx` and `src/components/solution/CrossSolutionCard.tsx` (更新日期, the issue line, 「涵蓋需求的資料根據」, the badge 「跨議題解法」, 「也涵蓋 #1 的需求」), `src/lib/solutionList.ts` (remove what is no longer used), `src/i18n/zh-TW.ts` (blocks `lists`, `crossIssue`).
+Design 3.23.9–3.23.11 and 3.23.13, decisions 87, 88, 92–99:
+1. `#/stakeholders` outside the side bar layout: the h1 with `sr-only`, the bar (search 「搜尋利害關係人」 with 「輸入編號或名稱」; sort: 最近更新, 最近新增, 依資料根據比例, 依解法涵蓋比例; filters: 議題 with 「跨議題」, 只看特別關注族群; the view switch), the result line, the notes, then the cards or the tree view (two columns from `md`).
+2. The list is: filter, then search (`stakeholderMatches`), then sort. In tree view: filter and search, then `sideMenuTree` with the matching IDs, every group open while `q` is set.
+3. The stakeholder page (decision 94): no side bar; the breadcrumb 首頁 › 利害關係人 › I06 (decision 99); the filter row at the top of the tab content; tab links keep only `evidence`; `cross` and `special` are dropped with `replace`. The page of a stakeholder with no issue (decision 78) has no side menu.
+4. Remove the statistics (decision 88).
+5. The legacy redirects (`cross=1`, `special=`, `evidence=1`).
 
-Design 3.23.5, 3.23.9, decisions 85, 89, 92:
-1. The h1 with `sr-only`, the bar (sort: 最近更新, 最近新增, 依資料根據比例, 依編號 if Q24 (b); filters: 議題 with 「跨議題解法」 when `cross-issue.json` exists, 空間類型, 利害關係人), the result line, the notes, one list of cards.
-2. Without `cross-issue.json`, no cross-issue card and no 「跨議題解法」 choice.
+**Tests:** remove the tests of the removed code (stakeholder contexts of `sideMenuCounts`, `stakeholderStats`). Keep every test of the issue contexts passing.
 
-**Done when:** `#/solutions?sort=added` shows the same first 5 as the home block; `?issue=1` includes X-E; `?issue=X` shows only X-A to X-E; `?who=I06` shows only the solutions that cover a need of I06; the result line says 「共 25 個」 with no filter on the current data.
+**Checks:** the app checks.
+
+**Done when:** `#/stakeholders?sort=added` shows the same first 5 as the home block; `?sort=solutions` shows the percents and the note; `?issue=X` lists only the stakeholders in 2 or more issues; `?view=tree` shows 組織 and 個人 side by side from `md` and stacked at 360 px, with the sort disabled; `?q=i6` shows only I06; `?q=身心&view=tree` shows I06 and only the groups above it, all open; the page has no statistics; `#/stakeholders?cross=1` lands on `?issue=X`; `#/stakeholders/O02/wants` still lands on `#/stakeholders/I12/wants?from=O02`; `#/stakeholders/I06/needs?evidence=1` has no side bar, shows the breadcrumb 首頁 › 利害關係人 › I06 and the toggle on in the filter row, and the 需求 tab label still shows the total; the issue tabs keep their side bar and their counts.
+
+### Task L7: `#/solutions`
+
+Needs L1, L3, L4 and L10.
+
+**Files:** `src/pages/Solutions.tsx` (rewrite: one flat list), `src/components/SolutionCard.tsx` and `src/components/solution/CrossSolutionCard.tsx` (更新日期, the issue line, 「涵蓋需求的資料根據」, the badge 「跨議題解法」, 「也涵蓋 #1 的需求」), `src/lib/solutionList.ts` (remove what is no longer used, with its tests), `src/i18n/zh-TW.ts` (blocks `lists`, `crossIssue`).
+
+Design 3.23.5, 3.23.9 and 3.23.13, decisions 85, 89, 92, 95–98:
+1. The h1 with `sr-only`, the bar (search 「搜尋解法」 with 「輸入代號或名稱」; sort: 最近更新, 最近新增, 依資料根據比例; filters: 議題 with 「跨議題解法」 when `cross-issue.json` exists, 空間類型, 利害關係人), the result line, the notes, one list of cards.
+2. The list is: filter, then search (`solutionMatches`), then sort.
+3. Without `cross-issue.json`, no cross-issue card and no 「跨議題解法」 choice.
+
+**Tests:** the logic is tested in L1 and L10. Update or remove the `solutionList.test.ts` cases of removed functions.
+
+**Checks:** the app checks.
+
+**Done when:** `#/solutions?sort=added` shows the same first 5 as the home block; `?issue=1` includes X-E; `?issue=X` shows only X-A to X-E; `?who=I06` shows only the solutions that cover a need of I06; `?q=A` shows #1 A, #2 A, #8 A, #9 A and X-A in the order of the current sort; `?q=X-A` shows only X-A; `?q=%232%20A` shows only #2 A; `?q=A&who=I06` shows only the solutions A that cover a need of I06; the result line says 「共 25 個」 with no filter on the current data.
 
 ### Task L8: home links, old links, clean-up
 
 **Files:** `src/pages/Home.tsx` (the 「看全部」 targets), `src/components/IssueCard.tsx` (the 跨議題共用的利害關係人 link to `#/stakeholders?issue=X`), `src/lib/recent.ts` (`homeRedirect` stays), unused strings in `src/i18n/zh-TW.ts`, design and plan status lines.
 
-Design 3.23.12, decision 91: the three links of 3.23.12; `#/?cross=1` still reaches the cross-issue stakeholders; remove unused code and strings (`issuesIntro`, `stakeholdersIntro`, `stakeholdersCountNote`, `solutionsIntro`, and what L5–L7 left).
+Design 3.23.12, decision 91: the three links of 3.23.12; `#/?cross=1` still reaches the cross-issue stakeholders; remove unused code and strings (`issuesIntro`, `stakeholdersIntro`, `stakeholdersCountNote`, `solutionsIntro`, and what L5–L7 and L11 left).
 
-**Done when:** each 「看全部」 link lands on a list whose first 5 cards are the 5 items of its block; the old links of 3.23.5 work; `npm test`, `npx tsc -b` and `npm run build` pass.
+**Tests:** update the tests of `recent.ts` and of any link helper that changed.
+
+**Checks:** the app checks.
+
+**Done when:** each 「看全部」 link lands on a list whose first 5 cards are the 5 items of its block; the old links of 3.23.5 work, and `sort=id` is dropped; the checks pass.
 
 ### Task L9: accessibility, phone and wide screen check (Playwright)
 
@@ -785,8 +869,17 @@ Design 3.23.12, decision 91: the three links of 3.23.12; `#/?cross=1` still reac
 
 The same method as Task S7, with these changes:
 1. Widths: 360, 375, 768, 1280, 1440 and 1920 px, both themes.
-2. Pages: the S7 list, plus `#/issues?sort=evidence`, `#/issues?space=sidewalk&who=I06`, `#/stakeholders?sort=solutions&issue=X&specialonly=1`, `#/stakeholders?view=tree`, `#/solutions?issue=1&who=I06`, `#/solutions?sort=added`, and the open filter sheet, the open popovers and the open tree dialog at 360 and 1280 px.
-3. Extra checks: each page has one h1 and it is visually hidden; the bar is the first content under the header; the sheet and the tree dialog trap focus, close with Escape and return focus; the combobox works with Down, Up, Enter and Escape and announces the number of matches; the result line changes after each filter change (`role="status"`); every sort and filter survives a reload (it is in the URL); the back button undoes the last change; the share sorts show the note and the percents, and the date sorts do not; no page outside the three list pages changed its order (spot check the side menu and the home blocks).
-4. Screenshots at 360, 1440 and 1920 px of the three list pages, and at 360 px of the open sheet. Look at them.
+2. Pages: the S7 list (without the side bar pages that are gone), plus `#/issues?sort=evidence`, `#/issues?space=sidewalk&who=I06`, `#/issues?q=無菸`, `#/issues/8/wants`, `#/stakeholders?sort=solutions&issue=X&specialonly=1`, `#/stakeholders?view=tree`, `#/stakeholders?view=tree&q=身心`, `#/stakeholders/I06/needs?evidence=1`, `#/solutions?issue=1&who=I06`, `#/solutions?sort=added`, `#/solutions?q=A`, and the open filter sheet, the open popovers and the open tree dialog at 360 and 1280 px.
+3. Extra checks:
+   - Each list page has one h1 and it is visually hidden. The bar is the first content under the header. The search box is the first control of the bar, and on a phone it is on its own row, outside the sheet.
+   - The search box has the full label (「搜尋議題」 and so on) and a `role="search"` landmark. Typing gives a new count in the result line (`role="status"`). Typing a word and pressing back once leaves the search. The clear button and Escape remove `q`.
+   - The sheet and the tree dialog trap focus, close with Escape and return focus. The combobox works with Down, Up, Enter and Escape and announces the number of matches.
+   - The result line changes after each filter change. Every sort, filter and search survives a reload (it is in the URL). The back button undoes the last change. `sort=id` is dropped.
+   - The share sorts show the note and the percents, and the date sorts do not. The search does not change the order.
+   - The issue page, the stakeholder page, the solution pages and the story page each have one breadcrumb `<nav aria-label="頁面位置">` with the last item `aria-current="page"`.
+   - No page outside the three list pages changed its order (spot check the side menu and the home blocks).
+4. Screenshots at 360, 1440 and 1920 px of the three list pages and `#/issues/8`, and at 360 px of the open sheet and of `#/stakeholders?q=身心`. Look at them.
 
-**Done when:** every check passes on every page, `npm test` and `npm run build` pass, and the report lists what was fixed.
+**Checks:** the app checks, after the fixes.
+
+**Done when:** every check passes on every page, the app checks pass, and the report lists what was fixed.

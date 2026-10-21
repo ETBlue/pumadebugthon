@@ -3,6 +3,7 @@
 Status: approved by ETBlue (2026-10-18). Updated 2026-10-20 for the needs-based pages: sections 3.2, 3.3, 3.12 and the new sections 3.14–3.19, decisions 34–42. Updated again 2026-10-20 with ETBlue's answers to the open questions: decisions 43–57 (no want page and no need page; solutions get their own path `#/solutions/<n>-<code>`). Section 14 has no open questions now. Updated 2026-10-21 again with ETBlue's notes: the 特別關注 chips on the issue page (decision 75), the 「全部利害關係人」 item on the stakeholder pages (decision 76) and the data filter on the 解法 tab with no stakeholder picked (decision 77).
 Updated 2026-10-20 (Phase S) with ETBlue's new notes in `human-inputs.md` (commits 487bac6 and 8c4bd4b): the stakeholder side menu, the new `#/stakeholders` page, the stakeholder page layout, wide screens up to 1440 px and the compact issue card. New sections 3.20–3.22, decisions 61–73. Updated 2026-10-21 with ETBlue's answers to Q14–Q19: Q17 changed decision 69 (on a phone the side bar is closed by default on every page). Section 14 has no open questions now. Updated 2026-10-21 again with ETBlue's notes: the 特別關注 chips on the issue page (decision 75), the 「全部利害關係人」 item on the stakeholder pages (decision 76) and the data filter on the 解法 tab with no stakeholder picked (decision 77).
 Updated 2026-10-22 (Phase L, draft) with ETBlue's notes in `human-inputs.md` (commits ef77fec and a325fcb: 「including cross-issue」 and the card view / tree view toggle) and ETBlue's decisions of 2026-10-22: the sort and filter bar on the three list pages, count-based sorts as a reader's choice, `#/stakeholders` without the side bar and with a card view and a tree view, and new dates. New section 3.23, decisions 79–93, open questions Q21–Q24 (section 14), decision 94 (Q20 answered).
+Updated 2026-10-22 again with ETBlue's answers to Q21–Q24 and ETBlue's notes in `human-inputs.md` (commit e879ba7): decisions 83, 84, 88 and 90 are final, decision 82 has no 依編號 sort now (Q24), the search box on the three list pages (new section 3.23.13, decisions 95–98) and the breadcrumb on the issue page (decision 99). Section 14 has no open questions now.
 Source of the idea: [human-inputs.md](human-inputs.md). When the two files differ, `human-inputs.md` is the one that counts.
 
 ## 1. Problem
@@ -91,7 +92,21 @@ Rules for the tab labels:
 - On a phone the tab list wraps onto two rows. It never scrolls sideways.
 - A label with counts has two parts (`TabLabel` in `src/lib/tabLabel.ts`): the name and the counts. Below `md` the second part is on its own line under the first, in smaller text, for example 「訴求 39」 over 「衝突 9」, and 「需求」 over 「涵蓋 9・未涵蓋 12」 on the solution page. Neither part breaks inside. From `md` the label is one line. The tab's `aria-label` is the one-line text, so every count stays in the accessible name. (Review of N4–N9, 2026-10-20: the one-part label broke onto 3 lines at 360 px.)
 
-Above the tabs: the h1 (「#2 找回消失的垃圾桶」), the space types and the update date, as before.
+Above the tabs: the breadcrumb, the h1 (「#2 找回消失的垃圾桶」), the space types and the update date, as before.
+
+**Breadcrumb (decision 99).** `human-inputs.md` asks for a breadcrumb on the issue page, the stakeholder page and the solution page. The issue page gets the same breadcrumb as the solution page (3.12) and the story page (3.15):
+
+| Part | Design |
+|---|---|
+| Items | 首頁 › 議題 › #8. 首頁 links to `#/`. 議題 links to `#/issues`. The last item is the issue number only (「#8」, `font-mono`), as the solution page shows only the code (「#2 A」) and the story page only the story ID (「#2 I06-US01」). The h1 under it has the number and the title, so the title is not repeated. |
+| Current item | The last item is plain text with `aria-current="page"`. It is not a link. |
+| Markup | `<nav aria-label="頁面位置">` with an `<ol>`. Each separator 「›」 is its own `<li aria-hidden="true">` in muted text. The links use `targetLinkClass` (24 × 24 px targets). This is what `Solution.tsx` and `StakeholderStory.tsx` do today. |
+| Tabs | The same breadcrumb on every tab. It does not name the tab, because the tab list shows it. |
+| Links | 議題 goes to `#/issues` with no params. The back button still returns to the list with its sort, filters and search, because they are in the URL (3.23.5). |
+| Where | At the top of the page, above the h1, also on the page of a 製作中 issue. The "not found" message has no breadcrumb, as on the solution page. |
+| Keyboard order | The breadcrumb links, the h1 and the metadata links, the tab list, then the tab content. |
+
+**Shared component.** Today `Solution.tsx` (twice) and `StakeholderStory.tsx` each write the breadcrumb markup themselves. A new component `Breadcrumb` (`src/components/Breadcrumb.tsx`) takes `items: { label, to? }[]` and writes the markup above. The last item is the current one. The issue page, the solution page, the cross-issue solution page, the story page and the stakeholder page (decision 94) all use it. The look of the existing breadcrumbs does not change. The strings 「頁面位置」 and 「首頁」 move to one shared block `breadcrumb` in `src/i18n/zh-TW.ts` (today they are in `storyPage` and `solutionPage`); 「議題」 is new there.
 
 **總覽.** The same content as before (分析摘要, title, tag legend, counts, 資料根據, 特別關注族群, 使用相同空間的議題, 待補清單), plus one new section at the end:
 - 「利害關係人」 (h3, element ID `focus-stakeholders`): the stakeholder list of this issue, the content of the old 利害關係人 tab (`StakeholderList` with detailed `StakeholderCard`s, 3.9). (Decision 38.)
@@ -340,7 +355,7 @@ A space type filter sits above the issue list. *Replaced by the bar of 3.23 (dec
 - An issue that is 製作中 shows no breakdown.
 - Issues are never sorted, ranked or filtered by these numbers. The list keeps issue number order. *Replaced on `#/issues` only by the reader-picked sort 依資料根據比例 (decision 81, 3.23.3). The default order is by date (decision 82). Everywhere else this rule holds.* ~~The home page does not show them.~~ Since Phase S the compact `IssueCard` shows them too, on the home page and the space page, without the totals and without the 實證 percent (decision 72). The explanation line is shown once per list.
 
-**`#/stakeholders`: 利害關係人列表.** *Replaced by section 3.20 in Phase S (decision 62), and again by section 3.23 in Phase L (decision 87): a list of `StakeholderCard`s with the sort and filter bar.* The page is now the side menu and a statistics block. The text below is the old design. The tree with detailed `StakeholderCard`s stays only in the 「利害關係人」 section of the issue's 總覽 tab.
+**`#/stakeholders`: 利害關係人列表.** *Replaced by section 3.20 in Phase S (decision 62), and again by section 3.23 in Phase L (decision 87): a list of `StakeholderCard`s with the sort and filter bar.* In Phase S the page was the side menu and a statistics block; Phase L removes both (decisions 87 and 88). The text below is the old design. The tree with detailed `StakeholderCard`s stays only in the 「利害關係人」 section of the issue's 總覽 tab.
 
 Every stakeholder in `stakeholders.csv`, across all issues.
 
@@ -474,7 +489,7 @@ The government open datasets (`openData` in `index.json`) are not on this page. 
 
 ### 3.14 Stakeholder menu
 
-*Phase S changes this section. Section 3.21 is the new design of the menu. These rules below are replaced: 「Two groups … in ID order」 (now a tree, decision 65), 「The menu shows no counts」 (now a count per item, decision 66), the status line in the menu (now in the main block, decision 68), and the layout rules (3.21). The other rules stay.*
+*Phase S changes this section. Section 3.21 is the new design of the menu. These rules below are replaced: 「Two groups … in ID order」 (now a tree, decision 65), 「The menu shows no counts」 (now a count per item, decision 66), the status line in the menu (now in the main block, decision 68), and the layout rules (3.21). The other rules stay. Phase L: the 「Stakeholder page」 column below no longer applies. The stakeholder page has no menu now (decision 94). The menu is only on the issue page's 訴求, 需求 and 解法 tabs.*
 
 The full stakeholder list is a menu next to the content of the issue page and the stakeholder page (ETBlue, 2026-10-20, decision 35). The stakeholder is the main entity: the menu filters the stories, wants and needs by stakeholder. The component is `StakeholderMenu` (`src/components/StakeholderMenu.tsx`). The logic is in `src/lib/stakeholderFilter.ts`.
 
@@ -595,7 +610,7 @@ The page needs the issue files of the issues in `parts`, plus the issues of ever
 | Place | What |
 |---|---|
 | `#/solutions` | *Phase L: replaced by decision 89 (3.23.9): one flat list, the cross-issue cards have the badge 「跨議題解法」, and the 議題 filter also matches the issues of the needs they cover.* Before: a first group 「跨議題解法」 (h2), before the per-issue groups (decision 51). Each card shows the code and name, the summary, and the issues (「#1、#2、#8」). The issue filter matches a cross-issue solution when one of its issues is picked. |
-| Issue 解法 tab | A box 「本議題也在跨議題解法中」 with links to each cross-issue solution that has the issue in `parts`, and the issue's solutions that it combines. The box is above the 「只看有資料根據」 toggle. |
+| Issue 解法 tab | A box 「本議題也在跨議題解法中」 with links to each cross-issue solution that has the issue in `parts`, and the issue's solutions that it combines. The box is at the top of the tab content in the main block, after the filter status line. (Since Phase S the 「只看有資料根據」 toggle is in the side bar, decision 67.) |
 | Solution page 總覽 | 「跨議題解法」 with a link, when the solution is in `parts` (3.12) |
 | Home block 「最近分析出的解法」 | Included, because each item has `added` (decision 51). On the same date, the cross-issue solutions come before the issue solutions. |
 | Header count 解法 | Includes the cross-issue solutions, because the header link goes to the list that shows them (decision 51) |
@@ -620,7 +635,7 @@ Every page and its tabs (decisions 45, 46, 56).
 | `#/spaces/<code>` | Space (3.6) | — |
 | `#/about` | About (3.13) | — |
 
-Query parameters: `evidence=1` (3.5), `stakeholder=<id>` (3.14), `cross=1` (the side bar filter of the stakeholder pages) and `special=<特別關注 group>` (the side bar filter of the stakeholder pages and the issue 訴求, 需求 and 解法 tabs, 3.21), `pick=<key>` (4), `focus=<value>` (3.2, 3.16), `from=<old id>` (3.3), `cross=1` and the list filters (3.9). Phase L (3.23.5): on the three list pages `sort=<updated|added|evidence|solutions|id>`, `issue=<n>` and `issue=X`, `space=<code>`, `who=<id>`, `specialonly=1` and `view=tree`. On `#/stakeholders` the old `cross=1` and `special=<group>` redirect (3.23.5).
+Query parameters: `evidence=1` (3.5; the issue 訴求, 需求 and 解法 tabs, the stakeholder page and the solution page), `stakeholder=<id>` and `special=<特別關注 group>` (the side bar filters of the issue 訴求, 需求 and 解法 tabs, 3.21), `pick=<key>` (4), `focus=<value>` (3.2, 3.16), `from=<old id>` (3.3). Phase L (3.23.5, 3.23.13): on the three list pages `sort=<updated|added|evidence|solutions>`, `issue=<n>` and `issue=X`, `space=<code>`, `who=<id>`, `specialonly=1`, `view=tree` and `q=<search text>`. There is no `sort=id` (Q24): an old link with it is handled like any unknown value, so the param is dropped with `replace`. On `#/stakeholders` the old `cross=1` and `special=<group>` redirect (3.23.5). On the stakeholder page `cross` and `special` are dropped with `replace` (decision 94).
 
 Old URLs:
 
@@ -637,7 +652,7 @@ Under a stakeholder, the segment `stories` is only a sub-page name. `#/stakehold
 
 ### 3.20 Stakeholders page (Phase S)
 
-*Replaced by section 3.23 in Phase L (decisions 87 and 88): `#/stakeholders` has no side bar and no statistics now (the statistics wait for Q22). This section is the old design.*
+*Replaced by section 3.23 in Phase L (decisions 87 and 88): `#/stakeholders` has no side bar and no statistics now (Q22; ETBlue, 2026-10-22). This section is the old design.*
 
 URL: `#/stakeholders`. ETBlue, `human-inputs.md` (2026-10-20), decisions 62 and 63. This replaces the 利害關係人列表 of 3.9.
 
@@ -687,14 +702,14 @@ ETBlue, `human-inputs.md` (2026-10-20), decisions 64–71. This is the new desig
 - A level with no stakeholder under it is left out. On the issue page only the stakeholders of the issue are in the tree, so most levels are left out.
 - Each root and each level is a group with a button to open and close it. Every group is open when the page loads. The groups above the current item are always open.
 - A group button shows its name and the number of stakeholders under it (all levels below), for example 「臺北市　12」. This number is the same on every page. It is not a sum of the item counts, because one want or one need can belong to several stakeholders.
-- 「全部利害關係人」 is the first item, above the roots, with no count, on every page with the side bar (decision 76):
+- 「全部利害關係人」 is the first item, above the roots, with no count, on every page with the side bar (decision 76). *Phase L: only the issue page has the side bar now (decisions 87 and 94), so only the first case below is left.*
   - Issue page: it removes `?stakeholder=` and keeps the other filters. It is current (`aria-current="true"`) when no stakeholder is picked.
   - `#/stakeholders`: it links to `#/stakeholders` and is the current item (`aria-current="page"`).
   - A stakeholder page: it links to `#/stakeholders`. It is not current.
   - The link keeps `evidence`, `cross` and `special` (`allStakeholdersTarget`).
 - Each step down the tree is indented 0.75rem. Long names wrap. The count stays on the right of the first line.
 
-**Count next to each stakeholder** (decision 66). The count depends on the page. The rule: **the count is the number of items the main block shows after a click on that item, with the same filters.** So the count says what the reader will see. It is not a score.
+**Count next to each stakeholder** (decision 66). *Phase L: only the `#/issues/<n>/…` rows of the table below are left. The `#/stakeholders` and `#/stakeholders/<id>` rows are removed with the side bar of those pages (decisions 87 and 94).* The count depends on the page. The rule: **the count is the number of items the main block shows after a click on that item, with the same filters.** So the count says what the reader will see. It is not a score.
 
 | Page | Count | Logic (existing functions) |
 |---|---|---|
@@ -715,7 +730,7 @@ Rules:
 - Each count also has hidden text for screen readers, so the link name is, for example, 「I06 身心障礙者（視障、輪椅使用者），訴求 2」.
 - The logic is one pure function `sideMenuCounts(context, …)` in `src/lib/sideMenu.ts`, with tests. It calls the same view functions as the tabs, so the count and the list cannot differ.
 
-**Filters in the side bar** (decision 67). Every filter of the page moves into the side bar, above the tree, in this order: 只看有資料根據, 只看跨議題, 特別關注.
+**Filters in the side bar** (decision 67). Every filter of the page moves into the side bar, above the tree, in this order: 只看有資料根據, 只看跨議題, 特別關注. *Phase L: filters are in a side bar only on a page that has a side bar. That is only the issue page's 訴求, 需求 and 解法 tabs now. So only the last column of the table below is left. `#/stakeholders` has its filters in the bar of 3.23 (decision 87). The stakeholder page has 只看有資料根據 in the filter row at the top of the tab content, and no 只看跨議題 or 特別關注 (decision 94).*
 
 | Filter | URL | `#/stakeholders` | `#/stakeholders/<id>` | Issue 訴求, 需求, 解法 tabs |
 |---|---|---|---|---|
@@ -732,7 +747,7 @@ Rules:
 - The 「利害關係人」 section of the issue's 總覽 tab keeps its own 只看跨議題 toggle and 特別關注 chips, because that tab has no side bar.
 
 **Filter status line and 「清除篩選」 in the main block** (decision 68).
-- The line moves out of the menu into the main block: at the top of the tab content on the issue page and on the stakeholder page, and under the intro line on `#/stakeholders`. So the reader sees it also when the side bar is closed on a phone.
+- The line moves out of the menu into the main block: at the top of the tab content on the issue page and on the stakeholder page, and under the intro line on `#/stakeholders` (*Phase L: on `#/stakeholders` the result line of 3.23.6 replaces it, decision 87*). So the reader sees it also when the side bar is closed on a phone.
 - It lists every filter that is on, then what is shown. For example: 「篩選：I06 身心障礙者（視障、輪椅使用者）、只看有資料根據。顯示 2 個訴求、1 個衝突。」, or 「篩選：只看跨議題、特別關注：高齡。選單顯示 12 位利害關係人。」
 - 「清除篩選」 is a link. It removes every side bar filter of that page (`stakeholder`, `evidence`, `cross`, `special`) and keeps the page and the tab. On a stakeholder page the stakeholder itself is not a filter, so it stays.
 - The element with `role="status"` is always in the page. It is empty when no filter is on.
@@ -740,15 +755,15 @@ Rules:
 **Layout from `lg` (1024 px)** (decision 69). As before: a left column, sticky at the top, with its own scroll when it is taller than the window. It is 16rem wide, and 18rem from `xl` (1280 px). A 「跳過利害關係人選單」 link at the top of the side bar (shown on keyboard focus) moves focus to the main block, because the menu has more than 50 links.
 
 **Layout below `lg`** (decision 69). The whole side bar (filters and tree) is one Collapsible above the main block.
-- Closed by default on every page, also on `#/stakeholders` (Q17; ETBlue, 2026-10-21). Then the statistics are the first content on a phone. An open default on `#/stakeholders` can be added later if needed.
+- Closed by default on every page, also on `#/stakeholders` (Q17; ETBlue, 2026-10-21). *Phase L: only the issue tabs have the side bar now (decisions 87 and 94).* Then the statistics are the first content on a phone. An open default on `#/stakeholders` can be added later if needed.
 - The button says the current choice: 「利害關係人與篩選：I06 身心障礙者（視障、輪椅使用者）」 or 「利害關係人與篩選：全部」. The filter status line in the main block shows the filters, so the button does not list them.
 - Open, it shows the filters, the count line and the tree, with every group open. It closes after a pick (as before).
 - No sideways scroll at 360 px. The tree indent is small (0.75rem per step), so a 5-level path still fits. Each item and each group button is at least 24 × 24 px (WCAG 2.2 AA target size).
 
 **Keyboard and screen reader.**
-- Keyboard order: on the stakeholder pages, the side bar (skip link, filters, tree), then the main block. On the issue page: the tab list, the side bar, then the tab content (decision 58).
+- Keyboard order: on the issue page, the tab list, the side bar (skip link, filters, tree), then the tab content (decision 58). *Before Phase L, the stakeholder pages had the side bar first, then the main block. Those pages have no side bar now (decisions 87 and 94).*
 - The tree is nested lists (`<ul>`) in a `<nav>`, with a button per group (`aria-expanded`, from the shadcn Collapsible) and a link per stakeholder. It does not use the ARIA `tree` role. That role needs arrow-key focus handling, and plain lists of buttons and links already work with Tab and with screen readers.
-- The current item has `aria-current` (`page` on the stakeholder page, `true` on the issue page, as before). It is bold and has a bar on the left.
+- The current item has `aria-current="true"` on the issue page, as before. (On the stakeholder page it was `page`, before Phase L removed that side bar.) It is bold and has a bar on the left.
 - The filters are in a group with the name 「篩選」.
 - axe (WCAG AA) passes, as in Task N12.
 
@@ -769,9 +784,9 @@ ETBlue, `human-inputs.md` (2026-10-20), decision 61. Before, the page column was
 
 ### 3.23 List pages: sort and filter bar (Phase L)
 
-ETBlue, `human-inputs.md` (commits ef77fec and a325fcb; a325fcb adds 「including cross-issue」 to the issue filters and the card view / tree view toggle) and ETBlue's decisions of 2026-10-22. Decisions 79–93. This section replaces the page parts of 3.9 for `#/issues`, `#/stakeholders` and `#/solutions`, and section 3.20. The shared cards of 3.9 stay, with the new fields below.
+ETBlue, `human-inputs.md` (commits ef77fec and a325fcb; a325fcb adds 「including cross-issue」 to the issue filters and the card view / tree view toggle) and ETBlue's decisions of 2026-10-22. Decisions 79–98. Commit e879ba7 adds 「search … by title or number」 to all three pages (3.23.13). This section replaces the page parts of 3.9 for `#/issues`, `#/stakeholders` and `#/solutions`, and section 3.20. The shared cards of 3.9 stay, with the new fields below.
 
-**Status:** draft. ETBlue answered Q20 and the 「跨議題」 part of Q24 on 2026-10-22 (decision 94, decision 85). Some parts still wait for ETBlue's answers (section 14, Q21–Q24). They are marked *(proposal)* or name the question.
+**Status:** ETBlue answered Q20–Q24 on 2026-10-22 (decisions 82, 83, 84, 85, 88, 90 and 94). No part waits for an answer now. A few small details are still marked *(proposal)*: they are the coordinator's choices, and ETBlue can change them in review.
 
 #### 3.23.1 The page frame
 
@@ -780,7 +795,7 @@ The three list pages have the same frame, from top to bottom:
 | Part | Design |
 |---|---|
 | h1 | Kept, but visually hidden (`sr-only`), so screen readers still get the page heading (decision 79). The text stays: 「議題」, 「利害關係人」, 「解法」. The highlighted header link (3.7, `aria-current="page"`) is the visible title. The page `<title>` does not change (「議題 · 市政提案小幫手」). |
-| Sort and filter bar | Right under the header, as the first visible part of `<main>` (3.23.2, decision 80). |
+| Search, sort and filter bar | Right under the header, as the first visible part of `<main>` (3.23.2, decision 80). It has the search box (3.23.13), the sort and the filters. |
 | Result line | Under the bar: what is shown, the filters that are on and 「清除篩選」 (3.23.6). |
 | Notes | The short notes the page needs, under the result line: the sort note when a share sort is on (3.23.3), and on `#/issues` the 資料根據 line of 3.9 (`t.basis.listNote`). |
 | Cards | One list of cards (`<ul>`), 1 column on a phone, 2 from `md`, 3 from `xl` (3.22). |
@@ -789,23 +804,24 @@ The old intro lines (`issuesIntro`, `stakeholdersIntro`, `stakeholdersCountNote`
 
 #### 3.23.2 The bar
 
-One component, `ListBar` (`src/components/ListBar.tsx`). Each page gives it its sort options and its filters. All state is in the URL (3.23.5). The bar does not stick to the top when the page scrolls. *(Proposal: sticky can be added later.)*
+One component, `ListBar` (`src/components/ListBar.tsx`). Each page gives it its sort options and its filters. All state is in the URL (3.23.5). The bar does not stick to the top when the page scrolls. *(Proposal: sticky can be added later.)* The bar has the search box first, then the sort, then the filters (3.23.13).
 
 Look: a band across the page column, right under the header, with the muted background (`bg-muted`) and a bottom border. It uses only tokens, so it works in both themes.
 
 **From `md` (768 px).** One row of controls. It wraps onto a second row when it is too long. The order on screen is the keyboard order:
 
-1. 「排序」 and a native `<select>` with the sort options of the page (3.23.3). A native select works well with the keyboard, screen readers and phones.
-2. The filters of the page, in the order of the table in 3.23.5:
+1. The search box (3.23.13): the visible label 「搜尋」 and a search box, 16rem wide.
+2. 「排序」 and a native `<select>` with the sort options of the page (3.23.3). A native select works well with the keyboard, screen readers and phones.
+3. The filters of the page, in the order of the table in 3.23.5:
    - A filter with many choices (空間類型, 議題) is a button, for example 「空間類型 ▾」, or 「空間類型：2 ▾」 when 2 are picked. It opens a popover (shadcn Popover, Radix) with one checkbox per choice. The popover moves focus to the first checkbox. Escape and a click outside close it and return focus to the button.
    - 利害關係人 is the stakeholder picker (3.23.7): a search box with a list, and a button 「瀏覽」 that opens the tree dialog.
    - A filter with one on/off state (特別關注族群) is a toggle button with `aria-pressed` and the check mark of `ToggleCheck`, the same look as the chips today.
-3. On `#/stakeholders` only, at the end of the row: the view switch 「卡片」 / 「樹狀」 (3.23.11).
+4. On `#/stakeholders` only, at the end of the row: the view switch 「卡片」 / 「樹狀」 (3.23.11).
 
-**Below `md` (phone, 360 px and up).** One row with two controls (three on `#/stakeholders`), so nothing scrolls sideways at 360 px with the 16 px gutter (328 px of space):
+**Below `md` (phone, 360 px and up).** First a full-width row with the search box (3.23.13). It is not in the sheet, so the reader can search and see the cards at the same time. Then one row with two controls (three on `#/stakeholders`), so nothing scrolls sideways at 360 px with the 16 px gutter (328 px of space):
 - 「排序」 and the native `<select>`, which takes the free width.
 - On `#/stakeholders`: the view switch, as two icon buttons (32 × 32 px each) with the hidden names 「卡片檢視」 and 「樹狀檢視」.
-- A button 「篩選」. When filters are on, it says 「篩選（2）」: the number of filters that are on. Its accessible name is 「篩選，已套用 2 個」.
+- A button 「篩選」. When filters are on, it says 「篩選（2）」: the number of filters that are on. Its accessible name is 「篩選，已套用 2 個」. The search does not count here, because the search box is outside the sheet and shows its text.
 
 The 「篩選」 button opens a sheet: a shadcn Dialog (Radix) shown as a bottom sheet, full width, at most 85% of the window high, with its own scroll. In the sheet:
 - the title 「篩選」 (the dialog's name)
@@ -817,8 +833,8 @@ A change in the sheet updates the URL and the list at once. There is no 「套�
 Every control is at least 24 × 24 px (WCAG 2.2 target size, as in Task S7).
 
 **Keyboard and screen reader.**
-- The bar is a `<section aria-label="排序與篩選">`.
-- Keyboard order: header, the bar (sort, then filters), the result line links, then the cards.
+- The bar is a `<section aria-label="搜尋、排序與篩選">` (was 「排序與篩選」 before the search box was added).
+- Keyboard order: header, the bar (search box, sort, then filters), the result line links, then the cards.
 - Each control has a visible label. The popover buttons have `aria-expanded` and `aria-controls` (from Radix). The checkboxes are real checkboxes in a `<fieldset>` with a `<legend>` (「空間類型」).
 - The result line has `role="status"`. It is always in the page, so a change is read out.
 
@@ -840,7 +856,8 @@ This is allowed **only** for these reader-picked sorts on these three list pages
 | `added` | 最近新增 | Yes | Yes | Yes | Newest first |
 | `evidence` | 依資料根據比例（實證＋AI整理） | Yes | Yes | Yes | Highest share first |
 | `solutions` | 依解法涵蓋比例 | No | Yes | No | Highest share first |
-| `id` | 依編號 | Yes | Yes | Yes | The fixed ID order *(proposal, Q24)* |
+
+There is no 依編號 sort (Q24; ETBlue, 2026-10-22). The fixed ID order (below) is still used: it breaks the ties of the share sorts, it orders the items with no value, and it is the order where no sort applies (for example the tree view, 3.23.11). An old link with `sort=id` is handled like any unknown sort value: the param is dropped with `replace`, so the page shows 最近更新 (3.23.5).
 
 The dates (3.23.8):
 
@@ -856,9 +873,8 @@ The dates (3.23.8):
 |---|---|---|
 | 最近更新, 最近新增 | ID, highest first: the same rule as the home blocks (3.1), so the first 5 items are the same as on the home page. For solutions: the cross-issue solutions first, then the issue number, then the solution letter, as `recentSolutionItems`. | Last, in the fixed ID order. For example the 製作中 issues #3–#6 have no dates, so they are last, as #3, #4, #5, #6. |
 | 依資料根據比例, 依解法涵蓋比例 | The fixed ID order (below) | An item with 0 cells (or 0 needs) has no share. It is last, after the items with a share of 0, in the fixed ID order. A share of 0 is a real value (for example #9: 6 of 82 cells is not 0, but a stakeholder with only `[AI模擬]` cells has 0). |
-| 依編號 | — | — |
 
-The fixed ID order: issues by number. Stakeholders by `compareIds` (O before I, then the number). Solutions: the cross-issue solutions first (X-A, X-B…), then by issue number, then by letter. This is the order of `#/solutions` today (decision 51).
+The fixed ID order: issues by number. Stakeholders by `compareIds` (O before I, then the number). Solutions: the cross-issue solutions first (X-A, X-B…), then by issue number, then by letter. This is the order of `#/solutions` today (decision 51). No sort option shows this order on its own (Q24).
 
 The shares are compared exactly (by cross-multiplying the counts), not by the rounded percent. So 1 of 3 and 33 of 100 are not a tie.
 
@@ -868,7 +884,7 @@ The shares are compared exactly (by cross-multiplying the counts), not by the ro
 
 The `<select>` has `aria-describedby` pointing to the note when it is shown.
 
-**The share on the cards.** While a share sort is on, each card shows the share as a percent next to the counts it comes from, never alone (as the rule for the 實證 percent in 3.9). With a date sort or 依編號, the percent is not shown. The counts stay (3.23.9). The percent uses the same rounding as `evidencePercent` (a half rounds up; at least 1 when the part is not 0; at most 99 when the part is not the whole).
+**The share on the cards.** While a share sort is on, each card shows the share as a percent next to the counts it comes from, never alone (as the rule for the 實證 percent in 3.9). With a date sort, the percent is not shown. The counts stay (3.23.9). The percent uses the same rounding as `evidencePercent` (a half rounds up; at least 1 when the part is not 0; at most 99 when the part is not the whole).
 
 #### 3.23.4 Coverage: what the shares mean
 
@@ -880,7 +896,7 @@ ETBlue's decision 2 (2026-10-22). Decision 83.
 |---|---|---|
 | Issue | The cells of all its stories: `counts.cells` in `index.json`, the same numbers as its 資料根據 bar | #1: 12 + 29 of 136 = 30%. #2: 9 + 24 of 106 = 31%. #8: 5 + 39 of 92 = 48%. #9: 6 + 0 of 82 = 7%. So 依資料根據比例 gives #8, #2, #1, #9, then #3–#6 (製作中, no cells). |
 | Stakeholder | The cells of all its stories, in every analyzed issue | I06: 1 of 12 cells |
-| Solution *(proposal, Q23)* | The cells of the stories of the needs it covers. A need is covered as in 3.12 and 3.18: in `needs.must` or `needs.shouldCould`, and for a cross-issue solution also through an X-N group in `needs.crossIssue` (decision 60). Each story is counted once, also when two covered needs share it. | — |
+| Solution (Q23 (a); ETBlue, 2026-10-22) | The cells of the stories of the needs it covers. A need is covered as in 3.12 and 3.18: in `needs.must` or `needs.shouldCould`, and for a cross-issue solution also through an X-N group in `needs.crossIssue` (decision 60). Each story is counted once, also when two covered needs share it. | — |
 
 The solution's own text (its name, summary and step 7 cells) is not counted. It is the analysis's own idea, mostly `[AI模擬]`, and it would hide what the solution is based on. The share is about the needs it answers.
 
@@ -889,7 +905,7 @@ A filter does not change the share. For example with `#/stakeholders?issue=2`, t
 **Solution coverage (解法涵蓋比例)**, only for stakeholders (decision 84). The share of the stakeholder's needs that at least one solution covers.
 - The needs: its different need keys per issue (3.16), summed over the analyzed issues. This is the 需求 count of its tab label (`stakeholderTabCounts(...).needs`). I06 has 5.
 - Covered: a solution of that issue lists the need in `needs.must` or `needs.shouldCould`, or a cross-issue solution covers it (decision 60). I06: 5 of 5.
-- 這次不做 needs are in the total, as on the solution page (decision 50). They are not covered on purpose, so they lower the share. *(Proposal, Q23. The other choice: leave 這次不做 needs out of both numbers.)*
+- 這次不做 needs are in the total, as on the solution page (decision 50). They are not covered on purpose, so they lower the share. (Q23 (b); ETBlue, 2026-10-22.)
 - A stakeholder with 0 needs has no share (it is last).
 
 The logic is in `src/lib/coverage.ts`: `evidenceShare(cells)` → `{ part, total } | null`, `stakeholderCells(issues, id)`, `solutionCells(issue, solution)`, `crossSolutionCells(cross, solution, issues)`, `stakeholderSolutionCoverage(issues, cross, id)` → `{ covered, total }`, `sharePercent({ part, total })` and `compareShares(a, b)`. Tests first.
@@ -900,6 +916,7 @@ Decision 85.
 
 | Filter | Control | `#/issues` | `#/stakeholders` | `#/solutions` | URL |
 |---|---|---|---|---|---|
+| 搜尋 | Search box (3.23.13). Not counted as a filter on the phone 「篩選」 button. | Yes | Yes | Yes | `q=<text>` |
 | 議題 | Popover with checkboxes: first 「跨議題」, then the analyzed issues in number order | — | Yes | Yes | `issue=<n>`, once per picked issue; `issue=X` for 「跨議題」 |
 | 空間類型 | Popover with checkboxes, the used space types in the order of `space-types.csv` | Yes | — | Yes | `space=<code>`, once per picked space |
 | 利害關係人 | The stakeholder picker (3.23.7) | Yes | — | Yes | `who=<id>`, one ID |
@@ -926,17 +943,18 @@ The exact UI: the 「議題」 popover button opens a `<fieldset>` with the lege
 | 利害關係人 on `#/issues` | The stakeholder is in the issue (its `issues` list) |
 | 利害關係人 on `#/solutions` | The solution covers at least one need of the stakeholder: the same rule as the issue's 解法 tab (3.2) and the stakeholder's 解法 tab. For a cross-issue solution: one of the stakeholder's needs, in any issue, is covered (decision 60). |
 | 只看特別關注族群 | The stakeholder has at least one 特別關注 group |
+| 搜尋 (`q`) | The number or the title matches the search text (3.23.13, decision 95) |
 
-**How filters combine:** inside one multi-choice filter, an item matches ANY of the picked values (as today). Between different filters, an item must match ALL of them. Nothing picked in a filter means no limit. The sort works on the filtered list.
+**How filters combine:** inside one multi-choice filter, an item matches ANY of the picked values (as today). Between different filters, an item must match ALL of them. The search counts as one more filter here: an item must match the search AND every filter (decision 96). Nothing picked in a filter means no limit. The sort works on the filtered list.
 
 **Rules for the URL:**
-- A change of the sort or a filter updates the URL with a new history entry, so the back button undoes the last change. This is the same as the side menu links (decision 47).
+- A change of the sort or a filter updates the URL with a new history entry, so the back button undoes the last change. This is the same as the side menu links (decision 47). The search box has its own rule, so typing does not fill the history: one new entry per search, then `replace` while typing (3.23.13, decision 97).
 - No `sort` param means 最近更新. The bar does not write `sort=updated`.
-- Unknown values are dropped: a sort the page does not have, a space code that is not used, an issue that has no analysis, an unknown stakeholder ID. The page then replaces the URL without them (`replace`, so the back button does not loop).
+- Unknown values are dropped: a sort the page does not have (also the old `sort=id`, Q24), a space code that is not used, an issue that has no analysis, an unknown stakeholder ID. The page then replaces the URL without them (`replace`, so the back button does not loop).
 - A moved stakeholder ID in `who` becomes the new ID (`resolveId`, as 3.14).
-- 「清除篩選」 removes every filter param of the page and keeps `sort` and `view`.
+- 「清除篩選」 removes every filter param of the page, and `q` too, and keeps `sort` and `view` (decision 97).
 - The card links do not carry the list params. The solution card link keeps `?evidence=1` as before, but these pages never set it.
-- The logic is pure functions in `src/lib/listParams.ts`: `listParamsOf(page, params, index)` → `{ sort, issues, crossChoice, spaces, who, specialOnly, view }` (cleaned), `listSearch(page, state)` → the search string, and `clearListFilters(params)`. Tests first.
+- The logic is pure functions in `src/lib/listParams.ts`: `listParamsOf(page, params, index)` → `{ sort, issues, crossChoice, spaces, who, specialOnly, view, q }` (cleaned), `listUrlSearch(page, state)` → the URL search string, and `clearListFilters(params)`. Tests first. (The URL function was called `listSearch` in the first draft. It is renamed, so the name does not mix with the text search of 3.23.13, which is in `src/lib/listSearch.ts`.)
 
 **Old links** (decision 91):
 
@@ -953,7 +971,7 @@ The 跨議題共用的利害關係人 link on the issue cards (3.9, decision 72)
 
 The result line is under the bar, `role="status"`, always in the page:
 - 「顯示 3 個議題，共 8 個。」, 「顯示 12 位利害關係人，共 65 位。」, 「顯示 7 個解法，共 25 個。」 (20 issue solutions and 5 cross-issue solutions today). The total is the page's whole list with no filter.
-- When filters are on, it also lists them: 「篩選：空間類型：人行道、騎樓；利害關係人：I06 身心障礙者（視障、輪椅使用者）。」, then the link 「清除篩選」.
+- When filters are on, it also lists them: 「篩選：空間類型：人行道、騎樓；利害關係人：I06 身心障礙者（視障、輪椅使用者）。」, then the link 「清除篩選」. A search is listed first: 「篩選：搜尋「無菸」；空間類型：人行道。」 (3.23.13).
 - The sort is not in this line. The `<select>` shows it.
 
 Empty states, in the card area:
@@ -963,6 +981,8 @@ Empty states, in the card area:
 | `#/issues` | 「沒有符合目前篩選的議題。」 and 「清除篩選」 |
 | `#/stakeholders` | 「沒有符合目前篩選的利害關係人。」 and 「清除篩選」 |
 | `#/solutions` | 「沒有符合目前篩選的解法。」 and 「清除篩選」 |
+
+With a search on, the empty state names the search text instead (3.23.13).
 
 While the data loads, the bar shows with its controls, and the card area shows `LoadState`. When `cross-issue.json` does not exist, `#/solutions` has no cross-issue cards and nothing breaks (3.18).
 
@@ -1001,7 +1021,7 @@ The pure parts are tested first: `pickerOptions(stakeholders, query)` → the tw
 
 #### 3.23.8 Dates
 
-ETBlue's decision 5 (2026-10-22). Decision 90. **Needs ETBlue's OK (Q21, GATE in Phase L).** Today:
+ETBlue's decision 5 (2026-10-22). Decision 90. ETBlue chose way C (Q21, 2026-10-22). Before Phase L:
 
 | Item | 新增日期 (`added`) | 更新日期 (`updated`) |
 |---|---|---|
@@ -1018,7 +1038,7 @@ ETBlue's decision 5 (2026-10-22). Decision 90. **Needs ETBlue's OK (Q21, GATE in
 
 **Three ways to get the dates:**
 
-| | A. Hand-kept columns | B. Computed from git in `build_json.py` | C. Kept by a script, checked by a fingerprint (recommended) |
+| | A. Hand-kept columns | B. Computed from git in `build_json.py` | C. Kept by a script, checked by a fingerprint (**chosen**, Q21) |
 |---|---|---|---|
 | How | A person or agent writes 更新日期 in `stakeholders.csv` and 6.1 | `build_json.py` walks the git history of `stakeholders.csv`, each `user-stories.csv` and each `issue-analysis.md`, and finds the last commit that changed each item | `update_dates.py` computes a fingerprint (a short hash) of each item's own content. When the fingerprint changed, it sets 更新日期 to today. The dates and fingerprints are in a new file `analysis/data/updated-dates.csv`. |
 | Can a change be forgotten? | Yes. A check can only test the format and that 更新日期 ≥ 新增日期. | No | No. `check_analysis.py` fails when a fingerprint does not match the content, with the message 「請執行 update_dates.py」. |
@@ -1026,9 +1046,9 @@ ETBlue's decision 5 (2026-10-22). Decision 90. **Needs ETBlue's OK (Q21, GATE in
 | Needs git history in CI | No | Yes (`fetch-depth: 0`, already set in `.github/workflows/pages.yml`). A zip download or a shallow clone gives no dates. | No |
 | Work | Small | Large and slow (about 250 commits × many files) | Medium: one new script, one new file, new checks |
 
-The Pages workflow already checks out the full history (`fetch-depth: 0` in `.github/workflows/pages.yml`, for the issue `updated` date). So B would work in CI. But B still counts format changes, and it needs old parsers for solutions. So the recommendation is C.
+The Pages workflow already checks out the full history (`fetch-depth: 0` in `.github/workflows/pages.yml`, for the issue `updated` date). So B would work in CI. But B still counts format changes, and it needs old parsers for solutions. So C was recommended, and ETBlue chose it.
 
-**Recommendation (C), in detail:**
+**Way C, in detail:**
 - **Issue 新增日期:** a new column 新增日期 in `issues.csv`, kept by hand, like the other 新增日期 columns. It is the day the issue's `issue-analysis.md` was first committed. It never changes. An issue with no analysis leaves it empty. First values from git (`git log --diff-filter=A --follow`): #1 2026-10-18, #2 2026-10-16, #8 2026-10-18, #9 2026-10-20. In `index.json` it is `added`.
 - **Issue 更新日期:** no change. It stays the git date of the folder.
 - **`analysis/data/updated-dates.csv`** (UTF-8 with BOM), columns: 類型 (利害關係人, 解法, 跨議題解法), 編號 (`I06`, `2-A`, `X-A`), 更新日期 (`YYYY-MM-DD`), 內容指紋 (the first 12 hex characters of SHA-256 of the item's content as canonical JSON). One row per stakeholder that is not a moved ID, one per issue solution, one per cross-issue solution. Rows are in the fixed ID order.
@@ -1040,7 +1060,7 @@ The Pages workflow already checks out the full history (`fetch-depth: 0` in `.gi
 - `issues.csv`: an issue with an analysis has 新增日期. It is a `YYYY-MM-DD` date, not after today.
 - `updated-dates.csv`: every non-moved stakeholder and every solution has exactly one row, and there are no other rows. Each 更新日期 is a `YYYY-MM-DD` date, not after today, and not before the item's 新增日期. Each 內容指紋 matches the current content.
 
-**Proposed rule text for `analysis/docs/method.md`** (it replaces the section 「新增日期」 after ETBlue's OK):
+**Rule text for `analysis/docs/method.md`** (Task L2 puts it in place of the section 「新增日期」):
 
 > ## 新增日期與更新日期
 >
@@ -1081,7 +1101,7 @@ The 資料根據 explanation line of 3.9 is shown once under the bar, when 依�
 - the issue: 「議題：#2 找回消失的垃圾桶」 (a link). A cross-issue card shows the badge 「跨議題解法」 and 「議題：#1、#2、#8」 (the `parts`). When it also covers needs of other issues, it adds 「也涵蓋 #1 的需求」 (X-E).
 - 「涵蓋需求的資料根據」: `CellBasis compact` with the cells of 3.23.4. With 依資料根據比例 on, the percent next to it. A solution that covers no need shows 「沒有涵蓋的需求」 and no bar.
 
-The 「跨議題解法」 heading and intro line of 3.18 are removed from this page. In 依編號 order, the cross-issue solutions still come first.
+The 「跨議題解法」 heading and intro line of 3.18 are removed from this page. In the fixed ID order (used for ties and for items with no value, 3.23.3), the cross-issue solutions still come first.
 
 #### 3.23.10 The stakeholders page has no side bar
 
@@ -1089,18 +1109,18 @@ ETBlue's decision 3 (2026-10-22). Decision 87.
 
 `#/stakeholders` is now an extended view of the home block 「最近加入分析的族群」: the bar and a list of `StakeholderCard`s, or the tree view (3.23.11). The side bar (3.21) is removed from this page. ETBlue: the tree side menu is good for filtering items by stakeholder, but not for listing stakeholders.
 
-**The statistics (decision 63)** *(decision 88, a proposal that waits for Q22):* removed from the page, with `src/lib/stakeholderStats.ts`, its test and the `stakeholderStats` UI block. The reasons:
+**The statistics (decision 63)** are removed from the page (decision 88; Q22, ETBlue, 2026-10-22), with `src/lib/stakeholderStats.ts`, its test and the `stakeholderStats` UI block. The reasons:
 - `human-inputs.md` now asks for the bar and the cards only.
 - The useful parts are still there in another form: the total is in the result line (「共 65 位」), 各議題 is the 議題 filter, 特別關注族群 is the toggle, and the cards show 分類路徑.
 - Two lists of the same stakeholders on one page (statistics and cards) would be long on a phone.
 
-The other choice: keep the statistics under the cards, in a closed Collapsible 「統計」. Note: `human-inputs.md` still has the old block 「the stakeholders page should include … render stakeholder statistics in the main block when no stakeholder is selected」. ETBlue may want to remove that old block.
+`human-inputs.md` no longer asks for the statistics (the old block was removed).
 
 **The stakeholder page `#/stakeholders/<id>` has no side bar either** (decision 94; Q20, ETBlue, 2026-10-22: "there's no need jumping quickly between stakeholders"). The side bar stays only on the issue page's 訴求, 需求 and 解法 tabs, where it filters the items by stakeholder (3.2, 3.21).
 
 | Part | Design |
 |---|---|
-| Breadcrumb | 首頁 › 利害關係人 › I06 身心障礙者…, in a `<nav aria-label="麵包屑">`, the same look as the solution page (3.12). 利害關係人 links to `#/stakeholders`. The browser back button goes back to the list with its sort and filters, because they are in the URL. |
+| Breadcrumb | 首頁 › 利害關係人 › I06, with the shared `Breadcrumb` component (decision 99, 3.2): `<nav aria-label="頁面位置">`, the same look as the solution page (3.12). The last item is the ID only, as on the other pages; the h1 has the name. 利害關係人 links to `#/stakeholders`. The browser back button goes back to the list with its sort and filters, because they are in the URL. |
 | Main block | The full page column. From top to bottom: the moved note 「O02 已改為 I12」 after a redirect, the breadcrumb, the h1, the metadata, the tab list, then the filter row and the tab content. |
 | Filter row | At the top of the tab content, on every tab: the 「只看有資料根據」 toggle (`evidence=1`), then `FilterStatus` (the status line and 「清除篩選」). This is the same place as the filter status on the issue page tabs (decision 68). It is a row, so it does not need its own Collapsible on a phone. |
 | 只看跨議題, 特別關注 | Removed from this page. They only changed which stakeholders the side menu listed. A link with `cross=1` or `special=` still opens the page; the params are ignored and dropped with `replace`. |
@@ -1119,7 +1139,7 @@ ETBlue, `human-inputs.md` commit a325fcb (2026-10-22): 「toggle card view / tre
 | Switch | A shadcn Toggle Group with one choice (`type="single"`), `aria-label="檢視方式"`: 「卡片」 and 「樹狀」. Card view is the default. Tree view is `view=tree` in the URL. |
 | Card view | 3.23.9 |
 | Tree view | The tree of `sideMenuTree` (decision 65), in the shared `StakeholderTree` component (3.23.7). Two columns from `md`: 組織 on the left, 個人 on the right. Below `md`: one column, 組織 first. Each root is an h2 (「組織」, 「個人」). Each level has a button to open and close it, all open at the start, with the number of stakeholders under it (as in the side menu). Each stakeholder is a link to its page: the ID and the name, and the 特別關注 badges. |
-| Filters | They work in both views. In tree view a level with no matching stakeholder is left out (as in the side menu). The result line counts the same. |
+| Filters and search | They work in both views. In tree view a level with no matching stakeholder is left out (as in the side menu). The result line counts the same. With a search, the tree shows the matching stakeholders and the groups above them (decision 96, 3.23.13). |
 | Sort | The tree has its own fixed order (decision 65), so the sort does not apply. In tree view the `<select>` is disabled, and a line next to it says 「樹狀檢視依分類排列」. The `sort` param stays in the URL, so the card view gets it back. |
 | Counts | No count next to each stakeholder in tree view *(proposal)*. The side menu counts (decision 66) depend on a page context, and this page has none. |
 | Keyboard | As in the side menu: nested lists, a button per level with `aria-expanded`, a link per stakeholder. No ARIA `tree` role (3.21). |
@@ -1137,6 +1157,83 @@ The 「看全部」 links of the home blocks (3.1, decision 27) go to the list s
 | 最近分析出的解法 | `added` | `#/solutions?sort=added` |
 
 The header links stay `#/issues`, `#/stakeholders` and `#/solutions` (the default sort, 最近更新).
+
+#### 3.23.13 Search on the list pages
+
+ETBlue, `human-inputs.md` commit e879ba7: 「search issue / stakeholder / solution by title or number」, and ETBlue's rules S1–S6 (2026-10-22). Decisions 95–98.
+
+**What a search matches** (decision 95). An item matches when its number matches OR its title matches.
+
+| Page | Number (S1) | Title (S2) |
+|---|---|---|
+| `#/issues` | The issue number. `8` and `#8` find #8. A leading zero is ignored (`08`). | The issue title, for example 「無菸」 finds #8 無菸城市. |
+| `#/stakeholders` | The ID: `I06`, `i6` and `I 06` find I06; `O12` finds O12. The letter must be the same, and the number must be the same (leading zeros are ignored). | The name, for example 「身心」 finds I06 身心障礙者（視障、輪椅使用者）. |
+| `#/solutions` | The code. A letter alone (`A`) finds every solution with that letter: #1 A, #2 A, #8 A, #9 A and X-A. `X-A` (or `XA`) finds only X-A. `2-A`, `2A` and `#2 A` find only #2 A. | The name, for example 「建議地圖」 finds #2 A 清潔箱佈建建議地圖, and 「清潔箱」 finds #2 A and the cross-issue solution 「清潔箱與吸菸區分開設置、一起清運」. |
+
+Rules for the text:
+- Case does not matter (`i6` is `I6`).
+- Full-width letters and digits count as half-width ones (Unicode NFKC), so 「８」 and 「Ｉ０６」 typed with a Chinese input method work too.
+- For the number, spaces, 「#」 and 「-」 are ignored, so `# 8`, `X-A` and `XA` work.
+- For the title, the search text is trimmed at both ends. Any part of the title matches (a substring). Spaces inside the text are kept.
+- The number must match the whole number or code, not a part of it. So `1` finds #1, not a future #10, and `I1` does not find I12. (A title can still contain the text.)
+- A number alone does not find the solutions of an issue (`2` does not find #2 A to #2 E). The 議題 filter does that.
+- Only the number and the title are searched. Not the summary, not the 分類路徑, not the space types. The other fields have their own filters.
+- An empty search, or a search of only spaces and 「#」, finds every item.
+
+**How the search works with the rest** (decision 96):
+- S3: an item must match the search AND every filter that is on (3.23.5).
+- S4: the results keep the sort the reader picked. There is no "best match" order. That would need a match score, and the project does not use scores (decision 81).
+- S6: in the tree view of `#/stakeholders` (3.23.11), the tree shows the matching stakeholders and the groups above them. A group with no match under it is left out, as with the filters. The number next to a group is the number of stakeholders shown under it (`sideMenuTree` already counts the IDs it gets). While a search is on, every group in the tree is open, so every match is visible.
+- On `#/issues` and `#/solutions` the search box does not replace the 利害關係人 filter (`who`, 3.23.7). The search box looks only at the issue or solution itself. To see the issues or solutions of one stakeholder, the reader uses the stakeholder picker. Both can be on at the same time.
+
+**The URL** (decision 97). S5: the search is in the URL as `q=<text>`, so a search can be shared and survives a reload.
+- The box keeps its own text while the reader types. The URL is updated 300 ms after the last key press, or at once on Enter.
+- The first URL update after the box gets focus adds a new history entry (`push`). Every later update until the box loses focus uses `replace`. So one search is one step in the history, and the back button goes back to the list before the search, not to each letter.
+- When the box is empty, `q` is removed from the URL. The text in the URL is trimmed and cut at 100 characters.
+- `listParamsOf` (3.23.5) returns `q` with the other params. A `q` that is empty after trimming is dropped with `replace`.
+- 「清除篩選」 removes `q` too, and empties the box. The reason: the result line lists the search as one of the things that limit the list (below), so the link next to it gives back the whole list. A reader who wants to remove only the search uses the clear button in the box.
+- The card links do not carry `q`, as the other list params (3.23.5).
+
+**The box** (decision 98):
+
+| Part | Design |
+|---|---|
+| Place from `md` | The first control of the bar, before 「排序」 (3.23.2). 16rem wide. |
+| Place below `md` | Its own full-width row at the top of the bar, above the 「排序」 row. It is **not** in the 「篩選」 sheet, so the reader sees the cards change while typing. The sheet does not show it again. |
+| Markup | `<div role="search">` (a search landmark) with a visible `<label>` and `<input type="search" enterkeyhint="search">`. Not a combobox: the results are the cards, not a list under the box. |
+| Label | Visible 「搜尋」, with the page name as hidden text, so the full label is 「搜尋議題」, 「搜尋利害關係人」 or 「搜尋解法」. The accessible name starts with the visible text (WCAG 2.5.3). |
+| Placeholder | 「輸入編號或標題」 (`#/issues`), 「輸入編號或名稱」 (`#/stakeholders`), 「輸入代號或名稱」 (`#/solutions`). The placeholder is only a hint. The label is always there. |
+| Clear button | A button 「×」 inside the box, shown when the box has text. Accessible name 「清除搜尋」. At least 24 × 24 px. It removes `q` and keeps the focus in the box. Escape in the box does the same. |
+| Result count | The result line (3.23.6, `role="status"`, always in the page) gives the new number after each URL update, so a screen reader hears it. The box has no live region of its own. |
+| Two boxes on one page | `#/issues` and `#/solutions` also have the stakeholder picker box (3.23.7). The two have different labels (「搜尋議題」 and 「利害關係人」) and different placeholders, so a reader can tell them apart. |
+
+The result line names the search first: 「篩選：搜尋「無菸」；空間類型：人行道。」. The search text is shown as typed (trimmed).
+
+Empty results with a search on, in the card area:
+
+| Page | Search only | Search and filters |
+|---|---|---|
+| `#/issues` | 「找不到符合「無菸」的議題。」 and 「清除搜尋」 | 「找不到符合「無菸」和目前篩選的議題。」, 「清除搜尋」 and 「清除篩選」 |
+| `#/stakeholders` | 「找不到符合「身心」的利害關係人。」 and 「清除搜尋」 | 「找不到符合「身心」和目前篩選的利害關係人。」, 「清除搜尋」 and 「清除篩選」 |
+| `#/solutions` | 「找不到符合「火箭」的解法。」 and 「清除搜尋」 | 「找不到符合「火箭」和目前篩選的解法。」, 「清除搜尋」 and 「清除篩選」 |
+
+The strings (`src/i18n/zh-TW.ts`, block `listSearch`):
+
+| Key | Text |
+|---|---|
+| `label` | 「搜尋」 |
+| `labelHidden` | `{ issues: '議題', stakeholders: '利害關係人', solutions: '解法' }` |
+| `placeholder` | `{ issues: '輸入編號或標題', stakeholders: '輸入編號或名稱', solutions: '輸入代號或名稱' }` |
+| `clear` | 「清除搜尋」 |
+| `statusPart` | `(q) => 搜尋「${q}」` |
+| `noMatch` | `(q, noun) => 找不到符合「${q}」的${noun}。` |
+| `noMatchFiltered` | `(q, noun) => 找不到符合「${q}」和目前篩選的${noun}。` |
+| `barLabel` | 「搜尋、排序與篩選」 (replaces 「排序與篩選」 of the bar) |
+
+**The logic** is in a new file `src/lib/listSearch.ts`, pure functions with tests first:
+- `parseListQuery(q)` → `{ text, key } | null`: `text` is NFKC, lower case and trimmed (for the title); `key` is `text` without spaces, 「#」 and 「-」 (for the number). Null when both are empty.
+- `issueMatches(issue, query)`, `stakeholderMatches(stakeholder, query)`, `solutionMatches(item, query)`. Each is true when the query is null, or the number matches, or the title contains `text`.
+- Tests: `8`, `#8`, `＃８`, `08` find #8; 「無菸」 finds #8; `1` does not find a #10 (a test item); `i6`, `I06`, `I 06` find I06; `I1` does not find I12; `A` finds every solution A and X-A; `X-A` and `xa` find only X-A; `2-A`, `2A`, `#2 A` find only #2 A; 「建議地圖」 finds only #2 A; an empty query and `#` alone find every item; the search with a filter keeps only the items that match both; the result order is the order of the sort (the search does not change it).
 
 ## 4. Opinion check
 
@@ -1335,10 +1432,11 @@ The UI only shows the results of the functions in `src/lib/`.
 - Cross-issue tests start when a second issue exists.
 - Vitest for Phase S (2026-10-20), on the fixtures: the side menu tree (roots, levels left out when empty, order), the side menu counts for each page context (with and without 只看有資料根據; the count equals the list length of the tab view), the side bar filters in the URL (`cross`, `special`, `evidence`) and 「清除篩選」, and `stakeholderStats` (fixed orders, the filters, no sorting by count). Decision 74 (2026-10-21): #2 I06 has 2 solutions without the data filter and 0 with it, and the issue page and the stakeholder page give the same 解法 count for each stakeholder in each issue. Decisions 75–77 (2026-10-21): the chips of each issue (`issueSpecialOptions`), the menu with the chips (`menuIdsFor`, the picked stakeholder kept), the three tab views with `special` (alone, with the data filter, with a stakeholder on top), the menu count equals the list length with each chip on #1, #2, #8 and #9 (evidence on and off), the 「全部利害關係人」 link (`allStakeholdersTarget`), and the solutions that the data filter hides with no stakeholder picked.
 - Vitest for the needs-based pages (2026-10-20), on the #1, #2 and #8 fixtures: the tab counts (#2: 訴求 39, 衝突 9, 需求 21, 解法 5; I06: 訴求 5, 衝突 4, 需求 4, 解法 4; #2 A: needs 9 / 12, stakeholders 14 / 13), the want and need keys, the stakeholder filter, the old tab redirects, the solution paths (`#/solutions/2-A`, `#/solutions/X-A`) and the old solution redirects, `?focus=` values, and every 分析摘要 reference (also N groups) has a link.
+- Vitest for Phase L (2026-10-22), on the fixtures: the shares and their exact compare (`coverage.ts`), the sorts and their ties (no `id` sort; `sort=id` is dropped), the filters and the URL params (`listParams.ts`, also `q`), and the text search (`listSearch.ts`, the cases in 3.23.13). The `stakeholderStats` tests are removed with the statistics (decision 88).
 
 ## 9. Deploy
 
-A GitHub Actions workflow checks out the full history (`fetch-depth: 0`, for the issue update dates; the new dates of Phase L do not need it if Q21 gets answer C, 3.23.8), runs `build_json.py` and the tests, builds the app, and publishes it to GitHub Pages. ETBlue turns on Pages in the repo settings once.
+A GitHub Actions workflow checks out the full history (`fetch-depth: 0`, for the issue update dates; the new dates of Phase L do not need it, because ETBlue chose way C for Q21, 3.23.8), runs `build_json.py` and the tests, builds the app, and publishes it to GitHub Pages. ETBlue turns on Pages in the repo settings once.
 
 ## 10. `app/README.md` (zh-TW)
 
@@ -1431,7 +1529,7 @@ Phase S (2026-10-20). From ETBlue's notes in `human-inputs.md` (commits 487bac6 
 
 61. The page column is at most 1440 px wide, not 1024 px. The header, the main block and the footer use it. Long text stays at most 48rem wide. The grids of `#/issues` and `#/solutions` get a third column from `xl`. The checks run at 1440 px and 1920 px too (3.22). (ETBlue, `human-inputs.md`, 2026-10-20)
 62. `#/stakeholders` has the stakeholder side menu and, in the main block, statistics about the stakeholders. A click on a stakeholder opens its page. The tree of detailed `StakeholderCard`s is no longer on this page. This replaces the `#/stakeholders` part of 3.9 and of decision 33 (3.20). (ETBlue, `human-inputs.md`, 2026-10-20) **Replaced by decision 87 (Phase L).**
-63. The statistics on `#/stakeholders` are plain counts in fixed orders: 總數, 依分類 (the first levels of 分類路徑, in tree order), 特別關注族群 (the fixed 6 groups) and 各議題 (issue number order). No percent, no bar, no chart, no rank, and nothing is sorted by a count. They follow the side bar filters. A note says the numbers only show how much the analysis wrote (3.20). (ETBlue, `human-inputs.md`, 2026-10-20; the content: Q18; ETBlue, 2026-10-21) **To be replaced by decision 88 (Phase L) if ETBlue agrees (Q22).**
+63. The statistics on `#/stakeholders` are plain counts in fixed orders: 總數, 依分類 (the first levels of 分類路徑, in tree order), 特別關注族群 (the fixed 6 groups) and 各議題 (issue number order). No percent, no bar, no chart, no rank, and nothing is sorted by a count. They follow the side bar filters. A note says the numbers only show how much the analysis wrote (3.20). (ETBlue, `human-inputs.md`, 2026-10-20; the content: Q18; ETBlue, 2026-10-21) **Replaced by decision 88 (Phase L; Q22, ETBlue, 2026-10-22):** the statistics are removed.
 64. The stakeholder page has the side bar next to the main block. The main block has the h1, the metadata and the tabs. `#/stakeholders` and `#/stakeholders/<id>/…` share one layout route, so the side bar keeps its state when the reader picks another stakeholder. The story page is not in this layout. This replaces the stakeholder page part of decision 58 (3.3, 3.21). (ETBlue, `human-inputs.md`, 2026-10-20) **Replaced by decisions 87 and 94 (Phase L):** neither page has the side bar, and the layout route is removed.
 65. The side menu is a tree: 組織 and 個人 as roots, then the levels of 分類路徑 with the names from `path-labels.csv`. Each group has a button to open and close it, and every group is open by default. A group shows the number of stakeholders under it. Levels with no stakeholder are left out. The order is the tree order and the ID order, never a count. This replaces the two flat lists of 3.14 (3.21). (ETBlue, `human-inputs.md`, 2026-10-20)
 66. Each stakeholder in the side menu shows one count. The count depends on the page: it is the number of items the main block shows after a click on that item, with the same filters (stories on `#/stakeholders` and the 總覽 tab; wants, needs or solutions on those tabs; per issue on the issue page, summed over the issues on the stakeholder page). A 0 is shown. The menu is never sorted by the counts. This replaces 「The menu shows no counts」 in 3.14 (3.21). (ETBlue, `human-inputs.md`, 2026-10-20; the exact rule: Q16; ETBlue, 2026-10-21) **Phase L:** only the issue page contexts are left (decisions 87 and 94).
@@ -1446,39 +1544,40 @@ Phase S (2026-10-20). From ETBlue's notes in `human-inputs.md` (commits 487bac6 
 75. The issue page's 訴求, 需求 and 解法 tabs have the 特別關注 chips in the side bar, below 「只看有資料根據」. Only the groups that at least one stakeholder of the issue has are shown, in `FOCUS_ORDER`. A chip is in the URL as `special=<group>`, and tab changes, side bar links and other filter links keep it. The chips limit the menu to the stakeholders with a picked group (the picked stakeholder always stays), and they filter the tab content: the wants, needs and solutions of those stakeholders, and the conflicts with a story of them on either side (the same rule as `?stakeholder=`, decision 59). They work together with 只看有資料根據, and `?stakeholder=` applies on top. The menu counts use the same filters (decision 66). The tab labels stay the totals (decision 49). The filter status line names the chips, and 「清除篩選」 removes them. 只看跨議題 is still not on the issue page. On a stakeholder page the content is about one stakeholder, so 只看跨議題 and 特別關注 still change only the menu there. This replaces the part of decision 67 that put 特別關注 only on the stakeholder pages, and the 「No」 for the issue page in the filters table of 3.21 (3.2, 3.21). (ETBlue, 2026-10-21)
 76. The side menu on `#/stakeholders` and on a stakeholder page has 「全部利害關係人」 as its first item, as on the issue page. It has no count. It links to `#/stakeholders` and keeps `evidence`, `cross` and `special`. On `#/stakeholders` it is the current item (`aria-current="page"`). This replaces 「No item is current on this page」 in 3.20 and extends 3.21, where only the issue page had this item (3.20, 3.21). (ETBlue, 2026-10-21) **Replaced by decisions 87 and 94 (Phase L):** neither page has a side bar now. 「全部利害關係人」 stays only on the issue page's side bar.
 77. On the issue page's 解法 tab with no stakeholder picked, 「只看有資料根據」 hides a solution when it hides every need the solution covers. A solution that lists no need at all stays. The note 「這個解法涵蓋的需求，都沒有標記 [實證] 或 [AI整理]。」 is removed. When no solution is left, the tab says 「沒有解法涵蓋標記 [實證] 或 [AI整理] 的需求。」. The tab label stays the total (decision 49). This extends decision 74 to the case with no stakeholder picked (3.2). (ETBlue, 2026-10-21)
-78. A stakeholder with no issue (its 議題 in `stakeholders.csv` is empty) and no move target is left out of every list. This means the side menus, the statistics on `#/stakeholders`, the stakeholder count in the header, 「最近加入的利害關係人」 on the home page, the stakeholder tree, and the 特別關注 options. It is not a moved ID, so it does not redirect. Its own page `#/stakeholders/<ID>` still loads. The page shows the name, the ID, the path and the note 「這位利害關係人目前沒有出現在任何議題中。」. It has no tabs. The side menu on that page is the same as on `#/stakeholders`, with no current item. One helper, `isListed` in `src/lib/stakeholders.ts`, holds this rule, and every list uses it. The first case is I34 本專案作者, which left #9 on 2026-10-21 (3.1, 3.3, 3.7, 3.20). (ETBlue's analysis change, 2026-10-21) **Phase L:** the page of such a stakeholder has no side menu now (decision 94). The statistics part changes with decision 88 (Q22).
+78. A stakeholder with no issue (its 議題 in `stakeholders.csv` is empty) and no move target is left out of every list. This means the side menus, the statistics on `#/stakeholders`, the stakeholder count in the header, 「最近加入的利害關係人」 on the home page, the stakeholder tree, and the 特別關注 options. It is not a moved ID, so it does not redirect. Its own page `#/stakeholders/<ID>` still loads. The page shows the name, the ID, the path and the note 「這位利害關係人目前沒有出現在任何議題中。」. It has no tabs. The side menu on that page is the same as on `#/stakeholders`, with no current item. One helper, `isListed` in `src/lib/stakeholders.ts`, holds this rule, and every list uses it. The first case is I34 本專案作者, which left #9 on 2026-10-21 (3.1, 3.3, 3.7, 3.20). (ETBlue's analysis change, 2026-10-21) **Phase L:** the page of such a stakeholder has no side menu now (decision 94). The statistics are removed (decision 88).
 
-Phase L (2026-10-22). From ETBlue's notes in `human-inputs.md` (commits ef77fec and a325fcb) and ETBlue's decisions of 2026-10-22. Decisions marked *(proposal)* wait for ETBlue's answer in section 14.
+Phase L (2026-10-22). From ETBlue's notes in `human-inputs.md` (commits ef77fec, a325fcb and e879ba7) and ETBlue's decisions of 2026-10-22. ETBlue answered Q20–Q24 on 2026-10-22. A detail still marked *(proposal)* is the coordinator's choice; ETBlue can change it in review.
 
 79. The list pages `#/issues`, `#/stakeholders` and `#/solutions` show no visible page title. The highlighted header link is the visible title. The h1 stays in the page but is visually hidden (`sr-only`), so screen readers still get it. Under the header: the sort and filter bar, the result line, the notes, then one list of cards. The old intro lines are removed *(proposal)* (3.23.1). (ETBlue, `human-inputs.md` and decision 4, 2026-10-22)
 80. One bar component `ListBar` on the three list pages. From `md`: one row with the sort `<select>`, popover buttons for the multi-choice filters, the stakeholder picker and toggle buttons. Below `md`: the sort `<select>` and one 「篩選」 button that opens a bottom sheet (a dialog with a focus trap) with all filters. A change applies at once. No sideways scroll at 360 px (3.23.2). (Coordinator, 2026-10-22)
 81. Count-based sorts are allowed as option A: the reader picks them, the default stays by date, the label only describes the data (for example 「依資料根據比例（實證＋AI整理）」), and a short note under the bar says the order is not about importance. No scores, weights or formulas beyond the plain share. While such a sort is on, the cards show the percent next to its counts, never alone. This replaces the never-sort-by-count rules **only** for these reader-picked sorts on these three list pages: 3.9 (「Issues are never sorted, ranked or filtered by these numbers」, 「The list keeps issue number order」, the old `#/stakeholders` 「Order」 row, 「Never sorted by a count」 on `#/solutions`), the 「never sorted」 part of decision 20 for `#/issues`, and the last sentence of decision 72 for `#/issues`. Every other place keeps the old rule: the home blocks, the side menu, the tabs, the priority groups and counts (3.4), the solution page, the space page, the focus groups (decision 25) and the stakeholder tree on the issue's 總覽 tab (3.23.3). (ETBlue, decision 1, 2026-10-22)
-82. Sort options: 最近更新 (the default, no `sort` param), 最近新增 (`added`), 依資料根據比例 (`evidence`), on `#/stakeholders` also 依解法涵蓋比例 (`solutions`), and 依編號 (`id`) *(proposal, Q24)*. Dates are newest first, shares highest first. Date ties: ID highest first, the same as the home blocks. Share ties: the fixed ID order. An item with no date, or with 0 cells or 0 needs, is last, in the fixed ID order. Shares are compared exactly, not by the rounded percent (3.23.3). (ETBlue, decisions 1 and 2, 2026-10-22; the details: coordinator)
-83. Evidence coverage (資料根據比例) is the share of story cells (我想要… and 以便…) tagged `[實證]` or `[AI整理]`, the same unit as the 資料根據 bar. Issue: all its story cells (`counts.cells`). Stakeholder: all its story cells, in every analyzed issue. Solution *(proposal, Q23)*: the cells of the stories of the needs it covers (decision 60 for cross-issue solutions), each story once. A filter does not change the share *(proposal)* (3.23.4). (ETBlue, decision 2, 2026-10-22)
-84. Solution coverage (解法涵蓋比例) of a stakeholder is the share of its needs (its need keys per issue, summed, as its 需求 tab label) that at least one issue solution or cross-issue solution covers. 這次不做 needs are in the total, as on the solution page (decision 50) *(proposal, Q23)*. A stakeholder with 0 needs has no share (3.23.4). (ETBlue, decision 2, 2026-10-22)
-85. Filters: `#/issues` 空間類型 (`space`) and 利害關係人 (`who`); `#/stakeholders` 議題 (`issue`) and 只看特別關注族群 (`specialonly=1`); `#/solutions` 議題, 空間類型 and 利害關係人. The 議題 filter has one more choice 「跨議題」 (`issue=X`): on `#/stakeholders` the stakeholders in 2 or more issues (the old `cross=1`), on `#/solutions` the cross-issue solutions (ETBlue, 2026-10-22). Inside one filter: ANY of the picked values. Between filters: ALL. Every sort and filter is in the URL, with a new history entry per change. Unknown values are dropped with `replace`. 「清除篩選」 keeps the sort. The new param names do not reuse `stakeholder`, `evidence`, `cross`, `special`, `focus`, `pick` or `from`. This replaces 「The filters of `#/issues` and `#/solutions` do not change」 in 3.21 and the page-state filters of 3.9 (3.23.5). (ETBlue, `human-inputs.md`, 2026-10-22)
+82. Sort options: 最近更新 (the default, no `sort` param), 最近新增 (`added`), 依資料根據比例 (`evidence`), and on `#/stakeholders` also 依解法涵蓋比例 (`solutions`). There is no 依編號 sort (Q24; ETBlue, 2026-10-22). The fixed ID order still breaks the share ties, orders the items with no value, and is used where a sort does not apply (for example the tree view). An old link with `sort=id` is handled like any unknown value: dropped with `replace`. Dates are newest first, shares highest first. Date ties: ID highest first, the same as the home blocks. Share ties: the fixed ID order. An item with no date, or with 0 cells or 0 needs, is last, in the fixed ID order. Shares are compared exactly, not by the rounded percent (3.23.3). (ETBlue, decisions 1 and 2, 2026-10-22; the details: coordinator)
+83. Evidence coverage (資料根據比例) is the share of story cells (我想要… and 以便…) tagged `[實證]` or `[AI整理]`, the same unit as the 資料根據 bar. Issue: all its story cells (`counts.cells`). Stakeholder: all its story cells, in every analyzed issue. Solution (Q23 (a)): the cells of the stories of the needs it covers (decision 60 for cross-issue solutions), each story once. A filter does not change the share *(proposal)* (3.23.4). (ETBlue, decision 2, 2026-10-22; Q23 (a), ETBlue, 2026-10-22)
+84. Solution coverage (解法涵蓋比例) of a stakeholder is the share of its needs (its need keys per issue, summed, as its 需求 tab label) that at least one issue solution or cross-issue solution covers. 這次不做 needs are in the total, as on the solution page (decision 50). A stakeholder with 0 needs has no share (3.23.4). (ETBlue, decision 2, 2026-10-22; Q23 (b), ETBlue, 2026-10-22)
+85. Filters: `#/issues` 空間類型 (`space`) and 利害關係人 (`who`); `#/stakeholders` 議題 (`issue`) and 只看特別關注族群 (`specialonly=1`); `#/solutions` 議題, 空間類型 and 利害關係人. The 議題 filter has one more choice 「跨議題」 (`issue=X`): on `#/stakeholders` the stakeholders in 2 or more issues (the old `cross=1`), on `#/solutions` the cross-issue solutions (ETBlue, 2026-10-22). Inside one filter: ANY of the picked values. Between filters: ALL. Every sort and filter is in the URL, with a new history entry per change (the search has its own rule, decision 97). The URL params are `sort`, `issue`, `space`, `who`, `specialonly`, `view` and `q` (decision 97). Unknown values are dropped with `replace`, also the old `sort=id` (decision 82). 「清除篩選」 keeps the sort and the view, and removes the search. The new param names do not reuse `stakeholder`, `evidence`, `cross`, `special`, `focus`, `pick` or `from`. This replaces 「The filters of `#/issues` and `#/solutions` do not change」 in 3.21 and the page-state filters of 3.9 (3.23.5). (ETBlue, `human-inputs.md`, 2026-10-22)
 86. The 利害關係人 filter is a search box with a list (the ARIA combobox pattern), grouped by 組織 and 個人 in ID order, plus a 「瀏覽」 button that opens a dialog with the full stakeholder tree (`sideMenuTree`, the side menu look, a shared `StakeholderTree` component). The dialog traps focus, closes with Escape, and returns focus to the button. A pick is a link with `who=<id>` (3.23.7). (ETBlue, decision 6, 2026-10-22)
 87. `#/stakeholders` has no side bar. It is an extended view of the home block 「最近加入分析的族群」: the bar and a list of `StakeholderCard`s, with 分類路徑, the issues, 資料根據, 解法涵蓋 and both dates, or the tree view (decision 93). This replaces decision 62, the `#/stakeholders` part of decisions 64, 67, 68, 69 and 76, the `#/stakeholders` row of 3.21, and section 3.20. The stakeholder page loses its side bar too (decision 94) (3.23.10). (ETBlue, decision 3, 2026-10-22)
-88. *(Proposal, Q22.)* The statistics of `#/stakeholders` (decision 63) are removed, with `stakeholderStats`. The result line, the 議題 filter, the 特別關注 toggle and the cards cover the useful parts (3.23.10). (Coordinator, 2026-10-22)
-89. `#/solutions` is one flat list of issue solutions and cross-issue solutions, sorted by the picked sort. There are no groups by issue. A cross-issue card has the badge 「跨議題解法」. A cross-issue solution matches the 議題 filter when the issue is in its `parts` or is the issue of a need it covers *(proposal)*, and it matches the 利害關係人 filter when it covers one of the stakeholder's needs in any issue. This replaces the 「first group」 part of decision 51 and the `#/solutions` row of the table 「Where else they show」 in 3.18. In 依編號 order the cross-issue solutions still come first (3.23.5, 3.23.9). (ETBlue, `human-inputs.md`, 2026-10-22)
-90. *(Needs ETBlue's OK, Q21.)* Dates: issues get 新增日期 (a hand-kept column in `issues.csv`, `added` in `index.json`). Stakeholders, solutions and cross-issue solutions get 更新日期 (`updated`), kept by a new script `update_dates.py` in `analysis/data/updated-dates.csv` with a content fingerprint, so `check_analysis.py` fails when a change was not dated. 「Updated」 means the item's own content changed, not only its format. The issue 更新日期 stays the git date. The rule text for `method.md` is in 3.23.8. (ETBlue, decision 5, 2026-10-22; the method: coordinator)
+88. The statistics of `#/stakeholders` (decision 63) are removed, with `stakeholderStats`, its test and the `stakeholderStats` UI block. The result line, the 議題 filter, the 特別關注 toggle and the cards cover the useful parts. This replaces decision 63 (3.23.10). (Coordinator, 2026-10-22; Q22, ETBlue, 2026-10-22)
+89. `#/solutions` is one flat list of issue solutions and cross-issue solutions, sorted by the picked sort. There are no groups by issue. A cross-issue card has the badge 「跨議題解法」. A cross-issue solution matches the 議題 filter when the issue is in its `parts` or is the issue of a need it covers *(proposal)*, and it matches the 利害關係人 filter when it covers one of the stakeholder's needs in any issue. This replaces the 「first group」 part of decision 51 and the `#/solutions` row of the table 「Where else they show」 in 3.18. In the fixed ID order (used for ties and for items with no value) the cross-issue solutions still come first (3.23.5, 3.23.9). (ETBlue, `human-inputs.md`, 2026-10-22)
+90. Dates (way C of 3.23.8): issues get 新增日期 (a hand-kept column in `issues.csv`, `added` in `index.json`). Stakeholders, solutions and cross-issue solutions get 更新日期 (`updated`), kept by a new script `update_dates.py` in `analysis/data/updated-dates.csv` with a content fingerprint, so `check_analysis.py` fails when a change was not dated. 「Updated」 means the item's own content changed, not only its format. The issue 更新日期 stays the git date. The rule text for `method.md` is in 3.23.8. (ETBlue, decision 5, 2026-10-22; the method: coordinator; way C: Q21, ETBlue, 2026-10-22)
 91. The home 「看全部」 links go to the list with the same sort as the block: `#/issues`, `#/stakeholders?sort=added` and `#/solutions?sort=added`. The old links keep working: `#/stakeholders?special=<group>` redirects to `?specialonly=1`, and `#/stakeholders?cross=1` redirects to `?issue=X`. The 跨議題共用的利害關係人 link on the issue cards becomes `#/stakeholders?issue=X` (3.23.5, 3.23.12). (Coordinator, 2026-10-22)
 92. On the list pages, each card shows the data the sorts use: both dates, and 資料根據 (the issue card as today; the stakeholder card over all its stories; the solution card over the stories of the needs it covers). The stakeholder card also shows 解法涵蓋 as counts (「需求 5 個：有解法涵蓋 3 個、尚未涵蓋 2 個」). The `detailed` `StakeholderCard` gets a prop `listFields`; the story counts by priority (`entries`) stay only on the issue's 總覽 tab. This extends decision 33 (3.23.9). (Coordinator, 2026-10-22)
 93. `#/stakeholders` has a view switch 「卡片」 / 「樹狀」 (`view=tree`; cards by default). The tree view is the side menu tree (`sideMenuTree`, shared `StakeholderTree` component) with 組織 and 個人 in two columns from `md`. The filters work in both views. In tree view the sort does not apply, because the tree has its own fixed order. No counts next to the stakeholders in the tree view *(proposal)* (3.23.11). (ETBlue, `human-inputs.md` commit a325fcb, 2026-10-22)
 94. The stakeholder page `#/stakeholders/<id>` has no side bar either. The side bar stays only on the issue page's 訴求, 需求 and 解法 tabs. The stakeholder page gets a breadcrumb back to `#/stakeholders` and a filter row at the top of the tab content with 「只看有資料根據」 and `FilterStatus`. 只看跨議題 and 特別關注 are removed from this page, because they only filtered the menu. `StakeholdersLayout` and the stakeholder contexts of `sideMenuCounts` are removed. This replaces decision 64, the stakeholder page part of decisions 58, 66, 67, 69 and 76, the side menu part of decision 78, and the stakeholder page row of 3.21 (3.3, 3.23.10). (Q20; ETBlue, 2026-10-22: "there's no need jumping quickly between stakeholders")
 
+Phase L, search and breadcrumb (2026-10-22). From ETBlue's notes in `human-inputs.md` (commit e879ba7) and ETBlue's rules S1–S6 for the search (2026-10-22).
+
+95. The three list pages `#/issues`, `#/stakeholders` and `#/solutions` have a search box. An item matches when its number or its title matches. Number: the issue number (`8`, `#8`), the stakeholder ID (`I06`, `i6`, `O12`) or the solution code (`A` for every solution A and X-A, `X-A`, `2-A`, `#2 A`). The whole number or code must match. Title: any part of the issue title, the stakeholder name or the solution name. Case does not matter, full-width letters and digits count as half-width (NFKC), and for the number spaces, 「#」 and 「-」 are ignored. Only the number and the title are searched. The logic is in a new file `src/lib/listSearch.ts` (`parseListQuery`, `issueMatches`, `stakeholderMatches`, `solutionMatches`), with tests first. The URL function of `listParams.ts` is renamed from `listSearch` to `listUrlSearch`, so the names do not mix (3.23.5, 3.23.13). (ETBlue, `human-inputs.md` and S1, S2, 2026-10-22; the details: coordinator)
+96. An item must match the search AND every filter. The results keep the sort the reader picked; there is no best-match order, because it would need a score. In the tree view of `#/stakeholders` the tree shows the matching stakeholders and the groups above them, with every shown group open. On `#/issues` and `#/solutions` the search box does not replace the 利害關係人 filter (`who`): the search looks only at the issue or solution itself (3.23.13). (ETBlue, S3, S4, S6, 2026-10-22)
+97. The search is in the URL as `q=<text>` (trimmed, at most 100 characters; empty means no `q`). The URL is updated 300 ms after the last key press, or at once on Enter. The first update after the box gets focus adds a history entry; later updates until the box loses focus use `replace`, so one search is one step back. 「清除篩選」 removes `q` too, because the result line lists the search with the filters. The clear button 「清除搜尋」 in the box removes only `q` (3.23.13). (ETBlue, S5, 2026-10-22; the typing rule and 「清除篩選」: coordinator)
+98. The search box is the first control of the bar from `md` (16rem wide), and its own full-width row above the 「排序」 row on a phone. It is not in the phone 「篩選」 sheet and does not count in 「篩選（N）」. It is a `role="search"` landmark with a visible label 「搜尋」 (full label 「搜尋議題」, 「搜尋利害關係人」, 「搜尋解法」), placeholders 「輸入編號或標題」, 「輸入編號或名稱」, 「輸入代號或名稱」, and a clear button 「清除搜尋」. The result line (`role="status"`) names the search first (「篩選：搜尋「無菸」；…」) and gives the new count. The empty state is 「找不到符合「…」的議題。」 (or 利害關係人, 解法), with 「和目前篩選」 when filters are on too. The bar's name becomes 「搜尋、排序與篩選」. The strings are in a new block `listSearch` in `src/i18n/zh-TW.ts` (3.23.2, 3.23.6, 3.23.13). (Coordinator, 2026-10-22)
+99. The issue page `#/issues/<n>` has a breadcrumb above the h1 on every tab: 首頁 › 議題 › #8. 議題 links to `#/issues`. The last item is the number only, with `aria-current="page"`, as the solution page (「#2 A」) and the story page (「#2 I06-US01」) show only the ID; the h1 has the title. A new shared component `Breadcrumb` (`src/components/Breadcrumb.tsx`, `<nav aria-label="頁面位置">` with an `<ol>`) replaces the markup that `Solution.tsx` and `StakeholderStory.tsx` write today, with no visible change there. The issue page, the solution pages, the story page and the stakeholder page (decision 94) use it. The stakeholder page breadcrumb is 首頁 › 利害關係人 › I06, by the same rule (3.2, 3.23.10). (ETBlue, `human-inputs.md` commit e879ba7, 2026-10-22; the details: coordinator)
+
 ## 14. Open questions
 
-Phase L (2026-10-22). Each question has a recommended answer. The plan (Phase L) waits at a GATE for them. Q20 is answered (below).
+No open questions now. ETBlue answered Q21–Q24 on 2026-10-22 (below). The plan (Phase L) has no GATE left.
 
-| Question | Recommended answer | Other choice | Blocks |
-|---|---|---|---|
-| **Q21** How to add the missing dates (3.23.8)? | **C:** 新增日期 by hand in `issues.csv`; 更新日期 for stakeholders and solutions kept by `update_dates.py` in `analysis/data/updated-dates.csv` with a content fingerprint, checked by `check_analysis.py`. First values from git. Plus the new rule text in `method.md`. | A: hand-kept 更新日期 columns (easy to forget). B: computed from git in `build_json.py` (format changes count as updates; slow). | Task L2, and the 最近新增 / 最近更新 sorts in L5–L7 |
-| **Q22** What happens to the statistics of `#/stakeholders` (decision 63)? | **Remove them.** The result line, the 議題 filter, the 特別關注 toggle and the cards cover the useful parts. Please also remove the old block 「the stakeholders page should include … statistics」 from `human-inputs.md`. | Keep them under the cards in a closed 「統計」 Collapsible. | Task L6 |
-| **Q23** Two coverage details (3.23.4). (a) The 資料根據 of a solution: the cells of the stories of the needs it covers? (b) Do 這次不做 needs count in a stakeholder's 解法涵蓋? | **(a) Yes**, both cells of each story once; the solution's own text is not counted. **(b) Yes**, in the total, as on the solution page (decision 50). | (a) Only the 以便… cells of those stories. (b) Leave 這次不做 needs out of both numbers. | Task L1 |
-| **Q24** Add the sort 依編號 (the old fixed order) on all three pages? | **Yes.** It keeps the old orders one click away. | No 依編號. | Task L1 |
-
-Answered before (Q1–Q20). ETBlue answered Q1–Q13 on 2026-10-20, Q14–Q19 on 2026-10-21, and Q20 and Q24 (a) on 2026-10-22:
+Answered questions. ETBlue answered Q1–Q13 on 2026-10-20, Q14–Q19 on 2026-10-21, and Q20–Q24 on 2026-10-22:
 
 | Question | Decision |
 |---|---|
@@ -1499,7 +1598,12 @@ Answered before (Q1–Q20). ETBlue answered Q1–Q13 on 2026-10-20, Q14–Q19 on
 | Q15 Side bar on the solution pages | 71 (no side bar) |
 | Q16 Menu counts follow 「只看有資料根據」 | 66 (yes) |
 | Q17 Side bar of `#/stakeholders` open by default on a phone | 69 (no, for now: closed by default on every page) |
-| Q18 What the stakeholder statistics show | 63 (plain counts, no chart) |
+| Q18 What the stakeholder statistics show | 63 (plain counts, no chart; removed in Phase L by decision 88) |
 | Q19 Cross-issue info on the compact issue card | 72 (the shared stakeholders) |
 | Q20 Does the stakeholder page keep its side bar | 94 (no; ETBlue, 2026-10-22) |
 | Q24 (a) The meaning of 「filter by issue (including cross-issue)」 | 85 (a 「跨議題」 choice in the 議題 filter; ETBlue, 2026-10-22) |
+| Q21 How to add the missing dates | 90 (way C: 新增日期 by hand in `issues.csv`; 更新日期 by `update_dates.py` in `analysis/data/updated-dates.csv` with a content fingerprint; `check_analysis.py` fails on an undated change; the rule text in `method.md`) |
+| Q22 The statistics of `#/stakeholders` | 88 (removed; this replaces decision 63) |
+| Q23 (a) The 資料根據 of a solution | 83 (yes: both cells of each story of the covered needs, each story once) |
+| Q23 (b) 這次不做 needs in a stakeholder's 解法涵蓋 | 84 (yes: they are in the total) |
+| Q24 (b) A 依編號 sort | 82 (no 依編號 sort; the fixed ID order still breaks ties and is used where no sort applies; an old `sort=id` is dropped with `replace`) |

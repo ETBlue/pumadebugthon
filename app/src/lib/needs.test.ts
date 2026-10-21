@@ -41,7 +41,7 @@ describe('issueNeeds', () => {
 
   it('has one item per row of 5.2, in file order', () => {
     expect(items.map((i) => i.need.id)).toEqual(ids(trashcans.needs))
-    expect(items).toHaveLength(21)
+    expect(items).toHaveLength(22)
   })
 
   it('gives N01 its 9 stories and its stakeholders in ID order', () => {
@@ -134,7 +134,7 @@ describe('dataBasedNeeds', () => {
     const items = issueNeeds(trashcans)
     const kept = dataBasedNeeds(items)
     // N01 is kept although its group tag is [AI模擬]: some of its stories have data.
-    expect(kept.map((i) => i.need.id)).toEqual(['N01', 'N03', 'N04', 'N06', 'I01-US09', 'I24-US01'])
+    expect(kept.map((i) => i.need.id)).toEqual(['N01', 'N03', 'N04', 'N06', 'I01-US09', 'I09-US06', 'I24-US01'])
     for (const item of items) {
       const based = item.stories.some((s) => s.soThat.tag === '實證' || s.soThat.tag === 'AI整理')
       expect(kept.includes(item)).toBe(based)

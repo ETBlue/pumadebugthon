@@ -80,18 +80,18 @@ class BuildJsonOutputTest(unittest.TestCase):
         return next(s for s in self.issue["stories"] if s["id"] == sid)
 
     def test_counts(self):
-        self.assertEqual(len(self.issue["stories"]), 52)
-        self.assertEqual(len(self.issue["conflicts"]), 9)
+        self.assertEqual(len(self.issue["stories"]), 53)
+        self.assertEqual(len(self.issue["conflicts"]), 10)
         self.assertEqual(len(self.issue["solutions"]), 5)
         self.assertEqual(len(self.issue["groups"]), 11)
         self.assertEqual(len(self.issue["stakeholders"]), 27)
 
     def test_index_counts(self):
         item = next(i for i in self.index["issues"] if i["number"] == 2)
-        # cells: want + soThat. 實證 7+1, AI整理 11+12, AI模擬 34+38, 待補 0+1.
-        self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 15, "stories": 52,
-                                          "conflicts": 9, "solutions": 5,
-                                          "cells": {"evidence": 8, "aiSummary": 23, "aiSimulated": 72,
+        # cells: want + soThat. 實證 8+2, AI整理 11+12, AI模擬 34+38, 待補 0+1.
+        self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 15, "stories": 53,
+                                          "conflicts": 10, "solutions": 5,
+                                          "cells": {"evidence": 10, "aiSummary": 23, "aiSimulated": 72,
                                                     "pending": 1}})
         self.assertEqual(item["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
         self.assertEqual(item["title"], "找回消失的垃圾桶")
@@ -381,7 +381,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         so = self.story("O04-US04")["soThat"]
         self.assertEqual(so, {"text": "【待補：題目原文沒有說明理由，需環保局確認】", "tag": None, "pending": True})
         evidence = [s["id"] for s in self.issue["stories"] if s["want"]["tag"] == "實證"]
-        self.assertEqual(len(evidence), 7)
+        self.assertEqual(len(evidence), 8)
 
     def test_groups(self):
         w08 = next(g for g in self.issue["groups"] if g["id"] == "W08")
@@ -854,7 +854,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertEqual(next(g for g in issue["groups"] if g["id"] == "W01")["tag"], "AI整理")
         counts = next(i for i in index["issues"] if i["number"] == 2)["counts"]
         # O01-US01 had AI模擬 in both cells. Now both are AI整理.
-        self.assertEqual(counts["cells"], {"evidence": 8, "aiSummary": 25, "aiSimulated": 70, "pending": 1})
+        self.assertEqual(counts["cells"], {"evidence": 10, "aiSummary": 25, "aiSimulated": 70, "pending": 1})
 
     # ---------- the needs-based format ----------
     def test_story_priority_differs_from_need(self):

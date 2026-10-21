@@ -22,8 +22,8 @@ const inCountOrder = (numbers: number[]) => numbers.every((n, i) => i === 0 || n
 
 describe('stakeholderStats: totals', () => {
   it('counts the stakeholders of the menu (active, in an analyzed issue) and their stories', () => {
-    // O02 is moved, so 65 of the 66 rows.
-    expect(stats().totals).toEqual({ stakeholders: 65, organizations: 30, individuals: 35, crossIssue: 18, stories: 203 })
+    // 65 of the 67 rows: O02 is moved, and I34 is in no issue (it left #9 on 2026-10-21).
+    expect(stats().totals).toEqual({ stakeholders: 65, organizations: 30, individuals: 35, crossIssue: 18, stories: 208 })
   })
 
   it('gives no cross-issue number with fewer than 2 analyzed issues', () => {
@@ -34,7 +34,7 @@ describe('stakeholderStats: totals', () => {
   it('with 只看有資料根據, only the story counts change', () => {
     const off = stats()
     const on = stats({ dataBasedOnly: true })
-    expect(on.totals).toEqual({ ...off.totals, stories: 70 })
+    expect(on.totals).toEqual({ ...off.totals, stories: 75 })
     expect(on.byCategory.map((r) => r.stakeholders)).toEqual(off.byCategory.map((r) => r.stakeholders))
     expect(on.byCategory.map((r) => r.stories)).not.toEqual(off.byCategory.map((r) => r.stories))
     expect(on.byFocusGroup).toEqual(off.byFocusGroup)
@@ -60,10 +60,10 @@ describe('stakeholderStats: byCategory', () => {
       { root: 'O', path: 'edu', label: '教育機構', stakeholders: 1, stories: 1 },
       { root: 'O', path: 'ngo', label: '公民團體', stakeholders: 2, stories: 6 },
       { root: 'O', path: 'cmt', label: '社群', stakeholders: 3, stories: 9 },
-      { root: 'I', path: 'res', label: '居民', stakeholders: 20, stories: 59 },
+      { root: 'I', path: 'res', label: '居民', stakeholders: 19, stories: 63 },
       { root: 'I', path: 'mov', label: '用路人', stakeholders: 6, stories: 43 },
       { root: 'I', path: 'vis', label: '遊客', stakeholders: 2, stories: 3 },
-      { root: 'I', path: 'wrk', label: '工作者', stakeholders: 7, stories: 12 },
+      { root: 'I', path: 'wrk', label: '工作者', stakeholders: 8, stories: 13 },
     ])
   })
 
@@ -82,7 +82,7 @@ describe('stakeholderStats: byCategory', () => {
   })
 
   it('with 只看有資料根據, counts only the data-based stories', () => {
-    expect(stats({ dataBasedOnly: true }).byCategory.map((r) => r.stories)).toEqual([7, 0, 1, 0, 0, 2, 0, 27, 32, 0, 1])
+    expect(stats({ dataBasedOnly: true }).byCategory.map((r) => r.stories)).toEqual([7, 0, 1, 0, 0, 2, 0, 31, 32, 0, 2])
   })
 })
 

@@ -104,8 +104,8 @@ describe('conflictsForStakeholder', () => {
   })
 
   it('keeps a conflict with the stakeholder on either side, in file order', () => {
-    // I09 is on side B of C1, C5, C7 and C8.
-    expect(ids(conflictsForStakeholder(trashcans, 'I09'))).toEqual(['C1', 'C5', 'C7', 'C8'])
+    // I09 is on side B of C1, C5, C7 and C8, and on side A of C10.
+    expect(ids(conflictsForStakeholder(trashcans, 'I09'))).toEqual(['C1', 'C5', 'C7', 'C8', 'C10'])
   })
 
   it('returns all conflicts for null', () => {

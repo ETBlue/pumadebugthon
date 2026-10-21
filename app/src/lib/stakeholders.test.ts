@@ -101,7 +101,7 @@ describe('buildTree', () => {
     ])
     for (const n of tree.individuals) expect(n.children).toEqual([])
     expect(tree.individuals.find((n) => n.path === 'wrk')!.stakeholders.map((s) => s.id)).toEqual([
-      'I08', 'I11', 'I12', 'I13', 'I15', 'I28', 'I29',
+      'I08', 'I11', 'I12', 'I13', 'I15', 'I28', 'I29', 'I36',
     ])
   })
 

@@ -12,15 +12,15 @@
         "utility",
         "bike-lane"
       ],
-      "updated": "2026-10-20",
+      "updated": "2026-10-21",
       "counts": {
         "stakeholdersO": 14,
         "stakeholdersI": 14,
-        "stories": 66,
-        "conflicts": 8,
+        "stories": 68,
+        "conflicts": 9,
         "solutions": 5,
         "cells": {
-          "evidence": 9,
+          "evidence": 13,
           "aiSummary": 28,
           "aiSimulated": 95,
           "pending": 0
@@ -43,15 +43,15 @@
         "park",
         "mrt-exit"
       ],
-      "updated": "2026-10-20",
+      "updated": "2026-10-21",
       "counts": {
         "stakeholdersO": 12,
         "stakeholdersI": 15,
-        "stories": 52,
-        "conflicts": 9,
+        "stories": 53,
+        "conflicts": 10,
         "solutions": 5,
         "cells": {
-          "evidence": 8,
+          "evidence": 10,
           "aiSummary": 23,
           "aiSimulated": 72,
           "pending": 1
@@ -142,15 +142,15 @@
       "source": "參加者補充",
       "available": true,
       "spaces": [],
-      "updated": "2026-10-20",
+      "updated": "2026-10-21",
       "counts": {
         "stakeholdersO": 9,
         "stakeholdersI": 11,
-        "stories": 39,
-        "conflicts": 4,
+        "stories": 41,
+        "conflicts": 5,
         "solutions": 5,
         "cells": {
-          "evidence": 2,
+          "evidence": 6,
           "aiSummary": 0,
           "aiSimulated": 76,
           "pending": 0
@@ -919,9 +919,7 @@
       "name": "本專案作者（市政提案小幫手的作者）",
       "path": "res",
       "focus": [],
-      "issues": [
-        9
-      ],
+      "issues": [],
       "movedTo": null,
       "added": "2026-10-20"
     },
@@ -937,6 +935,17 @@
       ],
       "movedTo": null,
       "added": "2026-10-20"
+    },
+    {
+      "id": "I36",
+      "name": "商業界的功能分析師",
+      "path": "wrk",
+      "focus": [],
+      "issues": [
+        9
+      ],
+      "movedTo": null,
+      "added": "2026-10-21"
     }
   ],
   "pathLabels": {

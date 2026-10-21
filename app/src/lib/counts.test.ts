@@ -20,9 +20,10 @@ describe('issueCount', () => {
 
 describe('stakeholderCount', () => {
   it('counts active stakeholders and leaves out moved IDs', () => {
-    // 66 rows, one of them (O02) moved to I12. #9 added O25–O31 and I29–I35.
-    expect(index.stakeholders).toHaveLength(66)
-    expect(stakeholderCount(index)).toBe(65)
+    // 67 rows, one of them (O02) moved to I12. #9 added O25–O31, I29–I35 and I36.
+    // I34 left #9 (no issue now) but is not moved, so it is still counted.
+    expect(index.stakeholders).toHaveLength(67)
+    expect(stakeholderCount(index)).toBe(66)
   })
 })
 
@@ -39,7 +40,7 @@ describe('solutionCount', () => {
 
 describe('wantCount', () => {
   it('counts each W group once and each story with no W group, summed over the issues', () => {
-    expect(wantCount(issues)).toBe(48 + 39 + 33)
+    expect(wantCount(issues)).toBe(50 + 40 + 33)
   })
 
   it('is the same as the opinion check pick lists', () => {
@@ -66,8 +67,8 @@ describe('wantCount', () => {
 describe('needCount', () => {
   it('counts the rows of step 5.2 (issue.needs), summed over the issues', () => {
     // Each N group once, plus each story with no N group (decision 43).
-    expect(needCount(issues)).toBe(29 + 21 + 24)
-    expect(needCount([trashcansJson as IssueFile])).toBe(21)
+    expect(needCount(issues)).toBe(31 + 22 + 24)
+    expect(needCount([trashcansJson as IssueFile])).toBe(22)
   })
 
   it('counts an N group once, however many stories it has', () => {

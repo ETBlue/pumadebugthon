@@ -12,12 +12,12 @@ const issues = [trees, trashcans, smokefree]
 const sol = (issue: IssueFile, code: string) => issue.solutions.find((s) => s.id === code) as Solution
 
 describe('issueTabCounts', () => {
-  it('gives the counts of the issue tab labels (#2: 訴求 39・衝突 9, 需求 21, 解法 5)', () => {
-    expect(issueTabCounts(trashcans)).toEqual({ wants: 39, conflicts: 9, needs: 21, solutions: 5 })
+  it('gives the counts of the issue tab labels (#2: 訴求 40・衝突 10, 需求 22, 解法 5)', () => {
+    expect(issueTabCounts(trashcans)).toEqual({ wants: 40, conflicts: 10, needs: 22, solutions: 5 })
   })
 
   it('works for the other fixtures', () => {
-    expect(issueTabCounts(trees)).toEqual({ wants: 48, conflicts: 8, needs: 29, solutions: 5 })
+    expect(issueTabCounts(trees)).toEqual({ wants: 50, conflicts: 9, needs: 31, solutions: 5 })
     expect(issueTabCounts(smokefree)).toEqual({ wants: 33, conflicts: 6, needs: 24, solutions: 5 })
   })
 })
@@ -46,9 +46,9 @@ describe('stakeholderTabCounts', () => {
 })
 
 describe('solutionTabCounts', () => {
-  it('gives the covered and not covered counts (#2 A: needs 9 / 12, stakeholders 14 / 13)', () => {
+  it('gives the covered and not covered counts (#2 A: needs 9 / 13, stakeholders 14 / 13)', () => {
     expect(solutionTabCounts(trashcans, sol(trashcans, 'A'))).toEqual({
-      needs: { covered: 9, notCovered: 12 },
+      needs: { covered: 9, notCovered: 13 },
       stakeholders: { covered: 14, notCovered: 13 },
     })
   })

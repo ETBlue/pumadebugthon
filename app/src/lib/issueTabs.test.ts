@@ -10,13 +10,13 @@ const smokefree = smokefreeJson as IssueFile
 const needIds = (list: { need: { id: string } }[]) => list.map((x) => x.need.id)
 
 describe('needsTabView', () => {
-  it('shows the 21 needs of #2 in 4 priority groups, in the order M, S, C, W', () => {
+  it('shows the 22 needs of #2 in 4 priority groups, in the order M, S, C, W', () => {
     const view = needsTabView(trashcans, null, false)
     expect(view.oldFormat).toBe(false)
-    expect(view.shown).toBe(21)
+    expect(view.shown).toBe(22)
     expect(view.groups.map((g) => [g.priority, g.items.length])).toEqual([
       ['M', 8],
-      ['S', 10],
+      ['S', 11],
       ['C', 2],
       ['W', 1],
     ])
@@ -55,8 +55,8 @@ describe('needsTabView', () => {
 
   it('with the data filter, keeps a need when one of its 以便… cells is [實證] or [AI整理]', () => {
     const view = needsTabView(trashcans, null, true)
-    expect(needIds(view.groups.flatMap((g) => g.items))).toEqual(['N01', 'N04', 'N06', 'I24-US01', 'N03', 'I01-US09'])
-    expect(view.shown).toBe(6)
+    expect(needIds(view.groups.flatMap((g) => g.items))).toEqual(['N01', 'N04', 'N06', 'I24-US01', 'N03', 'I01-US09', 'I09-US06'])
+    expect(view.shown).toBe(7)
   })
 
   it('uses both filters together', () => {
@@ -120,7 +120,7 @@ describe('solutionsTabView', () => {
     const view = solutionsTabView(trashcans, 'I01', false)
     expect(view.map((s) => [s.solution.id, s.otherNeeds])).toEqual([
       ['A', 6],
-      ['B', 4],
+      ['B', 5],
       ['C', 4],
       ['D', 5],
       ['E', 2],

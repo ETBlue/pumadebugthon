@@ -15,11 +15,11 @@ const keys = (list: { key: string }[]) => list.map((x) => x.key)
 const conflictIds = (view: ReturnType<typeof wantsTabView>) => view.conflicts.map((c) => c.conflict.id)
 
 describe('wantsTabView', () => {
-  it('shows every want and every conflict with no filter (#2: 39 and 9)', () => {
+  it('shows every want and every conflict with no filter (#2: 40 and 10)', () => {
     const view = wantsTabView(trashcans, null, false)
-    expect(view.wants).toHaveLength(39)
+    expect(view.wants).toHaveLength(40)
     expect(keys(view.wants)).toEqual(keys(issueWants(trashcans)))
-    expect(conflictIds(view)).toEqual(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9'])
+    expect(conflictIds(view)).toEqual(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10'])
   })
 
   it('shows 2 wants (W08, W11) and 1 conflict (C6) for I06 in #2', () => {
@@ -58,7 +58,7 @@ describe('wantsTabView', () => {
     expect(keys(view.wants)).toEqual(keys(dataBasedPickList(all, trashcans.stories)))
     expect(view.wants.length).toBeLessThan(all.length)
     // The data filter does not hide a conflict. It only hides stories inside it.
-    expect(view.conflicts).toHaveLength(9)
+    expect(view.conflicts).toHaveLength(10)
   })
 
   it('applies the stakeholder filter and the data filter together', () => {

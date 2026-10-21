@@ -97,10 +97,10 @@ const ids = (list: { need: { id: string } }[]) => list.map((x) => x.need.id)
 const codes = (list: { id: string }[]) => list.map((x) => x.id)
 
 describe('solutionNeedCoverage', () => {
-  it('splits the needs of #2 into 9 covered by A and 12 not covered, in the order of step 5.2', () => {
+  it('splits the needs of #2 into 9 covered by A and 13 not covered, in the order of step 5.2', () => {
     const { covered, notCovered } = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
     expect(ids(covered)).toEqual(['N01', 'N02', 'N04', 'N05', 'N07', 'O04-US02', 'O04-US04', 'O12-US01', 'I01-US09'])
-    expect(notCovered).toHaveLength(12)
+    expect(notCovered).toHaveLength(13)
     expect(ids(notCovered)).toEqual(trashcans.needs.map((n) => n.id).filter((id) => !ids(covered).includes(id)))
   })
 
@@ -124,7 +124,7 @@ describe('solutionNeedCoverage', () => {
     const old = { ...sol(trashcans, 'A'), needs: null }
     const { covered, notCovered } = solutionNeedCoverage(trashcans, old)
     expect(covered).toEqual([])
-    expect(notCovered).toHaveLength(21)
+    expect(notCovered).toHaveLength(22)
   })
 })
 
@@ -200,7 +200,7 @@ describe('dataBasedCoverage', () => {
   it('keeps the needs with a 實證 or AI整理 以便… cell when the filter is on', () => {
     const { covered, notCovered } = dataBasedCoverage(solutionNeedCoverage(trashcans, sol(trashcans, 'A')), true)
     expect(ids(covered)).toEqual(['N01', 'N04', 'I01-US09'])
-    expect(ids(notCovered)).toEqual(['N03', 'N06', 'I24-US01'])
+    expect(ids(notCovered)).toEqual(['N03', 'N06', 'I09-US06', 'I24-US01'])
   })
 })
 
@@ -213,7 +213,7 @@ describe('coverageByPriority', () => {
     ])
     expect(groupIds(groups.notCovered)).toEqual([
       ['M', ['N06', 'I24-US01']],
-      ['S', ['N03', 'N08', 'N09', 'N10', 'O09-US02', 'I11-US01', 'I13-US02']],
+      ['S', ['N03', 'N08', 'N09', 'N10', 'O09-US02', 'I09-US06', 'I11-US01', 'I13-US02']],
       ['C', ['O08-US01', 'O08-US02']],
       ['W', ['O09-US01']],
     ])

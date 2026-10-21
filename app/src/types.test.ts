@@ -53,8 +53,8 @@ describe('index.json', () => {
   it('has the counts of #2', () => {
     const i = index.issues.find((i) => i.number === 2)
     expect(i?.counts).toEqual({
-      stakeholdersO: 12, stakeholdersI: 15, stories: 52, conflicts: 9, solutions: 5,
-      cells: { evidence: 8, aiSummary: 23, aiSimulated: 72, pending: 1 },
+      stakeholdersO: 12, stakeholdersI: 15, stories: 53, conflicts: 10, solutions: 5,
+      cells: { evidence: 10, aiSummary: 23, aiSimulated: 72, pending: 1 },
     })
   })
 
@@ -137,11 +137,11 @@ describe('issue files', () => {
   })
 
   it('have the known counts', () => {
-    expect(trashcans.stories).toHaveLength(52)
-    expect(trashcans.conflicts).toHaveLength(9)
+    expect(trashcans.stories).toHaveLength(53)
+    expect(trashcans.conflicts).toHaveLength(10)
     expect(trashcans.solutions).toHaveLength(5)
     expect(trashcans.groups).toHaveLength(11)
-    expect(trees.stories).toHaveLength(66)
+    expect(trees.stories).toHaveLength(68)
   })
 
   it('C6 of #2 has I01-US01 on one side and I06-US01 on the other', () => {

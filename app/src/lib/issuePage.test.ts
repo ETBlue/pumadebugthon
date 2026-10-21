@@ -119,9 +119,11 @@ describe('pendingBySection', () => {
       '1.2 可能的輸入來源',
       '1.3 特別關注族群檢查',
       '步驟 2：初始使用者故事',
+      '3.9 我想要與以便的改寫紀錄',
       '步驟 4：使用者故事總表',
       '6.1 候選解法',
       '6.3 成效衡量',
+      '6.4 衝突與以需求為本的解方',
       '7.1 解法 A：清潔箱佈建建議地圖',
       '7.2 解法 B：滿溢回報與動態清運',
       '7.3 解法 C：找桶指引與開放資料更新',
@@ -138,7 +140,9 @@ describe('pendingBySection', () => {
       { section: '資料比對注意事項', text: '【待補：環保局確認目前實際數量與兩份表的關係】', context: null },
     ])
     const b = groups.find((g) => g.section === '7.2 解法 B：滿溢回報與動態清運')
-    expect(b?.items.map((i) => i.text)).toEqual(['【待補：現有系統資訊】', '【待補：市場詢價】', '【待補：市場詢價】'])
+    expect(b?.items.map((i) => i.text)).toEqual([
+      '【待補：現有系統資訊】', '【待補：查證規定的名稱、內容，以及是否適用於市府的 IoT 設備】', '【待補：市場詢價】', '【待補：市場詢價】',
+    ])
   })
 
   it('puts items of the same section together, also when they are apart in the list', () => {

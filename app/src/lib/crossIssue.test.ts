@@ -120,7 +120,7 @@ describe('crossNeedCoverage (design 3.18, decision 60)', () => {
   })
 
   it('does not cover the other needs of the issues', () => {
-    expect([ids(1), ids(2), ids(8)].map((c) => c.notCovered.length)).toEqual([25, 15, 17])
+    expect([ids(1), ids(2), ids(8)].map((c) => c.notCovered.length)).toEqual([27, 16, 17])
     expect(ids(2).notCovered.map((i) => i.need.id)).toContain('N01')
   })
 
@@ -221,13 +221,13 @@ describe('crossStakeholderCoverage', () => {
 describe('crossSolutionTabCounts', () => {
   it('sums the needs over the issues and counts each stakeholder once', () => {
     expect(crossSolutionTabCounts(cross, xa, files)).toEqual({
-      needs: { covered: 17, notCovered: 57 },
+      needs: { covered: 17, notCovered: 60 },
       stakeholders: { covered: 21, notCovered: 30 },
     })
     // X-E: 9 needs of #2 and #8, plus #1 N15 through X-N03 (decision 60).
     // N15 (O05, O13) moves one stakeholder from not covered to covered.
     expect(crossSolutionTabCounts(cross, xe, files)).toEqual({
-      needs: { covered: 10, notCovered: 36 },
+      needs: { covered: 10, notCovered: 37 },
       stakeholders: { covered: 16, notCovered: 20 },
     })
   })

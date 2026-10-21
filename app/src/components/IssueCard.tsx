@@ -6,6 +6,7 @@ import { Field } from './Field'
 import { sharePercent, type Share } from '@/lib/coverage'
 import { focusGapsText } from '@/lib/focusGroups'
 import { isParticipantIssue, type Shared } from '@/lib/issues'
+import { CROSS_STAKEHOLDERS_PATH } from '@/lib/listParams'
 import type { IssueSummary, SpaceType } from '@/types'
 import { SpaceLinks } from './SpaceLinks'
 import { linkClass } from './styles'
@@ -52,7 +53,7 @@ export function IssueCard(props: IssueCardProps) {
   // The same text and link in both variants (decision 72).
   const sharedField = props.shared && (
     <Field label={tc.shared}>
-      <Link to={{ pathname: '/stakeholders', search: '?cross=1' }} className={linkClass}>
+      <Link to={CROSS_STAKEHOLDERS_PATH} className={linkClass}>
         {tc.sharedValue(props.shared.count, props.shared.issues)}
       </Link>
     </Field>

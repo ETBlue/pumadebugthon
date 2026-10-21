@@ -1,12 +1,11 @@
 // Lookups for the stakeholder page (design 3.3).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
-import type { Cell, IndexFile, InputSource, IssueFile, Solution, Stakeholder, Story } from '@/types'
+import type { Cell, InputSource, IssueFile, Solution, Stakeholder, Story } from '@/types'
 import { movedStakeholderTarget, stakeholderTabPath, type PathTarget } from './entityPaths'
 import { compareIds } from './ids'
-import { availableIssues } from './issues'
 import { dataBasedNeeds, needsOfStakeholder, type StakeholderNeedItem } from './needs'
 import { priorityCounts, type TagPriorityCounts } from './priority'
-import { isListed, resolveId } from './stakeholders'
+import { resolveId } from './stakeholders'
 import { storyStakeholderOf } from './stories'
 import { conflictsForStakeholder, conflictView, type ConflictView } from './wantList'
 
@@ -60,16 +59,6 @@ export function stakeholderIssueView(issue: IssueFile, id: string): StakeholderI
     counts: priorityCounts(stories),
     inputSources: issue.inputSources.filter((src) => src.stakeholders.includes(id)),
   }
-}
-
-/** Every listed stakeholder in at least one available issue. O first, then
- * I, each in ID order. Never sorted by a count. */
-export function stakeholderMenuIds(index: IndexFile): string[] {
-  const available = new Set(availableIssues(index).map((i) => i.number))
-  return index.stakeholders
-    .filter((s) => isListed(s) && s.issues.some((n) => available.has(n)))
-    .map((s) => s.id)
-    .sort(compareIds)
 }
 
 /** The stakeholder page has no side bar now (decision 94), so the old side

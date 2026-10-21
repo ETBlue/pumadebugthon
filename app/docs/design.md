@@ -73,7 +73,7 @@ Each item shows:
 
 Sort rule for all three blocks: by date, newest first. Items with the same date are sorted by ID, highest first (issue number; stakeholder ID, the reverse of the usual ID order, so I comes before O and I28 before I27; for solutions the issue number, then the solution letter). **Never sorted by a count** (this still holds for the home blocks after Phase L; decision 81). An item without a date (for example an issue with no git history) goes last. The sort functions are `recentIssues`, `recentStakeholders` and `recentSolutions` in `src/lib/recent.ts`.
 
-Old links to the stakeholder filter on the home page (`#/?cross=1`, shared on Discord) go to `#/stakeholders?cross=1`.
+Old links to the stakeholder filter on the home page (`#/?cross=1`, shared on Discord) go to `#/stakeholders?issue=X`, the stakeholders in 2 or more issues (Phase L, decision 91). Before Phase L they went to `#/stakeholders?cross=1`.
 
 ### 3.2 Issue page
 
@@ -375,7 +375,7 @@ Every stakeholder in `stakeholders.csv`, across all issues.
 
 Moved IDs (with 「已改為 …」) are not listed.
 
-The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an issue card can link to it.
+The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an issue card can link to it. *(Phase L: the issue card links to `#/stakeholders?issue=X`, and `?cross=1` redirects there, 3.23.5.)*
 
 **`#/solutions`: 解法列表.** Every solution of every analyzed issue, grouped by issue (an h2 per issue), in issue number order, then letter order. Never sorted by a count. *Replaced by 3.23 (decisions 81, 85, 89): one flat list with the cross-issue solutions, sorted by the reader's pick (default 最近更新), with the filters in the URL.*
 
@@ -648,7 +648,7 @@ Old URLs:
 | `#/issues/<n>/opinion`, `…/conflicts`, `…/stakeholders` | Redirect (3.2) |
 | `#/issues/<n>/solutions/<code>`, `#/issues/<n>/solutions/<code>/<tab>` | Redirect to `#/solutions/<n>-<code>` and `#/solutions/<n>-<code>/<tab>`, query kept (3.12) |
 | `#/stakeholders/<moved id>/…` | Redirect to the new ID, rest of the path kept (3.3) |
-| `#/?cross=1` | `#/stakeholders?cross=1` (3.1) |
+| `#/?cross=1` | `#/stakeholders?issue=X` (3.1, decision 91) |
 | `#/wants`, `#/needs` | Not found (decisions 31, 40) |
 | `#/stakeholders/<id>/wants/<n>/<key>`, `…/needs/<n>/<key>`, `#/solutions/cross/<code>` | Not found. These were draft URLs and were never published (decisions 45, 56). |
 
@@ -958,6 +958,7 @@ The exact UI: the 「議題」 popover button opens a `<fieldset>` with the lege
 - A moved stakeholder ID in `who` becomes the new ID (`resolveId`, as 3.14).
 - 「清除篩選」 removes every filter param of the page, and `q` too, and keeps `sort` and `view` (decision 97).
 - The card links do not carry the list params. The solution card link keeps `?evidence=1` as before, but these pages never set it.
+- Links to the list pages from other pages (the breadcrumbs, 「看全部議題的解法」 on the solution page) do not carry `?evidence=1`, because the list pages do not read it. The links are built with `listPath` and `HOME_ALL_PATHS` in `src/lib/listParams.ts` where they have params.
 - The logic is pure functions in `src/lib/listParams.ts`: `listParamsOf(page, params, index)` → `{ sort, issues, crossChoice, spaces, who, specialOnly, view, q }` (cleaned), `listUrlSearch(page, state)` → the URL search string, and `clearListFilters(params)`. Tests first. (The URL function was called `listSearch` in the first draft. It is renamed, so the name does not mix with the text search of 3.23.13, which is in `src/lib/listSearch.ts`.)
 
 **Old links** (decision 91):
@@ -967,7 +968,7 @@ The exact UI: the 「議題」 popover button opens a `<fieldset>` with the lege
 | `#/stakeholders?cross=1` (issue cards, Discord) | Redirect with `replace` to `?issue=X`, other params kept |
 | `#/stakeholders?special=<group>` (Phase S side bar) | Redirect with `replace` to `?specialonly=1`, other params kept |
 | `#/stakeholders?evidence=1` | The page has no data filter now. The param is dropped. |
-| `#/?cross=1` | `#/stakeholders?cross=1`, as before (3.1) |
+| `#/?cross=1` | `#/stakeholders?issue=X` in one step, with `replace` (3.1) |
 
 The 跨議題共用的利害關係人 link on the issue cards (3.9, decision 72) changes from `#/stakeholders?cross=1` to `#/stakeholders?issue=X`. The old link still works through the redirect.
 

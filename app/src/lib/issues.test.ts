@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import type { IndexFile, IssueSummary, Stakeholder } from '@/types'
 import {
-  availableIssues, filterIssuesBySpace, focusOptions, isParticipantIssue, sharedForCard, sharedStakeholders, spaceTypeNames, usedSpaceTypes,
+  availableIssues, focusOptions, isParticipantIssue, sharedForCard, sharedStakeholders, spaceTypeNames, usedSpaceTypes,
 } from './issues'
 
 const index = indexJson as IndexFile
@@ -83,20 +83,6 @@ describe('spaceTypeNames', () => {
       { code: 'sidewalk', name: '人行道' },
       { code: 'nope', name: 'nope' },
     ])
-  })
-})
-
-describe('filterIssuesBySpace', () => {
-  it('returns every issue when no code is selected', () => {
-    expect(filterIssuesBySpace(index.issues, [])).toEqual(index.issues)
-  })
-
-  it('keeps the issues that use ANY selected code, and no unavailable issue', () => {
-    const numbers = (list: IssueSummary[]) => list.map((i) => i.number)
-    expect(numbers(filterIssuesBySpace(index.issues, ['arcade']))).toEqual([2, 8])
-    expect(numbers(filterIssuesBySpace(index.issues, ['utility']))).toEqual([1])
-    expect(numbers(filterIssuesBySpace(index.issues, ['indoor', 'utility']))).toEqual([1, 8])
-    expect(numbers(filterIssuesBySpace(index.issues, ['parking']))).toEqual([])
   })
 })
 

@@ -297,7 +297,7 @@ export function CrossOverviewTab({ data, index, issues, solution: sol }: {
       <nav aria-labelledby="cross-more" className="border-t pt-6">
         <h3 id="cross-more" className="text-xl font-bold">{tp.moreHeading}</h3>
         <ul className="mt-3 space-y-1">
-          <li><Link to={{ pathname: '/solutions', search }} className={targetLinkClass}>{tp.allSolutionsLink}</Link></li>
+          <li><Link to="/solutions" className={targetLinkClass}>{tp.allSolutionsLink}</Link></li>
         </ul>
       </nav>
     </div>

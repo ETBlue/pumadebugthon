@@ -54,13 +54,6 @@ export function spaceTypeNames(spaceTypes: SpaceType[], codes: string[]): { code
   return codes.map((code) => ({ code, name: spaceTypes.find((s) => s.code === code)?.name ?? code }))
 }
 
-/** The issues that use ANY of the codes. An empty list returns every issue,
- * including the ones without an analysis. */
-export function filterIssuesBySpace(issues: IssueSummary[], codes: string[]): IssueSummary[] {
-  if (codes.length === 0) return issues
-  return issues.filter((i) => i.spaces.some((c) => codes.includes(c)))
-}
-
 /** 特別關注 values in the order of design 5.1. */
 export const FOCUS_ORDER = ['高齡', '身心障礙', '呼吸道疾病', '兒童與照顧者', '外籍', '經濟弱勢'] as const
 

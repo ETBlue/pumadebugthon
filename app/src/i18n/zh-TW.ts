@@ -61,27 +61,11 @@ export const t = {
   /** The list pages (design 3.9). */
   lists: {
     issuesTitle: '議題',
-    issuesIntro: '所有議題，依編號排列。還在製作中的議題不能打開。',
     stakeholdersTitle: '利害關係人',
-    /** #/stakeholders (design 3.20). */
-    stakeholdersIntro: '選一位利害關係人，看他在各議題的訴求、需求和解法。',
-    /** The note on counts, once under the intro line. */
-    stakeholdersCountNote: '這些數字只表示分析寫了多少，不代表重要程度或優先順序。',
     solutionsTitle: '解法',
-    solutionsIntro: '所有已完成分析的議題的解法，依議題編號和解法代號排列。',
-    solutionsFilters: '篩選解法',
-    solutionsSpaceFilter: '依空間類型篩選',
-    solutionsSpaceHint: '選了多個空間類型時，列出使用其中任一種的解法。',
-    solutionsIssueFilter: '依議題篩選',
-    solutionsIssueHint: '選了多個議題時，列出其中任一個議題的解法。都不選時列出全部。',
-    solutionsMatch: (n: number, total: number) => `符合 ${n} 個解法（共 ${total} 個）`,
-    solutionsNone: '沒有符合的解法。請減少篩選條件再試。',
     solutionSpaces: '空間類型',
-    solutionAdded: '新增日期',
     /** The number of needs a solution covers, as plain text (decision 54). */
     solutionNeeds: (n: number) => `涵蓋 ${n} 個需求`,
-    issueOption: (n: number, title: string) => `#${n} ${title}`,
-    issueHeading: (n: number, title: string) => `#${n} ${title}`,
   },
   /** The theme toggle in the header (design 3.10). A toggle button: the
    * name stays the same, and aria-pressed says if dark is on. */
@@ -159,9 +143,7 @@ export const t = {
     stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,
     stories: '使用者故事',
     storiesValue: (n: number) => `${n} 則`,
-    wants: '訴求',
     conflicts: '衝突',
-    needs: '需求',
     solutions: '解法',
     itemsValue: (n: number) => `${n} 個`,
     shared: '跨議題共用的利害關係人',
@@ -528,7 +510,6 @@ export const t = {
     otherSolutionsNone: '沒有任何解法涵蓋',
     measuresHeading: '成效衡量',
     measuresNone: '分析裡沒有這個解法的成效指標。',
-    metric: '指標',
     baseline: '目前數值（基準值）',
     source: '資料來源',
     detailHeading: '資源、法規、隱私與風險',

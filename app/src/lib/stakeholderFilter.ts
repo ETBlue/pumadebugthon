@@ -6,7 +6,7 @@ import type { Stakeholder } from '@/types'
 import { FILTER_PARAM, isDataBasisFilterOn } from './dataBasis'
 import { compareIds } from './ids'
 import { FOCUS_ORDER } from './issues'
-import { filterStakeholders, findStakeholder, listedStakeholders, resolveId } from './stakeholders'
+import { filterStakeholders, listedStakeholders, resolveId } from './stakeholders'
 
 export const STAKEHOLDER_PARAM = 'stakeholder'
 
@@ -49,25 +49,6 @@ export function keptSearch(params: URLSearchParams): string {
   for (const value of params.getAll(SPECIAL_PARAM)) next.append(SPECIAL_PARAM, value)
   const s = next.toString()
   return s ? `?${s}` : ''
-}
-
-export interface MenuGroup {
-  /** 組織 (O) or 個人 (I). */
-  group: 'O' | 'I'
-  /** In ID order, each ID once. */
-  items: Stakeholder[]
-}
-
-/** The menu items in two groups, O then I, each in ID order (compareIds).
- * An empty group is left out. An unknown ID is kept with the ID as its name. */
-export function menuGroups(ids: string[], stakeholders: Stakeholder[]): MenuGroup[] {
-  const sorted = [...new Set(ids)].sort(compareIds)
-  return (['O', 'I'] as const)
-    .map((group) => ({
-      group,
-      items: sorted.filter((id) => id.startsWith(group)).map((id) => findStakeholder(stakeholders, id)),
-    }))
-    .filter((g) => g.items.length > 0)
 }
 
 /** The search part of a link in the menu on the issue page (filter mode):

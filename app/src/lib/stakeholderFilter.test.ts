@@ -4,9 +4,9 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile } from '@/types'
 import type { Stakeholder } from '@/types'
 import { compareIds } from './ids'
-import { stakeholderMenuIds } from './stakeholderPage'
+import { isListed } from './stakeholders'
 import {
-  clearFiltersSearch, filterStatusParts, keptSearch, menuGroups, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
+  clearFiltersSearch, filterStatusParts, keptSearch, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
   issueSpecialOptions, specialStakeholderIds, specialOptions, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch,
   withSpecialFilter, withStakeholderFilter, type SideBarFilters,
 } from './stakeholderFilter'
@@ -89,36 +89,6 @@ describe('keptSearch', () => {
   })
 })
 
-describe('menuGroups', () => {
-  it('splits into 組織 (O) and 個人 (I), each in ID order', () => {
-    const groups = menuGroups(['I10', 'O03', 'I02', 'O01', 'I01'], index.stakeholders)
-    expect(groups.map((g) => g.group)).toEqual(['O', 'I'])
-    expect(groups[0].items.map((s) => s.id)).toEqual(['O01', 'O03'])
-    expect(groups[1].items.map((s) => s.id)).toEqual(['I01', 'I02', 'I10'])
-    expect(groups[1].items[0].name).toBe(index.stakeholders.find((s) => s.id === 'I01')?.name)
-  })
-
-  it('uses the issue order of IDs only through compareIds, for the whole #2 list', () => {
-    const groups = menuGroups(issueIds, index.stakeholders)
-    expect(groups[0].items.map((s) => s.id)).toEqual(issueIds.filter((id) => id.startsWith('O')))
-    expect(groups[1].items.map((s) => s.id)).toEqual(issueIds.filter((id) => id.startsWith('I')))
-  })
-
-  it('leaves out an empty group', () => {
-    expect(menuGroups(['I06', 'I01'], index.stakeholders).map((g) => g.group)).toEqual(['I'])
-    expect(menuGroups(['O01'], index.stakeholders).map((g) => g.group)).toEqual(['O'])
-    expect(menuGroups([], index.stakeholders)).toEqual([])
-  })
-
-  it('keeps an unknown ID with the ID as its name, and lists each ID once', () => {
-    const groups = menuGroups(['I99', 'I01', 'I01'], index.stakeholders)
-    expect(groups[0].items.map((s) => [s.id, s.name])).toEqual([
-      ['I01', index.stakeholders.find((s) => s.id === 'I01')?.name],
-      ['I99', 'I99'],
-    ])
-  })
-})
-
 describe('stakeholderMenuSearch', () => {
   const search = (current: string, id: string | null) => stakeholderMenuSearch(new URLSearchParams(current), id)
 
@@ -160,7 +130,8 @@ describe('sideBarFiltersOf', () => {
 })
 
 describe('menuIdsFor', () => {
-  const ids = stakeholderMenuIds(index)
+  // Every listed stakeholder, in ID order.
+  const ids = index.stakeholders.filter(isListed).map((x) => x.id).sort(compareIds)
   const filters = (f: Partial<SideBarFilters>): SideBarFilters => ({ dataBasedOnly: false, special: [], ...f })
   const s = (id: string) => index.stakeholders.find((x) => x.id === id) as Stakeholder
 

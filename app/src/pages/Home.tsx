@@ -11,6 +11,7 @@ import { containerClass, linkClass, proseClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { availableIssues, sharedForCard } from '@/lib/issues'
+import { HOME_ALL_PATHS } from '@/lib/listParams'
 import { homeRedirect, recentIssues, recentSolutionItems, recentStakeholders, type RecentSolution } from '@/lib/recent'
 import type { IndexFile } from '@/types'
 
@@ -82,7 +83,7 @@ function HomeBlocks({ index }: { index: IndexFile }) {
     <div>
       <p className="text-sm text-muted-foreground">{th.sortNote}</p>
       <div className="mt-6 grid gap-10 lg:grid-cols-3 lg:gap-8">
-        <Block id="recent-issues" heading={th.issuesHeading} allTo="/issues" allLabel={th.issuesAll}>
+        <Block id="recent-issues" heading={th.issuesHeading} allTo={HOME_ALL_PATHS.issues} allLabel={th.issuesAll}>
           {issues.length === 0 ? (
             <p>{th.issuesNone}</p>
           ) : (
@@ -100,7 +101,7 @@ function HomeBlocks({ index }: { index: IndexFile }) {
           )}
         </Block>
 
-        <Block id="recent-stakeholders" heading={th.stakeholdersHeading} allTo="/stakeholders" allLabel={th.stakeholdersAll}>
+        <Block id="recent-stakeholders" heading={th.stakeholdersHeading} allTo={HOME_ALL_PATHS.stakeholders} allLabel={th.stakeholdersAll}>
           {stakeholders.length === 0 ? (
             <p>{th.stakeholdersNone}</p>
           ) : (
@@ -127,7 +128,7 @@ function HomeBlocks({ index }: { index: IndexFile }) {
           )}
         </Block>
 
-        <Block id="recent-solutions" heading={th.solutionsHeading} allTo="/solutions" allLabel={th.solutionsAll}>
+        <Block id="recent-solutions" heading={th.solutionsHeading} allTo={HOME_ALL_PATHS.solutions} allLabel={th.solutionsAll}>
           {issueFiles.status !== 'ready' ? (
             <LoadState state={issueFiles} />
           ) : cross.status === 'loading' ? (

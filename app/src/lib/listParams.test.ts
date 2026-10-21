@@ -3,7 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import type { IndexFile } from '@/types'
 import { NO_FILTERS } from './listFilter'
 import {
-  clearListFilters, DEFAULT_LIST_STATE, legacyListRedirect, LIST_PARAMS, listParamsOf, listUrlSearch, Q_MAX_LENGTH,
+  clearListFilters, CROSS_STAKEHOLDERS_PATH, DEFAULT_LIST_STATE, HOME_ALL_PATHS, legacyListRedirect, LIST_PARAMS, listParamsOf, listPath, listUrlSearch, Q_MAX_LENGTH,
   type ListState,
 } from './listParams'
 
@@ -139,6 +139,25 @@ describe('legacyListRedirect', () => {
     expect(legacyListRedirect('stakeholders', '')).toBeNull()
     expect(legacyListRedirect('solutions', '?cross=1')).toBeNull()
     expect(legacyListRedirect('issues', '?evidence=1')).toBeNull()
+  })
+})
+
+describe('links to the list pages', () => {
+  it('builds a path with only the params that differ from the default', () => {
+    expect(listPath('issues')).toBe('/issues')
+    expect(listPath('solutions', { sort: 'added', issues: [2] })).toBe('/solutions?sort=added&issue=2')
+  })
+
+  it('gives each home 「看全部」 link the sort of its block (decision 91)', () => {
+    expect(HOME_ALL_PATHS).toEqual({
+      issues: '/issues',
+      stakeholders: '/stakeholders?sort=added',
+      solutions: '/solutions?sort=added',
+    })
+  })
+
+  it('links the cross-issue stakeholders with issue=X', () => {
+    expect(CROSS_STAKEHOLDERS_PATH).toBe('/stakeholders?issue=X')
   })
 })
 

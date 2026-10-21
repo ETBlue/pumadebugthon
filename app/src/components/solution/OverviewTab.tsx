@@ -243,7 +243,7 @@ export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile;
         <h3 id="solution-more" className="text-xl font-bold">{tp.moreHeading}</h3>
         <ul className="mt-3 space-y-1">
           <li><Link to={{ pathname: tabPath(n, 'solutions'), search }} className={targetLinkClass}>{tp.issueSolutionsLink(n)}</Link></li>
-          <li><Link to={{ pathname: '/solutions', search }} className={targetLinkClass}>{tp.allSolutionsLink}</Link></li>
+          <li><Link to="/solutions" className={targetLinkClass}>{tp.allSolutionsLink}</Link></li>
         </ul>
       </nav>
     </div>

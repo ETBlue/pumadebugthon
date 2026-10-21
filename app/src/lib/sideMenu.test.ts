@@ -8,8 +8,8 @@ import type { IndexFile, IssueFile, Stakeholder } from '@/types'
 import { compareIds } from './ids'
 import { needsTabView, solutionsTabView } from './issueTabs'
 import { groupKeysAbove, SIDE_MENU_CONTEXTS, sideMenuCounts, sideMenuTree, type SideMenuGroup } from './sideMenu'
-import { stakeholderMenuIds } from './stakeholderPage'
 import { specialOptions, specialStakeholderIds } from './stakeholderFilter'
+import { isListed } from './stakeholders'
 import { wantsTabView } from './wantsTab'
 
 const index = indexJson as IndexFile
@@ -126,7 +126,7 @@ describe('sideMenuTree', () => {
   })
 
   it('works for every listed stakeholder (the tree view of #/stakeholders)', () => {
-    const ids = stakeholderMenuIds(index)
+    const ids = index.stakeholders.filter(isListed).map((s) => s.id)
     const full = sideMenuTree(ids, index.stakeholders, index.pathLabels)
     expect(full.reduce((sum, g) => sum + g.stakeholderCount, 0)).toBe(ids.length)
   })

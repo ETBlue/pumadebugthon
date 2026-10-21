@@ -99,7 +99,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
       <Breadcrumb
         items={[
           { name: t.breadcrumb.home, to: '/' },
-          { name: t.breadcrumb.solutions, to: { pathname: '/solutions', search } },
+          { name: t.breadcrumb.solutions, to: '/solutions' },
           { id: t.solutionId(n, sol.id), name: stripMarkdown(sol.name.text) },
         ]}
       />
@@ -179,8 +179,6 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
   issues: IssueFile[]
   solution: CrossSolution
 }) {
-  const [params] = useSearchParams()
-  const search = dataBasisFilterSearch(params)
   const tab = parseSolutionTab(useParams().tab)
   const counts = useMemo(() => crossSolutionTabCounts(data, sol, issues), [data, sol, issues])
   const tabLabel = (name: SolutionTab): TabLabel =>
@@ -193,7 +191,7 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
       <Breadcrumb
         items={[
           { name: t.breadcrumb.home, to: '/' },
-          { name: t.breadcrumb.solutions, to: { pathname: '/solutions', search } },
+          { name: t.breadcrumb.solutions, to: '/solutions' },
           { id: sol.code, name: sol.name },
         ]}
       />

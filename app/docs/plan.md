@@ -693,7 +693,14 @@ From ETBlue's notes in `human-inputs.md` (commits ef77fec, a325fcb and e879ba7) 
 
 L10 and L11 were added on 2026-10-22, after L1–L9 were written. They keep their numbers so the old references stay right. The table above says when they run.
 
-**Status (2026-10-22):** design done (no open questions). No task has started.
+**Status (2026-10-22):**
+
+| Task | Status |
+|---|---|
+| L1, L2, L3, L4, L10, L11 | Done, merged into `main` |
+| L5, L6, L7 | Done, merged into `main` |
+| L8 | Done: the home 「看全部」 links use `HOME_ALL_PATHS` (`#/issues`, `#/stakeholders?sort=added`, `#/solutions?sort=added`); the issue card link and `#/?cross=1` go to `#/stakeholders?issue=X`; the links to `#/solutions` from the solution page no longer carry `?evidence=1`; unused strings and code are removed (`filterIssuesBySpace`, `menuGroups`, `stakeholderMenuIds`, 19 strings) |
+| L9 | Open |
 
 ### Task L1: sorts, coverage, filters and URL params (test first)
 
@@ -854,7 +861,7 @@ Design 3.23.5, 3.23.9 and 3.23.13, decisions 85, 89, 92, 95–98:
 
 ### Task L8: home links, old links, clean-up
 
-**Files:** `src/pages/Home.tsx` (the 「看全部」 targets), `src/components/IssueCard.tsx` (the 跨議題共用的利害關係人 link to `#/stakeholders?issue=X`), `src/lib/recent.ts` (`homeRedirect` stays), unused strings in `src/i18n/zh-TW.ts`, design and plan status lines.
+**Files:** `src/pages/Home.tsx` (the 「看全部」 targets), `src/components/IssueCard.tsx` (the 跨議題共用的利害關係人 link to `#/stakeholders?issue=X`), `src/lib/recent.ts` (`homeRedirect` stays, now to `?issue=X`), `src/lib/listParams.ts` (`listPath`, `HOME_ALL_PATHS`, `CROSS_STAKEHOLDERS_PATH`, added in L8), unused strings in `src/i18n/zh-TW.ts`, design and plan status lines.
 
 Design 3.23.12, decision 91: the three links of 3.23.12; `#/?cross=1` still reaches the cross-issue stakeholders; remove unused code and strings (`issuesIntro`, `stakeholdersIntro`, `stakeholdersCountNote`, `solutionsIntro`, and what L5–L7 and L11 left).
 

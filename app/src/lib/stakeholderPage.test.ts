@@ -7,7 +7,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import {
   legacyStakeholderPageSearch, movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
-  stakeholderIssueView, stakeholderMenuIds, stakeholderSolutionsView,
+  stakeholderIssueView, stakeholderSolutionsView,
 } from './stakeholderPage'
 import { stakeholderTabCounts } from './tabCounts'
 
@@ -80,27 +80,6 @@ describe('stakeholderIssueView', () => {
   it('is empty for a stakeholder that is not in the issue', () => {
     const v = stakeholderIssueView(trees, 'I12')
     expect(v).toEqual({ relation: null, stories: [], counts: [], inputSources: [] })
-  })
-})
-
-describe('stakeholderMenuIds', () => {
-  it('gives every active stakeholder of the available issues, in ID order', () => {
-    // 65 active rows, all in an available issue (#9 added 14).
-    const list = stakeholderMenuIds(index)
-    expect(list).toHaveLength(65)
-    expect(list).not.toContain('O02')
-    expect(list).not.toContain('I34')
-    expect(list.slice(0, 2)).toEqual(['O01', 'O03'])
-    expect(list).toContain('I12')
-    // O first, then I, each in ID order.
-    const firstI = list.findIndex((id) => id.startsWith('I'))
-    expect(list.slice(firstI).every((id) => id.startsWith('I'))).toBe(true)
-  })
-
-  it('leaves out a stakeholder whose issues are not available', () => {
-    const only1 = { ...index, issues: index.issues.map((i) => ({ ...i, available: i.number === 1 && i.available })) }
-    const list = stakeholderMenuIds(only1 as IndexFile)
-    for (const id of list) expect(index.stakeholders.find((s) => s.id === id)!.issues).toContain(1)
   })
 })
 

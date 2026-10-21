@@ -181,7 +181,7 @@ describe('recentSolutionItems', () => {
 
 describe('homeRedirect', () => {
   it('sends the old home link with the cross-issue filter to the stakeholder list', () => {
-    expect(homeRedirect('?cross=1')).toBe('/stakeholders?cross=1')
+    expect(homeRedirect('?cross=1')).toBe('/stakeholders?issue=X')
   })
 
   it('returns null for the plain home page and other values', () => {

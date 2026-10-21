@@ -144,6 +144,24 @@ export function listUrlSearch(page: ListPage, state: ListState): string {
   return s ? `?${s}` : ''
 }
 
+/** The path of a list page with this state, for links
+ * ("/stakeholders?sort=added"). The state parts not given are the default. */
+export function listPath(page: ListPage, state: Partial<ListState> = {}): string {
+  return `/${page}${listUrlSearch(page, { ...DEFAULT_LIST_STATE, ...state })}`
+}
+
+/** The 「看全部」 links of the home blocks (design 3.23.12, decision 91).
+ * Each list has the sort of its block, so its first 5 cards are the 5 items
+ * of the block. 最近更新 is the default sort, so #/issues has no param. */
+export const HOME_ALL_PATHS: Record<ListPage, string> = {
+  issues: listPath('issues'),
+  stakeholders: listPath('stakeholders', { sort: 'added' }),
+  solutions: listPath('solutions', { sort: 'added' }),
+}
+
+/** The stakeholders in 2 or more issues: #/stakeholders?issue=X (decision 91). */
+export const CROSS_STAKEHOLDERS_PATH = listPath('stakeholders', { crossChoice: true })
+
 /** The search string of 「清除篩選」: every filter and q are removed. sort,
  * view and any other param are kept. "" when nothing is left. */
 export function clearListFilters(params: URLSearchParams): string {

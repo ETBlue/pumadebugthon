@@ -66,6 +66,9 @@ step 6 brainstorm solutions based on raw ideas and prioritized user needs
 * ideas from 沈伯洋 go straight into this step, with the source cited
 step 7 evaluate solutions
 * calculate required data/api/resources, related laws, privacy issues, other possible concerns and the owner department for each solution to evaluate cost, feasibility and risks
+* for risk evaluation, include disasters related to the issue. e.g.
+  * natural disasters like earthquake, typhoon, landslide, flood, wildfire, drought, heat/cold wave... etc.
+  * man-made disasters like fire, gas explosion, traffic accident, cyber attack, infiltration and subversion from China, military invasion from China... etc.
 
 ## what ETBlue expects the AI agent to do
 * simulate the steps above. when finished, generate a summary of the analysis, focusing on: hard decisions, possible controversies when the solutions deployed, heavily affected disadvantaged groups, legal blockers, dependencies and conflicts with existing policies

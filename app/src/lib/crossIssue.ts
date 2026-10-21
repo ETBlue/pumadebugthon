@@ -8,7 +8,6 @@ import type {
 } from '@/types'
 import { compareIds } from './ids'
 import { issueNeeds, needsOfStakeholder, type NeedItem } from './needs'
-import type { SolutionFilter } from './solutionList'
 import type { CoveredNeed, NeedCoverage, StakeholderEntry } from './solutionPage'
 import type { SolutionTabCounts } from './tabCounts'
 
@@ -249,19 +248,4 @@ export function crossConflictView(data: CrossIssueFile, conflict: CrossConflict,
 /** 特別關注族群: the solutionFocus items that list the code, in file order. */
 export function crossSolutionFocus(data: CrossIssueFile, code: string): CrossSolutionFocus[] {
   return data.solutionFocus.filter((f) => f.solutions.includes(code))
-}
-
-// ---------- #/solutions ----------
-
-/** The first group of #/solutions (design 3.9, 3.18, decision 51): the
- * cross-issue solutions in code order. The issue filter keeps a solution
- * when one of its issues is picked. The space filter keeps a solution that
- * uses any picked space type. Empty without the file. */
-export function crossSolutionGroup(data: CrossIssueFile | null, filter: SolutionFilter): CrossSolution[] {
-  if (data === null) return []
-  return data.solutions.filter(
-    (s) =>
-      (filter.issues.length === 0 || s.parts.some((p) => filter.issues.includes(p.issue))) &&
-      (filter.spaces.length === 0 || s.spaces.some((c) => filter.spaces.includes(c))),
-  )
 }

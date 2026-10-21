@@ -1,150 +1,270 @@
-import { useId, useMemo, useState } from 'react'
-import { Link } from 'react-router'
+import { useEffect, useId, useMemo } from 'react'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
+import { ListBar, type ListBarFilter } from '@/components/ListBar'
+import type { HistoryMode } from '@/components/ListSearchBox'
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
+import { ResultLine } from '@/components/ResultLine'
 import { SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
-import { linkClass, proseClass, toggleOnClass } from '@/components/styles'
-import { ToggleCheck } from '@/components/ToggleCheck'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { StakeholderPicker } from '@/components/StakeholderPicker'
+import { linkClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { crossSolutionGroup, crossSolutionTabCounts, issuesOfCross } from '@/lib/crossIssue'
+import { evidenceShare, sharePercent } from '@/lib/coverage'
+import { crossSolutionTabCounts, issuesOfCross } from '@/lib/crossIssue'
 import { availableIssues } from '@/lib/issues'
-import { coveredNeedCount, solutionGroups, solutionSpaceOptions } from '@/lib/solutionList'
-import type { IndexFile } from '@/types'
+import {
+  clearListFilters, CROSS_ISSUE_VALUE, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
+} from '@/lib/listParams'
+import { solutionItemKey, type ListContext } from '@/lib/listSort'
+import type { RecentSolution } from '@/lib/recent'
+import {
+  coveredNeedCount, crossAlsoCovers, solutionItemCells, solutionListItems, solutionListView, solutionSpaceOptions,
+  solutionsParams,
+} from '@/lib/solutionList'
+import { findStakeholder } from '@/lib/stakeholders'
+import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 
 const tl = t.lists
+const tb = t.listBar
+const ts = t.solutionsList
+const tq = t.listSearch
 
-/** #/solutions: every solution of every analyzed issue, grouped by issue
- * (design 3.9). Issue number order, then letter order. Never by a count.
- * When cross-issue.json exists, the cross-issue solutions are the first
- * group, in code order (design 3.18, decision 51). */
+/** #/solutions (design 3.23, decision 89): the search, sort and filter bar,
+ * the result line, the sort note, then one flat list of the issue solutions
+ * and the cross-issue solutions. The list is filtered, then searched, then
+ * sorted. Every sort, filter and search is in the URL. */
 export default function Solutions() {
   const index = useIndex()
   return (
     <>
       <PageTitle parts={[tl.solutionsTitle]} />
-      <h1 className="text-2xl font-bold md:text-3xl">{tl.solutionsTitle}</h1>
-      <p className={`mt-2 leading-relaxed ${proseClass}`}>{tl.solutionsIntro}</p>
+      {/* The highlighted header link is the visible title (decision 79). */}
+      <h1 className="sr-only">{tl.solutionsTitle}</h1>
+      {index.status === 'ready' ? <SolutionsBody index={index.data} /> : <LoadState state={index} />}
+    </>
+  )
+}
+
+const NO_ISSUES: IssueFile[] = []
+
+function SolutionsBody({ index }: { index: IndexFile }) {
+  const available = useMemo(() => availableIssues(index), [index])
+  const folders = useMemo(() => available.map((i) => i.folder), [available])
+  const issuesState = useIssues(folders)
+  const crossState = useCrossIssue()
+  const [params] = useSearchParams()
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const noteId = useId()
+
+  const issueFiles = issuesState.status === 'ready' ? issuesState.data : NO_ISSUES
+  // A cross-issue file that fails to load is left out, like a missing one.
+  const cross: CrossIssueFile | null = crossState.status === 'ready' ? crossState.data : null
+  const ready = issuesState.status === 'ready' && crossState.status !== 'loading'
+
+  const search = params.toString()
+  const p: ListParams = useMemo(() => {
+    const read = new URLSearchParams(search)
+    if (ready) return solutionsParams(read, index, issueFiles, cross)
+    // While the data loads, keep every known space code, so nothing in the
+    // URL is lost before the solutions are known. No replace yet.
+    return { ...listParamsOf('solutions', read, index, index.spaceTypes.map((s) => s.code)), replace: false }
+  }, [search, ready, index, issueFiles, cross])
+  const replace = p.replace
+  const state: ListState = useMemo(() => {
+    const { replace: _drop, ...rest } = p
+    return rest
+  }, [p])
+
+  // Drop unknown values from the URL (design 3.23.5). replace, so the back
+  // button does not loop.
+  const cleanSearch = listUrlSearch('solutions', state)
+  useEffect(() => {
+    if (replace) navigate({ pathname, search: cleanSearch }, { replace: true, preventScrollReset: true })
+  }, [replace, cleanSearch, pathname, navigate])
+
+  const onNavigate = (next: string, mode: HistoryMode) =>
+    navigate({ pathname, search: next }, { replace: mode === 'replace', preventScrollReset: true })
+
+  const ctx: ListContext = useMemo(() => ({ issues: issueFiles, cross }), [issueFiles, cross])
+  const items = useMemo(() => solutionListItems(issueFiles, cross), [issueFiles, cross])
+  const shown = useMemo(() => solutionListView(items, state, ctx), [items, ctx, state])
+
+  const filters = barFilters(index, state, issueFiles, cross, ready)
+  const parts = resultParts(index, state)
+  const resultProps = { page: 'solutions' as const, shown: shown.length, total: items.length, q: state.q, parts }
+  const shareOn = state.sort === 'evidence'
+
+  return (
+    <>
+      <ListBar
+        page="solutions"
+        state={state}
+        sorts={PAGE_SORTS.solutions}
+        filters={filters}
+        sortNoteId={shareOn ? noteId : undefined}
+        resultLine={<ResultLine {...resultProps} clearLink={false} />}
+        onNavigate={onNavigate}
+        className="rounded-md border"
+      />
+      <ResultLine {...resultProps} className="mt-3" />
+      {shareOn && (
+        <p id={noteId} className="mt-2 text-sm text-muted-foreground">{tb.sortNotes.evidence}</p>
+      )}
+
       <div className="mt-4">
-        {index.status === 'ready' ? <SolutionList index={index.data} /> : <LoadState state={index} />}
+        {issuesState.status !== 'ready' ? (
+          <LoadState state={issuesState} />
+        ) : crossState.status === 'loading' ? (
+          <LoadState state={crossState} />
+        ) : shown.length === 0 ? (
+          <EmptyState state={state} params={params} pathname={pathname} />
+        ) : (
+          <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {shown.map((item) => (
+              <li key={solutionItemKey(item)}>
+                <SolutionItemCard item={item} index={index} ctx={ctx} shareOn={shareOn} />
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </>
   )
 }
 
-/** A toggle group filter with a label and a hint. Nothing picked = all. */
-function ChipFilter({ label, hint, options, value, onChange }: {
-  label: string
-  hint: string
-  options: { value: string; label: string }[]
-  value: string[]
-  onChange: (v: string[]) => void
-}) {
-  const labelId = useId()
-  return (
-    <div className="space-y-2">
-      <p id={labelId} className={`text-sm text-muted-foreground ${proseClass}`}>
-        {label}
-        <span className="block text-xs">{hint}</span>
+/** The filters of #/solutions, in the order of design 3.23.5: 議題 (with
+ * 「跨議題解法」 when cross-issue.json exists), 空間類型, 利害關係人. */
+function barFilters(
+  index: IndexFile,
+  state: ListState,
+  issueFiles: IssueFile[],
+  cross: CrossIssueFile | null,
+  ready: boolean,
+): ListBarFilter[] {
+  const issueOptions = [
+    ...(cross !== null ? [{ value: CROSS_ISSUE_VALUE, label: ts.crossChoice }] : []),
+    ...availableIssues(index).map((i) => ({ value: String(i.number), label: ts.issueOption(i.number, i.title) })),
+  ]
+  const spaceOptions = ready ? solutionSpaceOptions(index.spaceTypes, issueFiles, cross) : []
+  const filters: ListBarFilter[] = [
+    {
+      kind: 'choices',
+      key: 'issue',
+      label: ts.issueFilter,
+      options: issueOptions,
+      value: [...(state.crossChoice ? [CROSS_ISSUE_VALUE] : []), ...state.issues.map(String)],
+      none: tb.all,
+      next: (v) => ({
+        ...state,
+        crossChoice: v.includes(CROSS_ISSUE_VALUE),
+        issues: v.filter((x) => x !== CROSS_ISSUE_VALUE).map(Number),
+      }),
+    },
+  ]
+  if (spaceOptions.length > 0) {
+    filters.push({
+      kind: 'choices',
+      key: 'space',
+      label: ts.spaceFilter,
+      options: spaceOptions.map((s) => ({ value: s.code, label: s.name })),
+      value: state.spaces,
+      next: (v) => ({ ...state, spaces: v }),
+    })
+  }
+  filters.push({
+    kind: 'slot',
+    key: 'who',
+    active: state.who !== null,
+    render: (place) => (
+      <StakeholderPicker stakeholders={index.stakeholders} pathLabels={index.pathLabels} value={state.who} place={place} />
+    ),
+  })
+  return filters
+}
+
+/** The filters that are on, as text for the result line, in the order of
+ * the bar. The search is added by ResultLine. */
+function resultParts(index: IndexFile, state: ListState): string[] {
+  const parts: string[] = []
+  const issues = [...(state.crossChoice ? [ts.crossChoice] : []), ...state.issues.map(ts.issueShort)]
+  if (issues.length > 0) parts.push(tb.filterPart(ts.issueFilter, issues))
+  if (state.spaces.length > 0) {
+    const names = index.spaceTypes.filter((s) => state.spaces.includes(s.code)).map((s) => s.name)
+    parts.push(tb.filterPart(ts.spaceFilter, names))
+  }
+  if (state.who !== null) {
+    const s = findStakeholder(index.stakeholders, state.who)
+    parts.push(tb.filterPart(ts.whoFilter, [t.sideMenu.item(s.id, s.name)]))
+  }
+  return parts
+}
+
+/** The card area when nothing is shown (design 3.23.6 and 3.23.13). */
+function EmptyState({ state, params, pathname }: { state: ListState; params: URLSearchParams; pathname: string }) {
+  const filtersOn = state.issues.length > 0 || state.crossChoice || state.spaces.length > 0 || state.who !== null
+  const noQ = new URLSearchParams(params)
+  noQ.delete(LIST_PARAMS.q)
+  const noQSearch = noQ.toString() ? `?${noQ.toString()}` : ''
+  const clearSearch = (
+    <Link to={{ pathname, search: noQSearch }} preventScrollReset className={linkClass}>{tq.clear}</Link>
+  )
+  const clearFilters = (
+    <Link to={{ pathname, search: clearListFilters(params) }} preventScrollReset className={linkClass}>{tb.clear}</Link>
+  )
+  if (state.q === null) {
+    return (
+      <p>
+        {ts.none} {clearFilters}
       </p>
-      <ToggleGroup type="multiple" variant="outline" value={value} onValueChange={onChange} aria-labelledby={labelId} className="flex-wrap">
-        {options.map((o) => (
-          <ToggleGroupItem key={o.value} value={o.value} className={toggleOnClass}>
-            <ToggleCheck />
-            {o.label}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
-    </div>
+    )
+  }
+  return (
+    <p>
+      {filtersOn ? tq.noMatchFiltered(state.q, ts.noun) : tq.noMatch(state.q, ts.noun)} {clearSearch}
+      {filtersOn && <> {clearFilters}</>}
+    </p>
   )
 }
 
-function SolutionList({ index }: { index: IndexFile }) {
-  const available = useMemo(() => availableIssues(index), [index])
-  const folders = useMemo(() => available.map((i) => i.folder), [available])
-  const issues = useIssues(folders)
-  const crossState = useCrossIssue()
-  const [spaces, setSpaces] = useState<string[]>([])
-  const [issueKeys, setIssueKeys] = useState<string[]>([])
-
-  if (issues.status !== 'ready') return <LoadState state={issues} />
-  if (crossState.status === 'loading') return <LoadState state={crossState} />
-  // A cross-issue file that fails to load is left out, like a missing one.
-  const cross = crossState.status === 'ready' ? crossState.data : null
-
-  const spaceOptions = solutionSpaceOptions(index.spaceTypes, issues.data, cross).map((s) => ({ value: s.code, label: s.name }))
-  const issueOptions = available.map((i) => ({ value: String(i.number), label: tl.issueOption(i.number, i.title) }))
-  const filter = { spaces, issues: issueKeys.map(Number) }
-  const crossAll = crossSolutionGroup(cross, { spaces: [], issues: [] })
-  const crossShown = crossSolutionGroup(cross, filter)
-  const total = solutionGroups(issues.data, { spaces: [], issues: [] }).reduce((n, g) => n + g.solutions.length, 0) + crossAll.length
-  const groups = solutionGroups(issues.data, filter)
-  const shown = groups.reduce((n, g) => n + g.solutions.length, 0) + crossShown.length
-  const byNumber = new Map(issues.data.map((i) => [i.number, i]))
-
+/** One card of the list: a SolutionCard or a CrossSolutionCard, detailed. */
+function SolutionItemCard({ item, index, ctx, shareOn }: {
+  item: RecentSolution
+  index: IndexFile
+  ctx: ListContext
+  shareOn: boolean
+}) {
+  const cells = solutionItemCells(item, ctx)
+  const share = shareOn ? evidenceShare(cells) : null
+  const basis = { cells, percent: share === null ? null : sharePercent(share) }
+  if (item.kind === 'cross') {
+    const cross = ctx.cross!
+    const sol = item.solution
+    return (
+      <CrossSolutionCard
+        solution={sol}
+        detailed={{
+          spaceTypes: index.spaceTypes,
+          coveredNeeds: issuesOfCross(sol, ctx.issues).length === 0 ? null : crossSolutionTabCounts(cross, sol, ctx.issues).needs.covered,
+          basis,
+          alsoCovers: crossAlsoCovers(cross, sol),
+        }}
+      />
+    )
+  }
+  const issue = ctx.issues.find((i) => i.number === item.issueNumber)!
   return (
-    <>
-      <section aria-label={tl.solutionsFilters} className="space-y-4">
-        {spaceOptions.length > 0 && (
-          <ChipFilter label={tl.solutionsSpaceFilter} hint={tl.solutionsSpaceHint} options={spaceOptions} value={spaces} onChange={setSpaces} />
-        )}
-        {issueOptions.length >= 2 && (
-          <ChipFilter label={tl.solutionsIssueFilter} hint={tl.solutionsIssueHint} options={issueOptions} value={issueKeys} onChange={setIssueKeys} />
-        )}
-        <p role="status" className="text-sm text-muted-foreground">{tl.solutionsMatch(shown, total)}</p>
-      </section>
-
-      {groups.length === 0 && crossShown.length === 0 ? (
-        <p className="mt-6">{tl.solutionsNone}</p>
-      ) : (
-        <div className="mt-6 space-y-8">
-          {cross && crossShown.length > 0 && (
-            <section aria-labelledby="solutions-cross">
-              <h2 id="solutions-cross" className="text-xl font-bold">{t.crossIssue.groupHeading}</h2>
-              <p className={`mt-1 text-sm text-muted-foreground ${proseClass}`}>{t.crossIssue.groupIntro}</p>
-              <ul className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {crossShown.map((sol) => (
-                  <li key={sol.code}>
-                    <CrossSolutionCard
-                      solution={sol}
-                      detailed={{
-                        spaceTypes: index.spaceTypes,
-                        coveredNeeds:
-                          issuesOfCross(sol, issues.data).length === 0
-                            ? null
-                            : crossSolutionTabCounts(cross, sol, issues.data).needs.covered,
-                      }}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-          {groups.map((g) => (
-            <section key={g.issueNumber} aria-labelledby={`solutions-${g.issueNumber}`}>
-              <h2 id={`solutions-${g.issueNumber}`} className="text-xl font-bold">
-                <Link to={`/issues/${g.issueNumber}`} className={linkClass}>{tl.issueHeading(g.issueNumber, g.title)}</Link>
-              </h2>
-              <ul className="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {g.solutions.map((sol) => (
-                  <li key={sol.id}>
-                    <SolutionCard
-                      variant="detailed"
-                      solution={sol}
-                      issueNumber={g.issueNumber}
-                      showIssue
-                      spaceTypes={index.spaceTypes}
-                      coveredNeeds={coveredNeedCount(byNumber.get(g.issueNumber)!, sol)}
-                    />
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
-      )}
-    </>
+    <SolutionCard
+      variant="detailed"
+      solution={item.solution}
+      issueNumber={item.issueNumber}
+      showIssue
+      spaceTypes={index.spaceTypes}
+      coveredNeeds={coveredNeedCount(issue, item.solution)}
+      issueTitle={issue.title}
+      basis={basis}
+    />
   )
 }

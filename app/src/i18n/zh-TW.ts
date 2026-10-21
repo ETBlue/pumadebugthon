@@ -783,9 +783,7 @@ export const t = {
     /** The line under the h1: 「跨議題解法・議題：#1、#2、#8」. */
     issueLine: '跨議題解法・議題：',
     issueLink: (n: number) => `#${n}`,
-    /** #/solutions: the first group, and the issues on a card. */
-    groupHeading: '跨議題解法',
-    groupIntro: '合併了幾個議題的解法，一起處理這些議題共同的需求。',
+    /** The issues on a card. */
     cardIssues: '議題',
     /** The box on the issue's 解法 tab. */
     issueBoxHeading: '本議題也在跨議題解法中',
@@ -856,5 +854,33 @@ export const t = {
     close: '關閉',
     /** The <nav> name of the tree in the dialog. */
     treeLabel: '利害關係人分類',
+  },
+  /** #/solutions with the search, sort and filter bar (design 3.23, Task L7). */
+  solutionsList: {
+    /** The noun of the search empty states: 「找不到符合「火箭」的解法。」 */
+    noun: '解法',
+    /** The empty state with filters and no search (design 3.23.6). */
+    none: '沒有符合目前篩選的解法。',
+    /** The 議題 filter: 「跨議題解法」 first, then one choice per issue. */
+    issueFilter: '議題',
+    crossChoice: '跨議題解法',
+    issueOption: (n: number, title: string) => `#${n} ${title}`,
+    /** 議題 in the result line: 「#1」. */
+    issueShort: (n: number) => `#${n}`,
+    spaceFilter: '空間類型',
+    whoFilter: '利害關係人',
+    /** The fields of the cards (design 3.23.9). */
+    issue: '議題',
+    issueValue: (n: number, title: string) => `#${n} ${title}`,
+    crossBadge: '跨議題解法',
+    /** A cross-issue solution that also covers needs of issues outside its
+     * parts (X-E): 「也涵蓋 #1 的需求」. */
+    alsoCovers: (numbers: number[]) => `也涵蓋 ${numbers.map((n) => `#${n}`).join('、')} 的需求`,
+    basis: '涵蓋需求的資料根據',
+    basisNone: '沒有涵蓋的需求',
+    /** Next to the counts while 依資料根據比例 is on. */
+    sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
+    added: '新增日期',
+    updated: '更新日期',
   },
 } as const

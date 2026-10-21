@@ -8,7 +8,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import {
   crossConflictView, crossCoverageIssueNumbers, crossIssueNumbers, crossNeedCoverage, crossNeedGroupsOf, crossSolutionFocus,
-  crossSolutionGroup, crossSolutionsOfIssue, crossSolutionsOfSolution, crossSolutionTabCounts,
+  crossSolutionsOfIssue, crossSolutionsOfSolution, crossSolutionTabCounts,
   crossSolutionTitle, crossStakeholderCoverage, crossWayOutConflicts, findCrossSolution, issuesOfCross,
 } from './crossIssue'
 import { compareIds } from './ids'
@@ -269,27 +269,6 @@ describe('crossSolutionFocus', () => {
   it('lists the 特別關注族群 notes that name the code, in file order', () => {
     expect(crossSolutionFocus(cross, 'X-A').map((f) => f.tag)).toEqual(['高齡', '身心障礙', '兒童與照顧者', '外籍', '經濟弱勢'])
     expect(crossSolutionFocus(cross, 'X-E').map((f) => f.tag)).toEqual(['呼吸道疾病'])
-  })
-})
-
-describe('crossSolutionGroup (#/solutions)', () => {
-  it('keeps every solution in code order without a filter', () => {
-    expect(codes(crossSolutionGroup(cross, { spaces: [], issues: [] }))).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
-  })
-
-  it('keeps a solution when one of its issues is picked', () => {
-    expect(codes(crossSolutionGroup(cross, { spaces: [], issues: [1] }))).toEqual(['X-A', 'X-B', 'X-C', 'X-D'])
-    expect(codes(crossSolutionGroup(cross, { spaces: [], issues: [9] }))).toEqual(['X-D'])
-    expect(codes(crossSolutionGroup(cross, { spaces: [], issues: [3] }))).toEqual([])
-  })
-
-  it('keeps a solution that uses any picked space type', () => {
-    const withMrt = cross.solutions.filter((s) => s.spaces.includes('mrt-exit')).map((s) => s.code)
-    expect(codes(crossSolutionGroup(cross, { spaces: ['mrt-exit'], issues: [] }))).toEqual(withMrt)
-  })
-
-  it('is empty without the file', () => {
-    expect(crossSolutionGroup(null, { spaces: [], issues: [] })).toEqual([])
   })
 })
 

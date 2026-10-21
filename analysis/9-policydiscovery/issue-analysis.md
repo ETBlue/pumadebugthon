@@ -210,7 +210,7 @@
 
 - ETBlue 的原文（英文）是：(1) as a citizen interested in civic participation, I want to see the early phase analysis of a policy, so that I can see other stakeholders' needs and improve the quality of my proposals；(2) as a feature analyst in the business world, I want to view the early phase analysis of a policy in the industry standard format (user story), so that I can read the content easily；(3) as a citizen, I want to make sure the proxies of the enemy country cannot infiltrate via civic participation, so that I can trust the policy building process better。
 - (3) 的原文在 enemy country 之後寫出一個國家的名稱。依 ETBlue 在 2026-10-21 的決定，本文件不寫出國家名稱，改用反滲透法的中性用語「境外敵對勢力」（定義見[題目原文重點](#題目原文重點)）。
-- 「對市民參與有興趣的市民」與「市民」放在本題已有的 I31 參與市政討論的市民之下，ETBlue 確認這樣放可以（ETBlue，2026-10-21）。「商業界的功能分析師」是新的利害關係人 I36，需要真人確認。
+- 「對市民參與有興趣的市民」與「市民」放在本題已有的 I31 參與市政討論的市民之下，ETBlue 確認這樣放可以（ETBlue，2026-10-21）。「商業界的功能分析師」是新的利害關係人 I36，ETBlue 確認可以（ETBlue，2026-10-21）。
 - ETBlue 原本的 1 則故事（身為市政提案小幫手的作者，想要一份針對這個提案的分析）已由 ETBlue 刪除，所以本文件也刪除它，編號不再使用（見[編號異動紀錄](#編號異動紀錄)）。
 - 只有一個人的聲音，不會提高優先順序。一個人的經驗也不代表其他人的看法。
 

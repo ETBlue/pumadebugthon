@@ -6,9 +6,9 @@ import type { Stakeholder } from '@/types'
 import { compareIds } from './ids'
 import { stakeholderMenuIds } from './stakeholderPage'
 import {
-  clearFiltersSearch, CROSS_PARAM, filterStatusParts, keptSearch, menuGroups, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
-  allStakeholdersTarget, issueSpecialOptions, specialStakeholderIds, sideMenuLinkSearch, specialOptions, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch,
-  withCrossIssueFilter, withSpecialFilter, withStakeholderFilter, type SideBarFilters,
+  clearFiltersSearch, filterStatusParts, keptSearch, menuGroups, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
+  issueSpecialOptions, specialStakeholderIds, specialOptions, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch,
+  withSpecialFilter, withStakeholderFilter, type SideBarFilters,
 } from './stakeholderFilter'
 import { FOCUS_ORDER } from './issues'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
@@ -81,11 +81,11 @@ describe('keptSearch', () => {
     expect(keptSearch(new URLSearchParams('focus=C1&stakeholder=O01'))).toBe('?stakeholder=O01')
   })
 
-  it('also keeps cross and every special value (decision 67)', () => {
+  it('also keeps every special value, and drops the old cross (decisions 75 and 94)', () => {
     expect(keptSearch(new URLSearchParams('special=高齡&pick=W08&cross=1&special=外籍&from=O02'))).toBe(
-      `?cross=1&special=${encodeURIComponent('高齡')}&special=${encodeURIComponent('外籍')}`,
+      `?special=${encodeURIComponent('高齡')}&special=${encodeURIComponent('外籍')}`,
     )
-    expect(keptSearch(new URLSearchParams('evidence=1&cross=1&stakeholder=I06'))).toBe('?evidence=1&stakeholder=I06&cross=1')
+    expect(keptSearch(new URLSearchParams('evidence=1&cross=1&stakeholder=I06'))).toBe('?evidence=1&stakeholder=I06')
   })
 })
 
@@ -141,38 +141,27 @@ describe('stakeholderMenuSearch', () => {
 const enc = encodeURIComponent
 
 describe('sideBarFiltersOf', () => {
-  const of = (search: string, page?: 'stakeholders' | 'issue') => sideBarFiltersOf(new URLSearchParams(search), page)
+  const of = (search: string) => sideBarFiltersOf(new URLSearchParams(search))
 
-  it('reads the three side bar filters', () => {
-    expect(CROSS_PARAM).toBe('cross')
+  it('reads the two side bar filters, and ignores the old cross', () => {
     expect(SPECIAL_PARAM).toBe('special')
-    expect(of('')).toEqual({ dataBasedOnly: false, crossIssueOnly: false, special: [] })
-    expect(of(`evidence=1&cross=1&special=${enc('高齡')}`)).toEqual({
-      dataBasedOnly: true, crossIssueOnly: true, special: ['高齡'],
-    })
+    expect(of('')).toEqual({ dataBasedOnly: false, special: [] })
+    expect(of(`evidence=1&cross=1&special=${enc('高齡')}`)).toEqual({ dataBasedOnly: true, special: ['高齡'] })
   })
 
-  it('only "1" turns evidence and cross on', () => {
-    expect(of('evidence=0&cross=yes')).toEqual({ dataBasedOnly: false, crossIssueOnly: false, special: [] })
+  it('only "1" turns evidence on', () => {
+    expect(of('evidence=0')).toEqual({ dataBasedOnly: false, special: [] })
   })
 
   it('puts special in FOCUS_ORDER, each once, and drops unknown values', () => {
     const search = ['經濟弱勢', 'nope', '高齡', '外籍', '高齡', ''].map((v) => `special=${enc(v)}`).join('&')
     expect(of(search).special).toEqual(['高齡', '外籍', '經濟弱勢'])
   })
-
-  it('on the issue page, special is a side bar filter but cross is not (decision 75)', () => {
-    expect(of(`evidence=1&cross=1&special=${enc('高齡')}`, 'issue')).toEqual({
-      dataBasedOnly: true, crossIssueOnly: false, special: ['高齡'],
-    })
-    const search = ['經濟弱勢', 'nope', '高齡'].map((v) => `special=${enc(v)}`).join('&')
-    expect(of(search, 'issue').special).toEqual(['高齡', '經濟弱勢'])
-  })
 })
 
 describe('menuIdsFor', () => {
   const ids = stakeholderMenuIds(index)
-  const filters = (f: Partial<SideBarFilters>): SideBarFilters => ({ dataBasedOnly: false, crossIssueOnly: false, special: [], ...f })
+  const filters = (f: Partial<SideBarFilters>): SideBarFilters => ({ dataBasedOnly: false, special: [], ...f })
   const s = (id: string) => index.stakeholders.find((x) => x.id === id) as Stakeholder
 
   it('keeps every ID, in ID order, with no filter', () => {
@@ -181,15 +170,6 @@ describe('menuIdsFor', () => {
 
   it('the data filter does not change the list', () => {
     expect(menuIdsFor(ids, index.stakeholders, filters({ dataBasedOnly: true }), null)).toEqual(ids)
-  })
-
-  it('只看跨議題 keeps the stakeholders in 2 or more issues', () => {
-    const out = menuIdsFor(ids, index.stakeholders, filters({ crossIssueOnly: true }), null)
-    expect(out.length).toBeGreaterThan(0)
-    expect(out.length).toBeLessThan(ids.length)
-    expect(out.every((id) => s(id).issues.length >= 2)).toBe(true)
-    expect(out).toContain('I06')
-    expect(out).not.toContain('O08') // only in #2
   })
 
   it('特別關注 keeps a stakeholder with one of the picked groups', () => {
@@ -203,13 +183,6 @@ describe('menuIdsFor', () => {
     expect(two.every((id) => s(id).focus.some((f) => f === '高齡' || f === '身心障礙'))).toBe(true)
   })
 
-  it('both filters work together', () => {
-    const out = menuIdsFor(ids, index.stakeholders, filters({ crossIssueOnly: true, special: ['高齡'] }), null)
-    // I11 is 高齡 but only in #2.
-    expect(out).toContain('I05')
-    expect(out).not.toContain('I11')
-  })
-
   it('always keeps the current stakeholder', () => {
     const out = menuIdsFor(ids, index.stakeholders, filters({ special: ['外籍'] }), 'O08')
     expect(out).toContain('O08')
@@ -218,17 +191,17 @@ describe('menuIdsFor', () => {
     expect(menuIdsFor(['I01'], index.stakeholders, filters({}), 'I06')).toEqual(['I01', 'I06'])
   })
 
-  it('an unknown ID stays with no filter, and goes with cross or special on', () => {
+  it('an unknown ID stays with no filter, and goes with special on', () => {
     expect(menuIdsFor(['I99', 'I06'], index.stakeholders, filters({}), null)).toEqual(['I06', 'I99'])
-    expect(menuIdsFor(['I99', 'I06'], index.stakeholders, filters({ crossIssueOnly: true }), null)).toEqual(['I06'])
+    expect(menuIdsFor(['I99', 'I06'], index.stakeholders, filters({ special: ['身心障礙'] }), null)).toEqual(['I06'])
   })
 })
 
 describe('clearFiltersSearch', () => {
   const clear = (search: string) => clearFiltersSearch(new URLSearchParams(search))
 
-  it('removes stakeholder, evidence, cross and special', () => {
-    expect(clear(`stakeholder=I06&evidence=1&cross=1&special=${enc('高齡')}&special=${enc('外籍')}`)).toBe('')
+  it('removes stakeholder, evidence and special', () => {
+    expect(clear(`stakeholder=I06&evidence=1&special=${enc('高齡')}&special=${enc('外籍')}`)).toBe('')
   })
 
   it('keeps the other values', () => {
@@ -238,18 +211,17 @@ describe('clearFiltersSearch', () => {
 })
 
 describe('filterStatusParts', () => {
-  const filters = (f: Partial<SideBarFilters>): SideBarFilters => ({ dataBasedOnly: false, crossIssueOnly: false, special: [], ...f })
+  const filters = (f: Partial<SideBarFilters>): SideBarFilters => ({ dataBasedOnly: false, special: [], ...f })
   const i06 = index.stakeholders.find((x) => x.id === 'I06') as Stakeholder
 
   it('is empty when no filter is on', () => {
     expect(filterStatusParts(filters({}), null)).toEqual([])
   })
 
-  it('lists the filters that are on: stakeholder, data, cross, special', () => {
-    expect(filterStatusParts(filters({ dataBasedOnly: true, crossIssueOnly: true, special: ['高齡', '外籍'] }), i06)).toEqual([
+  it('lists the filters that are on: stakeholder, data, special', () => {
+    expect(filterStatusParts(filters({ dataBasedOnly: true, special: ['高齡', '外籍'] }), i06)).toEqual([
       { kind: 'stakeholder', id: 'I06', name: '身心障礙者（視障、輪椅使用者）' },
       { kind: 'dataBased' },
-      { kind: 'crossIssue' },
       { kind: 'special', groups: ['高齡', '外籍'] },
     ])
   })
@@ -259,30 +231,7 @@ describe('filterStatusParts', () => {
       { kind: 'stakeholder', id: 'I06', name: i06.name },
       { kind: 'dataBased' },
     ])
-    expect(filterStatusParts(filters({ crossIssueOnly: true }), null)).toEqual([{ kind: 'crossIssue' }])
-  })
-})
-
-describe('sideMenuLinkSearch', () => {
-  const of = (search: string) => sideMenuLinkSearch(new URLSearchParams(search))
-
-  it('keeps evidence, cross and every special value', () => {
-    expect(of('evidence=1&cross=1&special=高齡&special=外籍')).toBe(
-      `?evidence=1&cross=1&special=${encodeURIComponent('高齡')}&special=${encodeURIComponent('外籍')}`,
-    )
-  })
-
-  it('drops stakeholder, pick, focus and other values', () => {
-    expect(of('stakeholder=I06&pick=W01&focus=C6&from=O02&evidence=1')).toBe('?evidence=1')
-    expect(of('stakeholder=I06')).toBe('')
-    expect(of('')).toBe('')
-  })
-})
-
-describe('withCrossIssueFilter', () => {
-  it('sets cross=1 or removes it, and keeps other values', () => {
-    expect(withCrossIssueFilter(new URLSearchParams('evidence=1'), true).toString()).toBe(`evidence=1&${CROSS_PARAM}=1`)
-    expect(withCrossIssueFilter(new URLSearchParams('cross=1&evidence=1'), false).toString()).toBe('evidence=1')
+    expect(filterStatusParts(filters({ special: ['高齡'] }), null)).toEqual([{ kind: 'special', groups: ['高齡'] }])
   })
 })
 
@@ -295,7 +244,7 @@ describe('withSpecialFilter', () => {
 
   it('drops unknown groups, and an empty list removes the value', () => {
     expect(withSpecialFilter(new URLSearchParams('special=高齡'), ['不明']).getAll(SPECIAL_PARAM)).toEqual([])
-    expect(withSpecialFilter(new URLSearchParams('special=高齡&cross=1'), []).toString()).toBe('cross=1')
+    expect(withSpecialFilter(new URLSearchParams('special=高齡&evidence=1'), []).toString()).toBe('evidence=1')
   })
 })
 
@@ -345,7 +294,7 @@ describe('issueSpecialOptions', () => {
 })
 
 describe('menuIdsFor on the issue page (decision 75)', () => {
-  const filters = (special: string[]): SideBarFilters => ({ dataBasedOnly: false, crossIssueOnly: false, special })
+  const filters = (special: string[]): SideBarFilters => ({ dataBasedOnly: false, special })
 
   it('特別關注 limits the menu to the stakeholders of the issue with a picked group', () => {
     expect(menuIdsFor(issueIds, index.stakeholders, filters(['外籍']), null)).toEqual(['I03', 'I04'])
@@ -354,22 +303,6 @@ describe('menuIdsFor on the issue page (decision 75)', () => {
 
   it('keeps the picked stakeholder (?stakeholder=) in the menu', () => {
     expect(menuIdsFor(issueIds, index.stakeholders, filters(['外籍']), 'O08')).toEqual(['O08', 'I03', 'I04'].sort(compareIds))
-  })
-})
-
-describe('allStakeholdersTarget', () => {
-  const target = (search: string) => allStakeholdersTarget(new URLSearchParams(search))
-
-  it('goes to #/stakeholders and keeps evidence, cross and every special value', () => {
-    expect(target('')).toEqual({ pathname: '/stakeholders', search: '' })
-    expect(target(`evidence=1&cross=1&special=${enc('高齡')}&special=${enc('外籍')}`)).toEqual({
-      pathname: '/stakeholders',
-      search: `?evidence=1&cross=1&special=${enc('高齡')}&special=${enc('外籍')}`,
-    })
-  })
-
-  it('drops stakeholder, pick, focus and any other value', () => {
-    expect(target('stakeholder=I06&pick=W08&focus=C6&from=O02&evidence=1')).toEqual({ pathname: '/stakeholders', search: '?evidence=1' })
   })
 })
 

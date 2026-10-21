@@ -3,14 +3,10 @@
 // order. A count says how many items the main block shows after a click on
 // that stakeholder. It is not a score. Nothing here sorts by a count.
 import type { IssueFile, Stakeholder } from '@/types'
-import { dataBasedOnly, dataBasedPickList } from './dataBasis'
 import { compareIds } from './ids'
 import { needsTabView, solutionsTabView } from './issueTabs'
-import { dataBasedNeeds, needsOfStakeholder } from './needs'
-import { stakeholderSolutionsView } from './stakeholderPage'
 import { buildTree, findStakeholder, type TreeNode } from './stakeholders'
 import { wantsTabView } from './wantsTab'
-import { wantsOfStakeholder } from './wantList'
 
 /** One group of the side menu: a root (組織 or 個人) or a level of 分類路徑. */
 export interface SideMenuGroup {
@@ -81,13 +77,11 @@ export function groupKeysAbove(tree: SideMenuGroup[], id: string | null): string
   return []
 }
 
-/** The pages with a side menu, and so the meaning of the count (design 3.21). */
+/** The pages with a side menu, and so the meaning of the count (design 3.21).
+ * Only the 訴求, 需求 and 解法 tabs of the issue page have a side menu now:
+ * #/stakeholders and the stakeholder page have no side bar (decisions 87
+ * and 94). */
 export const SIDE_MENU_CONTEXTS = [
-  'stakeholders',
-  'stakeholder-overview',
-  'stakeholder-wants',
-  'stakeholder-needs',
-  'stakeholder-solutions',
   'issue-wants',
   'issue-needs',
   'issue-solutions',
@@ -105,22 +99,6 @@ function countIn(
   special: ReadonlySet<string> | null,
 ): number {
   switch (context) {
-    case 'stakeholders':
-    case 'stakeholder-overview': {
-      // The 總覽 tab of the stakeholder page: its stories.
-      const own = issue.stories.filter((s) => s.stakeholder === id)
-      return (dataBased ? dataBasedOnly(own) : own).length
-    }
-    case 'stakeholder-wants': {
-      const all = wantsOfStakeholder(issue, id)
-      return (dataBased ? dataBasedPickList(all, issue.stories) : all).length
-    }
-    case 'stakeholder-needs': {
-      const all = needsOfStakeholder(issue, id)
-      return (dataBased ? dataBasedNeeds(all) : all).length
-    }
-    case 'stakeholder-solutions':
-      return stakeholderSolutionsView(issue, id, dataBased).solutions.length
     case 'issue-wants':
       return wantsTabView(issue, id, dataBased, special).wants.length
     case 'issue-needs':
@@ -132,13 +110,11 @@ function countIn(
 
 /** The count next to each stakeholder in the side menu (decision 66): the
  * number of items the main block shows after a click on it, with the same
- * 只看有資料根據 filter. The counts are summed over issues. On the issue page
- * ('issue-…') pass only that issue. On the stakeholders page and the
- * stakeholder page pass every analyzed issue. The map has one entry per ID,
- * in the order of ids (0 for an ID with nothing to show). special: the
+ * 只看有資料根據 filter. The counts are summed over the issues given; the
+ * issue page passes only its own issue. The map has one entry per ID, in
+ * the order of ids (0 for an ID with nothing to show). special: the
  * 特別關注 filter of the issue page's tab content (decision 75,
- * specialStakeholderIds), or null. The stakeholder page contexts ignore it,
- * because there 特別關注 only changes the menu. */
+ * specialStakeholderIds), or null. */
 export function sideMenuCounts(
   context: SideMenuContext,
   issues: IssueFile[],

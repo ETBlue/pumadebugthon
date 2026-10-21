@@ -1,5 +1,7 @@
 import { useMemo, type ComponentType } from 'react'
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router'
+import { Breadcrumb } from '@/components/Breadcrumb'
+import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { FilterStatus } from '@/components/FilterStatus'
 import { LoadState } from '@/components/LoadState'
@@ -9,7 +11,6 @@ import type { StakeholderTabProps } from '@/components/stakeholder/IssueSection'
 import { NeedsTab } from '@/components/stakeholder/NeedsTab'
 import { OverviewTab } from '@/components/stakeholder/OverviewTab'
 import { SolutionsTab } from '@/components/stakeholder/SolutionsTab'
-import { useStakeholdersOutlet } from '@/components/stakeholder/StakeholdersLayout'
 import { WantsTab } from '@/components/stakeholder/WantsTab'
 import { linkClass } from '@/components/styles'
 import { Badge } from '@/components/ui/badge'
@@ -17,9 +18,11 @@ import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
+import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
-import { sideBarFiltersOf } from '@/lib/stakeholderFilter'
-import { movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers } from '@/lib/stakeholderPage'
+import {
+  legacyStakeholderPageSearch, movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers,
+} from '@/lib/stakeholderPage'
 import { hasNoIssue, resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
@@ -34,13 +37,16 @@ function tabLabel(tab: StakeholderTab, c: TabCounts | null): TabLabel {
   return tp.tabLabels[tab](c[tab])
 }
 
-/** Stakeholder page (design 3.3): #/stakeholders/:id/:tab?. A moved ID sends
- * the reader to the new ID, with the rest of the path kept and
- * ?from=<old ID> for the note 「O02 已改為 I12」. */
+/** Stakeholder page (design 3.3 and 3.23.10): #/stakeholders/:id/:tab?, with
+ * no side bar (decision 94). A moved ID sends the reader to the new ID, with
+ * the rest of the path kept and ?from=<old ID> for the note 「O02 已改為
+ * I12」. The old side bar params cross and special are dropped with replace. */
 export default function Stakeholder() {
   const index = useIndex()
   const { id = '' } = useParams()
   const location = useLocation()
+  const legacy = legacyStakeholderPageSearch(location.search)
+  if (legacy !== null) return <Navigate replace to={{ pathname: location.pathname, search: legacy }} />
   if (index.status !== 'ready') return <LoadState state={index} />
 
   const resolved = resolveId(index.data.stakeholders, id)
@@ -72,15 +78,46 @@ const TAB_CONTENT: Record<StakeholderTab, ComponentType<StakeholderTabProps>> = 
   solutions: SolutionsTab,
 }
 
+/** 首頁 › 利害關係人 › I06 身心障礙者（視障、輪椅使用者） (decisions 94 and 99). */
+function StakeholderBreadcrumb({ stakeholder: s }: { stakeholder: StakeholderType }) {
+  return (
+    <Breadcrumb
+      items={[
+        { name: t.breadcrumb.home, to: '/' },
+        { name: t.breadcrumb.stakeholders, to: '/stakeholders' },
+        { id: s.id, name: s.name },
+      ]}
+    />
+  )
+}
+
+/** The filter row at the top of the tab content (design 3.23.10): the
+ * 「只看有資料根據」 toggle, then the filter status line with 「清除篩選」. */
+function FilterRow() {
+  const [params] = useSearchParams()
+  return (
+    <div className="mb-4 flex flex-col gap-2 md:flex-row md:flex-wrap md:items-start md:gap-x-4">
+      <DataBasisToggle />
+      <FilterStatus
+        filters={{ dataBasedOnly: isDataBasisFilterOn(params), special: [] }}
+        stakeholder={null}
+        className="mb-0 md:mt-2"
+      />
+    </div>
+  )
+}
+
 /** The page of a stakeholder with no issue and no move target (decision 78):
- * the name, the ID, the path and a short note. No tabs, because there is
- * nothing to show in them. This stakeholder is not in any list or menu. */
+ * the breadcrumb, the name, the ID, the path and a short note. No tabs,
+ * because there is nothing to show in them. This stakeholder is not in any
+ * list or menu. */
 function NoIssueContent({ index, stakeholder: s }: { index: IndexFile; stakeholder: StakeholderType }) {
   const trail = pathTrail(s.path, index.pathLabels)
   return (
     <>
       <PageTitle parts={[s.name]} />
-      <h1 className="text-2xl font-bold md:text-3xl">{s.name}</h1>
+      <StakeholderBreadcrumb stakeholder={s} />
+      <h1 className="mt-4 text-2xl font-bold md:text-3xl">{s.name}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
         <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>
         {trail.length > 0 && (
@@ -102,15 +139,12 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   }, [index, s])
   const folders = useMemo(() => shown.map((i) => i.folder), [shown])
   const issues = useIssues(folders)
-  const { menuIds } = useStakeholdersOutlet()
-  const filters = sideBarFiltersOf(params)
   const trail = pathTrail(s.path, index.pathLabels)
   const tab = parseStakeholderTab(useParams().tab)
   const counts = useMemo(
     () => (issues.status === 'ready' ? stakeholderTabCounts(issues.data, s.id) : null),
     [issues, s.id],
   )
-  const filtersOn = filters.crossIssueOnly || filters.special.length > 0
 
   const content = (name: StakeholderTab) => {
     if (shown.length === 0) return <p>{tp.noIssues}</p>
@@ -118,7 +152,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
     const Content = TAB_CONTENT[name]
     return (
       <>
-        <FilterStatus filters={filters} stakeholder={null} shown={filtersOn ? t.sideMenu.shownMenu(menuIds.length) : undefined} />
+        <FilterRow />
         <Content index={index} issues={issues.data} id={s.id} />
       </>
     )
@@ -132,7 +166,8 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         </p>
       )}
       <PageTitle parts={[s.name, tab && tab !== 'overview' ? tp.tabs[tab] : null]} />
-      <h1 className="text-2xl font-bold md:text-3xl">{s.name}</h1>
+      <StakeholderBreadcrumb stakeholder={s} />
+      <h1 className="mt-4 text-2xl font-bold md:text-3xl">{s.name}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
         <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>
         {trail.length > 0 && (
@@ -173,8 +208,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         </Field>
       </dl>
 
-      {/* The side bar is in the layout route (StakeholdersLayout). The tab
-          list comes after the metadata, in the main block. */}
+      {/* No side bar (decision 94). The tab list comes after the metadata. */}
       <div className="mt-6">
         <PageTabs
           label={tp.tabsLabel}

@@ -13,8 +13,6 @@ function partText(part: FilterStatusPart): string {
       return tm.statusStakeholder(part.id, part.name)
     case 'dataBased':
       return tm.statusDataBased
-    case 'crossIssue':
-      return tm.statusCrossIssue
     case 'special':
       return tm.statusSpecial(part.groups)
   }
@@ -23,13 +21,13 @@ function partText(part: FilterStatusPart): string {
 /** The filter status line of the main block (design 3.21, decision 68). It
  * lists every side bar filter that is on, then shown (what the page shows,
  * for example tm.shownWants(2, 1)), then the link 「清除篩選」. The link
- * removes stakeholder, evidence, cross and special, and keeps the page and
+ * removes stakeholder, evidence and special, and keeps the page and
  * the other values (clearFiltersSearch).
  *
  * The element with role="status" is always in the page, so a screen reader
  * reads the new text when a filter changes. It is empty when no filter is on.
  *
- * filters: from sideBarFiltersOf(params, page). stakeholder: the picked
+ * filters: from sideBarFiltersOf(params). stakeholder: the picked
  * stakeholder on the issue page; null on the stakeholder pages, where the
  * stakeholder of the page is not a filter. */
 export function FilterStatus({ filters, stakeholder, shown, className }: {

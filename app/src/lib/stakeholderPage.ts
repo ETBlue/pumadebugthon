@@ -1,15 +1,11 @@
 // Lookups for the stakeholder page (design 3.3).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
 import type { Cell, IndexFile, InputSource, IssueFile, Solution, Stakeholder, Story } from '@/types'
-import {
-  movedStakeholderTarget, parseStakeholderTab, stakeholderTabPath, type PathTarget, type StakeholderTab,
-} from './entityPaths'
+import { movedStakeholderTarget, stakeholderTabPath, type PathTarget } from './entityPaths'
 import { compareIds } from './ids'
 import { availableIssues } from './issues'
 import { dataBasedNeeds, needsOfStakeholder, type StakeholderNeedItem } from './needs'
 import { priorityCounts, type TagPriorityCounts } from './priority'
-// Type only: sideMenu.ts imports this file, so no import at run time.
-import type { SideMenuContext } from './sideMenu'
 import { isListed, resolveId } from './stakeholders'
 import { storyStakeholderOf } from './stories'
 import { conflictsForStakeholder, conflictView, type ConflictView } from './wantList'
@@ -66,9 +62,8 @@ export function stakeholderIssueView(issue: IssueFile, id: string): StakeholderI
   }
 }
 
-/** The IDs in the stakeholder menu of the stakeholder page (design 3.14):
- * every active stakeholder in at least one available issue. O first, then I,
- * each in ID order. Never sorted by a count. */
+/** Every listed stakeholder in at least one available issue. O first, then
+ * I, each in ID order. Never sorted by a count. */
 export function stakeholderMenuIds(index: IndexFile): string[] {
   const available = new Set(availableIssues(index).map((i) => i.number))
   return index.stakeholders
@@ -77,31 +72,17 @@ export function stakeholderMenuIds(index: IndexFile): string[] {
     .sort(compareIds)
 }
 
-/** The side menu of the shared layout of #/stakeholders and
- * #/stakeholders/:id/:tab? (design 3.20, 3.21, decision 64). */
-export type StakeholderSideMenuState =
-  | { mode: 'link'; context: 'stakeholders' }
-  | { mode: 'switch'; current: string; tab: StakeholderTab; context: SideMenuContext }
-
-/** The mode of the side menu from the URL parts. No ID: #/stakeholders,
- * link mode, the counts are stories. An active ID: switch mode on that tab.
- * An unknown tab counts as the overview, so the menu links go to the
- * overview. Link mode for a stakeholder with no issue (decision 78). null
- * for a moved ID (the page redirects) and an unknown ID (the
- * page shows "not found"): no side menu then. */
-export function stakeholderSideMenuState(
-  stakeholders: Stakeholder[],
-  id: string | undefined,
-  tab: string | undefined,
-): StakeholderSideMenuState | null {
-  if (id === undefined) return { mode: 'link', context: 'stakeholders' }
-  const s = stakeholders.find((x) => x.id === id)
-  if (s === undefined || s.movedTo !== null) return null
-  // A stakeholder with no issue is not in the menu (decision 78), so the menu
-  // has no current item: it is the same as on #/stakeholders.
-  if (!isListed(s)) return { mode: 'link', context: 'stakeholders' }
-  const name = parseStakeholderTab(tab) ?? 'overview'
-  return { mode: 'switch', current: id, tab: name, context: `stakeholder-${name}` }
+/** The stakeholder page has no side bar now (decision 94), so the old side
+ * bar params cross and special mean nothing there. Returns the search
+ * string without them ("" when nothing is left), or null when the URL has
+ * neither. The page replaces the URL with it (history replace). */
+export function legacyStakeholderPageSearch(search: string): string | null {
+  const params = new URLSearchParams(search)
+  if (!params.has('cross') && !params.has('special')) return null
+  params.delete('cross')
+  params.delete('special')
+  const s = params.toString()
+  return s ? `?${s}` : ''
 }
 
 /** The redirect target for a page of a moved stakeholder ID (design 3.3).

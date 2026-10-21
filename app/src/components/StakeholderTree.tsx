@@ -5,6 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { t } from '@/i18n/zh-TW'
 import { groupKeysAbove, type SideMenuGroup } from '@/lib/sideMenu'
 import { cn } from '@/lib/utils'
+import type { Stakeholder } from '@/types'
 
 const tm = t.sideMenu
 
@@ -31,6 +32,14 @@ export interface StakeholderTreeProps {
    * While it is true, every group opens again each time the tree changes,
    * so every match is shown. The group buttons still work. */
   forceOpen?: boolean
+  /** Extra content after the ID and the name of a stakeholder, for example
+   * the 特別關注 badges in the tree view of #/stakeholders (design 3.23.11). */
+  extraOf?: (stakeholder: Stakeholder) => ReactNode
+  /** Show each root (組織, 個人) as an h2 with its button inside, and the
+   * roots side by side from md (the tree view of #/stakeholders, design
+   * 3.23.11). Default false: the roots are items of one list, as in the side
+   * menu. */
+  rootHeadings?: boolean
 }
 
 /** The stakeholder tree of the side menu (design 3.21) as nested lists: a
@@ -40,7 +49,8 @@ export interface StakeholderTreeProps {
  * It renders the lists only. Put it in a <nav> with a name. Used by the side
  * menu and by the 「瀏覽」 dialog of the stakeholder picker (3.23.7). */
 export function StakeholderTree({
-  tree, targetOf, showAll = true, current, ariaCurrent, counts = null, countUnit = '', onPick, forceOpen = false,
+  tree, targetOf, showAll = true, current, ariaCurrent, counts = null, countUnit = '', onPick, forceOpen = false, extraOf,
+  rootHeadings = false,
 }: StakeholderTreeProps) {
   // The groups the reader closed. Every other group is open.
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set())
@@ -93,32 +103,56 @@ export function StakeholderTree({
     )
   }
 
+  // The button of a group: the name and the number of stakeholders under it.
+  const trigger = (g: SideMenuGroup, className: string) => (
+    <CollapsibleTrigger className={cn('group flex min-h-6 w-full items-start gap-1 rounded-sm py-1 pr-2 text-left hover:bg-muted', className)}>
+      <ChevronRight aria-hidden="true" className="mt-0.5 size-4 shrink-0 transition-transform group-data-[state=open]:rotate-90" />
+      <span className="min-w-0 flex-1 break-words">{g.label ?? tm.roots[g.root]}</span>
+      <span className="sr-only">{tm.groupUnit}</span>
+      <span className="shrink-0 tabular-nums text-muted-foreground">{g.stakeholderCount}</span>
+    </CollapsibleTrigger>
+  )
+
+  // What is inside a group: its stakeholders, then its child levels.
+  const content = (g: SideMenuGroup) => (
+    <CollapsibleContent>
+      {/* 0.75rem per step, so a 5-level path fits at 360 px. */}
+      <ul className="pl-3">
+        {g.stakeholders.map((s) =>
+          item(s.id, s.id, (
+            <>
+              <span className="font-mono">{s.id}</span>{' '}
+              {s.name}
+              {extraOf?.(s)}
+            </>
+          )),
+        )}
+        {g.children.map(group)}
+      </ul>
+    </CollapsibleContent>
+  )
+
   const group = (g: SideMenuGroup): ReactNode => (
     <li key={g.key}>
       <Collapsible open={!closed.has(g.key)} onOpenChange={(on) => setGroupOpen(g.key, on)}>
-        <CollapsibleTrigger className="group flex min-h-6 w-full items-start gap-1 rounded-sm py-1 pr-2 text-left text-sm font-medium hover:bg-muted">
-          <ChevronRight aria-hidden="true" className="mt-0.5 size-4 shrink-0 transition-transform group-data-[state=open]:rotate-90" />
-          <span className="min-w-0 flex-1 break-words">{g.label ?? tm.roots[g.root]}</span>
-          <span className="sr-only">{tm.groupUnit}</span>
-          <span className="shrink-0 tabular-nums text-muted-foreground">{g.stakeholderCount}</span>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          {/* 0.75rem per step, so a 5-level path fits at 360 px. */}
-          <ul className="pl-3">
-            {g.stakeholders.map((s) =>
-              item(s.id, s.id, (
-                <>
-                  <span className="font-mono">{s.id}</span>{' '}
-                  {s.name}
-                </>
-              )),
-            )}
-            {g.children.map(group)}
-          </ul>
-        </CollapsibleContent>
+        {trigger(g, 'text-sm font-medium')}
+        {content(g)}
       </Collapsible>
     </li>
   )
+
+  if (rootHeadings) {
+    return (
+      <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+        {tree.map((g) => (
+          <Collapsible key={g.key} open={!closed.has(g.key)} onOpenChange={(on) => setGroupOpen(g.key, on)} className="min-w-0">
+            <h2 className="text-lg font-bold">{trigger(g, 'font-bold')}</h2>
+            {content(g)}
+          </Collapsible>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <>

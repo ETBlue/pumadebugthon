@@ -406,35 +406,6 @@ export const t = {
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',
   },
-  /** The statistics on #/stakeholders (design 3.20, decision 63). Plain
-   * counts only: no percent, no rank. */
-  stakeholderStats: {
-    totals: '總數',
-    stakeholdersLabel: '利害關係人',
-    stakeholders: (n: number, orgs: number, people: number) => `${n} 位（組織 ${orgs}、個人 ${people}）`,
-    crossIssueLabel: '出現在 2 個以上議題',
-    crossIssue: (n: number) => `${n} 位`,
-    storiesLabel: '使用者故事',
-    stories: (n: number) => `${n} 則`,
-    byCategory: '依分類',
-    categoryColumn: '分類',
-    stakeholdersColumn: '利害關係人',
-    storiesColumn: '使用者故事',
-    /** The caption of the 依分類 table, for screen readers. */
-    categoryCaption: '依分類路徑第一層的利害關係人數和使用者故事數',
-    roots: {
-      O: '組織',
-      I: '個人',
-    },
-    byFocusGroup: '特別關注族群',
-    focusCount: (n: number) => `${n} 位`,
-    focusNone: '目前沒有利害關係人',
-    byIssue: '各議題',
-    issueLink: (n: number, title: string) => `#${n} ${title}`,
-    issueStakeholders: (n: number, orgs: number, people: number) => `利害關係人 ${n} 位（組織 ${orgs}、個人 ${people}）`,
-    /** No stakeholder matches the side bar filters. */
-    none: '沒有符合篩選的利害關係人。',
-  },
   /** The shared breadcrumb (design 3.2, decision 99). */
   breadcrumb: {
     /** The aria-label of the nav. */
@@ -613,16 +584,10 @@ export const t = {
   sideMenu: {
     /** The skip link at the top of the side bar. It moves focus to the main block. */
     skip: '跳過利害關係人選單',
-    /** The <nav> name of the tree. filter: the issue page. switch: a
-     * stakeholder page. link: #/stakeholders. */
-    navLabels: {
-      filter: '依利害關係人篩選',
-      switch: '切換利害關係人',
-      link: '選擇利害關係人',
-    },
+    /** The <nav> name of the tree (the issue page, decisions 87 and 94). */
+    navLabel: '依利害關係人篩選',
     /** The name of the filters group. */
     filters: '篩選',
-    crossIssueOnly: '只看跨議題',
     special: '特別關注',
     /** The first item in filter mode. It has no count. */
     all: '全部利害關係人',
@@ -636,11 +601,6 @@ export const t = {
     trigger: (current: string | null) => `利害關係人與篩選：${current ?? '全部'}`,
     /** The line above the tree: what the number next to each stakeholder means. */
     countLine: {
-      'stakeholders': '數字：使用者故事數',
-      'stakeholder-overview': '數字：使用者故事數',
-      'stakeholder-wants': '數字：各議題的訴求數合計',
-      'stakeholder-needs': '數字：各議題的需求數合計',
-      'stakeholder-solutions': '數字：各議題的解法數合計',
       'issue-wants': '數字：在本議題的訴求數',
       'issue-needs': '數字：在本議題的需求數',
       'issue-solutions': '數字：在本議題的解法數',
@@ -648,11 +608,6 @@ export const t = {
     /** Hidden text before a count, for screen readers. The link name is then
      * 「I06 身心障礙者（視障、輪椅使用者），訴求 2」. */
     countUnit: {
-      'stakeholders': '，使用者故事 ',
-      'stakeholder-overview': '，使用者故事 ',
-      'stakeholder-wants': '，訴求 ',
-      'stakeholder-needs': '，需求 ',
-      'stakeholder-solutions': '，解法 ',
       'issue-wants': '，訴求 ',
       'issue-needs': '，需求 ',
       'issue-solutions': '，解法 ',
@@ -664,12 +619,10 @@ export const t = {
     status: (parts: string[]) => `篩選：${parts.join('、')}。`,
     statusStakeholder: (id: string, name: string) => `${id} ${name}`,
     statusDataBased: '只看有資料根據',
-    statusCrossIssue: '只看跨議題',
     statusSpecial: (groups: string[]) => `特別關注：${groups.join('、')}`,
     shownWants: (wants: number, conflicts: number) => `顯示 ${wants} 個訴求、${conflicts} 個衝突。`,
     shownNeeds: (n: number) => `顯示 ${n} 個需求。`,
     shownSolutions: (n: number) => `顯示 ${n} 個解法。`,
-    shownMenu: (n: number) => `選單顯示 ${n} 位利害關係人。`,
     clear: '清除篩選',
   },
   /** The sort and filter bar of the list pages (ListBar, design 3.23.2) and
@@ -882,5 +835,45 @@ export const t = {
     sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
     added: '新增日期',
     updated: '更新日期',
+  },
+  /** #/stakeholders with the search, sort and filter bar, card view and
+   * tree view (design 3.23, Task L6). */
+  stakeholdersList: {
+    /** The noun of the search empty states: 「找不到符合「身心」的利害關係人。」 */
+    noun: '利害關係人',
+    /** The empty state with filters and no search (design 3.23.6). */
+    none: '沒有符合目前篩選的利害關係人。',
+    /** The link that removes only the search (design 3.23.13). */
+    clearSearch: '清除搜尋',
+    /** The 議題 filter: 「跨議題」 first, then one choice per issue (design 3.23.5). */
+    issueFilter: '議題',
+    crossChoice: '跨議題（出現在 2 個以上議題）',
+    /** 「跨議題」 in the result line. */
+    crossShort: '跨議題',
+    issueOption: (n: number, title: string) => `#${n} ${title}`,
+    /** 議題 in the result line: 「#1」. */
+    issueShort: (n: number) => `#${n}`,
+    /** The toggle, and its text in the result line. */
+    specialOnly: '只看特別關注族群',
+    /** The fields of the cards (design 3.23.9). */
+    path: '分類路徑',
+    issues: '出現的議題',
+    issueLink: (n: number) => `#${n}`,
+    issueSeparator: '、',
+    basis: '資料根據（各議題合計）',
+    /** Next to the counts while 依資料根據比例 is on. */
+    evidencePercent: (p: number) => `實證＋AI整理 ${p}%`,
+    coverage: '解法涵蓋',
+    coverageValue: (total: number, covered: number) =>
+      covered === total
+        ? `需求 ${total} 個：有解法涵蓋 ${covered} 個`
+        : `需求 ${total} 個：有解法涵蓋 ${covered} 個、尚未涵蓋 ${total - covered} 個`,
+    /** After the coverage while 依解法涵蓋比例 is on. */
+    coveragePercent: (p: number) => `（${p}%）`,
+    noNeeds: '沒有需求',
+    added: '新增日期',
+    updated: '更新日期',
+    /** The name of the tree in tree view. */
+    treeLabel: '利害關係人分類',
   },
 } as const

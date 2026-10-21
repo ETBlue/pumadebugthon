@@ -6,8 +6,8 @@ import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import {
-  movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
-  stakeholderIssueView, stakeholderMenuIds, stakeholderSideMenuState, stakeholderSolutionsView,
+  legacyStakeholderPageSearch, movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
+  stakeholderIssueView, stakeholderMenuIds, stakeholderSolutionsView,
 } from './stakeholderPage'
 import { stakeholderTabCounts } from './tabCounts'
 
@@ -195,32 +195,15 @@ describe('stakeholderSolutionsView', () => {
   })
 })
 
-describe('stakeholderSideMenuState', () => {
-  const state = (id?: string, tab?: string) => stakeholderSideMenuState(index.stakeholders, id, tab)
-
-  it('is link mode on #/stakeholders (no ID): the counts are stories', () => {
-    expect(state()).toEqual({ mode: 'link', context: 'stakeholders' })
+describe('legacyStakeholderPageSearch', () => {
+  it('drops cross and every special value, and keeps the rest (decision 94)', () => {
+    expect(legacyStakeholderPageSearch(`?evidence=1&cross=1&special=${encodeURIComponent('高齡')}&special=x`)).toBe('?evidence=1')
+    expect(legacyStakeholderPageSearch('?cross=1')).toBe('')
+    expect(legacyStakeholderPageSearch('?from=O02&special=')).toBe('?from=O02')
   })
 
-  it('is switch mode on a stakeholder page, with the tab and its count context', () => {
-    expect(state('I06')).toEqual({ mode: 'switch', current: 'I06', tab: 'overview', context: 'stakeholder-overview' })
-    expect(state('I06', 'wants')).toEqual({ mode: 'switch', current: 'I06', tab: 'wants', context: 'stakeholder-wants' })
-    expect(state('I06', 'needs')).toEqual({ mode: 'switch', current: 'I06', tab: 'needs', context: 'stakeholder-needs' })
-    expect(state('I06', 'solutions')).toEqual({ mode: 'switch', current: 'I06', tab: 'solutions', context: 'stakeholder-solutions' })
-  })
-
-  it('uses the overview for an unknown tab, so the menu links go to the overview', () => {
-    expect(state('I06', 'nope')).toEqual({ mode: 'switch', current: 'I06', tab: 'overview', context: 'stakeholder-overview' })
-  })
-
-  it('is link mode on the page of a stakeholder with no issue (I34): it is not in the menu (decision 78)', () => {
-    expect(state('I34')).toEqual({ mode: 'link', context: 'stakeholders' })
-    expect(state('I34', 'wants')).toEqual({ mode: 'link', context: 'stakeholders' })
-  })
-
-  it('is null for a moved ID (the page redirects) and for an unknown ID (not found)', () => {
-    expect(state('O02')).toBeNull()
-    expect(state('O02', 'wants')).toBeNull()
-    expect(state('X99')).toBeNull()
+  it('is null when there is nothing to drop', () => {
+    expect(legacyStakeholderPageSearch('')).toBeNull()
+    expect(legacyStakeholderPageSearch('?evidence=1&from=O02')).toBeNull()
   })
 })

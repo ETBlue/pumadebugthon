@@ -16,7 +16,7 @@ export function useIssueStakeholder(index: IndexFile, issue: IssueFile): string 
  * when no group is picked. The tabs and the menu counts use the same set. */
 export function useIssueSpecial(index: IndexFile, issue: IssueFile): ReadonlySet<string> | null {
   const [params] = useSearchParams()
-  const groups = sideBarFiltersOf(params, 'issue').special.join(',')
+  const groups = sideBarFiltersOf(params).special.join(',')
   return useMemo(
     () => specialStakeholderIds(issue.stakeholders.map((s) => s.id), index.stakeholders, groups === '' ? [] : groups.split(',')),
     [issue, index.stakeholders, groups],

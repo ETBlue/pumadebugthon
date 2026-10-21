@@ -3,16 +3,12 @@
 // URL as ?stakeholder=<id>. The menu is in ID order. Nothing here sorts by a
 // count.
 import type { Stakeholder } from '@/types'
-import type { PathTarget } from './entityPaths'
 import { FILTER_PARAM, isDataBasisFilterOn } from './dataBasis'
 import { compareIds } from './ids'
 import { FOCUS_ORDER } from './issues'
 import { filterStakeholders, findStakeholder, listedStakeholders, resolveId } from './stakeholders'
 
 export const STAKEHOLDER_PARAM = 'stakeholder'
-
-/** 只看跨議題 in the URL: ?cross=1. Old links from the issue cards use it too. */
-export const CROSS_PARAM = 'cross'
 
 /** A 特別關注 chip in the URL: ?special=<group>, once per picked group. The
  * name is not "focus", because ?focus= is the jump to an item (design 3.2). */
@@ -42,11 +38,11 @@ export function withStakeholderFilter(params: URLSearchParams, id: string | null
 }
 
 /** The search part for a tab change and for a side bar link: only evidence,
- * stakeholder, cross and special are kept (every special value). pick,
- * focus and any other value are dropped. "" when nothing is kept. */
+ * stakeholder and special are kept (every special value). pick, focus and
+ * any other value are dropped. "" when nothing is kept. */
 export function keptSearch(params: URLSearchParams): string {
   const next = new URLSearchParams()
-  for (const key of [FILTER_PARAM, STAKEHOLDER_PARAM, CROSS_PARAM]) {
+  for (const key of [FILTER_PARAM, STAKEHOLDER_PARAM]) {
     const value = params.get(key)
     if (value !== null) next.set(key, value)
   }
@@ -83,36 +79,32 @@ export function stakeholderMenuSearch(params: URLSearchParams, id: string | null
   return s ? `?${s}` : ''
 }
 
-/** The filters of the side bar (decision 67). */
+/** The filters of the side bar on the issue page (decisions 67 and 75).
+ * The stakeholder page uses only dataBasedOnly (decision 94). */
 export interface SideBarFilters {
   /** 只看有資料根據 (?evidence=1). It changes the counts, never the menu items. */
   dataBasedOnly: boolean
-  /** 只看跨議題 (?cross=1): only the stakeholders in 2 or more issues. */
-  crossIssueOnly: boolean
   /** The picked 特別關注 groups (?special=), in FOCUS_ORDER, each once. */
   special: string[]
 }
 
-/** The side bar filters in the URL. Only "1" turns evidence and cross on.
- * special keeps only the groups of FOCUS_ORDER, in that order. On the issue
- * page ('issue'), cross is not a side bar filter, so it is always off there.
- * special is a side bar filter on both pages (decision 75). */
-export function sideBarFiltersOf(params: URLSearchParams, page: 'stakeholders' | 'issue' = 'stakeholders'): SideBarFilters {
+/** The side bar filters in the URL. Only "1" turns evidence on. special
+ * keeps only the groups of FOCUS_ORDER, in that order. */
+export function sideBarFiltersOf(params: URLSearchParams): SideBarFilters {
   const picked = params.getAll(SPECIAL_PARAM)
   return {
     dataBasedOnly: isDataBasisFilterOn(params),
-    crossIssueOnly: page === 'stakeholders' && params.get(CROSS_PARAM) === '1',
     special: FOCUS_ORDER.filter((f) => picked.includes(f)),
   }
 }
 
-/** The IDs that the side menu lists, in ID order, each once. 只看跨議題 and
- * 特別關注 use the same rule as filterStakeholders. The data filter does not
- * change the list. current (the stakeholder of the page) is always kept,
- * also when it is not in ids. An unknown ID is kept only when no filter is on. */
+/** The IDs that the side menu lists, in ID order, each once. 特別關注 uses
+ * the same rule as filterStakeholders. The data filter does not change the
+ * list. current (the picked stakeholder) is always kept, also when it is not
+ * in ids. An unknown ID is kept only when no filter is on. */
 export function menuIdsFor(ids: string[], stakeholders: Stakeholder[], filters: SideBarFilters, current: string | null): string[] {
-  const filter = { crossIssueOnly: filters.crossIssueOnly, focus: filters.special }
-  const on = filter.crossIssueOnly || filter.focus.length > 0
+  const filter = { crossIssueOnly: false, focus: filters.special }
+  const on = filter.focus.length > 0
   const kept = [...new Set(ids)].filter((id) => {
     if (id === current) return true
     const s = stakeholders.find((x) => x.id === id)
@@ -124,31 +116,13 @@ export function menuIdsFor(ids: string[], stakeholders: Stakeholder[], filters: 
 }
 
 /** The search part of 「清除篩選」 (decision 68): every side bar filter is
- * removed (stakeholder, evidence, cross, special). Every other value is
- * kept. "" when nothing is left. */
+ * removed (stakeholder, evidence, special). Every other value is kept. ""
+ * when nothing is left. */
 export function clearFiltersSearch(params: URLSearchParams): string {
   const next = new URLSearchParams(params)
-  for (const key of [STAKEHOLDER_PARAM, FILTER_PARAM, CROSS_PARAM, SPECIAL_PARAM]) next.delete(key)
+  for (const key of [STAKEHOLDER_PARAM, FILTER_PARAM, SPECIAL_PARAM]) next.delete(key)
   const s = next.toString()
   return s ? `?${s}` : ''
-}
-
-/** The search part of a side menu link to a stakeholder page (switch and
- * link mode): evidence, cross and every special value. stakeholder is not
- * kept, because a stakeholder page does not use it. "" when nothing is kept. */
-export function sideMenuLinkSearch(params: URLSearchParams): string {
-  const next = new URLSearchParams(keptSearch(params))
-  next.delete(STAKEHOLDER_PARAM)
-  const s = next.toString()
-  return s ? `?${s}` : ''
-}
-
-/** A copy of params with 只看跨議題 on (cross=1) or off. Other values are kept. */
-export function withCrossIssueFilter(params: URLSearchParams, on: boolean): URLSearchParams {
-  const next = new URLSearchParams(params)
-  if (on) next.set(CROSS_PARAM, '1')
-  else next.delete(CROSS_PARAM)
-  return next
 }
 
 /** A copy of params with these 特別關注 groups (special=, once per group, in
@@ -187,32 +161,20 @@ export function specialStakeholderIds(ids: string[], stakeholders: Stakeholder[]
   return new Set(filterStakeholders(own, { crossIssueOnly: false, focus: groups }).map((s) => s.id))
 }
 
-/** The 「全部利害關係人」 item of the side menu on #/stakeholders and on a
- * stakeholder page (decision 76): a link to #/stakeholders that keeps
- * evidence, cross and every special value (sideMenuLinkSearch). */
-export function allStakeholdersTarget(params: URLSearchParams): PathTarget {
-  return { pathname: STAKEHOLDERS_PATH, search: sideMenuLinkSearch(params) }
-}
-
-/** The path of the stakeholders page. */
-export const STAKEHOLDERS_PATH = '/stakeholders'
-
 /** One filter in the filter status line. */
 export type FilterStatusPart =
   | { kind: 'stakeholder'; id: string; name: string }
   | { kind: 'dataBased' }
-  | { kind: 'crossIssue' }
   | { kind: 'special'; groups: string[] }
 
 /** The filters that are on, for the filter status line (decision 68), in
  * this order: the stakeholder (pass null on the stakeholder page, where the
- * stakeholder is not a filter), 只看有資料根據, 只看跨議題, 特別關注. Empty
+ * stakeholder is not a filter), 只看有資料根據, 特別關注. Empty
  * when no filter is on. The component adds what is shown. */
 export function filterStatusParts(filters: SideBarFilters, stakeholder: Stakeholder | null): FilterStatusPart[] {
   const parts: FilterStatusPart[] = []
   if (stakeholder !== null) parts.push({ kind: 'stakeholder', id: stakeholder.id, name: stakeholder.name })
   if (filters.dataBasedOnly) parts.push({ kind: 'dataBased' })
-  if (filters.crossIssueOnly) parts.push({ kind: 'crossIssue' })
   if (filters.special.length > 0) parts.push({ kind: 'special', groups: [...filters.special] })
   return parts
 }

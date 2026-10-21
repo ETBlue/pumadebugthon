@@ -2,12 +2,37 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
+import { FOCUS_PARAM } from '@/lib/focus'
+import { tabPath } from '@/lib/issuePage'
 import type { StakeholderIssueStories } from '@/lib/stakeholders'
-import type { Stakeholder } from '@/types'
+import type { CellCounts, Stakeholder } from '@/types'
+import { CellBasis } from './CellBasis'
+import { Field } from './Field'
 import { PriorityCounts } from './PriorityCounts'
 import { linkClass } from './styles'
 
 const tc = t.stakeholderCard
+const tl = t.stakeholdersList
+
+/** The fields of a card on #/stakeholders (design 3.23.9, decision 92). The
+ * page computes them. The card only shows them. */
+export interface StakeholderListFields {
+  /** 分類路徑 as names, the root first: 「個人 › 用路人」. */
+  path: string
+  /** The analyzed issues of the stakeholder, by number. */
+  issues: number[]
+  /** The cells of all its stories, in every analyzed issue (stakeholderCells). */
+  cells: CellCounts
+  /** 「實證＋AI整理 8%」 next to the counts, only while 依資料根據比例 is on.
+   * null: not shown. */
+  evidencePercent: number | null
+  /** Its needs and the needs that a solution covers
+   * (stakeholderSolutionCoverage). */
+  needs: { covered: number; total: number }
+  /** 「（60%）」 after the coverage, only while 依解法涵蓋比例 is on. null: not
+   * shown. */
+  solutionsPercent: number | null
+}
 
 interface CommonProps {
   stakeholder: Stakeholder
@@ -17,19 +42,22 @@ interface CommonProps {
 }
 
 /** The props of StakeholderCard. Each variant has its own props.
- * - detailed: the stakeholder lists with story counts (#/stakeholders and
- *   the issue's 利害關係人 tab). entries are the stories of the stakeholder
- *   per issue, from storyCountsByStakeholder.
+ * - detailed: the larger box. With entries (the issue's 利害關係人 tab): the
+ *   stories of the stakeholder per issue, from storyCountsByStakeholder.
+ *   With listFields (#/stakeholders): 分類路徑, the issues, 資料根據,
+ *   解法涵蓋 and the dates (design 3.23.9).
  * - compact: short lists (home page, solution page, space page, opinion
  *   check). */
 export type StakeholderCardProps =
-  | (CommonProps & { variant: 'detailed'; entries: StakeholderIssueStories[] })
+  | (CommonProps & { variant: 'detailed'; entries: StakeholderIssueStories[]; listFields?: undefined })
+  | (CommonProps & { variant: 'detailed'; listFields: StakeholderListFields; entries?: undefined })
   | (CommonProps & { variant: 'compact' })
 
 /** One stakeholder in a list (design 3.9). Both variants show the name as a
  * link to the stakeholder page, the ID and the 特別關注 badges. The detailed
- * variant also shows the story counts by priority for each issue. children
- * come last. The detailed box is larger, like IssueCard and SolutionCard. */
+ * variant also shows the story counts by priority for each issue, or the
+ * list fields of #/stakeholders. children come last. The detailed box is
+ * larger, like IssueCard and SolutionCard. */
 export function StakeholderCard(props: StakeholderCardProps) {
   const { stakeholder: s, children } = props
   const detailed = props.variant === 'detailed'
@@ -38,16 +66,9 @@ export function StakeholderCard(props: StakeholderCardProps) {
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <Link to={`/stakeholders/${s.id}`} className={`${linkClass} font-medium`}>{s.name}</Link>
         <span className="font-mono text-xs text-muted-foreground">{s.id}</span>
-        {s.focus.length > 0 && (
-          <span className="inline-flex flex-wrap gap-1">
-            <span className="sr-only">{tc.focusLabel}</span>
-            {s.focus.map((f) => (
-              <Badge key={f} variant="secondary" className="rounded-sm">{f}</Badge>
-            ))}
-          </span>
-        )}
+        <FocusBadges stakeholder={s} />
       </p>
-      {detailed && props.entries.length > 0 && (
+      {props.variant === 'detailed' && props.entries !== undefined && props.entries.length > 0 && (
         <ul className="mt-1 space-y-1 text-sm">
           {props.entries.map((e) => (
             <li key={e.issueNumber} className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -57,7 +78,65 @@ export function StakeholderCard(props: StakeholderCardProps) {
           ))}
         </ul>
       )}
+      {props.variant === 'detailed' && props.listFields !== undefined && (
+        <ListFields stakeholder={s} fields={props.listFields} />
+      )}
       {children}
     </article>
+  )
+}
+
+/** The 特別關注 badges, with a hidden 「特別關注：」 before them. Nothing when
+ * the stakeholder has no group. */
+export function FocusBadges({ stakeholder: s }: { stakeholder: Stakeholder }) {
+  if (s.focus.length === 0) return null
+  return (
+    <span className="inline-flex flex-wrap gap-1">
+      <span className="sr-only">{tc.focusLabel}</span>
+      {s.focus.map((f) => (
+        <Badge key={f} variant="secondary" className="rounded-sm">{f}</Badge>
+      ))}
+    </span>
+  )
+}
+
+/** The fields of a card on #/stakeholders (design 3.23.9). */
+function ListFields({ stakeholder: s, fields: f }: { stakeholder: Stakeholder; fields: StakeholderListFields }) {
+  const { covered, total } = f.needs
+  return (
+    <dl className="mt-2 space-y-1 text-sm">
+      {f.path !== '' && <Field label={tl.path}>{f.path}</Field>}
+      {f.issues.length > 0 && (
+        <Field label={tl.issues}>
+          <ul className="flex flex-wrap gap-x-1">
+            {f.issues.map((n, i) => (
+              <li key={n}>
+                <Link
+                  to={{ pathname: tabPath(n, 'overview'), search: `?${FOCUS_PARAM}=stakeholders` }}
+                  className={linkClass}
+                >
+                  {tl.issueLink(n)}
+                </Link>
+                {i < f.issues.length - 1 && tl.issueSeparator}
+              </li>
+            ))}
+          </ul>
+        </Field>
+      )}
+      <div>
+        <dt className="text-muted-foreground">{tl.basis}</dt>
+        <dd>
+          <CellBasis cells={f.cells} stories={0} compact inlineLabel={false} />
+          {/* The share is shown next to the counts it comes from, never alone. */}
+          {f.evidencePercent !== null && <p className="mt-0.5 font-medium">{tl.evidencePercent(f.evidencePercent)}</p>}
+        </dd>
+      </div>
+      <Field label={tl.coverage}>
+        {total === 0 ? tl.noNeeds : tl.coverageValue(total, covered)}
+        {total > 0 && f.solutionsPercent !== null && <span className="font-medium">{tl.coveragePercent(f.solutionsPercent)}</span>}
+      </Field>
+      {s.added && <Field label={tl.added}><time dateTime={s.added}>{s.added}</time></Field>}
+      {s.updated && <Field label={tl.updated}><time dateTime={s.updated}>{s.updated}</time></Field>}
+    </dl>
   )
 }

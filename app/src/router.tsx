@@ -1,6 +1,5 @@
 import { createHashRouter } from 'react-router'
 import { Layout } from '@/components/Layout'
-import StakeholdersLayout from '@/components/stakeholder/StakeholdersLayout'
 import About from '@/pages/About'
 import Home from '@/pages/Home'
 import Issue from '@/pages/Issue'
@@ -38,19 +37,12 @@ export const router = createHashRouter([
       // stakeholders (legacyIssueTab).
       { path: 'issues/:number/:tab?', element: <Issue /> },
       // A moved stakeholder ID redirects on every sub-route (design 3.3).
-      // There is no want or need page (decision 45). The story page has no
-      // side bar, so it is outside the layout route (decision 71).
+      // There is no want or need page (decision 45). #/stakeholders and the
+      // stakeholder page have no side bar, so they are plain routes
+      // (decisions 87 and 94).
+      { path: 'stakeholders', element: <Stakeholders /> },
       { path: 'stakeholders/:id/stories/:number/:storyId', element: <StakeholderStory /> },
-      // One layout route with the side bar for #/stakeholders and the
-      // stakeholder page, so the side bar keeps its state (decision 64).
-      {
-        path: 'stakeholders',
-        element: <StakeholdersLayout />,
-        children: [
-          { index: true, element: <Stakeholders /> },
-          { path: ':id/:tab?', element: <Stakeholder /> },
-        ],
-      },
+      { path: 'stakeholders/:id/:tab?', element: <Stakeholder /> },
       { path: 'solutions', element: <Solutions /> },
       // 2-A: a solution of an issue. X-A: a cross-issue solution (Task N11).
       { path: 'solutions/:slug/:tab?', element: <Solution /> },

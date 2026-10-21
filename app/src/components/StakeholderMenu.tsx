@@ -2,14 +2,10 @@ import { createContext, useContext, useId, useMemo, useState, type MouseEvent, t
 import { ChevronRight } from 'lucide-react'
 import { useLocation, useSearchParams, type To } from 'react-router'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Toggle } from '@/components/ui/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { t } from '@/i18n/zh-TW'
-import { stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { sideMenuTree, type SideMenuContext } from '@/lib/sideMenu'
-import {
-  allStakeholdersTarget, sideBarFiltersOf, sideMenuLinkSearch, stakeholderMenuSearch, withCrossIssueFilter, withSpecialFilter,
-} from '@/lib/stakeholderFilter'
+import { sideBarFiltersOf, stakeholderMenuSearch, withSpecialFilter } from '@/lib/stakeholderFilter'
 import { findStakeholder } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
 import type { Stakeholder } from '@/types'
@@ -20,19 +16,22 @@ import { ToggleCheck } from './ToggleCheck'
 
 const tm = t.sideMenu
 
-/** The filters 只看跨議題 and 特別關注 of the side bar (decisions 67 and 75). */
+/** The 特別關注 filter of the side bar (decision 75). */
 export interface StakeholderFilterOptions {
-  /** Show 只看跨議題. Design: only on the stakeholder pages, with 2 or more
-   * analyzed issues. Always false on the issue page. */
-  showCrossIssue: boolean
-  /** The 特別關注 chips, in FOCUS_ORDER (specialOptions). Empty: no chips. */
+  /** The 特別關注 chips, in FOCUS_ORDER (issueSpecialOptions). Empty: no chips. */
   specialOptions: string[]
 }
 
-interface CommonProps {
+/** The props of StakeholderMenu (design 3.21). The menu is only on the 訴求,
+ * 需求 and 解法 tabs of the issue page (decisions 87 and 94). A link sets
+ * ?stakeholder=<id> on the same tab. 「全部利害關係人」 is the first item,
+ * with no count (decision 76), and removes it. The current item has
+ * aria-current="true". The filters are 只看有資料根據, then 特別關注. Every
+ * link keeps evidence and special. */
+export interface StakeholderMenuProps {
   /** The stakeholder IDs in the menu. Pass the result of menuIdsFor, so the
-   * menu follows 只看跨議題 and 特別關注. The
-   * component puts them in the tree (sideMenuTree): tree order and ID order. */
+   * menu follows 特別關注. The component puts them in the tree
+   * (sideMenuTree): tree order and ID order. */
   ids: string[]
   /** All stakeholders from index.json, for the names and the paths. */
   stakeholders: Stakeholder[]
@@ -46,25 +45,9 @@ interface CommonProps {
   counts: Map<string, number> | null
   /** The filters after 只看有資料根據. */
   filters: StakeholderFilterOptions
+  /** The picked stakeholder (stakeholderFilterOf), or null. */
+  current: string | null
 }
-
-/** The props of StakeholderMenu (design 3.21). Three modes:
- * - filter: the 訴求, 需求 and 解法 tabs of the issue page. A link sets
- *   ?stakeholder=<id> on the same tab. 「全部利害關係人」 removes it.
- *   current: the picked stakeholder (stakeholderFilterOf), or null.
- *   aria-current="true".
- * - switch: a stakeholder page. A link goes to the same tab of that
- *   stakeholder. 「全部利害關係人」 goes to #/stakeholders. current: the
- *   stakeholder of the page. aria-current="page".
- * - link: #/stakeholders. A link goes to the 總覽 tab of that stakeholder.
- *   「全部利害關係人」 is the current item (aria-current="page").
- * 「全部利害關係人」 is the first item in every mode, with no count
- * (decision 76). The filters are 只看有資料根據, then the ones in filters.
- * Every link keeps evidence, cross and special. */
-export type StakeholderMenuProps =
-  | (CommonProps & { mode: 'filter'; current: string | null })
-  | (CommonProps & { mode: 'switch'; current: string; tab: StakeholderTab })
-  | (CommonProps & { mode: 'link' })
 
 /** The id of the main block next to the side bar, for the skip link. Set by
  * StakeholderMenuLayout. */
@@ -76,8 +59,7 @@ const MainIdContext = createContext<string | null>(null)
  * From lg it is always shown. Below lg the whole side bar is one
  * Collapsible, closed by default, closed again after a pick. */
 export function StakeholderMenu(props: StakeholderMenuProps) {
-  const { ids, stakeholders, pathLabels, context, counts, mode, filters } = props
-  const current = props.mode === 'link' ? null : props.current
+  const { ids, stakeholders, pathLabels, context, counts, filters, current } = props
   const [params, setParams] = useSearchParams()
   const { pathname } = useLocation()
   const mainId = useContext(MainIdContext)
@@ -89,17 +71,11 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
   // Below lg: the whole side bar. Closed by default on every page (Q17).
   const [open, setOpen] = useState(false)
 
-  const pageFilters = sideBarFiltersOf(params, mode === 'filter' ? 'issue' : 'stakeholders')
+  const pageFilters = sideBarFiltersOf(params)
   const setUrl = (next: (prev: URLSearchParams) => URLSearchParams) =>
     setParams(next, { replace: true, preventScrollReset: true })
 
-  const targetOf = (id: string | null): To => {
-    if (props.mode === 'filter') return { pathname, search: stakeholderMenuSearch(params, id) }
-    if (id === null) return allStakeholdersTarget(params)
-    const tab = props.mode === 'switch' ? props.tab : 'overview'
-    return { pathname: stakeholderTabPath(id, tab), search: sideMenuLinkSearch(params) }
-  }
-  const ariaCurrent = mode === 'filter' ? 'true' : 'page'
+  const targetOf = (id: string | null): To => ({ pathname, search: stakeholderMenuSearch(params, id) })
   const picked = current === null ? null : findStakeholder(stakeholders, current)
 
   const skip = (e: MouseEvent<HTMLAnchorElement>) => {
@@ -131,18 +107,6 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
         <div role="group" aria-labelledby={filtersLabelId} className="space-y-3">
           <p id={filtersLabelId} className="text-sm font-medium text-muted-foreground">{tm.filters}</p>
           <DataBasisToggle variant="sideBar" />
-          {filters.showCrossIssue && (
-            <Toggle
-              variant="outline"
-              size="sm"
-              pressed={pageFilters.crossIssueOnly}
-              onPressedChange={(on) => setUrl((prev) => withCrossIssueFilter(prev, on))}
-              className={cn(toggleOnClass, 'w-full justify-start')}
-            >
-              <ToggleCheck />
-              {tm.crossIssueOnly}
-            </Toggle>
-          )}
           {filters.specialOptions.length > 0 && (
             <div className="space-y-1">
               <p id={specialLabelId} className="text-sm text-muted-foreground">{tm.special}</p>
@@ -168,12 +132,12 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
 
         {counts !== null && <p className="text-xs text-muted-foreground">{tm.countLine[context]}</p>}
 
-        <nav aria-label={tm.navLabels[mode]}>
+        <nav aria-label={tm.navLabel}>
           <StakeholderTree
             tree={tree}
             targetOf={targetOf}
             current={current}
-            ariaCurrent={ariaCurrent}
+            ariaCurrent="true"
             counts={counts}
             countUnit={tm.countUnit[context]}
             onPick={() => setOpen(false)}

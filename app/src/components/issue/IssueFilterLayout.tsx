@@ -25,7 +25,7 @@ export function IssueFilterLayout({ index, issue, current, context, shown, child
   children: ReactNode
 }) {
   const [params] = useSearchParams()
-  const filters = sideBarFiltersOf(params, 'issue')
+  const filters = sideBarFiltersOf(params)
   const allIds = useMemo(() => issue.stakeholders.map((s) => s.id), [issue])
   // 特別關注 limits which stakeholders the menu lists, and it filters the
   // tab content and the counts (decision 75). The picked stakeholder always
@@ -36,7 +36,7 @@ export function IssueFilterLayout({ index, issue, current, context, shown, child
     [allIds, index.stakeholders, filters.special.join(','), current],
   )
   const menuFilters = useMemo(
-    () => ({ showCrossIssue: false, specialOptions: issueSpecialOptions(allIds, index.stakeholders) }),
+    () => ({ specialOptions: issueSpecialOptions(allIds, index.stakeholders) }),
     [allIds, index.stakeholders],
   )
   const special = useIssueSpecial(index, issue)
@@ -48,7 +48,6 @@ export function IssueFilterLayout({ index, issue, current, context, shown, child
     <StakeholderMenuLayout
       menu={
         <StakeholderMenu
-          mode="filter"
           ids={ids}
           stakeholders={index.stakeholders}
           pathLabels={index.pathLabels}

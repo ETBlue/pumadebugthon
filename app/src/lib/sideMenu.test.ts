@@ -5,17 +5,12 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import discoveryJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile, Stakeholder } from '@/types'
-import { dataBasedOnly, dataBasedPickList } from './dataBasis'
 import { compareIds } from './ids'
 import { needsTabView, solutionsTabView } from './issueTabs'
-import { dataBasedNeeds, needsOfStakeholder } from './needs'
 import { groupKeysAbove, SIDE_MENU_CONTEXTS, sideMenuCounts, sideMenuTree, type SideMenuGroup } from './sideMenu'
-import { stakeholderMenuIds, stakeholderSolutionsView } from './stakeholderPage'
+import { stakeholderMenuIds } from './stakeholderPage'
 import { specialOptions, specialStakeholderIds } from './stakeholderFilter'
-import { storyCountsByStakeholder } from './stakeholders'
-import { stakeholderTabCounts } from './tabCounts'
 import { wantsTabView } from './wantsTab'
-import { wantsOfStakeholder } from './wantList'
 
 const index = indexJson as IndexFile
 const trashcans = trashcansJson as IssueFile
@@ -130,7 +125,7 @@ describe('sideMenuTree', () => {
     expect(t[0].stakeholderCount).toBe(1)
   })
 
-  it('works for the full menu of the stakeholder page', () => {
+  it('works for every listed stakeholder (the tree view of #/stakeholders)', () => {
     const ids = stakeholderMenuIds(index)
     const full = sideMenuTree(ids, index.stakeholders, index.pathLabels)
     expect(full.reduce((sum, g) => sum + g.stakeholderCount, 0)).toBe(ids.length)
@@ -154,11 +149,8 @@ describe('groupKeysAbove', () => {
 })
 
 describe('sideMenuCounts', () => {
-  it('has the eight contexts of design 3.21', () => {
-    expect(SIDE_MENU_CONTEXTS).toEqual([
-      'stakeholders', 'stakeholder-overview', 'stakeholder-wants', 'stakeholder-needs', 'stakeholder-solutions',
-      'issue-wants', 'issue-needs', 'issue-solutions',
-    ])
+  it('has only the three issue page contexts (decisions 87 and 94)', () => {
+    expect(SIDE_MENU_CONTEXTS).toEqual(['issue-wants', 'issue-needs', 'issue-solutions'])
   })
 
   it('gives one count per ID, for every ID', () => {
@@ -174,36 +166,6 @@ describe('sideMenuCounts', () => {
     expect(of('issue-solutions')).toBe(2)
   })
 
-  it('I06 on the stakeholder page: the same numbers as stakeholderTabCounts', () => {
-    const tab = stakeholderTabCounts(issues, 'I06')
-    const of = (c: (typeof SIDE_MENU_CONTEXTS)[number]) => sideMenuCounts(c, issues, ['I06'], false).get('I06')
-    expect(of('stakeholder-wants')).toBe(tab.wants)
-    expect(of('stakeholder-needs')).toBe(tab.needs)
-    expect(of('stakeholder-solutions')).toBe(tab.solutions)
-  })
-
-  it('the stakeholder page counts equal stakeholderTabCounts for every stakeholder without the filter', () => {
-    const ids = stakeholderMenuIds(index)
-    for (const [context, field] of [
-      ['stakeholder-wants', 'wants'], ['stakeholder-needs', 'needs'], ['stakeholder-solutions', 'solutions'],
-    ] as const) {
-      const counts = sideMenuCounts(context, issues, ids, false)
-      for (const id of ids) expect(counts.get(id), `${context} ${id}`).toBe(stakeholderTabCounts(issues, id)[field])
-    }
-  })
-
-  it('the story counts equal storyCountsByStakeholder', () => {
-    const ids = stakeholderMenuIds(index)
-    const byId = storyCountsByStakeholder(issues)
-    for (const context of ['stakeholders', 'stakeholder-overview'] as const) {
-      const counts = sideMenuCounts(context, issues, ids, false)
-      for (const id of ids) {
-        const total = (byId.get(id) ?? []).reduce((sum, e) => sum + e.stories.length, 0)
-        expect(counts.get(id), `${context} ${id}`).toBe(total)
-      }
-    }
-  })
-
   // Decision 74: with 只看有資料根據 on, a solution counts for a stakeholder
   // only when one of the stakeholder's needs in it is still shown.
   describe('the 解法 count with 只看有資料根據 (decision 74)', () => {
@@ -213,13 +175,11 @@ describe('sideMenuCounts', () => {
     })
 
     for (const dataBased of [false, true]) {
-      it(`the issue page and the stakeholder page agree in each issue (evidence ${dataBased ? 'on' : 'off'})`, () => {
+      it(`the count equals the 解法 tab in each issue (evidence ${dataBased ? 'on' : 'off'})`, () => {
         for (const issue of issues) {
           const ids = issue.stakeholders.map((s) => s.id)
           const onIssue = sideMenuCounts('issue-solutions', [issue], ids, dataBased)
-          const onStakeholder = sideMenuCounts('stakeholder-solutions', [issue], ids, dataBased)
           for (const id of ids) {
-            expect(onIssue.get(id), `#${issue.number} ${id}`).toBe(onStakeholder.get(id))
             expect(onIssue.get(id), `#${issue.number} ${id}`).toBe(solutionsTabView(issue, id, dataBased).length)
           }
         }
@@ -239,39 +199,6 @@ describe('sideMenuCounts', () => {
           expect(wants.get(id), `wants ${id}`).toBe(wantsTabView(trashcans, id, dataBased).wants.length)
           expect(needs.get(id), `needs ${id}`).toBe(needsTabView(trashcans, id, dataBased).shown)
           expect(solutions.get(id), `solutions ${id}`).toBe(solutionsTabView(trashcans, id, dataBased).length)
-        }
-      })
-
-      it(`on the stakeholder page (all fixtures, evidence ${dataBased ? 'on' : 'off'})`, () => {
-        const ids = stakeholderMenuIds(index)
-        const overview = sideMenuCounts('stakeholder-overview', issues, ids, dataBased)
-        const wants = sideMenuCounts('stakeholder-wants', issues, ids, dataBased)
-        const needs = sideMenuCounts('stakeholder-needs', issues, ids, dataBased)
-        const solutions = sideMenuCounts('stakeholder-solutions', issues, ids, dataBased)
-        const sum = (f: (issue: IssueFile) => number) => issues.reduce((n, issue) => n + f(issue), 0)
-        for (const id of ids) {
-          // The same lists as the tabs in src/components/stakeholder/.
-          expect(overview.get(id), `overview ${id}`).toBe(
-            sum((issue) => {
-              const own = issue.stories.filter((s) => s.stakeholder === id)
-              return (dataBased ? dataBasedOnly(own) : own).length
-            }),
-          )
-          expect(wants.get(id), `wants ${id}`).toBe(
-            sum((issue) => {
-              const all = wantsOfStakeholder(issue, id)
-              return (dataBased ? dataBasedPickList(all, issue.stories) : all).length
-            }),
-          )
-          expect(needs.get(id), `needs ${id}`).toBe(
-            sum((issue) => {
-              const all = needsOfStakeholder(issue, id)
-              return (dataBased ? dataBasedNeeds(all) : all).length
-            }),
-          )
-          expect(solutions.get(id), `solutions ${id}`).toBe(
-            sum((issue) => stakeholderSolutionsView(issue, id, dataBased).solutions.length),
-          )
         }
       })
     }
@@ -309,15 +236,11 @@ describe('sideMenuCounts', () => {
   })
 
   it('the data filter changes some counts (so the test above checks something)', () => {
-    const ids = stakeholderMenuIds(index)
     const changed = (context: (typeof SIDE_MENU_CONTEXTS)[number], list: IssueFile[], idList: string[]) => {
       const off = sideMenuCounts(context, list, idList, false)
       const on = sideMenuCounts(context, list, idList, true)
       return idList.some((id) => off.get(id) !== on.get(id))
     }
-    expect(changed('stakeholders', issues, ids)).toBe(true)
-    expect(changed('stakeholder-wants', issues, ids)).toBe(true)
-    expect(changed('stakeholder-needs', issues, ids)).toBe(true)
     expect(changed('issue-wants', [trashcans], issueIds)).toBe(true)
     expect(changed('issue-needs', [trashcans], issueIds)).toBe(true)
   })

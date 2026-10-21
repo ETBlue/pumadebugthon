@@ -8,14 +8,14 @@ import { ResultLine } from '@/components/ResultLine'
 import { SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
-import { linkClass } from '@/components/styles'
+import { linkClass, proseClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { evidenceShare, sharePercent } from '@/lib/coverage'
 import { crossSolutionTabCounts, issuesOfCross } from '@/lib/crossIssue'
 import { availableIssues } from '@/lib/issues'
 import {
-  clearListFilters, CROSS_ISSUE_VALUE, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
+  clearListFilters, CROSS_ISSUE_VALUE, legacyListRedirect, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
 } from '@/lib/listParams'
 import { solutionItemKey, type ListContext } from '@/lib/listSort'
 import type { RecentSolution } from '@/lib/recent'
@@ -78,12 +78,16 @@ function SolutionsBody({ index }: { index: IndexFile }) {
     return rest
   }, [p])
 
-  // Drop unknown values from the URL (design 3.23.5). replace, so the back
-  // button does not loop.
+  // An old link with ?evidence=1 (decision 100), or a URL with unknown
+  // values (design 3.23.5): replace it with the clean URL, so the back
+  // button does not loop. The old param is dropped at once, also while the
+  // data loads.
+  const redirect = legacyListRedirect('solutions', search)
   const cleanSearch = listUrlSearch('solutions', state)
   useEffect(() => {
-    if (replace) navigate({ pathname, search: cleanSearch }, { replace: true, preventScrollReset: true })
-  }, [replace, cleanSearch, pathname, navigate])
+    if (redirect !== null) navigate({ pathname, search: redirect }, { replace: true, preventScrollReset: true })
+    else if (replace) navigate({ pathname, search: cleanSearch }, { replace: true, preventScrollReset: true })
+  }, [redirect, replace, cleanSearch, pathname, navigate])
 
   const onNavigate = (next: string, mode: HistoryMode) =>
     navigate({ pathname, search: next }, { replace: mode === 'replace', preventScrollReset: true })
@@ -110,8 +114,13 @@ function SolutionsBody({ index }: { index: IndexFile }) {
         className="rounded-md border"
       />
       <ResultLine {...resultProps} className="mt-3" />
+      {/* The sort note while 資料根據比例 is on. The 資料根據 explanation
+          is part of it, as on #/stakeholders (design 3.23.9). */}
       {shareOn && (
-        <p id={noteId} className="mt-2 text-sm text-muted-foreground">{tb.sortNotes.evidence}</p>
+        <div id={noteId} className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+          <p>{tb.sortNotes.evidence}</p>
+          <p>{t.basis.listNote('解法')}</p>
+        </div>
       )}
 
       <div className="mt-4">

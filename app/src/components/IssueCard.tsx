@@ -27,7 +27,7 @@ export type IssueCardProps =
       shared: Shared | null
       headingLevel?: 2 | 3
       /** The 資料根據比例 share, shown as a percent next to the counts. Only
-       * while the 依資料根據比例 sort is on (design 3.23.3). */
+       * while the 資料根據比例 sort is on (design 3.23.3). */
       share?: Share | null
     }
   | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null }

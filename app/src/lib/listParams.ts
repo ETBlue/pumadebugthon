@@ -173,14 +173,21 @@ export function clearListFilters(params: URLSearchParams): string {
   return s ? `?${s}` : ''
 }
 
-/** Old links to #/stakeholders (decision 91): cross=1 becomes issue=X,
- * special=<group> becomes specialonly=1, and evidence is dropped. Other
- * params are kept. Returns the new search string ("" when nothing is left),
- * or null when there is nothing to change or the page is not
- * #/stakeholders. The page redirects with replace. */
+/** Old links to the list pages (decisions 91 and 100). On every list page
+ * the old evidence param is dropped: the list pages have no data filter.
+ * On #/stakeholders, cross=1 also becomes issue=X and special=<group>
+ * becomes specialonly=1. Other params are kept. Returns the new search
+ * string ("" when nothing is left), or null when there is nothing to
+ * change. The page redirects with replace. */
 export function legacyListRedirect(page: ListPage, search: string): string | null {
-  if (page !== 'stakeholders') return null
   const params = new URLSearchParams(search)
+  if (page !== 'stakeholders') {
+    if (!params.has('evidence')) return null
+    const next = new URLSearchParams(params)
+    next.delete('evidence')
+    const s = next.toString()
+    return s ? `?${s}` : ''
+  }
   if (!params.has('cross') && !params.has('special') && !params.has('evidence')) return null
   const next = new URLSearchParams(params)
   const cross = params.get('cross') === '1'

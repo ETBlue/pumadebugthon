@@ -120,11 +120,11 @@ export default function Stakeholders() {
       />
       {resultLine(true, 'mt-3')}
       {/* The notes (design 3.23.1 and 3.23.9): the sort note while a share
-          sort is on. With 依資料根據比例 the 資料根據 explanation is part of it. */}
+          sort is on. With 資料根據比例 the 資料根據 explanation is part of it. */}
       {shareSort !== null && (
         <div id={noteId} className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
           <p>{tb.sortNotes[shareSort]}</p>
-          {shareSort === 'evidence' && <p>{t.basis.listNote}</p>}
+          {shareSort === 'evidence' && <p>{t.basis.listNote('利害關係人')}</p>}
         </div>
       )}
       <div className="mt-4">

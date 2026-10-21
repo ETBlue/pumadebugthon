@@ -58,7 +58,7 @@ function byShare<T>(list: T[], shareOf: (item: T) => Share | null, fixedOrder: (
 const issueNumberOrder = (a: IssueSummary, b: IssueSummary) => a.number - b.number
 
 /** #/issues. Dates: newest first, the same number highest first (as the
- * home block). 依資料根據比例: the issue's counts.cells, the numbers of its
+ * home block). 資料根據比例: the issue's counts.cells, the numbers of its
  * 資料根據 bar. A 製作中 issue has no date and no cells, so it is last. */
 export function sortIssues(issues: IssueSummary[], sort: IssueSort): IssueSummary[] {
   switch (sort) {
@@ -76,8 +76,8 @@ export function sortIssues(issues: IssueSummary[], sort: IssueSort): IssueSummar
 const stakeholderIdOrder = (a: Stakeholder, b: Stakeholder) => compareIds(a.id, b.id)
 
 /** #/stakeholders. Dates: newest first, the same date by ID highest first
- * (as the home block). 依資料根據比例: the cells of all its stories in every
- * analyzed issue. 依解法涵蓋比例: its covered needs of all its needs. */
+ * (as the home block). 資料根據比例: the cells of all its stories in every
+ * analyzed issue. 解法涵蓋比例: its covered needs of all its needs. */
 export function sortStakeholders(list: Stakeholder[], sort: ListSort, ctx: ListContext): Stakeholder[] {
   switch (sort) {
     case 'updated':
@@ -138,7 +138,7 @@ function solutionShare(item: RecentSolution, ctx: ListContext): Share | null {
 }
 
 /** #/solutions: the issue solutions and the cross-issue solutions in one
- * list (decision 89). 依資料根據比例: the cells of the stories of the needs
+ * list (decision 89). 資料根據比例: the cells of the stories of the needs
  * each solution covers (3.23.4). */
 export function sortSolutions(items: RecentSolution[], sort: SolutionSort, ctx: ListContext): RecentSolution[] {
   switch (sort) {

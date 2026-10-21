@@ -47,7 +47,7 @@ export interface CoveredBasis {
 
 /** 「涵蓋需求的資料根據」 on the #/solutions cards (design 3.23.4 and 3.23.9),
  * inside a <dl>: the cells of the stories of the needs the solution covers,
- * as counts and a bar. With 依資料根據比例 on, 「實證＋AI整理 30%」 under
+ * as counts and a bar. With 資料根據比例 on, 「實證＋AI整理 30%」 under
  * the counts. With no cells: 「沒有涵蓋的需求」 and no bar. */
 export function CoveredBasisField({ basis }: { basis: CoveredBasis }) {
   const empty = basisTotal(basis.cells) === 0

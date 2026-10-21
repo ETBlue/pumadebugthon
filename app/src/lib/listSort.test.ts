@@ -49,7 +49,7 @@ describe('sortIssues', () => {
     expect(numbers(sortIssues(noAdded, 'added'))).toEqual([1, 2, 3, 4, 5, 6, 8, 9])
   })
 
-  it('依資料根據比例 gives #8, #2, #1, #9, then the issues with no cells', () => {
+  it('資料根據比例 gives #8, #2, #1, #9, then the issues with no cells', () => {
     const sorted = numbers(sortIssues(index.issues, 'evidence'))
     expect(sorted).toEqual([8, 2, 1, 9, 3, 4, 5, 6])
     expect(sorted).not.toEqual([...sorted].sort((a, b) => a - b))
@@ -93,7 +93,7 @@ describe('sortStakeholders', () => {
     expect(ids(sortStakeholders(noUpdated, 'updated', ctx))).toEqual(ids(listed).sort(compareIds))
   })
 
-  it('依資料根據比例 sorts by the share of its cells, ties in ID order', () => {
+  it('資料根據比例 sorts by the share of its cells, ties in ID order', () => {
     const sorted = sortStakeholders(listed, 'evidence', ctx)
     expect(ids(sorted)).not.toEqual(ids(listed).sort(compareIds))
     for (let i = 1; i < sorted.length; i++) {
@@ -105,7 +105,7 @@ describe('sortStakeholders', () => {
     }
   })
 
-  it('依解法涵蓋比例 sorts by covered of all needs, ties in ID order, no needs last', () => {
+  it('解法涵蓋比例 sorts by covered of all needs, ties in ID order, no needs last', () => {
     const sorted = sortStakeholders(listed, 'solutions', ctx)
     expect(ids(sorted)).not.toEqual(ids(listed).sort(compareIds))
     const share = (id: string) => {
@@ -155,7 +155,7 @@ describe('sortSolutions', () => {
     expect(keys(sortSolutions(items, 'updated', ctx)).slice(0, 6)).toEqual(['1-C', 'X-B', 'X-A', '8-B', '2-A', 'X-C'])
   })
 
-  it('依資料根據比例 sorts by the cells of the covered needs, ties in the fixed ID order', () => {
+  it('資料根據比例 sorts by the cells of the covered needs, ties in the fixed ID order', () => {
     const sorted = sortSolutions(allSolutions, 'evidence', ctx)
     expect(keys(sorted)).not.toEqual(keys(allSolutions))
     const share = (x: RecentSolution) => {

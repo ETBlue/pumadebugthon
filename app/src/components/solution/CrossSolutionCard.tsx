@@ -59,7 +59,7 @@ export function CrossIssueLinks({ solution }: { solution: CrossSolution }) {
 export function CrossSolutionCard({ solution: sol, detailed, children }: {
   solution: CrossSolution
   /** For #/solutions: spaceTypes for the links, the covered need count,
-   * the cells of the covered needs (with the percent while 依資料根據比例 is
+   * the cells of the covered needs (with the percent while 資料根據比例 is
    * on), and the issues of crossAlsoCovers. */
   detailed?: { spaceTypes: SpaceType[]; coveredNeeds: number | null; basis: CoveredBasis; alsoCovers: number[] }
   children?: ReactNode

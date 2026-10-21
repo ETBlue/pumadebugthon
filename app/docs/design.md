@@ -357,7 +357,7 @@ A space type filter sits above the issue list. *Replaced by the bar of 3.23 (dec
 - The bar is `aria-hidden`; the text carries the meaning, so color is never the only signal. The segments use the tag badge colors (`--tag-evidence`, `--tag-summary`, `--tag-simulated`; 待補 is `--muted-foreground`). They pass 3:1 on the page backgrounds in both themes (tested).
 - One explanation line, once on `#/issues` (not on each card) and on the 總覽 tab: 「這是分析內容的資料來源組成，不代表議題的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。」
 - An issue that is 製作中 shows no breakdown.
-- Issues are never sorted, ranked or filtered by these numbers. The list keeps issue number order. *Replaced on `#/issues` only by the reader-picked sort 依資料根據比例 (decision 81, 3.23.3). The default order is by date (decision 82). Everywhere else this rule holds.* ~~The home page does not show them.~~ Since Phase S the compact `IssueCard` shows them too, on the home page and the space page, without the totals and without the 實證 percent (decision 72). The explanation line is shown once per list.
+- Issues are never sorted, ranked or filtered by these numbers. The list keeps issue number order. *Replaced on `#/issues` only by the reader-picked sort 資料根據比例 (decision 81, 3.23.3). The default order is by date (decision 82). Everywhere else this rule holds.* ~~The home page does not show them.~~ Since Phase S the compact `IssueCard` shows them too, on the home page and the space page, without the totals and without the 實證 percent (decision 72). The explanation line is shown once per list.
 
 **`#/stakeholders`: 利害關係人列表.** *Replaced by section 3.20 in Phase S (decision 62), and again by section 3.23 in Phase L (decision 87): a list of `StakeholderCard`s with the sort and filter bar.* In Phase S the page was the side menu and a statistics block; Phase L removes both (decisions 87 and 88). The text below is the old design. The tree with detailed `StakeholderCard`s stays only in the 「利害關係人」 section of the issue's 總覽 tab.
 
@@ -801,7 +801,7 @@ The three list pages have the same frame, from top to bottom:
 | h1 | Kept, but visually hidden (`sr-only`), so screen readers still get the page heading (decision 79). The text stays: 「議題」, 「利害關係人」, 「解法」. The highlighted header link (3.7, `aria-current="page"`) is the visible title. The page `<title>` does not change (「議題 · 市政提案小幫手」). |
 | Search, sort and filter bar | Right under the header, as the first visible part of `<main>` (3.23.2, decision 80). It has the search box (3.23.13), the sort and the filters. |
 | Result line | Under the bar: what is shown, the filters that are on and 「清除篩選」 (3.23.6). |
-| Notes | The short notes the page needs, under the result line: the sort note when a share sort is on (3.23.3), and on `#/issues` the 資料根據 line of 3.9 (`t.basis.listNote`). |
+| Notes | The short notes the page needs, under the result line: the sort note when a share sort is on (3.23.3), and the 資料根據 line of 3.9 (`t.basis.listNote`). On `#/issues` the 資料根據 line is always shown. On `#/stakeholders` and `#/solutions` it is shown only with 資料根據比例, as part of the sort note (3.23.9). Each page names its own items in it (decision 100). |
 | Cards | One list of cards (`<ul>`), 1 column on a phone, 2 from `md`, 3 from `xl` (3.22). |
 
 The old intro lines (`issuesIntro`, `stakeholdersIntro`, `stakeholdersCountNote`, `solutionsIntro`) are removed. They described the old fixed orders, so they are wrong now. *(Proposal.)*
@@ -846,7 +846,7 @@ Every control is at least 24 × 24 px (WCAG 2.2 target size, as in Task S7).
 
 ETBlue's decision 1 (2026-10-22): count-based sorts are allowed as **option A**. That means:
 - The reader picks the sort. The default sort is by date.
-- The label only says what the data is, for example 「依資料根據比例（實證＋AI整理）」.
+- The label only says what the data is, for example 「資料根據比例」. The label is short, so it fits in the `<select>` on a 360 px phone. The note under the bar says what the share counts (decision 100).
 - A short note under the bar says the order is not about importance.
 - No scores, weights or formulas. The only number is the plain share (part ÷ total).
 
@@ -858,8 +858,8 @@ This is allowed **only** for these reader-picked sorts on these three list pages
 |---|---|---|---|---|---|
 | (none) or `updated` | 最近更新 | Yes (default) | Yes (default) | Yes (default) | Newest first |
 | `added` | 最近新增 | Yes | Yes | Yes | Newest first |
-| `evidence` | 依資料根據比例（實證＋AI整理） | Yes | Yes | Yes | Highest share first |
-| `solutions` | 依解法涵蓋比例 | No | Yes | No | Highest share first |
+| `evidence` | 資料根據比例 | Yes | Yes | Yes | Highest share first |
+| `solutions` | 解法涵蓋比例 | No | Yes | No | Highest share first |
 
 There is no 依編號 sort (Q24; ETBlue, 2026-10-22). The fixed ID order (below) is still used: it breaks the ties of the share sorts, it orders the items with no value, and it is the order where no sort applies (for example the tree view, 3.23.11). An old link with `sort=id` is handled like any unknown sort value: the param is dropped with `replace`, so the page shows 最近更新 (3.23.5).
 
@@ -876,15 +876,17 @@ The dates (3.23.8):
 | Sort | Same value | No value |
 |---|---|---|
 | 最近更新, 最近新增 | ID, highest first: the same rule as the home blocks (3.1), so the first 5 items are the same as on the home page. For solutions: the cross-issue solutions first, then the issue number, then the solution letter, as `recentSolutionItems`. | Last, in the fixed ID order. For example the 製作中 issues #3–#6 have no dates, so they are last, as #3, #4, #5, #6. |
-| 依資料根據比例, 依解法涵蓋比例 | The fixed ID order (below) | An item with 0 cells (or 0 needs) has no share. It is last, after the items with a share of 0, in the fixed ID order. A share of 0 is a real value (for example #9: 6 of 82 cells is not 0, but a stakeholder with only `[AI模擬]` cells has 0). |
+| 資料根據比例, 解法涵蓋比例 | The fixed ID order (below) | An item with 0 cells (or 0 needs) has no share. It is last, after the items with a share of 0, in the fixed ID order. A share of 0 is a real value (for example #9: 6 of 82 cells is not 0, but a stakeholder with only `[AI模擬]` cells has 0). |
 
 The fixed ID order: issues by number. Stakeholders by `compareIds` (O before I, then the number). Solutions: the cross-issue solutions first (X-A, X-B…), then by issue number, then by letter. This is the order of `#/solutions` today (decision 51). No sort option shows this order on its own (Q24).
 
 The shares are compared exactly (by cross-multiplying the counts), not by the rounded percent. So 1 of 3 and 33 of 100 are not a tie.
 
+The labels were 「依資料根據比例（實證＋AI整理）」 and 「依解法涵蓋比例」 before decision 100. At 360 px the long one was cut in the `<select>` (on `#/stakeholders` the select is about 130 px wide). The 「（實證＋AI整理）」 part is not lost: the note below names [實證] and [AI整理], and the cards show 「實證＋AI整理 30%」.
+
 **The note** under the bar, only while a share sort is on (decision 81):
-- 依資料根據比例: 「這個順序只表示分析內容的資料來源組成（標記 [實證] 或 [AI整理] 的格子比例），不代表重要性或好壞。」
-- 依解法涵蓋比例: 「這個順序只表示有多少需求已有解法涵蓋，不代表重要性或好壞，也不代表解法是否足夠。」
+- 資料根據比例: 「這個順序只表示分析內容的資料來源組成（標記 [實證] 或 [AI整理] 的格子比例），不代表重要性或好壞。」
+- 解法涵蓋比例: 「這個順序只表示有多少需求已有解法涵蓋，不代表重要性或好壞，也不代表解法是否足夠。」
 
 The `<select>` has `aria-describedby` pointing to the note when it is shown.
 
@@ -898,7 +900,7 @@ ETBlue's decision 2 (2026-10-22). Decision 83.
 
 | Item | The cells counted | Example |
 |---|---|---|
-| Issue | The cells of all its stories: `counts.cells` in `index.json`, the same numbers as its 資料根據 bar | #1: 12 + 29 of 136 = 30%. #2: 9 + 24 of 106 = 31%. #8: 5 + 39 of 92 = 48%. #9: 6 + 0 of 82 = 7%. So 依資料根據比例 gives #8, #2, #1, #9, then #3–#6 (製作中, no cells). |
+| Issue | The cells of all its stories: `counts.cells` in `index.json`, the same numbers as its 資料根據 bar | #1: 12 + 29 of 136 = 30%. #2: 9 + 24 of 106 = 31%. #8: 5 + 39 of 92 = 48%. #9: 6 + 0 of 82 = 7%. So 資料根據比例 gives #8, #2, #1, #9, then #3–#6 (製作中, no cells). |
 | Stakeholder | The cells of all its stories, in every analyzed issue | I06: 1 of 12 cells |
 | Solution (Q23 (a); ETBlue, 2026-10-22) | The cells of the stories of the needs it covers. A need is covered as in 3.12 and 3.18: in `needs.must` or `needs.shouldCould`, and for a cross-issue solution also through an X-N group in `needs.crossIssue` (decision 60). Each story is counted once, also when two covered needs share it. | — |
 
@@ -959,6 +961,7 @@ The exact UI: the 「議題」 popover button opens a `<fieldset>` with the lege
 - 「清除篩選」 removes every filter param of the page, and `q` too, and keeps `sort` and `view` (decision 97).
 - The card links do not carry the list params. The solution card link keeps `?evidence=1` as before, but these pages never set it.
 - Links to the list pages from other pages (the breadcrumbs, 「看全部議題的解法」 on the solution page) do not carry `?evidence=1`, because the list pages do not read it. The links are built with `listPath` and `HOME_ALL_PATHS` in `src/lib/listParams.ts` where they have params.
+- The old `evidence` param is dropped with `replace` on all three pages. On `#/stakeholders` the old `cross` and `special` are changed too (the table 「Old links」 below). The code is `legacyListRedirect(page, search)` in `src/lib/listParams.ts`, the same function for all three pages (decision 100).
 - The logic is pure functions in `src/lib/listParams.ts`: `listParamsOf(page, params, index)` → `{ sort, issues, crossChoice, spaces, who, specialOnly, view, q }` (cleaned), `listUrlSearch(page, state)` → the URL search string, and `clearListFilters(params)`. Tests first. (The URL function was called `listSearch` in the first draft. It is renamed, so the name does not mix with the text search of 3.23.13, which is in `src/lib/listSearch.ts`.)
 
 **Old links** (decision 91):
@@ -967,7 +970,8 @@ The exact UI: the 「議題」 popover button opens a `<fieldset>` with the lege
 |---|---|
 | `#/stakeholders?cross=1` (issue cards, Discord) | Redirect with `replace` to `?issue=X`, other params kept |
 | `#/stakeholders?special=<group>` (Phase S side bar) | Redirect with `replace` to `?specialonly=1`, other params kept |
-| `#/stakeholders?evidence=1` | The page has no data filter now. The param is dropped. |
+| `#/stakeholders?evidence=1` | The page has no data filter now. The param is dropped with `replace`, other params kept. |
+| `#/issues?evidence=1`, `#/solutions?evidence=1` | The same: the param is dropped with `replace`, other params kept (decision 100). Before, these pages did not use it but left it in the URL. |
 | `#/?cross=1` | `#/stakeholders?issue=X` in one step, with `replace` (3.1) |
 
 The 跨議題共用的利害關係人 link on the issue cards (3.9, decision 72) changes from `#/stakeholders?cross=1` to `#/stakeholders?issue=X`. The old link still works through the redirect.
@@ -1086,7 +1090,7 @@ The Pages workflow already checks out the full history (`fetch-depth: 0` in `.gi
 
 Decision 92. The cards keep the variants of 3.9. On these pages they also show the data that the sorts use, so the reader can see why the order is what it is.
 
-**`#/issues`: detailed `IssueCard`.** As in 3.9, plus 新增日期 (new `added`) next to 更新日期. With 依資料根據比例 on, the 資料根據 field adds 「實證＋AI整理 30%」 next to the counts. The 實證 percent stays as it is.
+**`#/issues`: detailed `IssueCard`.** As in 3.9, plus 新增日期 (new `added`) next to 更新日期. With 資料根據比例 on, the 資料根據 field adds 「實證＋AI整理 30%」 next to the counts. The 實證 percent stays as it is.
 
 **`#/stakeholders`: `StakeholderCard`.** A list of cards, not the tree (decision 87). The card uses the `detailed` box with a new prop `listFields` instead of `entries` (the story counts by priority stay only on the issue's 總覽 tab):
 
@@ -1095,16 +1099,18 @@ Decision 92. The cards keep the variants of 3.9. On these pages they also show t
 | Name (link to `#/stakeholders/I06`), ID, 特別關注 badges | As today |
 | 分類路徑 | The names, 「個人 › 用路人」 |
 | 出現的議題 | 「#1、#2、#8、#9」, each a link to the issue's 總覽 tab with `?focus=stakeholders` |
-| 資料根據（各議題合計） | `CellBasis compact`: 「實證 1・AI整理 0・AI模擬 11」 and the bar. With 依資料根據比例 on: 「實證＋AI整理 8%」 next to it. |
-| 解法涵蓋 | 「需求 5 個：有解法涵蓋 5 個」, or 「需求 5 個：有解法涵蓋 3 個、尚未涵蓋 2 個」. With 依解法涵蓋比例 on: 「（60%）」 at the end. |
+| 資料根據（各議題合計） | `CellBasis compact`: 「實證 1・AI整理 0・AI模擬 11」 and the bar. With 資料根據比例 on: 「實證＋AI整理 8%」 next to it. |
+| 解法涵蓋 | 「需求 5 個：有解法涵蓋 5 個」, or 「需求 5 個：有解法涵蓋 3 個、尚未涵蓋 2 個」. With 解法涵蓋比例 on: 「（60%）」 at the end. |
 | 新增日期, 更新日期 | 「2026-10-18」, 「2026-10-21」 |
 
-The 資料根據 explanation line of 3.9 is shown once under the bar, when 依資料根據比例 is on, as part of the sort note.
+The 資料根據 explanation line of 3.9 is shown once under the bar, when 資料根據比例 is on, as part of the sort note. It names the stakeholders, not the issues: 「「資料根據」是分析內容的資料來源組成，不代表利害關係人的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。」 (decision 100).
 
 **`#/solutions`: detailed `SolutionCard` and `CrossSolutionCard`.** One flat list (decision 89). There are no groups by issue now, because a sort by date or share mixes the issues. Each card shows:
 - the code and the name (「#2 A」, 「X-A」), the summary, 空間類型, 新增日期 and the new 更新日期, and 「涵蓋 9 個需求」 (decision 54)
 - the issue: 「議題：#2 找回消失的垃圾桶」 (a link). A cross-issue card shows the badge 「跨議題解法」 and 「議題：#1、#2、#8」 (the `parts`). When it also covers needs of other issues, it adds 「也涵蓋 #1 的需求」 (X-E).
-- 「涵蓋需求的資料根據」: `CellBasis compact` with the cells of 3.23.4. With 依資料根據比例 on, the percent next to it. A solution that covers no need shows 「沒有涵蓋的需求」 and no bar.
+- 「涵蓋需求的資料根據」: `CellBasis compact` with the cells of 3.23.4. With 資料根據比例 on, the percent next to it. A solution that covers no need shows 「沒有涵蓋的需求」 and no bar.
+
+As on `#/stakeholders`, the 資料根據 explanation line is shown once under the bar when 資料根據比例 is on, as part of the sort note. It names the solutions: 「…不代表解法的重要性或好壞。…」 (decision 100). On `#/issues`, the home page and the space page the line lists issues, so it keeps 「不代表議題的重要性或好壞」. The text is `t.basis.listNote(subject)`, with subject 議題, 利害關係人 or 解法.
 
 The 「跨議題解法」 heading and intro line of 3.18 are removed from this page. In the fixed ID order (used for ties and for items with no value, 3.23.3), the cross-issue solutions still come first.
 
@@ -1487,7 +1493,7 @@ Required by the hackathon rules:
 17. Every page has a watermark 「市政 debug 松參加者作品・展示用 MVP」: light, at an angle, repeated over the whole window, also when printing. It does not block clicks and is hidden from screen readers. Text under it still passes AA in both themes, so some text tokens became slightly darker (light) or lighter (dark) (3.10, 3.11). (ETBlue, 2026-10-18)
 18. Each solution has its own page, `#/issues/<n>/solutions/<code>`, because its content can be long. It shows the covered stories, W groups, stakeholders, conflicts, measures, the step 7 details and the 待補 items of the solution. Every mention of a solution links to it. A solution code is never reused in an issue, so the links keep working (3.12, 5.8). (ETBlue, `human-inputs.md`, 2026-10-18) The URL is now `#/solutions/<n>-<code>` (decision 56); the old URL redirects.
 19. A header link also looks active on the pages under its list page, for example 議題 on `#/issues/2/overview` and 利害關係人 on `#/stakeholders/I12`. One solution's page `#/issues/<n>/solutions/<code>` makes 解法 active, not 議題. `aria-current` is `page` on the list page and `true` on a page under it (3.7). (2026-10-19) The solution page is now under `#/solutions` (decision 56).
-20. 資料根據 shows each issue's story cells by tag: the 我想要… and the 以便… cell of every story, in the fixed order 實證, AI整理, AI模擬, 待補. It is on the issue card (`#/issues`) and the 總覽 tab, as text with counts, the 實證 percent next to the counts, and a small stacked bar. It replaces the old field that counted only the 我想要… cell. Issues are never sorted, ranked or filtered by it, and the home page does not show it. One explanation line says it is the make-up of the data sources, not the importance or quality of the issue, and that organization stories are `[AI模擬]` until a real interview, so it never reaches 100%. One percent is not shown alone: it looks like a score and can mislead. For example #8 has 39 `[AI整理]` cells that no person has checked yet, so a single number would hide what is behind it (3.9). (ETBlue, 2026-10-19) **Partly replaced by decision 72 (Phase S):** the compact `IssueCard` on the home page and the space page now shows 資料根據 too (counts and bar, no totals, no percent). **Partly replaced by decision 81 (Phase L):** on `#/issues` the reader can pick the sort 依資料根據比例.
+20. 資料根據 shows each issue's story cells by tag: the 我想要… and the 以便… cell of every story, in the fixed order 實證, AI整理, AI模擬, 待補. It is on the issue card (`#/issues`) and the 總覽 tab, as text with counts, the 實證 percent next to the counts, and a small stacked bar. It replaces the old field that counted only the 我想要… cell. Issues are never sorted, ranked or filtered by it, and the home page does not show it. One explanation line says it is the make-up of the data sources, not the importance or quality of the issue, and that organization stories are `[AI模擬]` until a real interview, so it never reaches 100%. One percent is not shown alone: it looks like a score and can mislead. For example #8 has 39 `[AI整理]` cells that no person has checked yet, so a single number would hide what is behind it (3.9). (ETBlue, 2026-10-19) **Partly replaced by decision 72 (Phase S):** the compact `IssueCard` on the home page and the space page now shows 資料根據 too (counts and bar, no totals, no percent). **Partly replaced by decision 81 (Phase L):** on `#/issues` the reader can pick the sort 資料根據比例.
 21. Every list of 議題 and 解法 uses a shared card: `IssueCard` or `SolutionCard`. Each card has two variants, `detailed` (the list pages `#/issues` and `#/solutions`) and `compact` (the home page, the space page, the stakeholder page and the opinion check). `SolutionSummary` is removed (3.9). (ETBlue, `human-inputs.md`, 2026-10-19)
 22. The header gets 需求 with a count, between 訴求 and 解法. A 需求 is the 以便… cell of one story: one per story, with no merging. It gets a list page `#/needs`, built like `#/wants`, with search and the 「只看有資料根據」 filter. On this page the filter looks at the 以便… cell only. 訴求 stays the opinion check pick list (3.7, 3.9). (ETBlue, `human-inputs.md`, 2026-10-19)
 23. `[AI整理]` is yellow, not blue, so the three tags follow the color spectrum: 實證 green, AI整理 yellow, AI模擬 orange. The shades are darker (light theme `#765900`) or lighter (dark theme `#d4a300`) than Solarized yellow `#b58900`, to pass AA on the page backgrounds, also under the watermark. This also keeps the tag apart from the blue links. (ETBlue, 2026-10-19)
@@ -1555,8 +1561,8 @@ Phase L (2026-10-22). From ETBlue's notes in `human-inputs.md` (commits ef77fec,
 
 79. The list pages `#/issues`, `#/stakeholders` and `#/solutions` show no visible page title. The highlighted header link is the visible title. The h1 stays in the page but is visually hidden (`sr-only`), so screen readers still get it. Under the header: the sort and filter bar, the result line, the notes, then one list of cards. The old intro lines are removed *(proposal)* (3.23.1). (ETBlue, `human-inputs.md` and decision 4, 2026-10-22)
 80. One bar component `ListBar` on the three list pages. From `md`: one row with the sort `<select>`, popover buttons for the multi-choice filters, the stakeholder picker and toggle buttons. Below `md`: the sort `<select>` and one 「篩選」 button that opens a bottom sheet (a dialog with a focus trap) with all filters. A change applies at once. No sideways scroll at 360 px (3.23.2). (Coordinator, 2026-10-22)
-81. Count-based sorts are allowed as option A: the reader picks them, the default stays by date, the label only describes the data (for example 「依資料根據比例（實證＋AI整理）」), and a short note under the bar says the order is not about importance. No scores, weights or formulas beyond the plain share. While such a sort is on, the cards show the percent next to its counts, never alone. This replaces the never-sort-by-count rules **only** for these reader-picked sorts on these three list pages: 3.9 (「Issues are never sorted, ranked or filtered by these numbers」, 「The list keeps issue number order」, the old `#/stakeholders` 「Order」 row, 「Never sorted by a count」 on `#/solutions`), the 「never sorted」 part of decision 20 for `#/issues`, and the last sentence of decision 72 for `#/issues`. Every other place keeps the old rule: the home blocks, the side menu, the tabs, the priority groups and counts (3.4), the solution page, the space page, the focus groups (decision 25) and the stakeholder tree on the issue's 總覽 tab (3.23.3). (ETBlue, decision 1, 2026-10-22)
-82. Sort options: 最近更新 (the default, no `sort` param), 最近新增 (`added`), 依資料根據比例 (`evidence`), and on `#/stakeholders` also 依解法涵蓋比例 (`solutions`). There is no 依編號 sort (Q24; ETBlue, 2026-10-22). The fixed ID order still breaks the share ties, orders the items with no value, and is used where a sort does not apply (for example the tree view). An old link with `sort=id` is handled like any unknown value: dropped with `replace`. Dates are newest first, shares highest first. Date ties: ID highest first, the same as the home blocks. Share ties: the fixed ID order. An item with no date, or with 0 cells or 0 needs, is last, in the fixed ID order. Shares are compared exactly, not by the rounded percent (3.23.3). (ETBlue, decisions 1 and 2, 2026-10-22; the details: coordinator)
+81. Count-based sorts are allowed as option A: the reader picks them, the default stays by date, the label only describes the data (for example 「資料根據比例」; it was 「依資料根據比例（實證＋AI整理）」 before decision 100), and a short note under the bar says the order is not about importance. No scores, weights or formulas beyond the plain share. While such a sort is on, the cards show the percent next to its counts, never alone. This replaces the never-sort-by-count rules **only** for these reader-picked sorts on these three list pages: 3.9 (「Issues are never sorted, ranked or filtered by these numbers」, 「The list keeps issue number order」, the old `#/stakeholders` 「Order」 row, 「Never sorted by a count」 on `#/solutions`), the 「never sorted」 part of decision 20 for `#/issues`, and the last sentence of decision 72 for `#/issues`. Every other place keeps the old rule: the home blocks, the side menu, the tabs, the priority groups and counts (3.4), the solution page, the space page, the focus groups (decision 25) and the stakeholder tree on the issue's 總覽 tab (3.23.3). (ETBlue, decision 1, 2026-10-22)
+82. Sort options: 最近更新 (the default, no `sort` param), 最近新增 (`added`), 資料根據比例 (`evidence`), and on `#/stakeholders` also 解法涵蓋比例 (`solutions`). The short labels are from decision 100. There is no 依編號 sort (Q24; ETBlue, 2026-10-22). The fixed ID order still breaks the share ties, orders the items with no value, and is used where a sort does not apply (for example the tree view). An old link with `sort=id` is handled like any unknown value: dropped with `replace`. Dates are newest first, shares highest first. Date ties: ID highest first, the same as the home blocks. Share ties: the fixed ID order. An item with no date, or with 0 cells or 0 needs, is last, in the fixed ID order. Shares are compared exactly, not by the rounded percent (3.23.3). (ETBlue, decisions 1 and 2, 2026-10-22; the details: coordinator)
 83. Evidence coverage (資料根據比例) is the share of story cells (我想要… and 以便…) tagged `[實證]` or `[AI整理]`, the same unit as the 資料根據 bar. Issue: all its story cells (`counts.cells`). Stakeholder: all its story cells, in every analyzed issue. Solution (Q23 (a)): the cells of the stories of the needs it covers (decision 60 for cross-issue solutions), each story once. A filter does not change the share *(proposal)* (3.23.4). (ETBlue, decision 2, 2026-10-22; Q23 (a), ETBlue, 2026-10-22)
 84. Solution coverage (解法涵蓋比例) of a stakeholder is the share of its needs (its need keys per issue, summed, as its 需求 tab label) that at least one issue solution or cross-issue solution covers. 這次不做 needs are in the total, as on the solution page (decision 50). A stakeholder with 0 needs has no share (3.23.4). (ETBlue, decision 2, 2026-10-22; Q23 (b), ETBlue, 2026-10-22)
 85. Filters: `#/issues` 空間類型 (`space`) and 利害關係人 (`who`); `#/stakeholders` 議題 (`issue`) and 只看特別關注族群 (`specialonly=1`); `#/solutions` 議題, 空間類型 and 利害關係人. The 議題 filter has one more choice 「跨議題」 (`issue=X`): on `#/stakeholders` the stakeholders in 2 or more issues (the old `cross=1`), on `#/solutions` the cross-issue solutions (ETBlue, 2026-10-22). Inside one filter: ANY of the picked values. Between filters: ALL. Every sort and filter is in the URL, with a new history entry per change (the search has its own rule, decision 97). The URL params are `sort`, `issue`, `space`, `who`, `specialonly`, `view` and `q` (decision 97). Unknown values are dropped with `replace`, also the old `sort=id` (decision 82). 「清除篩選」 keeps the sort and the view, and removes the search. The new param names do not reuse `stakeholder`, `evidence`, `cross`, `special`, `focus`, `pick` or `from`. This replaces 「The filters of `#/issues` and `#/solutions` do not change」 in 3.21 and the page-state filters of 3.9 (3.23.5). (ETBlue, `human-inputs.md`, 2026-10-22)
@@ -1577,6 +1583,7 @@ Phase L, search and breadcrumb (2026-10-22). From ETBlue's notes in `human-input
 97. The search is in the URL as `q=<text>` (trimmed, at most 100 characters; empty means no `q`). The URL is updated 300 ms after the last key press, or at once on Enter. The first update after the box gets focus adds a history entry; later updates until the box loses focus use `replace`, so one search is one step back. 「清除篩選」 removes `q` too, because the result line lists the search with the filters. The clear button 「清除搜尋」 in the box removes only `q` (3.23.13). (ETBlue, S5, 2026-10-22; the typing rule and 「清除篩選」: coordinator)
 98. The search box is the first control of the bar from `md` (16rem wide), and its own full-width row above the 「排序」 row on a phone. It is not in the phone 「篩選」 sheet and does not count in 「篩選（N）」. It is a `role="search"` landmark with a visible label 「搜尋」 (full label 「搜尋議題」, 「搜尋利害關係人」, 「搜尋解法」), placeholders 「輸入編號或標題」, 「輸入編號或名稱」, 「輸入代號或名稱」, and a clear button 「清除搜尋」. The result line (`role="status"`) names the search first (「篩選：搜尋「無菸」；…」) and gives the new count. The empty state is 「找不到符合「…」的議題。」 (or 利害關係人, 解法), with 「和目前篩選」 when filters are on too. The bar's name becomes 「搜尋、排序與篩選」. The strings are in a new block `listSearch` in `src/i18n/zh-TW.ts` (3.23.2, 3.23.6, 3.23.13). (Coordinator, 2026-10-22)
 99. The issue page `#/issues/<n>` has a breadcrumb above the h1 on every tab: 首頁 › 議題 › #8 無菸城市. 議題 links to `#/issues`. The last item has `aria-current="page"`. One rule for every breadcrumb: an item that names an issue, a stakeholder or a solution shows the ID and the name. An item with no name keeps its ID only. A story has no title, so the story item is 「#2 I06-US01」. A new shared component `Breadcrumb` (`src/components/Breadcrumb.tsx`, `<nav aria-label="頁面位置">` with an `<ol>`) replaces the markup that `Solution.tsx` and `StakeholderStory.tsx` write today. The issue page, the solution pages (首頁 › 解法 › #2 A 清潔箱佈建建議地圖, 首頁 › 解法 › X-A 同一段人行道的共同參與式選址), the story page and the stakeholder page (decision 94, 首頁 › 利害關係人 › I06 身心障礙者（視障、輪椅使用者）) use it. Long names wrap. A 360 px screen has no sideways scroll (3.2, 3.23.10). (ETBlue, `human-inputs.md` commit e879ba7, 2026-10-22; the ID plus the name: ETBlue, 2026-10-22; the other details: coordinator)
+100. Three small fixes after the L9 check. (1) The sort labels are short, so they fit in the `<select>` on a 360 px phone: 最近更新, 最近新增, 資料根據比例, 解法涵蓋比例 (before: 「依資料根據比例（實證＋AI整理）」 and 「依解法涵蓋比例」). The sort note still names [實證] and [AI整理], so no information is lost. (2) The 資料根據 line (`t.basis.listNote`) names the items of the page: 議題 on `#/issues`, the home page and the space page, 利害關係人 on `#/stakeholders`, 解法 on `#/solutions`. `#/solutions` now shows this line too, with 資料根據比例, as part of the sort note (as on `#/stakeholders`). (3) The old `?evidence=1` is dropped with `replace` on `#/issues` and `#/solutions` too, as on `#/stakeholders` (`legacyListRedirect`). This changes the labels of decisions 81 and 82, and 3.23.1, 3.23.3, 3.23.5 and 3.23.9. (ETBlue, 2026-10-22)
 
 ## 14. Open questions
 

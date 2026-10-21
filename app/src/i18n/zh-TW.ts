@@ -249,8 +249,12 @@ export const t = {
     evidencePercent: (p: number) => `實證 ${p}%`,
     /** Shown once on the overview tab. */
     note: '這是分析內容的資料來源組成，不代表議題的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。',
-    /** Shown once on the issue list page, not on each card. */
-    listNote: '「資料根據」是分析內容的資料來源組成，不代表議題的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。',
+    /** Shown once on a list page, not on each card. subject: what the list
+     * shows. The home page, the space page and #/issues list issues
+     * (議題); #/stakeholders and #/solutions name their own items
+     * (decision 100). */
+    listNote: (subject: '議題' | '利害關係人' | '解法') =>
+      `「資料根據」是分析內容的資料來源組成，不代表${subject}的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。`,
   },
   /** The 「只看有資料根據」 filter (design 3.5). It keeps [實證] and [AI整理]. */
   dataBasisFilter: {
@@ -610,12 +614,14 @@ export const t = {
    * the result line (ResultLine, design 3.23.6). */
   listBar: {
     sortLabel: '排序',
-    /** The sort options (design 3.23.3). */
+    /** The sort options (design 3.23.3). Short, so they fit in the
+     * <select> on a 360 px phone (decision 100). The sort note says what
+     * each share counts. */
     sorts: {
       updated: '最近更新',
       added: '最近新增',
-      evidence: '依資料根據比例（實證＋AI整理）',
-      solutions: '依解法涵蓋比例',
+      evidence: '資料根據比例',
+      solutions: '解法涵蓋比例',
     },
     /** The note under the bar while a share sort is on (design 3.23.3). */
     sortNotes: {
@@ -681,7 +687,7 @@ export const t = {
     noMatchFilters: '沒有符合目前篩選的議題。',
     /** The link that removes only the search (design 3.23.13). */
     clearSearch: '清除搜尋',
-    /** The share on a card while the 依資料根據比例 sort is on (design 3.23.9). */
+    /** The share on a card while the 資料根據比例 sort is on (design 3.23.9). */
     sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
   },
   /** One need (需求) in a list (NeedItem, design 3.2, 3.3). */
@@ -812,7 +818,7 @@ export const t = {
     alsoCovers: (numbers: number[]) => `也涵蓋 ${numbers.map((n) => `#${n}`).join('、')} 的需求`,
     basis: '涵蓋需求的資料根據',
     basisNone: '沒有涵蓋的需求',
-    /** Next to the counts while 依資料根據比例 is on. */
+    /** Next to the counts while 資料根據比例 is on. */
     sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
     added: '新增日期',
     updated: '更新日期',
@@ -842,14 +848,14 @@ export const t = {
     issueLink: (n: number) => `#${n}`,
     issueSeparator: '、',
     basis: '資料根據（各議題合計）',
-    /** Next to the counts while 依資料根據比例 is on. */
+    /** Next to the counts while 資料根據比例 is on. */
     evidencePercent: (p: number) => `實證＋AI整理 ${p}%`,
     coverage: '解法涵蓋',
     coverageValue: (total: number, covered: number) =>
       covered === total
         ? `需求 ${total} 個：有解法涵蓋 ${covered} 個`
         : `需求 ${total} 個：有解法涵蓋 ${covered} 個、尚未涵蓋 ${total - covered} 個`,
-    /** After the coverage while 依解法涵蓋比例 is on. */
+    /** After the coverage while 解法涵蓋比例 is on. */
     coveragePercent: (p: number) => `（${p}%）`,
     noNeeds: '沒有需求',
     added: '新增日期',

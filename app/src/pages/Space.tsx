@@ -74,7 +74,7 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
                 ))}
               </ul>
               {/* The 資料根據 explanation, once under the list (decision 72). */}
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote}</p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('議題')}</p>
             </>
           )}
         </section>

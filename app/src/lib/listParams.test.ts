@@ -134,11 +134,25 @@ describe('legacyListRedirect', () => {
     expect(legacyListRedirect('stakeholders', '?cross=0')).toBe('')
   })
 
-  it('gives null when there is nothing to change, or on the other pages', () => {
+  it('drops evidence on #/issues and #/solutions too, and keeps the other params', () => {
+    expect(legacyListRedirect('issues', '?evidence=1')).toBe('')
+    expect(legacyListRedirect('issues', '?sort=added&evidence=1&space=park')).toBe('?sort=added&space=park')
+    expect(legacyListRedirect('solutions', '?evidence=1')).toBe('')
+    expect(legacyListRedirect('solutions', '?issue=X&evidence=1')).toBe('?issue=X')
+  })
+
+  it('gives null when there is nothing to change', () => {
     expect(legacyListRedirect('stakeholders', '?issue=X')).toBeNull()
     expect(legacyListRedirect('stakeholders', '')).toBeNull()
+    expect(legacyListRedirect('issues', '?sort=added')).toBeNull()
+    expect(legacyListRedirect('issues', '')).toBeNull()
+    expect(legacyListRedirect('solutions', '?issue=2')).toBeNull()
+  })
+
+  it('changes cross and special only on #/stakeholders', () => {
     expect(legacyListRedirect('solutions', '?cross=1')).toBeNull()
-    expect(legacyListRedirect('issues', '?evidence=1')).toBeNull()
+    expect(legacyListRedirect('issues', `?special=${encodeURIComponent('高齡')}`)).toBeNull()
+    expect(legacyListRedirect('solutions', '?cross=1&evidence=1')).toBe('?cross=1')
   })
 })
 

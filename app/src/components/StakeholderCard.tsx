@@ -23,13 +23,13 @@ export interface StakeholderListFields {
   issues: number[]
   /** The cells of all its stories, in every analyzed issue (stakeholderCells). */
   cells: CellCounts
-  /** 「實證＋AI整理 8%」 next to the counts, only while 依資料根據比例 is on.
+  /** 「實證＋AI整理 8%」 next to the counts, only while 資料根據比例 is on.
    * null: not shown. */
   evidencePercent: number | null
   /** Its needs and the needs that a solution covers
    * (stakeholderSolutionCoverage). */
   needs: { covered: number; total: number }
-  /** 「（60%）」 after the coverage, only while 依解法涵蓋比例 is on. null: not
+  /** 「（60%）」 after the coverage, only while 解法涵蓋比例 is on. null: not
    * shown. */
   solutionsPercent: number | null
 }

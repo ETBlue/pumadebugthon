@@ -110,7 +110,7 @@ export default function Issues() {
           on, and the 資料根據 note, once on the page, not on each card. */}
       <div className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
         {evidenceSort && <p id={noteId}>{tb.sortNotes.evidence}</p>}
-        <p>{t.basis.listNote}</p>
+        <p>{t.basis.listNote('議題')}</p>
       </div>
       <div className="mt-4">
         {index.status !== 'ready' ? (

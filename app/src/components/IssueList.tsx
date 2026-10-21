@@ -6,7 +6,7 @@ import { IssueCard } from './IssueCard'
 /** The issue cards of #/issues (design 3.23.1 and 3.23.9). The page filters,
  * searches and sorts the list. This component only shows it, in the order
  * it gets. headingLevel is the level of each card title. showShare: true
- * while the 依資料根據比例 sort is on, so each card shows its share. */
+ * while the 資料根據比例 sort is on, so each card shows its share. */
 export function IssueList({ index, issues, headingLevel, showShare = false }: {
   index: IndexFile
   issues: IssueSummary[]

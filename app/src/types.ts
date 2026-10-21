@@ -69,6 +69,10 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
   spaces: string[]
   /** Date of the last git commit (YYYY-MM-DD), or null without git history. */
   updated: string | null
+  /** 新增日期 in issues.csv (YYYY-MM-DD): the day the issue's analysis was
+   * first committed (design 3.23.8). Optional until build_json.py writes it
+   * (Task L2). A missing or null date sorts last. */
+  added?: string | null
   counts: IssueCounts
   /** 特別關注 groups with no stakeholder in this issue, in the fixed order
    * (FOCUS_ORDER). Empty when every group is included. For the issue card.
@@ -81,6 +85,7 @@ export interface UnavailableIssueSummary extends IssueSummaryBase {
   available: false
   spaces: []
   updated: null
+  added?: null
   counts: null
   focusGaps: null
 }
@@ -103,6 +108,10 @@ export interface Stakeholder {
   /** 新增日期: the date the ID was added to stakeholders.csv (YYYY-MM-DD).
    * For the "recent" lists. Moved IDs keep their date. */
   added: string
+  /** 更新日期 from updated-dates.csv (YYYY-MM-DD): the last day its own
+   * content changed (design 3.23.8). Optional until build_json.py writes it
+   * (Task L2). A missing or null date sorts last. */
+  updated?: string | null
 }
 
 /** A row of analysis/data/space-types.csv. */
@@ -260,6 +269,9 @@ export interface Solution {
   spaces: string[]
   /** 新增日期: the date the solution was added to 6.1 (YYYY-MM-DD). */
   added: string
+  /** 更新日期 from updated-dates.csv (YYYY-MM-DD), design 3.23.8. Optional
+   * until build_json.py writes it (Task L2). */
+  updated?: string | null
   /** The stories whose need the solution covers in 6.2 (needs format), or
    * the stories of the 6.2 row (old format). */
   stories: string[]
@@ -483,6 +495,9 @@ export interface CrossSolution {
   spaces: string[]
   /** 新增日期 (YYYY-MM-DD). */
   added: string
+  /** 更新日期 from updated-dates.csv (YYYY-MM-DD), design 3.23.8. Optional
+   * until build_json.py writes it (Task L2). */
+  updated?: string | null
   summary: string
   needs: {
     must: CrossRef[]

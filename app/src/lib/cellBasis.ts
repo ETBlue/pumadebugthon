@@ -44,11 +44,17 @@ export function basisBar(cells: CellCounts): (BasisPart & { width: number })[] {
 export function evidencePercent(cells: CellCounts): number | null {
   const total = basisTotal(cells)
   if (total === 0) return null
-  const e = cells.evidence
-  // Integer math for round half up of 100 * e / total, so there is no float error.
-  const rounded = Math.floor((200 * e + total) / (2 * total))
-  if (e > 0 && rounded < 1) return 1
-  if (e < total && rounded > 99) return 99
+  return roundedPercent(cells.evidence, total)
+}
+
+/** part of total as a whole percent, with the rounding of evidencePercent:
+ * a half rounds up, at least 1 when part is not 0, at most 99 when part is
+ * not the whole. total must be more than 0. */
+export function roundedPercent(part: number, total: number): number {
+  // Integer math for round half up of 100 * part / total, so there is no float error.
+  const rounded = Math.floor((200 * part + total) / (2 * total))
+  if (part > 0 && rounded < 1) return 1
+  if (part < total && rounded > 99) return 99
   return rounded
 }
 

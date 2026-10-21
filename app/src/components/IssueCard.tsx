@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
 import { CellBasis } from './CellBasis'
 import { Field } from './Field'
+import { sharePercent, type Share } from '@/lib/coverage'
 import { focusGapsText } from '@/lib/focusGroups'
 import { isParticipantIssue, type Shared } from '@/lib/issues'
 import type { IssueSummary, SpaceType } from '@/types'
@@ -10,6 +11,7 @@ import { SpaceLinks } from './SpaceLinks'
 import { linkClass } from './styles'
 
 const tc = t.issueCard
+const ti = t.issuesPage
 
 /** The props of IssueCard. Each variant has its own props.
  * - detailed: the issue list (#/issues). shared is null when fewer than 2
@@ -17,7 +19,16 @@ const tc = t.issueCard
  * - compact: short lists, for example the home page and the space page.
  *   shared works as in detailed. */
 export type IssueCardProps =
-  | { variant: 'detailed'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null; headingLevel?: 2 | 3 }
+  | {
+      variant: 'detailed'
+      issue: IssueSummary
+      spaceTypes: SpaceType[]
+      shared: Shared | null
+      headingLevel?: 2 | 3
+      /** The 資料根據比例 share, shown as a percent next to the counts. Only
+       * while the 依資料根據比例 sort is on (design 3.23.3). */
+      share?: Share | null
+    }
   | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null }
 
 /** One issue in a list (design 3.9). Two variants:
@@ -100,12 +111,15 @@ export function IssueCard(props: IssueCardProps) {
         {sharedField}
         <Field label={t.basis.label}>
           <CellBasis cells={c.cells} stories={c.stories} />
+          {/* The share is shown next to the counts it comes from, never alone. */}
+          {props.share && <p className="mt-1 font-medium">{ti.sharePercent(sharePercent(props.share))}</p>}
         </Field>
         {gaps && (gaps.kind === 'all' ? (
           <Field label={tc.focusAll}>{tc.focusAllValue}</Field>
         ) : (
           <Field label={tc.focusGaps}>{tc.focusGapsValue(gaps.groups)}</Field>
         ))}
+        {issue.added && <Field label={tc.added}><time dateTime={issue.added}>{issue.added}</time></Field>}
         {updated}
         {spaces}
       </dl>

@@ -151,12 +151,6 @@ export const t = {
     issues: '出現的議題',
     issueLink: (n: number) => `#${n}`,
   },
-  /** The issue list with the space type filter (design 3.9). */
-  issueList: {
-    spaceFilter: '依空間類型篩選議題',
-    spaceFilterHint: '選了多個空間類型時，列出使用其中任一種的議題。',
-    noIssues: '沒有符合的議題。',
-  },
   issueCard: {
     numberTitle: (n: number, title: string) => `#${n} ${title}`,
     inProgress: '製作中',
@@ -173,6 +167,8 @@ export const t = {
     shared: '跨議題共用的利害關係人',
     sharedValue: (n: number, issues: number[]) =>
       issues.length > 0 ? `${n} 位，也出現在 ${issues.map((i) => `#${i}`).join('、')}` : `${n} 位`,
+    /** 新增日期 on the detailed card (design 3.23.9). */
+    added: '新增日期',
     updated: '更新日期',
     spaces: '空間類型',
     /** 特別關注族群 (design 3.9). Never a count like 「4／6」: it reads like a score. */
@@ -739,6 +735,20 @@ export const t = {
     noMatchFiltered: (q: string, noun: string) => `找不到符合「${q}」和目前篩選的${noun}。`,
     /** The name of the bar (<section aria-label>). */
     barLabel: '搜尋、排序與篩選',
+  },
+  /** #/issues with the search, sort and filter bar (design 3.23, Task L5). */
+  issuesPage: {
+    /** The filter labels in the bar and in the result line. */
+    spaceFilter: '空間類型',
+    whoFilter: '利害關係人',
+    /** The noun in the empty states with a search. */
+    noun: '議題',
+    /** The empty state with filters and no search (design 3.23.6). */
+    noMatchFilters: '沒有符合目前篩選的議題。',
+    /** The link that removes only the search (design 3.23.13). */
+    clearSearch: '清除搜尋',
+    /** The share on a card while the 依資料根據比例 sort is on (design 3.23.9). */
+    sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
   },
   /** One need (需求) in a list (NeedItem, design 3.2, 3.3). */
   need: {

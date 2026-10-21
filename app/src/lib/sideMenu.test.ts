@@ -11,6 +11,7 @@ import { needsTabView, solutionsTabView } from './issueTabs'
 import { dataBasedNeeds, needsOfStakeholder } from './needs'
 import { groupKeysAbove, SIDE_MENU_CONTEXTS, sideMenuCounts, sideMenuTree, type SideMenuGroup } from './sideMenu'
 import { stakeholderMenuIds, stakeholderSolutionsView } from './stakeholderPage'
+import { specialOptions, specialStakeholderIds } from './stakeholderFilter'
 import { storyCountsByStakeholder } from './stakeholders'
 import { stakeholderTabCounts } from './tabCounts'
 import { wantsTabView } from './wantsTab'
@@ -274,6 +275,37 @@ describe('sideMenuCounts', () => {
         }
       })
     }
+  })
+
+  // Decision 75: the same rule with the 特別關注 chips on, on every fixture.
+  describe('the count equals the list length with 特別關注 on (issue page)', () => {
+    for (const issue of issues) {
+      const ids = issue.stakeholders.map((x) => x.id)
+      const groups = specialOptions(index.stakeholders.filter((x) => ids.includes(x.id)))
+      for (const dataBased of [false, true]) {
+        it(`#${issue.number}, evidence ${dataBased ? 'on' : 'off'}, each group`, () => {
+          for (const group of groups) {
+            const special = specialStakeholderIds(ids, index.stakeholders, [group])
+            const wants = sideMenuCounts('issue-wants', [issue], ids, dataBased, special)
+            const needs = sideMenuCounts('issue-needs', [issue], ids, dataBased, special)
+            const solutions = sideMenuCounts('issue-solutions', [issue], ids, dataBased, special)
+            for (const id of ids) {
+              expect(wants.get(id), `${group} wants ${id}`).toBe(wantsTabView(issue, id, dataBased, special).wants.length)
+              expect(needs.get(id), `${group} needs ${id}`).toBe(needsTabView(issue, id, dataBased, special).shown)
+              expect(solutions.get(id), `${group} solutions ${id}`).toBe(solutionsTabView(issue, id, dataBased, special).length)
+            }
+          }
+        })
+      }
+    }
+
+    it('特別關注 changes some counts (so the test above checks something)', () => {
+      const ids = trashcans.stakeholders.map((x) => x.id)
+      const special = specialStakeholderIds(ids, index.stakeholders, ['外籍'])
+      const off = sideMenuCounts('issue-needs', [trashcans], ids, false)
+      const on = sideMenuCounts('issue-needs', [trashcans], ids, false, special)
+      expect(ids.some((id) => off.get(id) !== on.get(id))).toBe(true)
+    })
   })
 
   it('the data filter changes some counts (so the test above checks something)', () => {

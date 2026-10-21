@@ -289,10 +289,14 @@ export const t = {
     listLabel: '選一個和你的想法相近的訴求',
     /** The list is empty because of the stakeholder filter. */
     noWants: '這位利害關係人在這個議題沒有訴求。',
+    /** With a 特別關注 chip on (decision 75). */
+    noWantsFiltered: '沒有符合目前篩選的訴求。',
     conflictsHeading: '衝突',
     conflictsNone: '這個議題沒有列出衝突。',
     /** No conflict has a story of the picked stakeholder on a side. */
     conflictsNoneFiltered: '這位利害關係人沒有出現在衝突的任何一方。',
+    /** With a 特別關注 chip on (decision 75). */
+    conflictsNoneSpecial: '沒有符合目前篩選的衝突。',
   },
   /** The issue page's 解法 tab (design 3.2). */
   solutionsTab: {
@@ -307,9 +311,12 @@ export const t = {
     wayOut: '解開的衝突',
     /** With a stakeholder picked: a link to the solution's 需求 tab. */
     otherNeeds: (n: number) => `這個解法還涵蓋其他 ${n} 個需求`,
-    /** Only with no stakeholder picked (decision 74). */
-    dataEmpty: '這個解法涵蓋的需求，都沒有標記 [實證] 或 [AI整理]。',
     none: '這個議題沒有列出解法。',
+    /** With 只看有資料根據 on and no stakeholder or group picked: every
+     * solution is hidden (decision 77). */
+    noneData: '沒有解法涵蓋標記 [實證] 或 [AI整理] 的需求。',
+    /** With a 特別關注 chip on (decision 75). */
+    noneFiltered: '沒有符合目前篩選的解法。',
     noneForStakeholder: '沒有解法涵蓋這位利害關係人的需求。',
     /** With 只看有資料根據 on and a stakeholder picked (decision 74). */
     noneForStakeholderData: '沒有解法涵蓋這位利害關係人標記 [實證] 或 [AI整理] 的需求。',
@@ -321,6 +328,8 @@ export const t = {
     oldFormat: '本議題使用舊格式，沒有需求列表',
     none: '這個議題沒有列出需求。',
     noneForStakeholder: '這位利害關係人在本議題沒有需求。',
+    /** With a 特別關注 chip on (decision 75). */
+    noneFiltered: '沒有符合目前篩選的需求。',
     dataEmpty: '這裡沒有以便… 標記 [實證] 或 [AI整理] 的需求。',
   },
   opinion: {

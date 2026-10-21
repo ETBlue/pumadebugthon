@@ -18,7 +18,7 @@ import type { CoveredNeed } from '@/lib/solutionPage'
 import { cn } from '@/lib/utils'
 import { IssueFilterLayout } from './IssueFilterLayout'
 import type { IssueTabProps } from './types'
-import { useIssueStakeholder } from './useIssueStakeholder'
+import { useIssueSpecial, useIssueStakeholder } from './useIssueStakeholder'
 
 const ts = t.solutionsTab
 const tm = t.sideMenu
@@ -76,13 +76,18 @@ function NeedPart({ id, title, needs, issueNumber }: { id: string; title: string
 /** 解法 (design 3.2): each solution in letter order, with its summary, space
  * types, the needs it covers (the two parts of step 6.2) and 解開的衝突. With
  * a stakeholder picked in the menu, only the solutions with one
- * of its needs, and only its needs. With 只看有資料根據 and a stakeholder,
- * a solution with none of its needs left is not listed (decision 74). */
+ * of its needs, and only its needs. The 特別關注 chips work the same way
+ * (decision 75). With 只看有資料根據, a solution with none of its shown
+ * needs left is not listed (decisions 74 and 77). */
 export function SolutionsTab({ index, issue }: IssueTabProps) {
   const [dataBasedOnly] = useDataBasisFilter()
   const [params] = useSearchParams()
   const stakeholder = useIssueStakeholder(index, issue)
-  const view = useMemo(() => solutionsTabView(issue, stakeholder, dataBasedOnly), [issue, stakeholder, dataBasedOnly])
+  const special = useIssueSpecial(index, issue)
+  const view = useMemo(
+    () => solutionsTabView(issue, stakeholder, dataBasedOnly, special),
+    [issue, stakeholder, dataBasedOnly, special],
+  )
   const n = issue.number
 
   if (issue.solutions.length === 0) return <p>{ts.none}</p>
@@ -96,7 +101,13 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
     >
       <CrossIssueBox issueNumber={n} />
       {view.length === 0 && (
-        <p className="text-muted-foreground">{dataBasedOnly ? ts.noneForStakeholderData : ts.noneForStakeholder}</p>
+        <p className="text-muted-foreground">
+          {special !== null
+            ? ts.noneFiltered
+            : stakeholder !== null
+              ? (dataBasedOnly ? ts.noneForStakeholderData : ts.noneForStakeholder)
+              : ts.noneData}
+        </p>
       )}
       <ul className="space-y-6">
         {view.map((item) => {
@@ -118,7 +129,6 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
 
                 <h4 id={`${key}-needs`} className="mt-4 font-medium">{ts.needs}</h4>
                 {sol.needs === null && <p className="mt-1 text-sm text-muted-foreground">{ts.needsNone}</p>}
-                {item.emptyByData && <p className="mt-1 text-sm text-muted-foreground">{ts.dataEmpty}</p>}
                 {/* The solution title is part of the name of these two parts. */}
                 <SectionLabelScope id={key}>
                   <NeedPart id={`${key}-must`} title={ts.must} needs={item.must} issueNumber={n} />

@@ -3,11 +3,13 @@ import { useSearchParams } from 'react-router'
 import { FilterStatus } from '@/components/FilterStatus'
 import { StakeholderMenu, StakeholderMenuLayout } from '@/components/StakeholderMenu'
 import { sideMenuCounts, type SideMenuContext } from '@/lib/sideMenu'
-import { sideBarFiltersOf } from '@/lib/stakeholderFilter'
+import { issueSpecialOptions, menuIdsFor, sideBarFiltersOf } from '@/lib/stakeholderFilter'
 import { findStakeholder } from '@/lib/stakeholders'
 import type { IndexFile, IssueFile } from '@/types'
+import { useIssueSpecial } from './useIssueStakeholder'
 
-/** A tab of the issue page with the side menu in filter mode (design 3.21):
+/** A tab of the issue page with the side menu in filter mode (design 3.21,
+ * decision 75: the 特別關注 chips limit the menu and filter the content):
  * the menu first (left column from lg, a Collapsible above the content
  * below lg), then the tab content with the filter status line at the top.
  * current is the result of stakeholderFilterOf (useIssueStakeholder), never
@@ -24,10 +26,23 @@ export function IssueFilterLayout({ index, issue, current, context, shown, child
 }) {
   const [params] = useSearchParams()
   const filters = sideBarFiltersOf(params, 'issue')
-  const ids = useMemo(() => issue.stakeholders.map((s) => s.id), [issue])
+  const allIds = useMemo(() => issue.stakeholders.map((s) => s.id), [issue])
+  // 特別關注 limits which stakeholders the menu lists, and it filters the
+  // tab content and the counts (decision 75). The picked stakeholder always
+  // stays in the menu.
+  const ids = useMemo(
+    () => menuIdsFor(allIds, index.stakeholders, filters, current),
+    // filters is a new object on each render; special is the real input.
+    [allIds, index.stakeholders, filters.special.join(','), current],
+  )
+  const menuFilters = useMemo(
+    () => ({ showCrossIssue: false, specialOptions: issueSpecialOptions(allIds, index.stakeholders) }),
+    [allIds, index.stakeholders],
+  )
+  const special = useIssueSpecial(index, issue)
   const counts = useMemo(
-    () => sideMenuCounts(context, [issue], ids, filters.dataBasedOnly),
-    [context, issue, ids, filters.dataBasedOnly],
+    () => sideMenuCounts(context, [issue], ids, filters.dataBasedOnly, special),
+    [context, issue, ids, filters.dataBasedOnly, special],
   )
   return (
     <StakeholderMenuLayout
@@ -39,6 +54,7 @@ export function IssueFilterLayout({ index, issue, current, context, shown, child
           pathLabels={index.pathLabels}
           context={context}
           counts={counts}
+          filters={menuFilters}
           current={current}
         />
       }

@@ -8,7 +8,7 @@ import { ConflictsTab } from './ConflictsTab'
 import { IssueFilterLayout } from './IssueFilterLayout'
 import { OpinionTab } from './OpinionTab'
 import type { IssueTabProps } from './types'
-import { useIssueStakeholder } from './useIssueStakeholder'
+import { useIssueSpecial, useIssueStakeholder } from './useIssueStakeholder'
 
 const tw = t.wantsTab
 
@@ -18,7 +18,8 @@ const tw = t.wantsTab
  * top to bottom the content is: the filter status line, 「訴求與意見健檢」
  * (the opinion check with the wants as its pick list), then 「衝突」. With
  * ?stakeholder=<id>, only the wants and the conflicts with a story of that
- * stakeholder show. */
+ * stakeholder show. ?special= (the 特別關注 chips) works the same way with
+ * the stakeholders of the picked groups (decision 75). */
 export function WantsTab(props: IssueTabProps) {
   const { index, issue } = props
   const [params] = useSearchParams()
@@ -26,7 +27,8 @@ export function WantsTab(props: IssueTabProps) {
   // issue turns the filter off), never the raw ?stakeholder= value.
   const stakeholder = useIssueStakeholder(index, issue)
   const dataBasedOnly = isDataBasisFilterOn(params)
-  const view = useMemo(() => wantsTabView(issue, stakeholder, dataBasedOnly), [issue, stakeholder, dataBasedOnly])
+  const special = useIssueSpecial(index, issue)
+  const view = useMemo(() => wantsTabView(issue, stakeholder, dataBasedOnly, special), [issue, stakeholder, dataBasedOnly, special])
 
   return (
     <IssueFilterLayout
@@ -41,7 +43,7 @@ export function WantsTab(props: IssueTabProps) {
         <section aria-labelledby="wants-check-heading" className="space-y-4">
           <h3 id="wants-check-heading" className="text-lg font-semibold">{tw.checkHeading}</h3>
           <p className={`leading-relaxed ${proseClass}`}>{tw.intro}</p>
-          <OpinionTab {...props} wants={view.wants} filtered={stakeholder !== null} />
+          <OpinionTab {...props} wants={view.wants} filtered={stakeholder !== null} specialOn={special !== null} />
         </section>
 
         <section
@@ -56,6 +58,7 @@ export function WantsTab(props: IssueTabProps) {
             issue={issue}
             stakeholders={index.stakeholders}
             filtered={stakeholder !== null}
+            specialOn={special !== null}
             dataBasedOnly={dataBasedOnly}
           />
         </section>

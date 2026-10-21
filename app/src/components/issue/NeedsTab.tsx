@@ -7,18 +7,20 @@ import { needsTabView } from '@/lib/issueTabs'
 import { priorityLabel } from '@/lib/priority'
 import { IssueFilterLayout } from './IssueFilterLayout'
 import type { IssueTabProps } from './types'
-import { useIssueStakeholder } from './useIssueStakeholder'
+import { useIssueSpecial, useIssueStakeholder } from './useIssueStakeholder'
 
 const tn = t.needsTab
 const tm = t.sideMenu
 
 /** 需求 (design 3.2): the needs of the issue, grouped by priority in the
  * fixed order 必須有, 應該有, 可以有, 這次不做. Inside a group, the order of
- * step 5.2. The stakeholder menu filters the needs. */
+ * step 5.2. The stakeholder menu and the 特別關注 chips (decision 75)
+ * filter the needs. */
 export function NeedsTab({ index, issue }: IssueTabProps) {
   const [dataBasedOnly] = useDataBasisFilter()
   const stakeholder = useIssueStakeholder(index, issue)
-  const view = useMemo(() => needsTabView(issue, stakeholder, dataBasedOnly), [issue, stakeholder, dataBasedOnly])
+  const special = useIssueSpecial(index, issue)
+  const view = useMemo(() => needsTabView(issue, stakeholder, dataBasedOnly, special), [issue, stakeholder, dataBasedOnly, special])
 
   if (view.oldFormat) return <p>{tn.oldFormat}</p>
   return (
@@ -32,7 +34,7 @@ export function NeedsTab({ index, issue }: IssueTabProps) {
       <p className={`mb-6 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{tn.intro}</p>
       {view.shown === 0 && (
         <p className="text-muted-foreground">
-          {dataBasedOnly ? tn.dataEmpty : stakeholder !== null ? tn.noneForStakeholder : tn.none}
+          {special !== null ? tn.noneFiltered : dataBasedOnly ? tn.dataEmpty : stakeholder !== null ? tn.noneForStakeholder : tn.none}
         </p>
       )}
       <div className="space-y-8">

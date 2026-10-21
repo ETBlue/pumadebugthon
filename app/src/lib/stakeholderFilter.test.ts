@@ -7,10 +7,13 @@ import { compareIds } from './ids'
 import { stakeholderMenuIds } from './stakeholderPage'
 import {
   clearFiltersSearch, CROSS_PARAM, filterStatusParts, keptSearch, menuGroups, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
-  sideMenuLinkSearch, specialOptions, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch,
+  allStakeholdersTarget, issueSpecialOptions, specialStakeholderIds, sideMenuLinkSearch, specialOptions, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch,
   withCrossIssueFilter, withSpecialFilter, withStakeholderFilter, type SideBarFilters,
 } from './stakeholderFilter'
 import { FOCUS_ORDER } from './issues'
+import treesJson from '@/test/fixtures/issues/1-trees.json'
+import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 
 const index = indexJson as IndexFile
 const trashcans = trashcansJson as IssueFile
@@ -158,10 +161,12 @@ describe('sideBarFiltersOf', () => {
     expect(of(search).special).toEqual(['高齡', '外籍', '經濟弱勢'])
   })
 
-  it('on the issue page, cross and special are not side bar filters', () => {
+  it('on the issue page, special is a side bar filter but cross is not (decision 75)', () => {
     expect(of(`evidence=1&cross=1&special=${enc('高齡')}`, 'issue')).toEqual({
-      dataBasedOnly: true, crossIssueOnly: false, special: [],
+      dataBasedOnly: true, crossIssueOnly: false, special: ['高齡'],
     })
+    const search = ['經濟弱勢', 'nope', '高齡'].map((v) => `special=${enc(v)}`).join('&')
+    expect(of(search, 'issue').special).toEqual(['高齡', '經濟弱勢'])
   })
 })
 
@@ -310,5 +315,67 @@ describe('specialOptions', () => {
       { ...base, id: 'I91', focus: ['高齡'], movedTo: 'I90' },
     ]
     expect(specialOptions(ss)).toEqual(['外籍'])
+  })
+})
+
+describe('issueSpecialOptions', () => {
+  const idsOf = (issue: IssueFile) => issue.stakeholders.map((s) => s.id)
+  const options = (issue: IssueFile) => issueSpecialOptions(idsOf(issue), index.stakeholders)
+
+  it('lists only the groups that a stakeholder of the issue has, in FOCUS_ORDER', () => {
+    expect(options(treesJson as IssueFile)).toEqual(['高齡', '身心障礙', '兒童與照顧者', '經濟弱勢'])
+    expect(options(trashcans)).toEqual(['高齡', '身心障礙', '兒童與照顧者', '外籍', '經濟弱勢'])
+    expect(options(smokefreeJson as IssueFile)).toEqual([...FOCUS_ORDER])
+    expect(options(policyJson as IssueFile)).toEqual([...FOCUS_ORDER])
+  })
+
+  it('is empty when no stakeholder of the issue has a group, and ignores unknown IDs', () => {
+    expect(issueSpecialOptions([], index.stakeholders)).toEqual([])
+    expect(issueSpecialOptions(['I99'], index.stakeholders)).toEqual([])
+  })
+})
+
+describe('menuIdsFor on the issue page (decision 75)', () => {
+  const filters = (special: string[]): SideBarFilters => ({ dataBasedOnly: false, crossIssueOnly: false, special })
+
+  it('特別關注 limits the menu to the stakeholders of the issue with a picked group', () => {
+    expect(menuIdsFor(issueIds, index.stakeholders, filters(['外籍']), null)).toEqual(['I03', 'I04'])
+    expect(menuIdsFor(issueIds, index.stakeholders, filters(['高齡', '身心障礙']), null)).toEqual(['I05', 'I06', 'I11'])
+  })
+
+  it('keeps the picked stakeholder (?stakeholder=) in the menu', () => {
+    expect(menuIdsFor(issueIds, index.stakeholders, filters(['外籍']), 'O08')).toEqual(['O08', 'I03', 'I04'].sort(compareIds))
+  })
+})
+
+describe('allStakeholdersTarget', () => {
+  const target = (search: string) => allStakeholdersTarget(new URLSearchParams(search))
+
+  it('goes to #/stakeholders and keeps evidence, cross and every special value', () => {
+    expect(target('')).toEqual({ pathname: '/stakeholders', search: '' })
+    expect(target(`evidence=1&cross=1&special=${enc('高齡')}&special=${enc('外籍')}`)).toEqual({
+      pathname: '/stakeholders',
+      search: `?evidence=1&cross=1&special=${enc('高齡')}&special=${enc('外籍')}`,
+    })
+  })
+
+  it('drops stakeholder, pick, focus and any other value', () => {
+    expect(target('stakeholder=I06&pick=W08&focus=C6&from=O02&evidence=1')).toEqual({ pathname: '/stakeholders', search: '?evidence=1' })
+  })
+})
+
+describe('specialStakeholderIds', () => {
+  it('is null when no group is picked (the filter is off)', () => {
+    expect(specialStakeholderIds(issueIds, index.stakeholders, [])).toBeNull()
+  })
+
+  it('gives the stakeholders of the issue with one of the picked groups', () => {
+    expect([...specialStakeholderIds(issueIds, index.stakeholders, ['外籍'])!].sort(compareIds)).toEqual(['I03', 'I04'])
+    expect([...specialStakeholderIds(issueIds, index.stakeholders, ['高齡', '身心障礙'])!].sort(compareIds)).toEqual(['I05', 'I06', 'I11'])
+  })
+
+  it('is an empty set when no stakeholder of the issue has the group', () => {
+    const trees = (treesJson as IssueFile).stakeholders.map((x) => x.id)
+    expect(specialStakeholderIds(trees, index.stakeholders, ['外籍'])!.size).toBe(0)
   })
 })

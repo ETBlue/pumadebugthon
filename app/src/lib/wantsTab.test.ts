@@ -4,7 +4,7 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { IssueFile } from '@/types'
 import { dataBasedPickList } from './dataBasis'
-import { issueWants } from './wantList'
+import { conflictsForStakeholder, issueWants } from './wantList'
 import { pickSearch, wantsTabView } from './wantsTab'
 
 const trees = treesJson as IssueFile
@@ -87,5 +87,45 @@ describe('pickSearch', () => {
 
   it('has only pick when nothing else is kept', () => {
     expect(pickSearch(new URLSearchParams('focus=W08'), 'W08')).toBe('?pick=W08')
+  })
+})
+
+// Decision 75: the 特別關注 chips filter the tab content too.
+describe('wantsTabView with 特別關注 (special)', () => {
+  const special = new Set(['I03', 'I04']) // 外籍 in #2
+  const has = (ids: string[]) => ids.some((id) => special.has(id))
+
+  it('shows only the wants with a story of a stakeholder in the groups', () => {
+    const view = wantsTabView(trashcans, null, false, special)
+    const want = issueWants(trashcans).filter((w) => has(w.stakeholders))
+    expect(view.wants.length).toBeGreaterThan(0)
+    expect(view.wants.length).toBeLessThan(39)
+    expect(keys(view.wants)).toEqual(keys(want))
+  })
+
+  it('shows only the conflicts with a story of such a stakeholder on either side', () => {
+    const view = wantsTabView(trashcans, null, false, special)
+    const want = new Set([...special].flatMap((id) => conflictsForStakeholder(trashcans, id).map((c) => c.id)))
+    expect(conflictIds(view)).toEqual(trashcans.conflicts.map((c) => c.id).filter((id) => want.has(id)))
+    const shown = new Set(conflictIds(view))
+    for (const w of view.wants) for (const c of w.conflicts) expect(shown.has(c.id)).toBe(true)
+  })
+
+  it('works with the data filter and with a picked stakeholder on top', () => {
+    const dataKeys = keys(wantsTabView(trashcans, null, true).wants)
+    const data = wantsTabView(trashcans, null, true, special)
+    expect(keys(data.wants)).toEqual(keys(wantsTabView(trashcans, null, false, special).wants).filter((k) => dataKeys.includes(k)))
+    const both = wantsTabView(trashcans, 'I04', false, special)
+    expect(keys(both.wants)).toEqual(keys(wantsTabView(trashcans, 'I04', false).wants))
+    // I06 is not 外籍: only its wants that also have a story of I03 or I04.
+    const i06 = wantsTabView(trashcans, 'I06', false, special)
+    expect(keys(i06.wants)).toEqual(keys(wantsTabView(trashcans, 'I06', false).wants.filter((w) => has(w.stakeholders))))
+  })
+
+  it('null is no filter, an empty set shows nothing', () => {
+    expect(wantsTabView(trashcans, null, false, null)).toEqual(wantsTabView(trashcans, null, false))
+    const none = wantsTabView(trashcans, null, false, new Set())
+    expect(none.wants).toEqual([])
+    expect(none.conflicts).toEqual([])
   })
 })

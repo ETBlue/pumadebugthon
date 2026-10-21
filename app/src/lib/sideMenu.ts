@@ -97,7 +97,13 @@ export type SideMenuContext = (typeof SIDE_MENU_CONTEXTS)[number]
 
 /** The count of one stakeholder in one issue. It uses the same functions as
  * the tab views, so the count and the list cannot differ. */
-function countIn(context: SideMenuContext, issue: IssueFile, id: string, dataBased: boolean): number {
+function countIn(
+  context: SideMenuContext,
+  issue: IssueFile,
+  id: string,
+  dataBased: boolean,
+  special: ReadonlySet<string> | null,
+): number {
   switch (context) {
     case 'stakeholders':
     case 'stakeholder-overview': {
@@ -116,11 +122,11 @@ function countIn(context: SideMenuContext, issue: IssueFile, id: string, dataBas
     case 'stakeholder-solutions':
       return stakeholderSolutionsView(issue, id, dataBased).solutions.length
     case 'issue-wants':
-      return wantsTabView(issue, id, dataBased).wants.length
+      return wantsTabView(issue, id, dataBased, special).wants.length
     case 'issue-needs':
-      return needsTabView(issue, id, dataBased).shown
+      return needsTabView(issue, id, dataBased, special).shown
     case 'issue-solutions':
-      return solutionsTabView(issue, id, dataBased).length
+      return solutionsTabView(issue, id, dataBased, special).length
   }
 }
 
@@ -129,14 +135,18 @@ function countIn(context: SideMenuContext, issue: IssueFile, id: string, dataBas
  * 只看有資料根據 filter. The counts are summed over issues. On the issue page
  * ('issue-…') pass only that issue. On the stakeholders page and the
  * stakeholder page pass every analyzed issue. The map has one entry per ID,
- * in the order of ids (0 for an ID with nothing to show). */
+ * in the order of ids (0 for an ID with nothing to show). special: the
+ * 特別關注 filter of the issue page's tab content (decision 75,
+ * specialStakeholderIds), or null. The stakeholder page contexts ignore it,
+ * because there 特別關注 only changes the menu. */
 export function sideMenuCounts(
   context: SideMenuContext,
   issues: IssueFile[],
   ids: string[],
   dataBased: boolean,
+  special: ReadonlySet<string> | null = null,
 ): Map<string, number> {
   const out = new Map<string, number>()
-  for (const id of ids) out.set(id, issues.reduce((sum, issue) => sum + countIn(context, issue, id, dataBased), 0))
+  for (const id of ids) out.set(id, issues.reduce((sum, issue) => sum + countIn(context, issue, id, dataBased, special), 0))
   return out
 }

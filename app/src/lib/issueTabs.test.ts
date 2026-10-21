@@ -1,11 +1,16 @@
 import { describe, expect, it } from 'vitest'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import treesJson from '@/test/fixtures/issues/1-trees.json'
+import discoveryJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IssueFile } from '@/types'
 import { needsTabView, solutionsTabView } from './issueTabs'
+import { dataBasedNeeds, issueNeeds } from './needs'
+import { solutionNeedCoverage } from './solutionPage'
 
 const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
+const allIssues = [treesJson as IssueFile, trashcans, smokefree, discoveryJson as IssueFile]
 
 const needIds = (list: { need: { id: string } }[]) => list.map((x) => x.need.id)
 
@@ -98,7 +103,6 @@ describe('solutionsTabView', () => {
     expect(needIds(a.must)).toEqual(['N01', 'N04', 'N05', 'N07', 'O04-US02', 'O12-US01'])
     expect(needIds(a.shouldCould)).toEqual(['N02', 'O04-US04', 'I01-US09'])
     expect(a.otherNeeds).toBe(0)
-    expect(a.emptyByData).toBe(false)
   })
 
   it('lists the conflicts that the solution solves, in file order', () => {
@@ -127,15 +131,15 @@ describe('solutionsTabView', () => {
     ])
   })
 
-  it('with the data filter, keeps only the needs with data, and marks a solution left empty', () => {
+  it('with the data filter, keeps only the needs with data', () => {
     const view = solutionsTabView(trashcans, null, true)
     const a = view[0]
     expect(needIds(a.must)).toEqual(['N01', 'N04'])
     expect(needIds(a.shouldCould)).toEqual(['I01-US09'])
     const c = view[2]
     expect(needIds(c.must)).toEqual(['N01'])
-    // The filter does not hide a solution, and the other-needs count stays the
-    // count of the stakeholder filter only.
+    // In #2 every solution keeps a need with data, and the other-needs count
+    // stays the count of the stakeholder filter only.
     expect(view.map((s) => s.solution.id)).toEqual(['A', 'B', 'C', 'D', 'E'])
     expect(a.otherNeeds).toBe(0)
   })
@@ -154,15 +158,74 @@ describe('solutionsTabView', () => {
     expect(view.length).toBeGreaterThan(0)
     for (const item of view) {
       expect(item.must.length + item.shouldCould.length, item.solution.id).toBeGreaterThan(0)
-      expect(item.emptyByData).toBe(false)
     }
   })
 
-  it('without a stakeholder, the data filter still hides no solution', () => {
-    for (const issue of [trashcans, smokefree]) {
-      expect(solutionsTabView(issue, null, true).map((s) => s.solution.id)).toEqual(
-        solutionsTabView(issue, null, false).map((s) => s.solution.id),
-      )
+  // Option B (decision 77): with no stakeholder picked, the data filter hides
+  // a solution when it hides every need the solution covers.
+  it('without a stakeholder, the data filter hides a solution whose needs are all hidden', () => {
+    for (const issue of allIssues) {
+      const want = [...issue.solutions]
+        .filter((sol) => {
+          const covered = solutionNeedCoverage(issue, sol).covered
+          return covered.length === 0 || dataBasedNeeds(covered).length > 0
+        })
+        .map((sol) => sol.id)
+        .sort()
+      expect(solutionsTabView(issue, null, true).map((s) => s.solution.id), `#${issue.number}`).toEqual(want)
     }
+  })
+
+  it('the data filter hides at least one solution in the fixtures (so the test above checks something)', () => {
+    const hidden = allIssues.some((issue) => solutionsTabView(issue, null, true).length < solutionsTabView(issue, null, false).length)
+    expect(hidden).toBe(true)
+  })
+})
+
+// Decision 75: the 特別關注 chips filter the 需求 and 解法 tabs too.
+describe('the 需求 and 解法 tabs with 特別關注 (special)', () => {
+  const special = new Set(['I05', 'I06', 'I11']) // 高齡 and 身心障礙 in #2
+  const has = (ids: string[]) => ids.some((id) => special.has(id))
+
+  it('需求: shows only the needs with a story of a stakeholder in the groups', () => {
+    const view = needsTabView(trashcans, null, false, special)
+    const want = issueNeeds(trashcans).filter((n) => has(n.stakeholders)).map((n) => n.need.id)
+    expect(view.shown).toBe(want.length)
+    expect(view.shown).toBeGreaterThan(0)
+    expect(view.shown).toBeLessThan(21)
+    expect(view.groups.flatMap((g) => needIds(g.items)).sort()).toEqual([...want].sort())
+  })
+
+  it('需求: works with the data filter and with a picked stakeholder on top', () => {
+    const data = needsTabView(trashcans, null, true, special)
+    expect(data.shown).toBe(dataBasedNeeds(issueNeeds(trashcans).filter((n) => has(n.stakeholders))).length)
+    expect(needsTabView(trashcans, 'I06', false, special).shown).toBe(needsTabView(trashcans, 'I06', false).shown)
+  })
+
+  it('解法: shows only the solutions that cover such a need, with only those needs', () => {
+    const view = solutionsTabView(trashcans, null, false, special)
+    const want = [...trashcans.solutions]
+      .filter((sol) => solutionNeedCoverage(trashcans, sol).covered.some((n) => has(n.stakeholders)))
+      .map((sol) => sol.id)
+      .sort()
+    expect(view.map((s) => s.solution.id)).toEqual(want)
+    for (const item of view) {
+      const shown = [...item.must, ...item.shouldCould]
+      expect(shown.length).toBeGreaterThan(0)
+      for (const n of shown) expect(has(n.stakeholders)).toBe(true)
+      expect(item.otherNeeds).toBe(solutionNeedCoverage(trashcans, item.solution).covered.length - shown.length)
+    }
+  })
+
+  it('解法: with the data filter, a solution whose matching needs are all hidden is left out', () => {
+    for (const item of solutionsTabView(trashcans, null, true, special)) {
+      expect(item.must.length + item.shouldCould.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('an empty set shows nothing, null is no filter', () => {
+    expect(needsTabView(trashcans, null, false, new Set()).shown).toBe(0)
+    expect(solutionsTabView(trashcans, null, false, new Set())).toEqual([])
+    expect(solutionsTabView(trashcans, null, true, null)).toEqual(solutionsTabView(trashcans, null, true))
   })
 })

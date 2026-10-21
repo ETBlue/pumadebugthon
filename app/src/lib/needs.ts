@@ -167,3 +167,10 @@ export function needsForStakeholder<T extends NeedItem>(items: T[], id: string |
   if (id === null) return items
   return items.filter((i) => i.stakeholders.includes(id))
 }
+
+/** The 特別關注 filter (decision 75): the items with a story of one of these
+ * stakeholders. null keeps every item. Keeps the order of the list. */
+export function needsForStakeholderSet<T extends NeedItem>(items: T[], ids: ReadonlySet<string> | null): T[] {
+  if (ids === null) return items
+  return items.filter((i) => i.stakeholders.some((id) => ids.has(id)))
+}

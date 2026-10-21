@@ -4,10 +4,16 @@
 // Order is always the fixed priority order, the file order of step 5.2 or
 // letter order. Nothing here sorts by a count.
 import type { Conflict, IssueFile, Solution } from '@/types'
-import { dataBasedNeeds, issueNeeds, needsByPriority, needsForStakeholder, type NeedPriorityGroup } from './needs'
+import { dataBasedNeeds, issueNeeds, needsByPriority, needsForStakeholder, needsForStakeholderSet, type NeedPriorityGroup } from './needs'
 import { solutionNeedCoverage, type CoveredNeed } from './solutionPage'
 import { compareIds } from './ids'
-import { conflictsForStakeholder } from './wantList'
+import { conflictsForStakeholder, conflictsForStakeholderSet } from './wantList'
+
+/** The conflicts that the 訴求 tab shows with these filters. */
+function shownConflicts(issue: IssueFile, stakeholder: string | null, special: ReadonlySet<string> | null): Conflict[] {
+  const bySpecial = new Set(conflictsForStakeholderSet(issue, special).map((c) => c.id))
+  return conflictsForStakeholder(issue, stakeholder).filter((c) => bySpecial.has(c.id))
+}
 
 export interface NeedsTabView {
   /** The issue uses the old format (format "stories", no needs). The tab
@@ -22,17 +28,24 @@ export interface NeedsTabView {
 /** The 需求 tab. stakeholder: the ID from the menu, or null for every
  * stakeholder. dataBased: keep a need only when one of its stories has a
  * [實證] or [AI整理] 以便… cell. The two filters work together.
- * With a stakeholder, each need's conflicts are only the ones that the 訴求
- * tab shows with the same stakeholder (conflictsForStakeholder). */
-export function needsTabView(issue: IssueFile, stakeholder: string | null, dataBased: boolean): NeedsTabView {
+ * special: the 特別關注 filter (decision 75), the stakeholders of the picked
+ * groups. Keep a need only when it has a story of one of them. null: off.
+ * With a stakeholder or special, each need's conflicts are only the ones
+ * that the 訴求 tab shows with the same filters. */
+export function needsTabView(
+  issue: IssueFile,
+  stakeholder: string | null,
+  dataBased: boolean,
+  special: ReadonlySet<string> | null = null,
+): NeedsTabView {
   const oldFormat = issue.format === 'stories'
-  let items = needsForStakeholder(issueNeeds(issue), stakeholder)
+  let items = needsForStakeholderSet(needsForStakeholder(issueNeeds(issue), stakeholder), special)
   if (dataBased) items = dataBasedNeeds(items)
   // With a filter, a need lists only the conflicts that the 訴求 tab shows
   // with the same filter. The links 「出現在衝突」 keep ?stakeholder=, so a
   // conflict with no story of the stakeholder would point to nothing.
-  if (stakeholder !== null) {
-    const shown = new Set(conflictsForStakeholder(issue, stakeholder).map((c) => c.id))
+  if (stakeholder !== null || special !== null) {
+    const shown = new Set(shownConflicts(issue, stakeholder, special).map((c) => c.id))
     items = items.map((i) => ({ ...i, conflicts: i.conflicts.filter((c) => shown.has(c.id)) }))
   }
   return { oldFormat, groups: needsByPriority(items), shown: items.length }
@@ -44,14 +57,10 @@ export interface SolutionsTabItem {
   must: CoveredNeed[]
   /** The shown needs listed in 涵蓋的 Should / Could, in the order of step 5.2. */
   shouldCould: CoveredNeed[]
-  /** With a stakeholder picked: the number of covered needs that are not
-   * this stakeholder's (「這個解法還涵蓋其他 6 個需求」). The data filter does
-   * not change it. 0 when no stakeholder is picked. */
+  /** With a stakeholder picked or 特別關注 on: the number of covered needs
+   * that these filters do not show (「這個解法還涵蓋其他 6 個需求」). The data
+   * filter does not change it. 0 when neither filter is on. */
   otherNeeds: number
-  /** true when no stakeholder is picked, the solution covers needs, and the
-   * data filter hides all of them. With a stakeholder picked such a solution
-   * is left out instead (decision 74), so this is always false then. */
-  emptyByData: boolean
   /** 解開的衝突: the conflicts whose wayOutSolutions lists the solution, in
    * file order. With a stakeholder picked, only the conflicts that the 訴求
    * tab shows with the same stakeholder (conflictsForStakeholder). */
@@ -60,28 +69,35 @@ export interface SolutionsTabItem {
 
 /** The 解法 tab: each solution in letter order. With a stakeholder picked,
  * only the solutions that cover at least one of its needs, each with only
- * that stakeholder's needs. The data filter hides needs. With a stakeholder
- * picked, it also leaves out a solution when it hides all of that
- * stakeholder's needs in it (decision 74), as on the stakeholder page
- * (decision 59). With no stakeholder picked, it never hides a solution. */
-export function solutionsTabView(issue: IssueFile, stakeholder: string | null, dataBased: boolean): SolutionsTabItem[] {
+ * that stakeholder's needs. special (the 特別關注 filter, decision 75) works
+ * the same way with the stakeholders of the picked groups, on top of the
+ * stakeholder. The data filter hides needs, and it leaves out a solution
+ * when it hides every need that the other filters keep (decision 74 with a
+ * stakeholder, decision 77 without one). A solution that covers no need at
+ * all stays when no stakeholder and no group is picked. */
+export function solutionsTabView(
+  issue: IssueFile,
+  stakeholder: string | null,
+  dataBased: boolean,
+  special: ReadonlySet<string> | null = null,
+): SolutionsTabItem[] {
   const out: SolutionsTabItem[] = []
   const solutions = [...issue.solutions].sort((a, b) => compareIds(a.id, b.id))
-  // The conflict links keep ?stakeholder=, so list only the conflicts that
-  // the 訴求 tab shows with that filter.
-  const conflicts = conflictsForStakeholder(issue, stakeholder)
+  const filtered = stakeholder !== null || special !== null
+  // The conflict links keep the filters, so list only the conflicts that
+  // the 訴求 tab shows with the same filters.
+  const conflicts = shownConflicts(issue, stakeholder, special)
   for (const solution of solutions) {
     const covered = solutionNeedCoverage(issue, solution).covered
-    const own = needsForStakeholder(covered, stakeholder)
-    if (stakeholder !== null && own.length === 0) continue
+    const own = needsForStakeholderSet(needsForStakeholder(covered, stakeholder), special)
+    if (filtered && own.length === 0) continue
     const shown = dataBased ? dataBasedNeeds(own) : own
-    if (stakeholder !== null && shown.length === 0) continue
+    if (own.length > 0 && shown.length === 0) continue
     out.push({
       solution,
       must: shown.filter((n) => n.part === 'must'),
       shouldCould: shown.filter((n) => n.part === 'shouldCould'),
-      otherNeeds: stakeholder === null ? 0 : covered.length - own.length,
-      emptyByData: own.length > 0 && shown.length === 0,
+      otherNeeds: filtered ? covered.length - own.length : 0,
       wayOutConflicts: conflicts.filter((c) => c.wayOutSolutions.includes(solution.id)),
     })
   }

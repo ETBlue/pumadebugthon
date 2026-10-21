@@ -3,6 +3,7 @@
 // URL as ?stakeholder=<id>. The menu is in ID order. Nothing here sorts by a
 // count.
 import type { Stakeholder } from '@/types'
+import type { PathTarget } from './entityPaths'
 import { FILTER_PARAM, isDataBasisFilterOn } from './dataBasis'
 import { compareIds } from './ids'
 import { FOCUS_ORDER } from './issues'
@@ -94,15 +95,13 @@ export interface SideBarFilters {
 
 /** The side bar filters in the URL. Only "1" turns evidence and cross on.
  * special keeps only the groups of FOCUS_ORDER, in that order. On the issue
- * page ('issue'), cross and special are not side bar filters, so they are
- * always off there. */
+ * page ('issue'), cross is not a side bar filter, so it is always off there.
+ * special is a side bar filter on both pages (decision 75). */
 export function sideBarFiltersOf(params: URLSearchParams, page: 'stakeholders' | 'issue' = 'stakeholders'): SideBarFilters {
-  const dataBasedOnly = isDataBasisFilterOn(params)
-  if (page === 'issue') return { dataBasedOnly, crossIssueOnly: false, special: [] }
   const picked = params.getAll(SPECIAL_PARAM)
   return {
-    dataBasedOnly,
-    crossIssueOnly: params.get(CROSS_PARAM) === '1',
+    dataBasedOnly: isDataBasisFilterOn(params),
+    crossIssueOnly: page === 'stakeholders' && params.get(CROSS_PARAM) === '1',
     special: FOCUS_ORDER.filter((f) => picked.includes(f)),
   }
 }
@@ -169,6 +168,34 @@ export function specialOptions(stakeholders: Stakeholder[]): string[] {
   const used = new Set(stakeholders.filter((s) => s.movedTo === null).flatMap((s) => s.focus))
   return FOCUS_ORDER.filter((f) => used.has(f))
 }
+
+/** The 特別關注 chips of the side bar on the issue page (decision 75): the
+ * groups that at least one stakeholder of the issue has (ids: the IDs of the
+ * issue), in FOCUS_ORDER. Unknown IDs are left out. */
+export function issueSpecialOptions(ids: string[], stakeholders: Stakeholder[]): string[] {
+  return specialOptions(stakeholders.filter((s) => ids.includes(s.id)))
+}
+
+/** The 特別關注 filter of the issue page's tab content (decision 75): the
+ * stakeholders of the issue (ids) with one of the picked groups, by the same
+ * rule as the menu (filterStakeholders). null when no group is picked, so
+ * the filter is off. An empty set when no stakeholder of the issue has a
+ * picked group: then the tabs show nothing. */
+export function specialStakeholderIds(ids: string[], stakeholders: Stakeholder[], groups: string[]): ReadonlySet<string> | null {
+  if (groups.length === 0) return null
+  const own = stakeholders.filter((s) => ids.includes(s.id))
+  return new Set(filterStakeholders(own, { crossIssueOnly: false, focus: groups }).map((s) => s.id))
+}
+
+/** The 「全部利害關係人」 item of the side menu on #/stakeholders and on a
+ * stakeholder page (decision 76): a link to #/stakeholders that keeps
+ * evidence, cross and every special value (sideMenuLinkSearch). */
+export function allStakeholdersTarget(params: URLSearchParams): PathTarget {
+  return { pathname: STAKEHOLDERS_PATH, search: sideMenuLinkSearch(params) }
+}
+
+/** The path of the stakeholders page. */
+export const STAKEHOLDERS_PATH = '/stakeholders'
 
 /** One filter in the filter status line. */
 export type FilterStatusPart =

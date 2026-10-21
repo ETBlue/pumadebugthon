@@ -8,7 +8,7 @@ import { t } from '@/i18n/zh-TW'
 import { stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { groupKeysAbove, sideMenuTree, type SideMenuContext, type SideMenuGroup } from '@/lib/sideMenu'
 import {
-  sideBarFiltersOf, sideMenuLinkSearch, stakeholderMenuSearch, withCrossIssueFilter, withSpecialFilter,
+  allStakeholdersTarget, sideBarFiltersOf, sideMenuLinkSearch, stakeholderMenuSearch, withCrossIssueFilter, withSpecialFilter,
 } from '@/lib/stakeholderFilter'
 import { findStakeholder } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
@@ -19,17 +19,18 @@ import { ToggleCheck } from './ToggleCheck'
 
 const tm = t.sideMenu
 
-/** The filters 只看跨議題 and 特別關注 of the stakeholder pages (decision 67). */
+/** The filters 只看跨議題 and 特別關注 of the side bar (decisions 67 and 75). */
 export interface StakeholderFilterOptions {
-  /** Show 只看跨議題. Design: only with 2 or more analyzed issues. */
+  /** Show 只看跨議題. Design: only on the stakeholder pages, with 2 or more
+   * analyzed issues. Always false on the issue page. */
   showCrossIssue: boolean
   /** The 特別關注 chips, in FOCUS_ORDER (specialOptions). Empty: no chips. */
   specialOptions: string[]
 }
 
 interface CommonProps {
-  /** The stakeholder IDs in the menu. On the stakeholder pages pass the
-   * result of menuIdsFor, so the menu follows 只看跨議題 and 特別關注. The
+  /** The stakeholder IDs in the menu. Pass the result of menuIdsFor, so the
+   * menu follows 只看跨議題 and 特別關注. The
    * component puts them in the tree (sideMenuTree): tree order and ID order. */
   ids: string[]
   /** All stakeholders from index.json, for the names and the paths. */
@@ -42,23 +43,27 @@ interface CommonProps {
    * 只看有資料根據 filter as the main block). null while the data loads: no
    * counts and no count line. */
   counts: Map<string, number> | null
+  /** The filters after 只看有資料根據. */
+  filters: StakeholderFilterOptions
 }
 
 /** The props of StakeholderMenu (design 3.21). Three modes:
  * - filter: the 訴求, 需求 and 解法 tabs of the issue page. A link sets
- *   ?stakeholder=<id> on the same tab. 「全部利害關係人」 is first and removes
- *   it. current: the picked stakeholder (stakeholderFilterOf), or null.
- *   aria-current="true". Filters: 只看有資料根據 only.
+ *   ?stakeholder=<id> on the same tab. 「全部利害關係人」 removes it.
+ *   current: the picked stakeholder (stakeholderFilterOf), or null.
+ *   aria-current="true".
  * - switch: a stakeholder page. A link goes to the same tab of that
- *   stakeholder. current: the stakeholder of the page. aria-current="page".
+ *   stakeholder. 「全部利害關係人」 goes to #/stakeholders. current: the
+ *   stakeholder of the page. aria-current="page".
  * - link: #/stakeholders. A link goes to the 總覽 tab of that stakeholder.
- *   No item is current.
- * In switch and link mode the filters are 只看有資料根據, then the ones in
- * filters. Every link keeps evidence, cross and special. */
+ *   「全部利害關係人」 is the current item (aria-current="page").
+ * 「全部利害關係人」 is the first item in every mode, with no count
+ * (decision 76). The filters are 只看有資料根據, then the ones in filters.
+ * Every link keeps evidence, cross and special. */
 export type StakeholderMenuProps =
   | (CommonProps & { mode: 'filter'; current: string | null })
-  | (CommonProps & { mode: 'switch'; current: string; tab: StakeholderTab; filters: StakeholderFilterOptions })
-  | (CommonProps & { mode: 'link'; filters: StakeholderFilterOptions })
+  | (CommonProps & { mode: 'switch'; current: string; tab: StakeholderTab })
+  | (CommonProps & { mode: 'link' })
 
 /** The id of the main block next to the side bar, for the skip link. Set by
  * StakeholderMenuLayout. */
@@ -71,7 +76,7 @@ const MainIdContext = createContext<string | null>(null)
  * From lg it is always shown. Below lg the whole side bar is one
  * Collapsible, closed by default, closed again after a pick. */
 export function StakeholderMenu(props: StakeholderMenuProps) {
-  const { ids, stakeholders, pathLabels, context, counts, mode } = props
+  const { ids, stakeholders, pathLabels, context, counts, mode, filters } = props
   const current = props.mode === 'link' ? null : props.current
   const [params, setParams] = useSearchParams()
   const { pathname } = useLocation()
@@ -100,13 +105,13 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
     setClosed(next)
   }
 
-  const filters = mode === 'filter' ? null : props.filters
   const pageFilters = sideBarFiltersOf(params, mode === 'filter' ? 'issue' : 'stakeholders')
   const setUrl = (next: (prev: URLSearchParams) => URLSearchParams) =>
     setParams(next, { replace: true, preventScrollReset: true })
 
   const targetOf = (id: string | null): To => {
-    if (props.mode === 'filter' || id === null) return { pathname, search: stakeholderMenuSearch(params, id) }
+    if (props.mode === 'filter') return { pathname, search: stakeholderMenuSearch(params, id) }
+    if (id === null) return allStakeholdersTarget(params)
     const tab = props.mode === 'switch' ? props.tab : 'overview'
     return { pathname: stakeholderTabPath(id, tab), search: sideMenuLinkSearch(params) }
   }
@@ -195,7 +200,7 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
         <div role="group" aria-labelledby={filtersLabelId} className="space-y-3">
           <p id={filtersLabelId} className="text-sm font-medium text-muted-foreground">{tm.filters}</p>
           <DataBasisToggle variant="sideBar" />
-          {filters?.showCrossIssue && (
+          {filters.showCrossIssue && (
             <Toggle
               variant="outline"
               size="sm"
@@ -207,7 +212,7 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
               {tm.crossIssueOnly}
             </Toggle>
           )}
-          {filters !== null && filters.specialOptions.length > 0 && (
+          {filters.specialOptions.length > 0 && (
             <div className="space-y-1">
               <p id={specialLabelId} className="text-sm text-muted-foreground">{tm.special}</p>
               <ToggleGroup
@@ -233,7 +238,7 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
         {counts !== null && <p className="text-xs text-muted-foreground">{tm.countLine[context]}</p>}
 
         <nav aria-label={tm.navLabels[mode]}>
-          {mode === 'filter' && <ul className="mb-1">{item('all', null, tm.all)}</ul>}
+          <ul className="mb-1">{item('all', null, tm.all)}</ul>
           <ul>{tree.map(group)}</ul>
         </nav>
       </CollapsibleContent>

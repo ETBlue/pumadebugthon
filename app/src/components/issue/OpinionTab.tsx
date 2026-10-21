@@ -29,8 +29,8 @@ const tw = t.wantsTab
  * (?pick=W08), so a result can be shared. wants is the list after the
  * stakeholder filter and the data filter (wantsTabView). A picked item is
  * found by its key in all wants, so it stays picked when a filter hides it. */
-export function OpinionTab(props: IssueTabProps & { wants: WantData[]; filtered: boolean }) {
-  const { issue, index, summary, wants, filtered } = props
+export function OpinionTab(props: IssueTabProps & { wants: WantData[]; filtered: boolean; specialOn: boolean }) {
+  const { issue, index, summary, wants, filtered, specialOn } = props
   const all = useMemo(() => issueWants(issue), [issue])
   const [params, setParams] = useSearchParams()
   const dataBasedOnly = isDataBasisFilterOn(params)
@@ -60,7 +60,9 @@ export function OpinionTab(props: IssueTabProps & { wants: WantData[]; filtered:
   const searchId = useId()
   const hintId = useId()
   const listLabelId = useId()
-  const emptyText = wants.length > 0 ? to.noMatch : dataBasedOnly ? t.dataBasisFilter.pickEmpty : filtered ? tw.noWants : to.noMatch
+  const emptyText = wants.length > 0
+    ? to.noMatch
+    : specialOn ? tw.noWantsFiltered : dataBasedOnly ? t.dataBasisFilter.pickEmpty : filtered ? tw.noWants : to.noMatch
 
   return (
     <div className="space-y-6">

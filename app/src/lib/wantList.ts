@@ -45,6 +45,13 @@ export function wantsForStakeholder(items: WantItem[], id: string | null): WantI
   return items.filter((i) => i.stakeholders.includes(id))
 }
 
+/** The 特別關注 filter (decision 75): the wants with a story of one of these
+ * stakeholders. null keeps every item. */
+export function wantsForStakeholderSet(items: WantItem[], ids: ReadonlySet<string> | null): WantItem[] {
+  if (ids === null) return items
+  return items.filter((i) => i.stakeholders.some((id) => ids.has(id)))
+}
+
 /** The wants of one stakeholder in an issue, in the order of pickList. */
 export function wantsOfStakeholder(issue: IssueFile, id: string): WantItem[] {
   return wantsForStakeholder(issueWants(issue), id)
@@ -56,6 +63,15 @@ export function conflictsForStakeholder(issue: IssueFile, id: string | null): Co
   if (id === null) return issue.conflicts
   const stakeholderOf = storyStakeholderOf(issue)
   const has = (side: string[]) => side.some((s) => stakeholderOf(s) === id)
+  return issue.conflicts.filter((c) => has(c.sideA) || has(c.sideB))
+}
+
+/** The 特別關注 filter (decision 75): the conflicts with a story of one of
+ * these stakeholders on either side, in file order. null keeps every one. */
+export function conflictsForStakeholderSet(issue: IssueFile, ids: ReadonlySet<string> | null): Conflict[] {
+  if (ids === null) return issue.conflicts
+  const stakeholderOf = storyStakeholderOf(issue)
+  const has = (side: string[]) => side.some((s) => ids.has(stakeholderOf(s)))
   return issue.conflicts.filter((c) => has(c.sideA) || has(c.sideB))
 }
 

@@ -5,7 +5,10 @@
 import type { IssueFile } from '@/types'
 import { dataBasedPickList } from './dataBasis'
 import { keptSearch } from './stakeholderFilter'
-import { conflictsForStakeholder, conflictView, issueWants, wantsForStakeholder, type ConflictView, type WantItem } from './wantList'
+import {
+  conflictsForStakeholder, conflictsForStakeholderSet, conflictView, issueWants, wantsForStakeholder, wantsForStakeholderSet,
+  type ConflictView, type WantItem,
+} from './wantList'
 
 export interface WantsTabView {
   /** The wants to list, in the order of pickList. */
@@ -20,20 +23,30 @@ export interface WantsTabView {
  * - dataBasedOnly: only the wants with at least one story that has a
  *   [實證] or [AI整理] cell. It does not hide a conflict. The stories inside
  *   a conflict are filtered where they are shown.
- * With a stakeholder, each want's conflicts are only the ones shown. */
-export function wantsTabView(issue: IssueFile, stakeholder: string | null, dataBasedOnly: boolean): WantsTabView {
-  const byStakeholder = wantsForStakeholder(issueWants(issue), stakeholder)
+ * - special: the 特別關注 filter (decision 75), the stakeholders of the
+ *   picked groups (specialStakeholderIds). Only the wants with a story of
+ *   one of them, and only the conflicts with such a story on either side.
+ *   null: off. It works together with the other two filters.
+ * With a stakeholder or special, each want's conflicts are only the ones shown. */
+export function wantsTabView(
+  issue: IssueFile,
+  stakeholder: string | null,
+  dataBasedOnly: boolean,
+  special: ReadonlySet<string> | null = null,
+): WantsTabView {
+  const byStakeholder = wantsForStakeholderSet(wantsForStakeholder(issueWants(issue), stakeholder), special)
   let wants = byStakeholder
   if (dataBasedOnly) {
     const dataKeys = new Set(dataBasedPickList(byStakeholder, issue.stories).map((i) => i.key))
     wants = byStakeholder.filter((w) => dataKeys.has(w.key))
   }
-  const kept = conflictsForStakeholder(issue, stakeholder)
+  const bySpecial = new Set(conflictsForStakeholderSet(issue, special).map((c) => c.id))
+  const kept = conflictsForStakeholder(issue, stakeholder).filter((c) => bySpecial.has(c.id))
   const conflicts = kept.map((c) => conflictView(issue, c))
   // With a filter, a want lists only the conflicts on the tab. A W group can
   // be in a conflict through another stakeholder's story, and that conflict
   // is hidden, so its 「有衝突」 link would point to nothing.
-  if (stakeholder !== null) {
+  if (stakeholder !== null || special !== null) {
     const shown = new Set(kept.map((c) => c.id))
     wants = wants.map((w) => ({ ...w, conflicts: w.conflicts.filter((c) => shown.has(c.id)) }))
   }

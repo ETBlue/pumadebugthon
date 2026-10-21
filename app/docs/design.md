@@ -145,6 +145,8 @@ With a stakeholder picked, the tab shows only the needs with a story of that sta
 
 With a stakeholder picked, the tab shows only the solutions that cover at least one need of that stakeholder. In each solution, the needs list shows only that stakeholder's needs, with one line 「這個解法還涵蓋其他 6 個需求」 that links to the solution's 需求 tab. 「解開的衝突」 shows only the conflicts with a story of that stakeholder on either side (the ones the 訴求 tab shows with the same filter). The need links and the conflict links keep `?stakeholder=` and `?evidence=1` (3.14).
 
+With 「只看有資料根據」 on, each solution shows only the needs with a data basis (`dataBasedNeeds`). With a stakeholder picked, a solution is listed only when at least one of that stakeholder's needs in it is still shown. A solution whose needs of that stakeholder are all hidden is not listed and not counted in the side menu, the same rule as the stakeholder page (decisions 59 and 74). When the list is then empty, the tab says 「沒有解法涵蓋這位利害關係人標記 [實證] 或 [AI整理] 的需求。」. With no stakeholder picked, the filter hides no solution: a solution whose needs are all hidden stays, with the note 「這個解法涵蓋的需求，都沒有標記 [實證] 或 [AI整理]。」.
+
 **Old tab URLs** (shared on Discord) redirect with `replace`, so the back button does not loop. The logic is `legacyIssueTab` in `src/lib/issuePage.ts`.
 
 | Old URL | Goes to |
@@ -682,7 +684,7 @@ ETBlue, `human-inputs.md` (2026-10-20), decisions 64–71. This is the new desig
 | `#/stakeholders/<id>/solutions` | The solutions that cover one of its needs, summed over the issues | `stakeholderTabCounts(...).solutions` |
 | `#/issues/<n>/wants` | Its wants in this issue | `wantsTabView` with the stakeholder |
 | `#/issues/<n>/needs` | Its needs in this issue | `needsTabView` with the stakeholder |
-| `#/issues/<n>/solutions` | The solutions of this issue that cover one of its needs | the 解法 tab view with the stakeholder |
+| `#/issues/<n>/solutions` | The solutions of this issue that cover one of its needs (with 只看有資料根據: one of its shown needs, decision 74) | the 解法 tab view with the stakeholder |
 
 Rules:
 - With 只看有資料根據 on, the counts follow the filter, with the same rules as the lists (3.5, decision 59). The tab labels do not change (decision 49).
@@ -938,7 +940,7 @@ The UI only shows the results of the functions in `src/lib/`.
 - Vitest for the space lookups: issues and solutions per space type, and 「使用相同空間的議題」.
 - Vitest for the 分析摘要 links (`src/lib/summary.ts`): each kind of reference, references to another issue, and that every reference in the fixtures has a link.
 - Cross-issue tests start when a second issue exists.
-- Vitest for Phase S (2026-10-20), on the fixtures: the side menu tree (roots, levels left out when empty, order), the side menu counts for each page context (with and without 只看有資料根據; the count equals the list length of the tab view), the side bar filters in the URL (`cross`, `special`, `evidence`) and 「清除篩選」, and `stakeholderStats` (fixed orders, the filters, no sorting by count).
+- Vitest for Phase S (2026-10-20), on the fixtures: the side menu tree (roots, levels left out when empty, order), the side menu counts for each page context (with and without 只看有資料根據; the count equals the list length of the tab view), the side bar filters in the URL (`cross`, `special`, `evidence`) and 「清除篩選」, and `stakeholderStats` (fixed orders, the filters, no sorting by count). Decision 74 (2026-10-21): #2 I06 has 2 solutions without the data filter and 0 with it, and the issue page and the stakeholder page give the same 解法 count for each stakeholder in each issue.
 - Vitest for the needs-based pages (2026-10-20), on the #1, #2 and #8 fixtures: the tab counts (#2: 訴求 39, 衝突 9, 需求 21, 解法 5; I06: 訴求 5, 衝突 4, 需求 4, 解法 4; #2 A: needs 9 / 12, stakeholders 14 / 13), the want and need keys, the stakeholder filter, the old tab redirects, the solution paths (`#/solutions/2-A`, `#/solutions/X-A`) and the old solution redirects, `?focus=` values, and every 分析摘要 reference (also N groups) has a link.
 
 ## 9. Deploy
@@ -1047,6 +1049,7 @@ Phase S (2026-10-20). From ETBlue's notes in `human-inputs.md` (commits 487bac6 
 71. The solution pages and the story page have no side bar (3.21). (Q15; ETBlue, 2026-10-21)
 72. The compact `IssueCard` (the home block 「最近更新的議題」 and the space page) shows two more fields: 跨議題共用的利害關係人 (the same text and link as the detailed card, only with 2 or more analyzed issues) and 資料根據 (`CellBasis` with `compact`: the counts and the bar, no totals and no 實證 percent). The 資料根據 explanation line is shown once per list. Issues are still never sorted by these numbers. This replaces the part of decision 20 that kept 資料根據 off the home page, and extends decision 26 (3.1, 3.6, 3.9). (ETBlue, `human-inputs.md`, 2026-10-20; 「cross-issue info」 means the shared stakeholders: Q19; ETBlue, 2026-10-21)
 73. `AllStakeholders` is no longer used on `#/stakeholders`. `StakeholderList` (the tree of detailed cards with its own filters) stays for the 「利害關係人」 section of the issue's 總覽 tab. Unused code is removed in Phase S (3.9, 3.20). (Coordinator, 2026-10-20)
+74. On the issue page's 解法 tab, with a stakeholder picked and 「只看有資料根據」 on, a solution is listed only when at least one of that stakeholder's needs in it is still shown under the filter. When the filter hides all of them, the solution is not listed and the side menu does not count it for that stakeholder. So the menu count changes with the filter (decision 66), and the issue page and the stakeholder page use the same rule (decision 59). Before, the solution stayed with the note that its needs were hidden. With no stakeholder picked, the filter still hides no solution (3.2, 3.21). (ETBlue, 2026-10-21)
 
 ## 14. Open questions
 

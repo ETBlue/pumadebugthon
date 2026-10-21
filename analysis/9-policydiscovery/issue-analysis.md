@@ -210,7 +210,7 @@
 
 - ETBlue 的原文（英文）是：(1) as a citizen interested in civic participation, I want to see the early phase analysis of a policy, so that I can see other stakeholders' needs and improve the quality of my proposals；(2) as a feature analyst in the business world, I want to view the early phase analysis of a policy in the industry standard format (user story), so that I can read the content easily；(3) as a citizen, I want to make sure the proxies of the enemy country cannot infiltrate via civic participation, so that I can trust the policy building process better。
 - (3) 的原文在 enemy country 之後寫出一個國家的名稱。依 ETBlue 在 2026-10-21 的決定，本文件不寫出國家名稱，改用反滲透法的中性用語「境外敵對勢力」（定義見[題目原文重點](#題目原文重點)）。
-- 「對市民參與有興趣的市民」與「市民」放在本題已有的 I31 參與市政討論的市民之下；「商業界的功能分析師」是新的利害關係人 I36。需要真人確認。
+- 「對市民參與有興趣的市民」與「市民」放在本題已有的 I31 參與市政討論的市民之下，ETBlue 確認這樣放可以（ETBlue，2026-10-21）。「商業界的功能分析師」是新的利害關係人 I36，需要真人確認。
 - ETBlue 原本的 1 則故事（身為市政提案小幫手的作者，想要一份針對這個提案的分析）已由 ETBlue 刪除，所以本文件也刪除它，編號不再使用（見[編號異動紀錄](#編號異動紀錄)）。
 - 只有一個人的聲音，不會提高優先順序。一個人的經驗也不代表其他人的看法。
 
@@ -466,7 +466,7 @@
 - **疑慮排在 Must**：本題的 Must 需求（N02–N06、O29-US02、I33-US01）大多是對提案的疑慮或限制：工作量、可信度、回應、個資、被排除的人、AI 的依據與原話被改寫。提案想帶來的好處（N01，省下時間）排在 Should。這不是說好處不重要，而是沒有好處時，利害關係人仍能用現在的方式工作；疑慮沒有處理時，他們會直接受到傷害。
 - **N07 排在 Should**：2026-10-20 依 ETBlue 的決定，N07（前期研究固定檢查特別關注族群）排在 Should，理由見 5.2。排序沒有看故事或利害關係人的數量。
 - **群組不代表比較重要**：一個群組有比較多的故事或利害關係人，不會因此得到比較高的優先順序。
-- **1 人的親身經驗**：ETBlue 的 3 則故事只看這些利害關係人自己有多需要它。I31-US05 排在 Should，I36-US01 排在 Could。I31-US06 放進 N04，所以是 N04 的 Must：它的需要（信任參與管道與政策形成的過程）和 N04 相同，不是因為作者的故事而提高。只有一個人的聲音，沒有提高任何優先順序。
+- **1 人的親身經驗**：ETBlue 的 3 則故事只看這些利害關係人自己有多需要它。I31-US05 排在 Should，I36-US01 排在 Could。I31-US06 放進 N04，所以是 N04 的 Must：它的需要（信任參與管道與政策形成的過程）和 N04 相同，不是因為作者的故事而提高。只有一個人的聲音，沒有提高任何優先順序。ETBlue 確認 I31-US06 放進 N04、排在 Must 可以（ETBlue，2026-10-21）。
 - **注意**：群組看起來有多大，和利害關係人的切分方式有關（見[方法說明](../docs/method.md#相同需求群組)）。請先由真人檢查步驟 1 的切分是否合理，例如參與的市民（I31）與意見被整理進分析的市民（I33）可能是同一群人；研考會的兩個單位（O25、O26）是否該分開。
 - **全部是模擬**：除了 ETBlue 的 3 則故事，本題沒有任何真人的意見。在訪談之前，本題的優先順序只能當成討論的起點。
 

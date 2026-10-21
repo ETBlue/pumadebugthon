@@ -662,10 +662,10 @@ The same method as Task N12, with these changes:
 
 ## Phase L: list pages with a sort and filter bar (design 3.23)
 
-From ETBlue's notes in `human-inputs.md` (commit ef77fec, and ETBlue's later edit of 2026-10-22: 「including cross-issue」 and the card view / tree view toggle) and ETBlue's decisions of 2026-10-22. Design decisions 79–93. Open questions Q20–Q24 (design section 14).
+From ETBlue's notes in `human-inputs.md` (commits ef77fec and a325fcb: 「including cross-issue」 and the card view / tree view toggle) and ETBlue's decisions of 2026-10-22. Design decisions 79–94. ETBlue answered Q20 (no side bar on the stakeholder page, decision 94) and the 「跨議題」 part of Q24 on 2026-10-22. Open questions Q21–Q24 (design section 14).
 
-**GATE A, before Tasks L1 and L2:** ETBlue answers Q21 (how to add the dates), Q23 (two coverage details) and Q24 (「跨議題」 in the issue filter, and the 依編號 sort).
-**GATE B, before Task L6:** ETBlue answers Q20 (does the stakeholder page keep its side bar) and Q22 (the statistics of `#/stakeholders`).
+**GATE A, before Tasks L1 and L2:** ETBlue answers Q21 (how to add the dates), Q23 (two coverage details) and Q24 (the 依編號 sort).
+**GATE B, before Task L6:** ETBlue answers Q22 (the statistics of `#/stakeholders`). Q20 is answered: the stakeholder page has no side bar (decision 94).
 Tasks L3 and L4 do not depend on any answer, so they can start before the GATEs.
 
 **Rules for this phase** (on top of the rules at the top of this file and the Phase N and S rules):
@@ -687,7 +687,7 @@ Tasks L3 and L4 do not depend on any answer, so they can start before the GATEs.
 | 4 | L8 | No. Home links, old links, clean-up. |
 | 5 | L9 | No. The final check. |
 
-**Status (2026-10-22):** design draft. Waits for GATE A and GATE B. L3 and L4 can start.
+**Status (2026-10-22):** design draft. Waits for GATE A (Q21, Q23, Q24) and GATE B (Q22). L3 and L4 can start.
 
 ### Task L1: sorts, coverage, filters and URL params (test first) — after GATE A
 
@@ -696,7 +696,7 @@ Tasks L3 and L4 do not depend on any answer, so they can start before the GATEs.
 Design 3.23.3–3.23.5, decisions 81–85 and 89:
 1. `coverage.ts`: `evidenceShare(cells)` → `{ part, total } | null` (part = 實證 + AI整理; null when total is 0). `stakeholderCells(issues, id)`. `solutionCells(issue, solution)` and `crossSolutionCells(cross, solution, issues)` (the stories of the covered needs, each once; the definition depends on Q23). `stakeholderSolutionCoverage(issues, cross, id)` → `{ covered, total }` (這次不做 by Q23). `sharePercent(share)` (the rounding of `evidencePercent`). `compareShares(a, b)` by cross-multiplying. Tests: the issue shares on the fixtures equal the 資料根據 bar counts; I06 has 1 of 12 cells and 5 of 5 needs covered on the current data (use the fixture numbers in the test); 1 of 3 and 33 of 100 are not equal; a story in two covered needs counts once.
 2. `listSort.ts`: `sortIssues(issues, sort)`, `sortStakeholders(list, sort, ctx)`, `sortSolutions(items, sort, ctx)`. Dates newest first with the home tie rule; the date sorts give the same first 5 as `recentIssues`, `recentStakeholders` and `recentSolutionItems` (test this). Shares highest first, ties in the fixed ID order, no share last. `id` sort (if Q24 (b) is yes). No date last. Test that each share sort really differs from the ID order on the fixtures, so the test proves the sort is used.
-3. `listFilter.ts`: `filterIssues`, `filterStakeholders`, `filterSolutions` with the rules of 3.23.5: ANY inside one filter, ALL between filters; 「跨議題」 (`issue=X`) as in Q24 (a); a cross-issue solution matches an issue in its `parts` or in its covered needs (X-E matches #1); the 利害關係人 filter on solutions uses the same rule as the issue's 解法 tab.
+3. `listFilter.ts`: `filterIssues`, `filterStakeholders`, `filterSolutions` with the rules of 3.23.5: ANY inside one filter, ALL between filters; 「跨議題」 (`issue=X`) as in design 3.23.5; a cross-issue solution matches an issue in its `parts` or in its covered needs (X-E matches #1); the 利害關係人 filter on solutions uses the same rule as the issue's 解法 tab.
 4. `listParams.ts`: `listParamsOf(page, params, index)` (drops unknown values, resolves moved IDs), `listSearch(page, state)`, `clearListFilters(params)` (keeps `sort` and `view`), `legacyListRedirect(page, search)` (`cross=1` → `issue=X`, `special=` → `specialonly=1`, drops `evidence`). Test that no param name clashes with `stakeholder`, `evidence`, `cross`, `special`, `focus`, `pick`, `from`.
 
 **Done when:** the tests above pass, and nothing outside these sorts sorts by a count.
@@ -751,15 +751,15 @@ Design 3.23.1–3.23.6 and 3.23.9, decisions 79, 81, 82, 85, 92:
 
 ### Task L6: `#/stakeholders` — after GATE B, parallel group 3
 
-**Files:** `src/router.tsx`, `src/pages/Stakeholders.tsx` (rewrite), `src/components/StakeholderCard.tsx` (prop `listFields`), `src/components/stakeholder/StakeholdersLayout.tsx` (by Q20: keep it only for `stakeholders/:id/:tab?`, or remove it), `src/pages/Stakeholder.tsx` (by Q20: breadcrumb and the 只看有資料根據 toggle at the top of the tab content), `src/lib/stakeholderStats.ts` and its test (remove if Q22 says so), `src/i18n/zh-TW.ts` (blocks `lists`, `stakeholderCard`, `stakeholderStats`).
+**Files:** `src/router.tsx`, `src/pages/Stakeholders.tsx` (rewrite), `src/components/StakeholderCard.tsx` (prop `listFields`), `src/components/stakeholder/StakeholdersLayout.tsx` (remove, decision 94), `src/pages/Stakeholder.tsx` and `src/components/stakeholder/*Tab.tsx` (breadcrumb; the filter row with 只看有資料根據 and `FilterStatus` at the top of the tab content), `src/lib/sideMenu.ts`, `src/lib/stakeholderPage.ts`, `src/lib/stakeholderFilter.ts` and `src/components/StakeholderMenu.tsx` (remove the stakeholder contexts and the `switch` and `link` modes, with their tests), `src/lib/stakeholderStats.ts` and its test (remove if Q22 says so), `src/i18n/zh-TW.ts` (blocks `lists`, `stakeholderCard`, `stakeholderStats`).
 
-Design 3.23.9–3.23.11, decisions 87, 88, 92, 93:
+Design 3.23.9–3.23.11, decisions 87, 88, 92, 93, 94:
 1. `#/stakeholders` outside the side bar layout: the h1 with `sr-only`, the bar (sort: 最近更新, 最近新增, 依資料根據比例, 依解法涵蓋比例, 依編號 if Q24 (b); filters: 議題 with 「跨議題」, 只看特別關注族群; the view switch), the result line, the notes, then the cards or the tree view (two columns from `md`).
-2. The stakeholder page by the answer to Q20.
+2. The stakeholder page (decision 94): no side bar; the breadcrumb 首頁 › 利害關係人 › <name>; the filter row at the top of the tab content; tab links keep only `evidence`; `cross` and `special` are dropped with `replace`. The page of a stakeholder with no issue (decision 78) has no side menu.
 3. The statistics by the answer to Q22.
 4. The legacy redirects (`cross=1`, `special=`, `evidence=1`).
 
-**Done when:** `#/stakeholders?sort=added` shows the same first 5 as the home block; `?sort=solutions` shows the percents and the note; `?issue=X` lists only the stakeholders in 2 or more issues; `?view=tree` shows 組織 and 個人 side by side from `md` and stacked at 360 px, with the sort disabled; `#/stakeholders?cross=1` lands on `?issue=X`; `#/stakeholders/O02/wants` still lands on `#/stakeholders/I12/wants?from=O02`.
+**Done when:** `#/stakeholders?sort=added` shows the same first 5 as the home block; `?sort=solutions` shows the percents and the note; `?issue=X` lists only the stakeholders in 2 or more issues; `?view=tree` shows 組織 and 個人 side by side from `md` and stacked at 360 px, with the sort disabled; `#/stakeholders?cross=1` lands on `?issue=X`; `#/stakeholders/O02/wants` still lands on `#/stakeholders/I12/wants?from=O02`; `#/stakeholders/I06/needs?evidence=1` has no side bar and shows the toggle on in the filter row, and the 需求 tab label still shows the total; the issue tabs keep their side bar and their counts.
 
 ### Task L7: `#/solutions` — parallel group 3
 

@@ -19,7 +19,6 @@ information architecture:
   * "最近更新的議題", showing latest updated issues, with a link guiding users to the issue list page
   * "最近加入分析的族群", showing latest added stakeholders, with a link guiding users to the stakeholder list page
   * "最近分析出的解法", showing latest formed solutions, with a link guiding users to the solution list page
-* if there are solutions from cross issue analysis, add the cross issue solutions to the app
 * the global page footer should include
   1. a brief description of the context of the app
   2. disclaimer
@@ -31,7 +30,34 @@ information architecture:
   * links to the open data used by the app (the json/csv files in the issue analysis folders)
   * related blog posts from the author
     1. https://etblue.blogspot.com/2026/10/puma-taipei-debug-hackathon-issue-analysis.html
-* entities with unique urls
+* the issues page should include
+  * no page tile. the highlighted top bar item represents the title of the page
+  * a sort / filter submenu bar right under the top bar, allowing user to
+    * sort issues by last updated / created
+    * sort issues by evidence coverage
+    * filter issues by space
+    * filter issues by stakeholder
+  * a list of issue cards
+* the stakeholders page should include
+  * no page tile. the highlighted top bar item represents the title of the page
+  * a sort / filter submenu bar right under the top bar, allowing user to
+    * sort stakeholder by last updated / created
+    * sort stakeholder by evidence coverage
+    * sort stakeholder by solution coverage
+    * filter stakeholder by issue
+    * filter stakeholder by toggling "disadvantaged group"
+  * a list of stakeholder cards
+* the solutions page should include
+  * no page tile. the highlighted top bar item represents the title of the page
+  * a sort / filter submenu bar right under the top bar, allowing user to
+    * sort solutions by last updated / created
+    * sort solutions by evidence coverage
+    * filter solutions by issue
+    * filter solutions by space
+    * filter solutions by stakeholder
+  * a list of solutions cards
+  * if there are solutions from cross issue analysis, add the cross issue solutions to the app
+* the following entities should have unique urls
   * issue
   * stakeholder
     * user story

@@ -9,4 +9,6 @@ potential stakeholders:
 * civil servants who are responsible for early stage research of a policy
 
 user stories from my own pov:
-* as the author of 市政提案小幫手, I want to know the doability / risks / blockers / or any other concerns when introducing the plan to the Taipei City government, so that I can improve my proposals 
+* as a citizen interested in civic participation, I want to see the early phase analysis of a policy, so that I can see other stakeholders' needs and improve the quality of my proposals
+* as a feature analyst in the business world, I want to view the early phase analysis of a policy in the industry standard format (user story), so that I can read the content easily
+* as a citizen, I want to make sure the proxies of the enemy country (China) cannot infiltrate via civic participation, so that I can trust the policy building process better

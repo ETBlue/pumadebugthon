@@ -821,4 +821,25 @@ export const t = {
     method: '審議方法',
     result: '模擬結果',
   },
+  /** The stakeholder picker of the list pages (design 3.23.7, decision 86). */
+  stakeholderPicker: {
+    /** The visible label of the box. */
+    label: '利害關係人',
+    placeholder: '輸入編號或名稱',
+    /** One line in the list when nothing matches. It is not an option. */
+    noMatch: '找不到符合的利害關係人',
+    /** The hidden live count after typing. */
+    found: (n: number) => `找到 ${n} 位`,
+    /** The name of the clear button (×). */
+    clear: '清除利害關係人篩選',
+    /** The button that opens the tree dialog, and its accessible name. */
+    browse: '瀏覽',
+    browseName: '瀏覽全部利害關係人',
+    dialogTitle: '選擇利害關係人',
+    dialogIntro: '依分類瀏覽，選一位利害關係人來篩選。',
+    /** The close button of the dialog. */
+    close: '關閉',
+    /** The <nav> name of the tree in the dialog. */
+    treeLabel: '利害關係人分類',
+  },
 } as const

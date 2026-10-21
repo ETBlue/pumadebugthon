@@ -1,12 +1,12 @@
 import { createContext, useContext, useId, useMemo, useState, type MouseEvent, type ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
-import { Link, useLocation, useSearchParams, type To } from 'react-router'
+import { useLocation, useSearchParams, type To } from 'react-router'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Toggle } from '@/components/ui/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { t } from '@/i18n/zh-TW'
 import { stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
-import { groupKeysAbove, sideMenuTree, type SideMenuContext, type SideMenuGroup } from '@/lib/sideMenu'
+import { sideMenuTree, type SideMenuContext } from '@/lib/sideMenu'
 import {
   allStakeholdersTarget, sideBarFiltersOf, sideMenuLinkSearch, stakeholderMenuSearch, withCrossIssueFilter, withSpecialFilter,
 } from '@/lib/stakeholderFilter'
@@ -14,6 +14,7 @@ import { findStakeholder } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
 import type { Stakeholder } from '@/types'
 import { DataBasisToggle } from './DataBasisToggle'
+import { StakeholderTree } from './StakeholderTree'
 import { toggleOnClass } from './styles'
 import { ToggleCheck } from './ToggleCheck'
 
@@ -70,9 +71,8 @@ export type StakeholderMenuProps =
 const MainIdContext = createContext<string | null>(null)
 
 /** The side menu (design 3.21): the skip link, the filters group 「篩選」, the
- * count line and the tree in a <nav>. Each group of the tree is a
- * Collapsible, open when the page loads. The groups above the current item
- * open again when the current item changes. Put it in StakeholderMenuLayout.
+ * count line and the tree (StakeholderTree) in a <nav>. Put it in
+ * StakeholderMenuLayout.
  * From lg it is always shown. Below lg the whole side bar is one
  * Collapsible, closed by default, closed again after a pick. */
 export function StakeholderMenu(props: StakeholderMenuProps) {
@@ -88,22 +88,6 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
 
   // Below lg: the whole side bar. Closed by default on every page (Q17).
   const [open, setOpen] = useState(false)
-  // The groups the reader closed. Every other group is open.
-  const [closed, setClosed] = useState<ReadonlySet<string>>(new Set())
-  // When the current item changes, open the groups above it again. This
-  // runs during render (not in an effect), so the item is never hidden.
-  const [seenCurrent, setSeenCurrent] = useState(current)
-  if (seenCurrent !== current) {
-    setSeenCurrent(current)
-    const above = groupKeysAbove(tree, current)
-    if (above.some((k) => closed.has(k))) setClosed(new Set([...closed].filter((k) => !above.includes(k))))
-  }
-  const setGroupOpen = (key: string, on: boolean) => {
-    const next = new Set(closed)
-    if (on) next.delete(key)
-    else next.add(key)
-    setClosed(next)
-  }
 
   const pageFilters = sideBarFiltersOf(params, mode === 'filter' ? 'issue' : 'stakeholders')
   const setUrl = (next: (prev: URLSearchParams) => URLSearchParams) =>
@@ -124,59 +108,6 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
     main?.focus()
     main?.scrollIntoView()
   }
-
-  const item = (key: string, id: string | null, label: ReactNode) => {
-    const on = id === current
-    const count = id === null || counts === null ? undefined : (counts.get(id) ?? 0)
-    return (
-      <li key={key}>
-        <Link
-          to={targetOf(id)}
-          aria-current={on ? ariaCurrent : undefined}
-          onClick={() => setOpen(false)}
-          className={cn(
-            'flex min-h-6 items-start gap-2 rounded-sm border-l-4 py-1 pr-2 pl-2 text-sm hover:bg-muted',
-            on ? 'border-foreground bg-muted font-semibold' : 'border-transparent',
-          )}
-        >
-          <span className="min-w-0 flex-1 break-words">{label}</span>
-          {count !== undefined && (
-            <>
-              <span className="sr-only">{tm.countUnit[context]}</span>
-              <span className={cn('shrink-0 tabular-nums', count === 0 && 'text-muted-foreground')}>{count}</span>
-            </>
-          )}
-        </Link>
-      </li>
-    )
-  }
-
-  const group = (g: SideMenuGroup): ReactNode => (
-    <li key={g.key}>
-      <Collapsible open={!closed.has(g.key)} onOpenChange={(on) => setGroupOpen(g.key, on)}>
-        <CollapsibleTrigger className="group flex min-h-6 w-full items-start gap-1 rounded-sm py-1 pr-2 text-left text-sm font-medium hover:bg-muted">
-          <ChevronRight aria-hidden="true" className="mt-0.5 size-4 shrink-0 transition-transform group-data-[state=open]:rotate-90" />
-          <span className="min-w-0 flex-1 break-words">{g.label ?? tm.roots[g.root]}</span>
-          <span className="sr-only">{tm.groupUnit}</span>
-          <span className="shrink-0 tabular-nums text-muted-foreground">{g.stakeholderCount}</span>
-        </CollapsibleTrigger>
-        <CollapsibleContent>
-          {/* 0.75rem per step, so a 5-level path fits at 360 px. */}
-          <ul className="pl-3">
-            {g.stakeholders.map((s) =>
-              item(s.id, s.id, (
-                <>
-                  <span className="font-mono">{s.id}</span>{' '}
-                  {s.name}
-                </>
-              )),
-            )}
-            {g.children.map(group)}
-          </ul>
-        </CollapsibleContent>
-      </Collapsible>
-    </li>
-  )
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
@@ -238,8 +169,15 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
         {counts !== null && <p className="text-xs text-muted-foreground">{tm.countLine[context]}</p>}
 
         <nav aria-label={tm.navLabels[mode]}>
-          <ul className="mb-1">{item('all', null, tm.all)}</ul>
-          <ul>{tree.map(group)}</ul>
+          <StakeholderTree
+            tree={tree}
+            targetOf={targetOf}
+            current={current}
+            ariaCurrent={ariaCurrent}
+            counts={counts}
+            countUnit={tm.countUnit[context]}
+            onPick={() => setOpen(false)}
+          />
         </nav>
       </CollapsibleContent>
     </Collapsible>

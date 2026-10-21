@@ -67,12 +67,11 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
   available: true
   /** Space type codes, for example "sidewalk". */
   spaces: string[]
+  /** 新增日期 in issues.csv: the day the issue's analysis was first committed
+   * (YYYY-MM-DD). Optional in the type so test data and older JSON still fit (design 3.23.8). */
+  added?: string | null
   /** Date of the last git commit (YYYY-MM-DD), or null without git history. */
   updated: string | null
-  /** 新增日期 in issues.csv (YYYY-MM-DD): the day the issue's analysis was
-   * first committed (design 3.23.8). Optional until build_json.py writes it
-   * (Task L2). A missing or null date sorts last. */
-  added?: string | null
   counts: IssueCounts
   /** 特別關注 groups with no stakeholder in this issue, in the fixed order
    * (FOCUS_ORDER). Empty when every group is included. For the issue card.
@@ -84,8 +83,8 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
 export interface UnavailableIssueSummary extends IssueSummaryBase {
   available: false
   spaces: []
-  updated: null
   added?: null
+  updated: null
   counts: null
   focusGaps: null
 }
@@ -108,9 +107,8 @@ export interface Stakeholder {
   /** 新增日期: the date the ID was added to stakeholders.csv (YYYY-MM-DD).
    * For the "recent" lists. Moved IDs keep their date. */
   added: string
-  /** 更新日期 from updated-dates.csv (YYYY-MM-DD): the last day its own
-   * content changed (design 3.23.8). Optional until build_json.py writes it
-   * (Task L2). A missing or null date sorts last. */
+  /** 更新日期 from analysis/data/updated-dates.csv (update_dates.py): the last
+   * day its own content changed (YYYY-MM-DD). null for a moved ID (design 3.23.8). */
   updated?: string | null
 }
 
@@ -269,8 +267,8 @@ export interface Solution {
   spaces: string[]
   /** 新增日期: the date the solution was added to 6.1 (YYYY-MM-DD). */
   added: string
-  /** 更新日期 from updated-dates.csv (YYYY-MM-DD), design 3.23.8. Optional
-   * until build_json.py writes it (Task L2). */
+  /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null when
+   * the file has no row for it (design 3.23.8). */
   updated?: string | null
   /** The stories whose need the solution covers in 6.2 (needs format), or
    * the stories of the 6.2 row (old format). */
@@ -495,8 +493,8 @@ export interface CrossSolution {
   spaces: string[]
   /** 新增日期 (YYYY-MM-DD). */
   added: string
-  /** 更新日期 from updated-dates.csv (YYYY-MM-DD), design 3.23.8. Optional
-   * until build_json.py writes it (Task L2). */
+  /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null when
+   * the file has no row for it (design 3.23.8). */
   updated?: string | null
   summary: string
   needs: {

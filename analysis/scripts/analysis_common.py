@@ -50,8 +50,12 @@ Rules:
 - Folders: the scripts get the analysis folder (the folder with the issue
   folders). The shared CSV files are in its data/ folder (data_file) and
   method.md is in its docs/ folder (doc_file).
+- Content fingerprint (fingerprint): the first 12 hex characters of the
+  SHA-256 of the content as canonical JSON (keys sorted, no spaces, UTF-8).
+  update_dates.py and check_analysis.py use it to see whether the content of
+  a stakeholder or a solution changed.
 """
-import datetime, os, re
+import datetime, hashlib, json, os, re
 
 DATA_FOLDER = "data"
 DOCS_FOLDER = "docs"
@@ -306,3 +310,11 @@ def today():
     """Today's date in Taiwan (UTC+8). The dates in the analysis are Taiwan
     dates, but the CI runner uses UTC, so date.today() can be one day behind."""
     return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).date()
+
+
+def fingerprint(content):
+    """A short hash of parsed content (dicts, lists, strings, numbers, None):
+    the first 12 hex characters of SHA-256 of its canonical JSON. The key
+    order of a dict does not change it."""
+    data = json.dumps(content, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(data.encode("utf-8")).hexdigest()[:12]

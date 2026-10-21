@@ -863,6 +863,25 @@ def main(md_path, csv_path):
                         if ids_other is not None and rid not in ids_other[kind]:
                             err(f"{rw}: {ref} is not in issue #{num} ({KIND_WHERE[kind]})")
 
+    # 19. dates (design 3.23.8). issues.csv: an issue with an analysis has a
+    # 新增日期 (YYYY-MM-DD, not after today). updated-dates.csv: one row per
+    # current stakeholder and solution, with a right date and a fingerprint
+    # that matches the content (see update_dates.problems).
+    issue_rows = read_csv("issues.csv")
+    if issue_rows and DATE_COL not in issue_rows[0]:
+        err(f"issues.csv: no {DATE_COL} column")
+    else:
+        for r in issue_rows:
+            value = (r.get(DATE_COL) or "").strip()
+            analyzed = os.path.isfile(os.path.join(analysis_dir, r["資料夾"], "issue-analysis.md"))
+            if not value and not analyzed: continue
+            if not value: err(f"issues.csv: #{r['編號']} {DATE_COL} is empty, but the issue has an analysis"); continue
+            why = date_problem(value)
+            if why: err(f"issues.csv: #{r['編號']} {DATE_COL} {why}")
+    import update_dates
+    for p in update_dates.problems(analysis_dir):
+        err(p)
+
     print(f"stakeholders: {len(stake)} (O {sum(k[0]=='O' for k in stake)}, I {sum(k[0]=='I' for k in stake)})")
     print(f"stories: {len(step4)}; 我想要 tags: {dict(want_tags)}; 以便 tags: {dict(so_tags)}; MoSCoW: {dict(Counter(prio.values()))}; W groups: {len(set(r[3] for r in step4) - {'—'})}"
           + (f"; N groups: {len(set(need_of.values()) - {'—'})}" if needs else "; format: old (story priority)"))

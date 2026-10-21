@@ -1,14 +1,18 @@
 """Tests for analysis/scripts/check_analysis.py.
 
-Each test copies every issue folder that has an issue-analysis.md, and the shared files, into a temp dir, changes one
-thing, runs the check as a subprocess, and looks at the exit code and output.
+Each test copies every issue folder that has an issue-analysis.md, the cross-issue folder and the shared files, into
+a temp dir, changes one thing, runs the check as a subprocess, and looks at the exit code and output.
+Before the check, run_check runs update_dates.py on the copy, so a test that changes content does not fail only
+because the 更新日期 file is old. The tests of the 更新日期 check pass dates=False.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
 import os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "scripts", "check_analysis.py")
-SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "docs/method.md", "data/open-data.csv")
+UPDATE = os.path.join(ANALYSIS, "scripts", "update_dates.py")
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "docs/method.md",
+          "data/open-data.csv", "data/updated-dates.csv", "docs/human-inputs.md")
 ISSUE = "2-trashcans"
 # No issue uses the old format now. This copy of #8 (from before commit 37057a9) tests it.
 OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
@@ -28,13 +32,19 @@ class CheckAnalysisTest(unittest.TestCase):
         for name in SHARED:
             os.makedirs(os.path.join(self.dir, os.path.dirname(name)), exist_ok=True)
             shutil.copy(os.path.join(ANALYSIS, name), os.path.join(self.dir, name))
-        for folder in issue_folders():
+        for folder in issue_folders() + ["cross-issue"]:
             shutil.copytree(os.path.join(ANALYSIS, folder), os.path.join(self.dir, folder))
         self.md = os.path.join(self.dir, ISSUE, "issue-analysis.md")
         self.csv = os.path.join(self.dir, ISSUE, "user-stories.csv")
 
     def tearDown(self):
         self._tmp.cleanup()
+
+    def no_cross_issue(self):
+        """Remove the copied cross-issue folder. A test that changes an issue in a
+        way the cross-issue file does not match uses it, so only the issue check
+        runs. update_dates.py then drops the cross-issue rows."""
+        shutil.rmtree(os.path.join(self.dir, "cross-issue"))
 
     def edit(self, rel, old, new):
         """Replace one exact piece of text in a copied file."""
@@ -46,7 +56,11 @@ class CheckAnalysisTest(unittest.TestCase):
         with open(path, "w", encoding=enc, newline="") as f:
             f.write(text.replace(old, new))
 
-    def run_check(self, folder=None):
+    def run_check(self, folder=None, dates=True):
+        if dates:
+            # The result does not matter here: a broken file stops update_dates.py,
+            # and the check then reports the problem.
+            subprocess.run([sys.executable, "-I", UPDATE, self.dir], capture_output=True, text=True)
         md, csv_ = self.md, self.csv
         if folder:
             md = os.path.join(self.dir, folder, "issue-analysis.md")
@@ -55,8 +69,8 @@ class CheckAnalysisTest(unittest.TestCase):
                            capture_output=True, text=True)
         return p.returncode, p.stdout + p.stderr
 
-    def assertFails(self, *needles, folder=None):
-        code, out = self.run_check(folder)
+    def assertFails(self, *needles, folder=None, dates=True):
+        code, out = self.run_check(folder, dates)
         self.assertEqual(code, 1, out)
         for n in needles:
             self.assertIn(n, out)
@@ -174,6 +188,7 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_6_2_any_capital_letter_code(self):
         # A code like E or K is fine when 6.1 has it too.
+        self.no_cross_issue()
         md = f"{ISSUE}/issue-analysis.md"
         self.edit(md, "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`", "| K | `[AI模擬]` 參與式選址流程 | `sidewalk`")
         self.edit(md, "| D | 參與式選址流程 |", "| K | 參與式選址流程 |")
@@ -264,11 +279,13 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_cross_issue_story_reference_passes(self):
+        self.no_cross_issue()
         self.add_to_issue_1("見 #2 O01-US01")
         code, out = self.run_check("1-trees")
         self.assertEqual(code, 0, out)
 
     def test_cross_issue_stakeholder_reference_passes(self):
+        self.no_cross_issue()
         self.add_to_issue_1("見 #2 O03")
         code, out = self.run_check("1-trees")
         self.assertEqual(code, 0, out)
@@ -711,6 +728,7 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_old_format_still_passes(self):
         # The fixture takes the place of #8. Its stakeholders are the same as in #8 now.
+        self.no_cross_issue()
         for name in ("issue-analysis.md", "user-stories.csv"):
             shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(self.dir, "8-smokefree", name))
         code, out = self.run_check("8-smokefree")
@@ -808,6 +826,73 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_csv_must_have_need_group_column(self):
         self.edit(f"{ISSUE}/user-stories.csv", "以便標記,相同需求編號,來源", "以便標記,來源")
         self.assertFails("CSV header wrong")
+
+
+    # 更新日期 (design 3.23.8, decision 90): issues.csv 新增日期 and updated-dates.csv.
+    ISSUE_ROW_9 = "9,9-policydiscovery,將產品探索技巧運用到政策前期研究,參加者補充,2026-10-20"
+    DATES = "data/updated-dates.csv"
+
+    def dates_row(self, type_, iid):
+        """The line of one item in the copied updated-dates.csv."""
+        with open(os.path.join(self.dir, self.DATES), encoding="utf-8-sig") as f:
+            return next(l for l in f.read().splitlines() if l.startswith(f"{type_},{iid},"))
+
+    def test_dates_pass_without_running_update(self):
+        code, out = self.run_check(dates=False)
+        self.assertEqual(code, 0, out)
+
+    def test_issue_added_date_required_for_analyzed_issue(self):
+        self.edit("data/issues.csv", self.ISSUE_ROW_9, self.ISSUE_ROW_9[:-len("2026-10-20")])
+        self.assertFails("issues.csv: #9 新增日期")
+
+    def test_issue_added_date_bad_or_future_fails(self):
+        for wrong, needle in (("2026/10/20", "not YYYY-MM-DD"), ("2999-01-01", "future")):
+            with self.subTest(wrong=wrong):
+                self.tearDown(); self.setUp()
+                self.edit("data/issues.csv", self.ISSUE_ROW_9, self.ISSUE_ROW_9.replace("2026-10-20", wrong))
+                self.assertFails("issues.csv: #9 新增日期", needle)
+
+    def test_issues_csv_without_date_column_fails(self):
+        path = os.path.join(self.dir, "data", "issues.csv")
+        with open(path, encoding="utf-8-sig") as f:
+            lines = f.read().splitlines()
+        with open(path, "w", encoding="utf-8-sig", newline="") as f:
+            f.write("".join(l.rsplit(",", 1)[0] + "\n" for l in lines))
+        self.assertFails("issues.csv: no 新增日期 column")
+
+    def test_story_change_without_update_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "`[AI模擬]` 商圈有足夠的清潔箱 |", "`[AI模擬]` 商圈有更多的清潔箱 |")
+        subprocess.run([sys.executable, "-I", os.path.join(ANALYSIS, "scripts", "build_csv.py"), self.md, self.csv],
+                       capture_output=True, check=True)
+        self.assertFails("updated-dates.csv: 利害關係人 O01", "請執行 update_dates.py", dates=False)
+        # After update_dates.py the check passes.
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_missing_row_fails(self):
+        row = self.dates_row("解法", "2-A")
+        self.edit(self.DATES, row + "\n", "")
+        self.assertFails("updated-dates.csv: no row for 解法 2-A", "請執行 update_dates.py", dates=False)
+
+    def test_extra_row_fails(self):
+        row = self.dates_row("解法", "2-A")
+        self.edit(self.DATES, row + "\n", row + "\n" + row.replace("2-A", "2-Z") + "\n")
+        self.assertFails("updated-dates.csv: 解法 2-Z is not", dates=False)
+
+    def test_wrong_fingerprint_fails(self):
+        row = self.dates_row("跨議題解法", "X-A")
+        self.edit(self.DATES, row, row[:-12] + "000000000000")
+        self.assertFails("updated-dates.csv: 跨議題解法 X-A", "請執行 update_dates.py", dates=False)
+
+    def test_bad_updated_date_fails(self):
+        row = self.dates_row("利害關係人", "I05")
+        date = row.split(",")[2]
+        for wrong, needle in (("2026/10/20", "not YYYY-MM-DD"), ("2026-02-30", "not a real date"),
+                              ("2999-01-01", "future"), ("2026-10-01", "before its 新增日期 2026-10-18")):
+            with self.subTest(wrong=wrong):
+                self.tearDown(); self.setUp()
+                self.edit(self.DATES, row, row.replace(f",{date},", f",{wrong},"))
+                self.assertFails("updated-dates.csv: 利害關係人 I05 更新日期", needle, dates=False)
 
 
 if __name__ == "__main__":

@@ -1999,7 +1999,8 @@
           "tag": "AI模擬",
           "pending": false
         }
-      }
+      },
+      "updated": "2026-10-20"
     },
     {
       "code": "X-B",
@@ -2180,7 +2181,8 @@
           "tag": "AI模擬",
           "pending": false
         }
-      }
+      },
+      "updated": "2026-10-20"
     },
     {
       "code": "X-C",
@@ -2328,7 +2330,8 @@
           "tag": "AI模擬",
           "pending": false
         }
-      }
+      },
+      "updated": "2026-10-20"
     },
     {
       "code": "X-D",
@@ -2534,7 +2537,8 @@
           "tag": "AI模擬",
           "pending": false
         }
-      }
+      },
+      "updated": "2026-10-20"
     },
     {
       "code": "X-E",
@@ -2669,7 +2673,8 @@
           "tag": "AI模擬",
           "pending": false
         }
-      }
+      },
+      "updated": "2026-10-20"
     }
   ],
   "solutionFocus": [

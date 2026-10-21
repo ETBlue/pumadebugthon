@@ -187,7 +187,7 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_solution_keys(self):
         self.assertEqual(list(self.solution("A")),
-                         ["id", "name", "summary", "spaces", "added", "stories", "needs",
+                         ["id", "name", "summary", "spaces", "added", "updated", "stories", "needs",
                           "measures", "detail", "overview", "ideas", "pending"])
 
     def test_solution_fields_in_other_issues(self):
@@ -405,7 +405,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(by_id["O02"]["added"], "2026-10-18")
         for s in self.index["stakeholders"]:
             self.assertRegex(s["added"], r"^\d{4}-\d\d-\d\d$")
-            self.assertEqual(list(s), ["id", "name", "path", "focus", "issues", "movedTo", "added"])
+            self.assertEqual(list(s), ["id", "name", "path", "focus", "issues", "movedTo", "added", "updated"])
 
     def test_solution_added_date(self):
         # 新增日期 in 6.1 becomes "added".

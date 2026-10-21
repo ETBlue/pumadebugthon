@@ -14,7 +14,7 @@
 - Commits: ETBlue allowed a local commit after each task (2026-10-18). End each message with `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`. Never push.
 - Test first where the task has logic: write the failing test, run it, see it fail, write the code, run it, see it pass.
 - Python: run with `python3 -I`. Tests use `unittest`: `python3 -I -m unittest discover -s analysis/tests -t .` run from the repo root.
-- After any change to an `issue-analysis.md`: run `build_csv.py`, then `check_analysis.py`. Both must pass.
+- After any change to an `issue-analysis.md`: run `build_csv.py`, `sync_stakeholders.py`, `update_dates.py`, then `check_analysis.py`. All must pass. `check_analysis.py` fails when the content changed but `update_dates.py` did not run.
 - Writing in the analysis files: zh-TW, tags inside cells (`[實證]` / `[AI模擬]` in backticks), 【待補】 cells have no tag. See `analysis/docs/ai-inputs.md` → Writing style.
 - **Gates:** a task marked **GATE** stops and waits for ETBlue.
 

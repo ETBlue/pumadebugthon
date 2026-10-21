@@ -2,11 +2,21 @@
 
 Usage: python3 -I analysis/scripts/build_json.py analysis app/public/data
 
-Reads issues.csv (編號, 資料夾, 題目, 來源), stakeholders.csv, path-labels.csv, space-types.csv,
+Reads issues.csv (編號, 資料夾, 題目, 來源, 新增日期), stakeholders.csv, path-labels.csv, space-types.csv,
 open-data.csv (名稱, 網址, 提供機關, 授權, 議題: the open datasets that the appendices cite), and
 <folder>/issue-analysis.md for each issue folder that has one. Writes
 <out>/index.json and <out>/issues/<folder>.json. Removes issues/*.json files
 for folders that no longer have an analysis.
+
+Dates (design 3.23.8):
+- index.json issues[].added: 新增日期 in issues.csv (null for an issue
+  without an analysis). An analyzed issue must have it. issues[].updated is
+  the date of the last git commit of the issue folder.
+- updated: the 更新日期 in data/updated-dates.csv (kept by update_dates.py),
+  on each stakeholder in index.json, each solution in the issue JSON and each
+  cross-issue solution in cross-issue.json. null when the item has no row (a
+  moved stakeholder, or the file is missing). check_analysis.py checks that
+  the file is complete and up to date.
 
 A section that cannot be read stops the script with exit code 1 and the line
 "<folder>: <section>: <reason>". Nothing is written in that case.
@@ -94,7 +104,7 @@ id, priority}], stories, stakeholders, priority (null when the issues
 differ), priorityTag, prioritiesDiffer, reason}], conflicts [{id, text,
 issueConflicts, sideA, sideB, needsA, needsB, wayOut, wayOutSolutions,
 method, result}], solutions [{code, name, tag, parts [{issue, code}],
-spaces, added, summary, needs {must, shouldCould, crossIssue}, measures
+spaces, added, summary, updated, needs {must, shouldCould, crossIssue}, measures
 [{indicator, baseline, source, from [{issue, code}], isNew}], detail {owner,
 laws, privacy, risks}}], solutionFocus [{tag, solutions, note}], pending
 [{text, section}].
@@ -198,6 +208,17 @@ def check_date(value, section_name, where):
     except ValueError:
         raise ReadError(section_name, f"{where}: 新增日期 「{value}」 must be a date written YYYY-MM-DD")
     return value
+
+
+DATES_FILE = "updated-dates.csv"
+
+
+def read_updated_dates(analysis_dir):
+    """(類型, 編號) -> 更新日期 from data/updated-dates.csv. {} when the file does not exist."""
+    if not os.path.exists(common.data_file(analysis_dir, DATES_FILE)):
+        return {}
+    rows = read_csv(analysis_dir, DATES_FILE, ["類型", "編號", "更新日期", "內容指紋"])
+    return {(r["類型"], r["編號"]): r["更新日期"].strip() for r in rows}
 
 
 def git_updated(folder):
@@ -634,7 +655,7 @@ def parse_issue(text, space_codes):
             if code not in spaces:
                 raise ReadError("6.1", f"solution {sol}: space code {code} is not in the issue's 空間類型 line")
         solutions.append({"id": sol, "name": cell(r["解法"], "6.1", sol), "summary": r["一句話說明"],
-                          "spaces": codes, "added": check_date(r["新增日期"], "6.1", f"solution {sol}"),
+                          "spaces": codes, "added": check_date(r["新增日期"], "6.1", f"solution {sol}"), "updated": None,
                           "stories": [], "needs": None})
     no_duplicates([s["id"] for s in solutions], "6.1", "solution")
     by_sol = {s["id"]: s for s in solutions}
@@ -787,7 +808,8 @@ def parse_issue(text, space_codes):
 # ---------- whole build ----------
 
 def build(analysis_dir):
-    issues_csv = read_csv(analysis_dir, "issues.csv", ["編號", "資料夾", "題目", "來源"])
+    issues_csv = read_csv(analysis_dir, "issues.csv", ["編號", "資料夾", "題目", "來源", "新增日期"])
+    dates = read_updated_dates(analysis_dir)
     space_rows = read_csv(analysis_dir, "space-types.csv", ["代碼", "名稱", "分組", "說明"])
     space_codes = {r["代碼"] for r in space_rows}
     label_rows = read_csv(analysis_dir, "path-labels.csv", ["分類路徑", "名稱"])
@@ -805,7 +827,7 @@ def build(analysis_dir):
         md = os.path.join(analysis_dir, folder, "issue-analysis.md")
         if not os.path.exists(md):
             index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": False,
-                                 "spaces": [], "updated": None, "counts": None, "focusGaps": None})
+                                 "spaces": [], "added": None, "updated": None, "counts": None, "focusGaps": None})
             continue
         with open(md, encoding="utf-8") as f:
             text = f.read()
@@ -818,6 +840,11 @@ def build(analysis_dir):
             check_focus(data["focusGroups"], ids, focus_by_id)
         except ReadError as e:
             raise ReadError(f"{folder}: {e.section}", e.reason)
+        if not row["新增日期"].strip():
+            raise ReadError("issues.csv", f"row {i}: issue #{num} has an analysis, so 新增日期 must be filled")
+        added = check_date(row["新增日期"], "issues.csv", f"row {i}")
+        for s in data["solutions"]:
+            s["updated"] = dates.get(("解法", f"{num}-{s['id']}"))
         ids_by_num[num] = common.issue_ids(text)
         cross_by_folder[folder] = (num, data.pop("summaryCross"))
         updated = git_updated(os.path.join(analysis_dir, folder))
@@ -830,7 +857,7 @@ def build(analysis_dir):
             "cells": cell_basis(data["stories"]),
         }
         index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": True,
-                             "spaces": data["spaces"], "updated": updated, "counts": counts,
+                             "spaces": data["spaces"], "added": added, "updated": updated, "counts": counts,
                              # The groups with no stakeholder, in the fixed order (for the issue card).
                              "focusGaps": [g["tag"] for g in data["focusGroups"] if not g["stakeholders"]]})
         issue_files[folder] = {"number": num, "folder": folder, "title": title,
@@ -867,6 +894,7 @@ def build(analysis_dir):
             "issues": [] if moved_to else [int(x) for x in issues],
             "movedTo": moved_to,
             "added": check_date(r["新增日期"], "stakeholders.csv", sid),
+            "updated": None if moved_to else dates.get(("利害關係人", sid)),
         })
 
     open_data = []
@@ -912,6 +940,9 @@ def build_cross_issue(analysis_dir):
     if errors:
         more = f" (and {len(errors) - 1} more; run check_cross_issue.py)" if len(errors) > 1 else ""
         raise ReadError(CROSS_SECTION, errors[0] + more)
+    dates = read_updated_dates(analysis_dir)
+    for s in data["solutions"]:
+        s["updated"] = dates.get(("跨議題解法", s["code"]))
     return {"title": data["title"], "updated": git_updated(os.path.dirname(md)),
             **{k: v for k, v in data.items() if k != "title"}}
 

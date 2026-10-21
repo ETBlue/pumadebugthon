@@ -6,12 +6,16 @@
 #
 # Steps:
 #   1. sync_stakeholders.py fills the 議題 column of stakeholders.csv.
-#   2. For each issue folder in issues.csv that has an issue-analysis.md:
-#      build_csv.py, then check_analysis.py.
-#   3. check_cross_issue.py for cross-issue/cross-issue-analysis.md (if it exists).
-#   4. The unittest suite.
-#   5. build_json.py writes the JSON (also cross-issue.json).
-# With CI=true, steps 1 and 2 also fail when a rebuilt file differs from the
+#   2. build_csv.py for each issue folder in issues.csv that has an
+#      issue-analysis.md.
+#   3. update_dates.py updates data/updated-dates.csv (the 更新日期 of each
+#      stakeholder and solution). With CI=true it runs with --check: it writes
+#      nothing and fails when the file is not up to date, so CI never writes a date.
+#   4. check_analysis.py for each of these issue folders.
+#   5. check_cross_issue.py for cross-issue/cross-issue-analysis.md (if it exists).
+#   6. The unittest suite.
+#   7. build_json.py writes the JSON (also cross-issue.json).
+# With CI=true, steps 1, 2 and 3 also fail when a rebuilt file differs from the
 # committed one. In CI the committed files must already be up to date.
 set -euo pipefail
 
@@ -41,19 +45,36 @@ echo "== 1. sync_stakeholders.py"
 python3 -I analysis/scripts/sync_stakeholders.py analysis
 not_committed analysis/data/stakeholders.csv "sync_stakeholders.py changed it"
 
-echo "== 2. build_csv.py and check_analysis.py for each issue"
-# Column 2 of issues.csv is the folder. Skip the header line.
+# The issue folders that have an issue-analysis.md. Column 2 of issues.csv is
+# the folder. Skip the header line.
+folders=()
 while read -r folder; do
-  md="analysis/$folder/issue-analysis.md"
-  csv="analysis/$folder/user-stories.csv"
-  [[ -f "$md" ]] || continue
-  echo "-- $folder"
-  python3 -I analysis/scripts/build_csv.py "$md" "$csv"
-  not_committed "$csv" "build_csv.py rebuilt it from the step 4 table"
-  python3 -I analysis/scripts/check_analysis.py "$md" "$csv"
+  [[ -f "analysis/$folder/issue-analysis.md" ]] && folders+=("$folder")
 done < <(tail -n +2 analysis/data/issues.csv | cut -d, -f2 | tr -d '\r')
 
-echo "== 3. check_cross_issue.py"
+echo "== 2. build_csv.py for each issue"
+for folder in "${folders[@]}"; do
+  echo "-- $folder"
+  csv="analysis/$folder/user-stories.csv"
+  python3 -I analysis/scripts/build_csv.py "analysis/$folder/issue-analysis.md" "$csv"
+  not_committed "$csv" "build_csv.py rebuilt it from the step 4 table"
+done
+
+echo "== 3. update_dates.py"
+if [[ "$ci" == "true" ]]; then
+  python3 -I analysis/scripts/update_dates.py analysis --check
+else
+  python3 -I analysis/scripts/update_dates.py analysis
+fi
+not_committed analysis/data/updated-dates.csv "update_dates.py changed it"
+
+echo "== 4. check_analysis.py for each issue"
+for folder in "${folders[@]}"; do
+  echo "-- $folder"
+  python3 -I analysis/scripts/check_analysis.py "analysis/$folder/issue-analysis.md" "analysis/$folder/user-stories.csv"
+done
+
+echo "== 5. check_cross_issue.py"
 cross="analysis/cross-issue/cross-issue-analysis.md"
 if [[ -f "$cross" ]]; then
   python3 -I analysis/scripts/check_cross_issue.py "$cross"
@@ -61,10 +82,10 @@ else
   echo "no $cross; skipped"
 fi
 
-echo "== 4. unit tests"
+echo "== 6. unit tests"
 python3 -I -m unittest discover -s analysis/tests -t .
 
-echo "== 5. build_json.py -> $out"
+echo "== 7. build_json.py -> $out"
 python3 -I analysis/scripts/build_json.py analysis "$out"
 
 echo "== all steps passed"

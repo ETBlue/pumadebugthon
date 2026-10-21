@@ -140,11 +140,29 @@ describe('solutionsTabView', () => {
     expect(a.otherNeeds).toBe(0)
   })
 
-  it('marks a solution whose needs the data filter hides', () => {
-    const view = solutionsTabView(trashcans, 'I06', true)
-    expect(view.map((s) => [s.solution.id, s.emptyByData])).toEqual([
-      ['A', true],
-      ['C', true],
-    ])
+  // Decision 74: with a stakeholder picked, a solution is listed only when
+  // at least one of the stakeholder's needs in it is still shown.
+  it('with a stakeholder and the data filter, leaves out a solution whose needs of the stakeholder are all hidden (#2, I06)', () => {
+    // Without the filter, A (N07) and C (N08) cover a need of I06.
+    expect(solutionsTabView(trashcans, 'I06', false).map((s) => s.solution.id)).toEqual(['A', 'C'])
+    // N07 and N08 have no data basis, so both solutions leave the list.
+    expect(solutionsTabView(trashcans, 'I06', true)).toEqual([])
+  })
+
+  it('with a stakeholder and the data filter, keeps a solution with one shown need of the stakeholder', () => {
+    const view = solutionsTabView(trashcans, 'I01', true)
+    expect(view.length).toBeGreaterThan(0)
+    for (const item of view) {
+      expect(item.must.length + item.shouldCould.length, item.solution.id).toBeGreaterThan(0)
+      expect(item.emptyByData).toBe(false)
+    }
+  })
+
+  it('without a stakeholder, the data filter still hides no solution', () => {
+    for (const issue of [trashcans, smokefree]) {
+      expect(solutionsTabView(issue, null, true).map((s) => s.solution.id)).toEqual(
+        solutionsTabView(issue, null, false).map((s) => s.solution.id),
+      )
+    }
   })
 })

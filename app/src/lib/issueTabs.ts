@@ -48,8 +48,9 @@ export interface SolutionsTabItem {
    * this stakeholder's (「這個解法還涵蓋其他 6 個需求」). The data filter does
    * not change it. 0 when no stakeholder is picked. */
   otherNeeds: number
-  /** true when the solution covers needs of the shown stakeholder, but the
-   * data filter hides all of them. */
+  /** true when no stakeholder is picked, the solution covers needs, and the
+   * data filter hides all of them. With a stakeholder picked such a solution
+   * is left out instead (decision 74), so this is always false then. */
   emptyByData: boolean
   /** 解開的衝突: the conflicts whose wayOutSolutions lists the solution, in
    * file order. With a stakeholder picked, only the conflicts that the 訴求
@@ -59,7 +60,10 @@ export interface SolutionsTabItem {
 
 /** The 解法 tab: each solution in letter order. With a stakeholder picked,
  * only the solutions that cover at least one of its needs, each with only
- * that stakeholder's needs. The data filter hides needs, never a solution. */
+ * that stakeholder's needs. The data filter hides needs. With a stakeholder
+ * picked, it also leaves out a solution when it hides all of that
+ * stakeholder's needs in it (decision 74), as on the stakeholder page
+ * (decision 59). With no stakeholder picked, it never hides a solution. */
 export function solutionsTabView(issue: IssueFile, stakeholder: string | null, dataBased: boolean): SolutionsTabItem[] {
   const out: SolutionsTabItem[] = []
   const solutions = [...issue.solutions].sort((a, b) => compareIds(a.id, b.id))
@@ -71,6 +75,7 @@ export function solutionsTabView(issue: IssueFile, stakeholder: string | null, d
     const own = needsForStakeholder(covered, stakeholder)
     if (stakeholder !== null && own.length === 0) continue
     const shown = dataBased ? dataBasedNeeds(own) : own
+    if (stakeholder !== null && shown.length === 0) continue
     out.push({
       solution,
       must: shown.filter((n) => n.part === 'must'),

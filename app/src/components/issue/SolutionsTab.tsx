@@ -76,7 +76,8 @@ function NeedPart({ id, title, needs, issueNumber }: { id: string; title: string
 /** 解法 (design 3.2): each solution in letter order, with its summary, space
  * types, the needs it covers (the two parts of step 6.2) and 解開的衝突. With
  * a stakeholder picked in the menu, only the solutions with one
- * of its needs, and only its needs. */
+ * of its needs, and only its needs. With 只看有資料根據 and a stakeholder,
+ * a solution with none of its needs left is not listed (decision 74). */
 export function SolutionsTab({ index, issue }: IssueTabProps) {
   const [dataBasedOnly] = useDataBasisFilter()
   const [params] = useSearchParams()
@@ -94,7 +95,9 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
       shown={tm.shownSolutions(view.length)}
     >
       <CrossIssueBox issueNumber={n} />
-      {view.length === 0 && <p className="text-muted-foreground">{ts.noneForStakeholder}</p>}
+      {view.length === 0 && (
+        <p className="text-muted-foreground">{dataBasedOnly ? ts.noneForStakeholderData : ts.noneForStakeholder}</p>
+      )}
       <ul className="space-y-6">
         {view.map((item) => {
           const sol = item.solution

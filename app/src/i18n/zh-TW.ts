@@ -307,9 +307,12 @@ export const t = {
     wayOut: '解開的衝突',
     /** With a stakeholder picked: a link to the solution's 需求 tab. */
     otherNeeds: (n: number) => `這個解法還涵蓋其他 ${n} 個需求`,
-    dataEmpty: '這位利害關係人在這個解法的需求，都沒有標記 [實證] 或 [AI整理]。',
+    /** Only with no stakeholder picked (decision 74). */
+    dataEmpty: '這個解法涵蓋的需求，都沒有標記 [實證] 或 [AI整理]。',
     none: '這個議題沒有列出解法。',
     noneForStakeholder: '沒有解法涵蓋這位利害關係人的需求。',
+    /** With 只看有資料根據 on and a stakeholder picked (decision 74). */
+    noneForStakeholderData: '沒有解法涵蓋這位利害關係人標記 [實證] 或 [AI整理] 的需求。',
   },
   /** The issue page's 需求 tab (design 3.2). */
   needsTab: {

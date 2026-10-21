@@ -203,6 +203,29 @@ describe('sideMenuCounts', () => {
     }
   })
 
+  // Decision 74: with 只看有資料根據 on, a solution counts for a stakeholder
+  // only when one of the stakeholder's needs in it is still shown.
+  describe('the 解法 count with 只看有資料根據 (decision 74)', () => {
+    it('drops a solution whose needs of the stakeholder are all hidden (#2, I06: 2 to 0)', () => {
+      expect(sideMenuCounts('issue-solutions', [trashcans], ['I06'], false).get('I06')).toBe(2)
+      expect(sideMenuCounts('issue-solutions', [trashcans], ['I06'], true).get('I06')).toBe(0)
+    })
+
+    for (const dataBased of [false, true]) {
+      it(`the issue page and the stakeholder page agree in each issue (evidence ${dataBased ? 'on' : 'off'})`, () => {
+        for (const issue of issues) {
+          const ids = issue.stakeholders.map((s) => s.id)
+          const onIssue = sideMenuCounts('issue-solutions', [issue], ids, dataBased)
+          const onStakeholder = sideMenuCounts('stakeholder-solutions', [issue], ids, dataBased)
+          for (const id of ids) {
+            expect(onIssue.get(id), `#${issue.number} ${id}`).toBe(onStakeholder.get(id))
+            expect(onIssue.get(id), `#${issue.number} ${id}`).toBe(solutionsTabView(issue, id, dataBased).length)
+          }
+        }
+      })
+    }
+  })
+
   // The rule of decision 66: the count is the length of the list that the
   // tab shows after a click on that stakeholder, with the same filter.
   describe('the count equals the length of the list that the tab shows', () => {

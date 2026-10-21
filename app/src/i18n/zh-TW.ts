@@ -671,6 +671,70 @@ export const t = {
     shownMenu: (n: number) => `選單顯示 ${n} 位利害關係人。`,
     clear: '清除篩選',
   },
+  /** The sort and filter bar of the list pages (ListBar, design 3.23.2) and
+   * the result line (ResultLine, design 3.23.6). */
+  listBar: {
+    sortLabel: '排序',
+    /** The sort options (design 3.23.3). */
+    sorts: {
+      updated: '最近更新',
+      added: '最近新增',
+      evidence: '依資料根據比例（實證＋AI整理）',
+      solutions: '依解法涵蓋比例',
+    },
+    /** The note under the bar while a share sort is on (design 3.23.3). */
+    sortNotes: {
+      evidence: '這個順序只表示分析內容的資料來源組成（標記 [實證] 或 [AI整理] 的格子比例），不代表重要性或好壞。',
+      solutions: '這個順序只表示有多少需求已有解法涵蓋，不代表重要性或好壞，也不代表解法是否足夠。',
+    },
+    /** Next to the disabled sort in tree view (design 3.23.11). */
+    treeSortNote: '樹狀檢視依分類排列',
+    /** The popover button of a multi-choice filter: 「空間類型」, 「空間類型：2」,
+     * or 「議題：全部」 when the filter gives a text for no pick. */
+    choicesButton: (label: string, picked: number, none?: string) =>
+      picked > 0 ? `${label}：${picked}` : none ? `${label}：${none}` : label,
+    /** The text for no pick in the 議題 filter (design 3.23.5). */
+    all: '全部',
+    /** The phone button that opens the sheet, and its accessible name. The
+     * search is not counted (design 3.23.2). */
+    filtersButton: (on: number) => (on > 0 ? `篩選（${on}）` : '篩選'),
+    filtersButtonName: (on: number) => (on > 0 ? `篩選，已套用 ${on} 個` : '篩選'),
+    /** The title of the phone sheet (the dialog's name). */
+    sheetTitle: '篩選',
+    done: '完成',
+    close: '關閉',
+    clear: '清除篩選',
+    /** The view switch on #/stakeholders (design 3.23.11). */
+    view: '檢視方式',
+    views: { cards: '卡片', tree: '樹狀' },
+    /** The hidden names of the view icon buttons below md. */
+    viewNames: { cards: '卡片檢視', tree: '樹狀檢視' },
+    /** The first part of the result line. n: shown, total: the whole list. */
+    shown: {
+      issues: (n: number, total: number) => `顯示 ${n} 個議題，共 ${total} 個。`,
+      stakeholders: (n: number, total: number) => `顯示 ${n} 位利害關係人，共 ${total} 位。`,
+      solutions: (n: number, total: number) => `顯示 ${n} 個解法，共 ${total} 個。`,
+    },
+    /** The filters that are on: 「篩選：搜尋「無菸」；空間類型：人行道、騎樓。」 */
+    status: (parts: string[]) => `篩選：${parts.join('；')}。`,
+    /** One filter in the result line: 「空間類型：人行道、騎樓」. */
+    filterPart: (label: string, values: string[]) => `${label}：${values.join('、')}`,
+  },
+  /** The search box of the list pages (ListSearchBox, design 3.23.13). */
+  listSearch: {
+    label: '搜尋',
+    /** Hidden after the label, so the full label is 「搜尋議題」. */
+    labelHidden: { issues: '議題', stakeholders: '利害關係人', solutions: '解法' },
+    placeholder: { issues: '輸入編號或標題', stakeholders: '輸入編號或名稱', solutions: '輸入代號或名稱' },
+    clear: '清除搜尋',
+    /** The search in the result line, before the filters. */
+    statusPart: (q: string) => `搜尋「${q}」`,
+    /** The empty states with a search on. noun: 議題, 利害關係人 or 解法. */
+    noMatch: (q: string, noun: string) => `找不到符合「${q}」的${noun}。`,
+    noMatchFiltered: (q: string, noun: string) => `找不到符合「${q}」和目前篩選的${noun}。`,
+    /** The name of the bar (<section aria-label>). */
+    barLabel: '搜尋、排序與篩選',
+  },
   /** One need (需求) in a list (NeedItem, design 3.2, 3.3). */
   need: {
     priority: '優先順序',

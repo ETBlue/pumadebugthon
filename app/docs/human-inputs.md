@@ -44,15 +44,18 @@ information architecture:
     * sort stakeholder by last updated / created
     * sort stakeholder by evidence coverage
     * sort stakeholder by solution coverage
-    * filter stakeholder by issue
+    * filter stakeholder by issue (including cross-issue)
     * filter stakeholder by toggling "disadvantaged group"
-  * a list of stakeholder cards
+    * toggle card view / tree view
+  * a list of stakeholders
+    * card view: similar to issues / solutions
+    * tree view: similar to the stakeholder sidebar, but split organization and individual into 2 columns
 * the solutions page should include
   * no page tile. the highlighted top bar item represents the title of the page
   * a sort / filter submenu bar right under the top bar, allowing user to
     * sort solutions by last updated / created
     * sort solutions by evidence coverage
-    * filter solutions by issue
+    * filter solutions by issue (including cross-issue)
     * filter solutions by space
     * filter solutions by stakeholder
   * a list of solutions cards

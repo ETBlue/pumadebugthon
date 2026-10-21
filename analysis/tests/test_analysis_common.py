@@ -41,7 +41,7 @@ class AnalysisCommonTest(unittest.TestCase):
 
     def test_step4_ids(self):
         ids = self.common.step4_ids(read("2-trashcans"))
-        self.assertEqual(len(ids), 52)
+        self.assertEqual(len(ids), 53)
         self.assertIn("O01-US01", ids)
 
     def test_parse_ref(self):
@@ -65,7 +65,7 @@ class AnalysisCommonTest(unittest.TestCase):
     def test_issue_ids_and_summary(self):
         text = read("2-trashcans")
         ids = self.common.issue_ids(text)
-        self.assertEqual(sorted(ids["conflict"]), [f"C{n}" for n in range(1, 10)])
+        self.assertEqual(sorted(ids["conflict"]), sorted(f"C{n}" for n in range(1, 11)))
         self.assertEqual(sorted(ids["solution"]), ["A", "B", "C", "D", "E"])
         self.assertIn("W11", ids["group"])
         self.assertEqual(sorted(ids["need"]), [f"N{n:02d}" for n in range(1, 11)])

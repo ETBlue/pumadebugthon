@@ -282,7 +282,7 @@ function BarFilter({ filter, onState }: { filter: ListBarFilter; onState: (s: Li
               <ChevronDown aria-hidden="true" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="start" className="max-h-[60vh] w-auto max-w-80 min-w-56 overflow-y-auto p-3">
+          <PopoverContent align="start" aria-label={filter.label} className="max-h-[60vh] w-auto max-w-80 min-w-56 overflow-y-auto p-3">
             <ChoiceList filter={filter} onPick={(v) => onState(filter.next(v))} />
           </PopoverContent>
         </Popover>

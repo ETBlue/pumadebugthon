@@ -182,6 +182,11 @@ export function StakeholderPicker({ stakeholders, pathLabels, value, place = 'ba
             </button>
           )}
           {/* A mouse down in the list must not take the focus from the box. */}
+          {/* axe reports scrollable-region-focusable here. We keep it so on
+              purpose: the options are reached with the arrow keys in the box
+              (aria-activedescendant), as in the ARIA combobox pattern, and the
+              active option scrolls into view. A Tab stop on the list would
+              lose the focus when the list closes on blur (L9). */}
           <div
             hidden={!state.open}
             onMouseDown={(e) => e.preventDefault()}

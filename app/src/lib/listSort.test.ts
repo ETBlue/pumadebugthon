@@ -38,8 +38,15 @@ describe('sortIssues', () => {
       i.available ? { ...i, added: i.number === 2 ? '2026-10-16' : i.number === 9 ? null : '2026-10-18' } : i,
     ) as IssueSummary[]
     expect(numbers(sortIssues(withAdded, 'added'))).toEqual([8, 1, 2, 3, 4, 5, 6, 9])
-    // With no added field yet (before Task L2), every issue has no date.
-    expect(numbers(sortIssues(index.issues, 'added'))).toEqual([1, 2, 3, 4, 5, 6, 8, 9])
+  })
+
+  it('最近新增 with the real dates: #9 (10-20), #8 and #1 (10-18, #8 first), #2 (10-16), then #3–#6', () => {
+    expect(numbers(sortIssues(index.issues, 'added'))).toEqual([9, 8, 1, 2, 3, 4, 5, 6])
+  })
+
+  it('最近新增 with no dates at all gives the fixed number order', () => {
+    const noAdded = index.issues.map((i) => (i.available ? { ...i, added: null } : i)) as IssueSummary[]
+    expect(numbers(sortIssues(noAdded, 'added'))).toEqual([1, 2, 3, 4, 5, 6, 8, 9])
   })
 
   it('依資料根據比例 gives #8, #2, #1, #9, then the issues with no cells', () => {
@@ -65,8 +72,25 @@ describe('sortStakeholders', () => {
     const sorted = ids(sortStakeholders(list, 'updated', ctx))
     const byId = ids(list).sort(compareIds)
     expect(sorted).toEqual([list[2].id, ...[list[0].id, list[1].id].sort(compareIds).reverse(), ...byId.slice(3)])
-    // Before Task L2 no stakeholder has updated: the fixed ID order.
-    expect(ids(sortStakeholders(listed, 'updated', ctx))).toEqual(ids(listed).sort(compareIds))
+  })
+
+  it('最近更新 with the real dates: newest first, the same date by ID highest first', () => {
+    const sorted = sortStakeholders(listed, 'updated', ctx)
+    // These 6 have 2026-10-21. I34 has it too, but it has no issue, so it is not listed.
+    expect(ids(sorted).slice(0, 6)).toEqual(['I36', 'I35', 'I31', 'I27', 'I14', 'I09'])
+    // I24 and O24 have 2026-10-18, the oldest date, so they are last. I comes before O.
+    expect(ids(sorted).slice(-2)).toEqual(['I24', 'O24'])
+    for (let i = 1; i < sorted.length; i++) {
+      const a = sorted[i - 1].updated!
+      const b = sorted[i].updated!
+      expect(a >= b).toBe(true)
+      if (a === b) expect(compareIds(sorted[i - 1].id, sorted[i].id)).toBeGreaterThan(0)
+    }
+  })
+
+  it('最近更新 with no dates at all gives the fixed ID order', () => {
+    const noUpdated = listed.map((s) => ({ ...s, updated: null }))
+    expect(ids(sortStakeholders(noUpdated, 'updated', ctx))).toEqual(ids(listed).sort(compareIds))
   })
 
   it('依資料根據比例 sorts by the share of its cells, ties in ID order', () => {
@@ -104,8 +128,20 @@ describe('sortSolutions', () => {
     expect(keys(sortSolutions(allSolutions, 'added', ctx))).toEqual(keys(recentSolutionItems(files, cross)))
   })
 
-  it('最近更新: no date yet means the fixed ID order, cross-issue solutions first', () => {
-    const sorted = keys(sortSolutions(allSolutions, 'updated', ctx))
+  it('最近更新 with the real dates: newest first, then the tie rule of the home block', () => {
+    // 2026-10-21: #9 A, C, D, #2 A, B and #1 A, B. Every other solution has 2026-10-20.
+    // Same date: the cross-issue solutions first, then the issue number and
+    // the letter, highest first.
+    expect(keys(sortSolutions(allSolutions, 'updated', ctx))).toEqual([
+      '9-D', '9-C', '9-A', '2-B', '2-A', '1-B', '1-A',
+      'X-E', 'X-D', 'X-C', 'X-B', 'X-A',
+      '9-E', '9-B', '8-E', '8-D', '8-C', '8-B', '8-A', '2-E', '2-D', '2-C', '1-E', '1-D', '1-C',
+    ])
+  })
+
+  it('最近更新 with no dates at all gives the fixed ID order, cross-issue solutions first', () => {
+    const noUpdated = allSolutions.map((x) => ({ ...x, solution: { ...x.solution, updated: null } }) as RecentSolution)
+    const sorted = keys(sortSolutions(noUpdated, 'updated', ctx))
     expect(sorted.slice(0, 6)).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E', '1-A'])
     expect(sorted).toEqual(keys(allSolutions))
   })

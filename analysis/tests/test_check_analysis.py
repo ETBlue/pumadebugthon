@@ -464,6 +464,45 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md", "### 7.4 解法 D：參與式選址流程", "### 7.4 解法 F：參與式選址流程")
         self.assertFails("步驟 7: 「### 7.4 解法 F：參與式選址流程」: solution F is not in 6.1")
 
+    # Each step 7 solution table has a 「災害風險」 row (ETBlue, 2026-10-22).
+    # The cell is a tag and a list of disasters, or a tag and exactly
+    # 「無明顯相關災害風險」. The check does not look at which disasters are listed.
+    DISASTER_D = "需專業主持人 |\n| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n"
+
+    def set_disaster_d(self, row):
+        """Replace the 災害風險 row of #2 解法 D with `row` (a full line, or "" to remove it)."""
+        self.edit(f"{ISSUE}/issue-analysis.md", self.DISASTER_D, "需專業主持人 |\n" + row)
+
+    def test_every_issue_passes_with_disaster_rows(self):
+        for folder in issue_folders():
+            with self.subTest(folder=folder):
+                code, out = self.run_check(folder)
+                self.assertEqual(code, 0, out)
+
+    def test_step_7_without_disaster_row_fails(self):
+        self.set_disaster_d("")
+        self.assertFails("步驟 7 #2 解法 D: no 「災害風險」 row")
+
+    def test_step_7_empty_disaster_cell_fails(self):
+        for row in ("| 災害風險 |  |\n", "| 災害風險 | `[AI模擬]` |\n"):
+            with self.subTest(row=row):
+                self.tearDown(); self.setUp()
+                self.set_disaster_d(row)
+                self.assertFails("步驟 7 #2 解法 D: the 「災害風險」 cell is empty")
+
+    def test_step_7_disaster_cell_without_tag_fails(self):
+        self.set_disaster_d("| 災害風險 | 無明顯相關災害風險 |\n")
+        self.assertFails("步驟 7 #2 解法 D: the 「災害風險」 cell must start with a tag")
+
+    def test_step_7_no_disaster_text_must_stand_alone(self):
+        self.set_disaster_d("| 災害風險 | `[AI模擬]` 無明顯相關災害風險，但颱風時要注意 |\n")
+        self.assertFails("步驟 7 #2 解法 D: write 「無明顯相關災害風險」 alone")
+
+    def test_step_7_disaster_list_passes(self):
+        self.set_disaster_d("| 災害風險 | `[AI模擬]` 風災：颱風時工作坊可能取消【待補：查證】 |\n")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
     def test_solution_without_overview_row_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.OVERVIEW_D + "\n", "")
         self.assertFails("總覽: solution D from 6.1 has no row")
@@ -731,9 +770,26 @@ class CheckAnalysisTest(unittest.TestCase):
         self.no_cross_issue()
         for name in ("issue-analysis.md", "user-stories.csv"):
             shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(self.dir, "8-smokefree", name))
+        # The fixture is older than the 災害風險 row (2026-10-22). The check now
+        # requires the row in every file, so add it after each 其他顧慮 row of
+        # this copy. The fixture file itself stays as it was.
+        path = os.path.join(self.dir, "8-smokefree", "issue-analysis.md")
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        text, n = re.subn(r"^(\| 其他顧慮 \|.*\n)", r"\1| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n", text, flags=re.M)
+        self.assertEqual(n, 5)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(text)
         code, out = self.run_check("8-smokefree")
         self.assertEqual(code, 0, out)
         self.assertIn("format: old", out)
+
+    def test_old_format_without_disaster_row_fails(self):
+        # The row is required in an old-format file too.
+        self.no_cross_issue()
+        for name in ("issue-analysis.md", "user-stories.csv"):
+            shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(self.dir, "8-smokefree", name))
+        self.assertFails("步驟 7 #8 解法 A: no 「災害風險」 row", folder="8-smokefree")
 
     def test_need_group_with_one_story_fails(self):
         self.edit(self.MD, self.I06_ROW, self.I06_ROW.replace("N07", "N11"))

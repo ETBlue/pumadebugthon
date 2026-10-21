@@ -10,6 +10,7 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              focus_tables, issue_ids, needs_format, parse_ref, section, split_cells as cells, split_focus,
                              split_refs, step1_tables, summary_lines, summary_topics, tables, without_cross_refs)
 
+NO_DISASTER = "無明顯相關災害風險"  # the 災害風險 cell when no disaster changes the solution
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
 # 新增日期: the date a stakeholder (stakeholders.csv) or a solution (6.1) was added.
 DATE_COL = "新增日期"
@@ -650,6 +651,26 @@ def main(md_path, csv_path):
                 overview_codes.append(c[0])
                 if not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", c[1]):
                     err(f"總覽 row {c[0]}: the 解法 cell must start with the row tag and a short name: {c[1]!r}")
+    # 16b-2. each step 7 solution table has a 「災害風險」 row (ETBlue, 2026-10-22;
+    # see method.md, step 7). The cell starts with a tag. After the tag comes a
+    # list of disasters, or exactly 「無明顯相關災害風險」. The check does not
+    # look at which disasters are listed.
+    own_folder_name = os.path.basename(os.path.dirname(os.path.abspath(md_path)))
+    issue_label = f"#{folder_num[own_folder_name]}" if own_folder_name in folder_num else own_folder_name
+    for line in text.splitlines():
+        m = re.match(r"^### 7\.\d+ 解法 ([A-Z])：", line)
+        if not m: continue
+        where = f"步驟 7 {issue_label} 解法 {m.group(1)}"
+        rows = [c for h, rs in tables(section(text, line) or []) if h[:2] == ["項目", "內容"] for c in rs]
+        risk = [c for c in rows if c and c[0] == "災害風險"]
+        if not risk: err(f"{where}: no 「災害風險」 row (write the disasters that change this solution, or 「{NO_DISASTER}」)"); continue
+        if len(risk) > 1: err(f"{where}: two 「災害風險」 rows")
+        value = risk[0][1].strip() if len(risk[0]) > 1 else ""
+        m_tag = re.match(rf"^`\[(?:{TAG_NAMES})\]`\s*(.*)$", value)
+        body = m_tag.group(1).strip() if m_tag else value
+        if not body: err(f"{where}: the 「災害風險」 cell is empty (write the disasters that change this solution, or 「{NO_DISASTER}」)")
+        elif not m_tag: err(f"{where}: the 「災害風險」 cell must start with a tag, for example 「`[AI模擬]` {NO_DISASTER}」: {value[:30]!r}")
+        elif NO_DISASTER in body and body != NO_DISASTER: err(f"{where}: write 「{NO_DISASTER}」 alone, or list the disasters without it: {body[:30]!r}")
     for code in codes_61:
         if code not in step7_codes: err(f"步驟 7: solution {code} from 6.1 has no section 「### 7.n 解法 {code}：…」")
         if overview is not None and code not in overview_codes: err(f"總覽: solution {code} from 6.1 has no row")

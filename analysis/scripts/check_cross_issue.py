@@ -736,6 +736,10 @@ def read_cross_issue(text, ctx):
         seen_r.append(code)
         for col in XR_HEADER[1:]:
             if not TAGGED.match(r[col]): err(f"{where}: {col} must start with a tag")
+        # 主要風險 has the disaster risks of the parts, written as
+        # 「災害風險：…（#n 解法 X）」 (ETBlue, 2026-10-22; method.md, step 7).
+        if not re.search(r"災害風險：\s*[^\s|]", r["主要風險"]):
+            err(f"{where}: 主要風險 has no 「災害風險：」 with text after it (sum up the 災害風險 rows of its parts, see method.md step 7)")
         sol_by_code[code]["detail"] = {XR_KEYS[c]: parse_cell(r[c]) for c in XR_HEADER[1:]}
     for code in xs_codes:
         if code not in seen_r: err(f"4.5: {code} has no row")

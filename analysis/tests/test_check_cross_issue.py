@@ -221,6 +221,21 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.edit("| X-E | `[AI模擬]` 環保局（清潔箱與清運）", "| X-Z | `[AI模擬]` 環保局（清潔箱與清運）")
         self.assertFails("X-E")
 
+    # Each 主要風險 cell in 4.5 has the disaster risks of its parts, written as
+    # 「災害風險：…（#n 解法 X）」 (ETBlue, 2026-10-22; method.md, step 7).
+    DISASTER_E = "；災害風險：負壓式吸菸區停電時無法排氣"
+
+    def test_risk_cell_without_disaster_risks(self):
+        self.edit(self.DISASTER_E, "；負壓式吸菸區停電時無法排氣")
+        self.assertFails("4.5 X-E: 主要風險 has no 「災害風險：」")
+
+    def test_risk_cell_with_empty_disaster_risks(self):
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        tail = text[text.index(self.DISASTER_E):text.index("（#2 解法 B） |\n\n")] + "（#2 解法 B）"
+        self.edit(tail, "；災害風險：")
+        self.assertFails("4.5 X-E: 主要風險 has no 「災害風險：」")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -88,10 +88,10 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_index_counts(self):
         item = next(i for i in self.index["issues"] if i["number"] == 2)
-        # cells: want + soThat. 實證 8+2, AI整理 11+12, AI模擬 34+38, 待補 0+1.
+        # cells: want + soThat. 實證 8+1, AI整理 11+13, AI模擬 34+38, 待補 0+1.
         self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 15, "stories": 53,
                                           "conflicts": 10, "solutions": 5,
-                                          "cells": {"evidence": 10, "aiSummary": 23, "aiSimulated": 72,
+                                          "cells": {"evidence": 9, "aiSummary": 24, "aiSimulated": 72,
                                                     "pending": 1}})
         self.assertEqual(item["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
         self.assertEqual(item["title"], "找回消失的垃圾桶")
@@ -854,7 +854,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertEqual(next(g for g in issue["groups"] if g["id"] == "W01")["tag"], "AI整理")
         counts = next(i for i in index["issues"] if i["number"] == 2)["counts"]
         # O01-US01 had AI模擬 in both cells. Now both are AI整理.
-        self.assertEqual(counts["cells"], {"evidence": 10, "aiSummary": 25, "aiSimulated": 70, "pending": 1})
+        self.assertEqual(counts["cells"], {"evidence": 9, "aiSummary": 26, "aiSimulated": 70, "pending": 1})
 
     # ---------- the needs-based format ----------
     def test_story_priority_differs_from_need(self):

@@ -89,10 +89,10 @@ describe('evidencePercent', () => {
 
 describe('the fixture issues', () => {
   it('match the counts in index.json (want + soThat)', () => {
-    expect(cellsOf(1)).toEqual(cells(13, 28, 95, 0))
-    expect(cellsOf(2)).toEqual(cells(10, 23, 72, 1))
+    expect(cellsOf(1)).toEqual(cells(12, 29, 95, 0))
+    expect(cellsOf(2)).toEqual(cells(9, 24, 72, 1))
     expect(cellsOf(8)).toEqual(cells(5, 39, 48, 0))
-    expect([1, 2, 8].map((n) => evidencePercent(cellsOf(n)))).toEqual([10, 9, 5])
+    expect([1, 2, 8].map((n) => evidencePercent(cellsOf(n)))).toEqual([9, 8, 5])
   })
 })
 

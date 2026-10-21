@@ -20,8 +20,8 @@
         "conflicts": 9,
         "solutions": 5,
         "cells": {
-          "evidence": 13,
-          "aiSummary": 28,
+          "evidence": 12,
+          "aiSummary": 29,
           "aiSimulated": 95,
           "pending": 0
         }
@@ -51,8 +51,8 @@
         "conflicts": 10,
         "solutions": 5,
         "cells": {
-          "evidence": 10,
-          "aiSummary": 23,
+          "evidence": 9,
+          "aiSummary": 24,
           "aiSimulated": 72,
           "pending": 1
         }

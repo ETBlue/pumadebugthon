@@ -15,6 +15,25 @@ export interface StakeholderIssueStories {
 /** Stakeholder ID -> one entry per issue, in issue number order. */
 export type StoryCountsByStakeholder = Map<string, StakeholderIssueStories[]>
 
+/** The list rule (decision 78). A stakeholder is listed when it is not moved
+ * and is in at least one issue (議題 is not empty). Every list, menu, count
+ * and statistic uses this rule. A moved ID redirects to its new ID. A
+ * stakeholder with no issue keeps its own page, which shows only a note. */
+export function isListed(s: Stakeholder): boolean {
+  return s.movedTo === null && s.issues.length > 0
+}
+
+/** True for a stakeholder with no issue and no move target, like I34 after it
+ * left #9. It is left out of every list, but its own page still loads. */
+export function hasNoIssue(s: Stakeholder): boolean {
+  return s.movedTo === null && s.issues.length === 0
+}
+
+/** The listed stakeholders (isListed), in the input order. */
+export function listedStakeholders(stakeholders: Stakeholder[]): Stakeholder[] {
+  return stakeholders.filter(isListed)
+}
+
 export interface TreeNode {
   /** 分類路徑 prefix, for example "gov-local-taipei". */
   path: string
@@ -110,7 +129,7 @@ export function buildTree(
   }
 
   for (const s of stakeholders) {
-    if (s.movedTo !== null || s.path === null) continue
+    if (!isListed(s) || s.path === null) continue
     if (s.id.startsWith('O')) node(s.path, 'O').stakeholders.push(s)
     else node(s.path.split('-')[0], 'I').stakeholders.push(s)
   }
@@ -136,12 +155,12 @@ export function resolveId(stakeholders: Stakeholder[], id: string): string | nul
   return null
 }
 
-/** The active stakeholders that pass the filter, in the order of the input
- * list. Moved IDs are always left out. */
+/** The listed stakeholders (isListed) that pass the filter, in the order of
+ * the input list. Moved IDs and stakeholders with no issue are always left out. */
 export function filterStakeholders(list: Stakeholder[], filter: StakeholderFilter): Stakeholder[] {
   return list.filter(
     (s) =>
-      s.movedTo === null &&
+      isListed(s) &&
       (!filter.crossIssueOnly || s.issues.length >= 2) &&
       (filter.focus.length === 0 || filter.focus.some((f) => s.focus.includes(f))),
   )

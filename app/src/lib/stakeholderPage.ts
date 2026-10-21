@@ -10,7 +10,7 @@ import { dataBasedNeeds, needsOfStakeholder, type StakeholderNeedItem } from './
 import { priorityCounts, type TagPriorityCounts } from './priority'
 // Type only: sideMenu.ts imports this file, so no import at run time.
 import type { SideMenuContext } from './sideMenu'
-import { resolveId } from './stakeholders'
+import { isListed, resolveId } from './stakeholders'
 import { storyStakeholderOf } from './stories'
 import { conflictsForStakeholder, conflictView, type ConflictView } from './wantList'
 
@@ -72,7 +72,7 @@ export function stakeholderIssueView(issue: IssueFile, id: string): StakeholderI
 export function stakeholderMenuIds(index: IndexFile): string[] {
   const available = new Set(availableIssues(index).map((i) => i.number))
   return index.stakeholders
-    .filter((s) => s.movedTo === null && s.issues.some((n) => available.has(n)))
+    .filter((s) => isListed(s) && s.issues.some((n) => available.has(n)))
     .map((s) => s.id)
     .sort(compareIds)
 }
@@ -86,7 +86,8 @@ export type StakeholderSideMenuState =
 /** The mode of the side menu from the URL parts. No ID: #/stakeholders,
  * link mode, the counts are stories. An active ID: switch mode on that tab.
  * An unknown tab counts as the overview, so the menu links go to the
- * overview. null for a moved ID (the page redirects) and an unknown ID (the
+ * overview. Link mode for a stakeholder with no issue (decision 78). null
+ * for a moved ID (the page redirects) and an unknown ID (the
  * page shows "not found"): no side menu then. */
 export function stakeholderSideMenuState(
   stakeholders: Stakeholder[],
@@ -94,7 +95,11 @@ export function stakeholderSideMenuState(
   tab: string | undefined,
 ): StakeholderSideMenuState | null {
   if (id === undefined) return { mode: 'link', context: 'stakeholders' }
-  if (!stakeholders.some((s) => s.id === id && s.movedTo === null)) return null
+  const s = stakeholders.find((x) => x.id === id)
+  if (s === undefined || s.movedTo !== null) return null
+  // A stakeholder with no issue is not in the menu (decision 78), so the menu
+  // has no current item: it is the same as on #/stakeholders.
+  if (!isListed(s)) return { mode: 'link', context: 'stakeholders' }
   const name = parseStakeholderTab(tab) ?? 'overview'
   return { mode: 'switch', current: id, tab: name, context: `stakeholder-${name}` }
 }

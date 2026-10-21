@@ -19,11 +19,11 @@ describe('issueCount', () => {
 })
 
 describe('stakeholderCount', () => {
-  it('counts active stakeholders and leaves out moved IDs', () => {
+  it('counts listed stakeholders: moved IDs and stakeholders with no issue are left out', () => {
     // 67 rows, one of them (O02) moved to I12. #9 added O25–O31, I29–I35 and I36.
-    // I34 left #9 (no issue now) but is not moved, so it is still counted.
+    // I34 left #9 (no issue now) and is not moved. It is left out (decision 78).
     expect(index.stakeholders).toHaveLength(67)
-    expect(stakeholderCount(index)).toBe(66)
+    expect(stakeholderCount(index)).toBe(65)
   })
 })
 

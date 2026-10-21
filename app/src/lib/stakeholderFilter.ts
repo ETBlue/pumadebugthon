@@ -7,7 +7,7 @@ import type { PathTarget } from './entityPaths'
 import { FILTER_PARAM, isDataBasisFilterOn } from './dataBasis'
 import { compareIds } from './ids'
 import { FOCUS_ORDER } from './issues'
-import { filterStakeholders, findStakeholder, resolveId } from './stakeholders'
+import { filterStakeholders, findStakeholder, listedStakeholders, resolveId } from './stakeholders'
 
 export const STAKEHOLDER_PARAM = 'stakeholder'
 
@@ -162,10 +162,10 @@ export function withSpecialFilter(params: URLSearchParams, groups: string[]): UR
 }
 
 /** The 特別關注 chips of the side bar: the groups of FOCUS_ORDER that at least
- * one of these stakeholders has (moved IDs left out), in FOCUS_ORDER. Unknown
+ * one of these stakeholders has (only listed ones, decision 78), in FOCUS_ORDER. Unknown
  * groups are left out, because sideBarFiltersOf drops them. */
 export function specialOptions(stakeholders: Stakeholder[]): string[] {
-  const used = new Set(stakeholders.filter((s) => s.movedTo === null).flatMap((s) => s.focus))
+  const used = new Set(listedStakeholders(stakeholders).flatMap((s) => s.focus))
   return FOCUS_ORDER.filter((f) => used.has(f))
 }
 

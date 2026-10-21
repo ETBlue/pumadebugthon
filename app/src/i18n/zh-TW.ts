@@ -367,6 +367,8 @@ export const t = {
     focus: '特別關注',
     issues: '出現的議題',
     noIssues: '這位利害關係人目前沒有出現在已完成分析的議題。',
+    /** The page of a stakeholder with no issue and no move target (decision 78). */
+    noIssueNote: '這位利害關係人目前沒有出現在任何議題中。',
     relation: '與本題的關係',
     relationNone: '分析裡沒有寫這位利害關係人與本題的關係。',
     priorityCounts: '優先順序',

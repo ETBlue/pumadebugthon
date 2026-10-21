@@ -5,15 +5,17 @@
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import { availableIssues } from './issues'
 import { pickList } from './opinion'
+import { listedStakeholders } from './stakeholders'
 
 /** 議題: the analyzed issues. */
 export function issueCount(index: IndexFile): number {
   return availableIssues(index).length
 }
 
-/** 利害關係人: active stakeholders. Moved IDs are left out. */
+/** 利害關係人: the listed stakeholders (decision 78). Moved IDs and
+ * stakeholders with no issue are left out. */
 export function stakeholderCount(index: IndexFile): number {
-  return index.stakeholders.filter((s) => s.movedTo === null).length
+  return listedStakeholders(index.stakeholders).length
 }
 
 /** 解法: the solutions of the analyzed issues, summed, plus the cross-issue

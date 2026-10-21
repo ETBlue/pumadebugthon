@@ -302,7 +302,7 @@ describe('withSpecialFilter', () => {
 describe('specialOptions', () => {
   it('lists the groups of FOCUS_ORDER that a stakeholder has, in that order', () => {
     const ss = index.stakeholders
-    const used = new Set(ss.filter((s) => s.movedTo === null).flatMap((s) => s.focus))
+    const used = new Set(ss.filter((s) => s.movedTo === null && s.issues.length > 0).flatMap((s) => s.focus))
     const options = specialOptions(ss)
     expect(options).toEqual(FOCUS_ORDER.filter((f) => used.has(f)))
     expect(options.length).toBeGreaterThan(0)
@@ -313,6 +313,15 @@ describe('specialOptions', () => {
     const ss: Stakeholder[] = [
       { ...base, id: 'I90', focus: ['外籍', '不明'], movedTo: null },
       { ...base, id: 'I91', focus: ['高齡'], movedTo: 'I90' },
+    ]
+    expect(specialOptions(ss)).toEqual(['外籍'])
+  })
+
+  it('leaves out a stakeholder with no issue (decision 78)', () => {
+    const base = index.stakeholders[0]
+    const ss: Stakeholder[] = [
+      { ...base, id: 'I90', focus: ['外籍'], issues: [1], movedTo: null },
+      { ...base, id: 'I91', focus: ['高齡'], issues: [], movedTo: null },
     ]
     expect(specialOptions(ss)).toEqual(['外籍'])
   })

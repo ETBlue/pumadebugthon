@@ -117,4 +117,9 @@ describe('focusOptions', () => {
     ]
     expect(focusOptions(list)).toEqual(['外籍', '新類別'])
   })
+
+  it('skips a stakeholder with no issue (decision 78)', () => {
+    const list = [person('I01', [1], { focus: ['外籍'] }), person('I34', [], { focus: ['高齡'] })]
+    expect(focusOptions(list)).toEqual(['外籍'])
+  })
 })

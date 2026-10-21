@@ -89,6 +89,7 @@ describe('stakeholderMenuIds', () => {
     const list = stakeholderMenuIds(index)
     expect(list).toHaveLength(65)
     expect(list).not.toContain('O02')
+    expect(list).not.toContain('I34')
     expect(list.slice(0, 2)).toEqual(['O01', 'O03'])
     expect(list).toContain('I12')
     // O first, then I, each in ID order.
@@ -210,6 +211,11 @@ describe('stakeholderSideMenuState', () => {
 
   it('uses the overview for an unknown tab, so the menu links go to the overview', () => {
     expect(state('I06', 'nope')).toEqual({ mode: 'switch', current: 'I06', tab: 'overview', context: 'stakeholder-overview' })
+  })
+
+  it('is link mode on the page of a stakeholder with no issue (I34): it is not in the menu (decision 78)', () => {
+    expect(state('I34')).toEqual({ mode: 'link', context: 'stakeholders' })
+    expect(state('I34', 'wants')).toEqual({ mode: 'link', context: 'stakeholders' })
   })
 
   it('is null for a moved ID (the page redirects) and for an unknown ID (not found)', () => {

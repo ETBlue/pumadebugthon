@@ -4,7 +4,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Stakeholder } from '@/types'
 import {
-  alsoInIssues, alsoInLabel, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, findStakeholder, issueStakeholders, resolveId, stakeholderName, storyCountsByStakeholder, type TreeNode,
+  alsoInIssues, alsoInLabel, buildTree, FIRST_LEVEL_ORDER, filterStakeholders, findStakeholder, hasNoIssue, isListed, issueStakeholders, listedStakeholders, resolveId, stakeholderName, storyCountsByStakeholder, type TreeNode,
 } from './stakeholders'
 
 const index = indexJson as IndexFile
@@ -53,8 +53,46 @@ describe('storyCountsByStakeholder', () => {
   })
 })
 
+describe('isListed, hasNoIssue, listedStakeholders (decision 78)', () => {
+  const byId = (id: string) => index.stakeholders.find((s) => s.id === id)!
+  const make = (issues: number[], movedTo: string | null): Stakeholder =>
+    ({ id: 'I99', name: '', path: 'res', focus: [], issues, movedTo, added: '2026-10-21' })
+
+  it('lists a stakeholder that is not moved and is in at least one issue', () => {
+    expect(isListed(byId('I06'))).toBe(true)
+    expect(hasNoIssue(byId('I06'))).toBe(false)
+  })
+
+  it('leaves out I34: no issue (it left #9) and no move target', () => {
+    // The fixture row: 議題 is empty and movedTo is null.
+    expect(byId('I34')).toMatchObject({ issues: [], movedTo: null })
+    expect(isListed(byId('I34'))).toBe(false)
+    expect(hasNoIssue(byId('I34'))).toBe(true)
+  })
+
+  it('leaves out a moved ID, but a moved ID is not a "no issue" stakeholder (its page redirects)', () => {
+    expect(isListed(byId('O02'))).toBe(false)
+    expect(hasNoIssue(byId('O02'))).toBe(false)
+    expect(isListed(make([1], 'I05'))).toBe(false)
+    expect(hasNoIssue(make([], 'I05'))).toBe(false)
+  })
+
+  it('listedStakeholders keeps the listed ones in the input order', () => {
+    const list = listedStakeholders(index.stakeholders)
+    expect(list).toHaveLength(65)
+    expect(list.map((s) => s.id)).not.toContain('I34')
+    expect(list.map((s) => s.id)).not.toContain('O02')
+    expect(list).toEqual(index.stakeholders.filter((s) => s.id !== 'I34' && s.id !== 'O02'))
+  })
+})
+
 describe('buildTree', () => {
   const tree = buildTree(index.stakeholders, index.pathLabels, counts)
+
+  it('leaves out I34 (no issue, not moved) and the moved O02', () => {
+    expect(allIds([...tree.organizations, ...tree.individuals])).not.toContain('I34')
+    expect(allIds([...tree.organizations, ...tree.individuals])).not.toContain('O02')
+  })
 
   it('builds the O tree by path prefix, with labels', () => {
     const taipei = find(tree.organizations, 'gov-local-taipei')!
@@ -105,10 +143,11 @@ describe('buildTree', () => {
     ])
   })
 
-  it('leaves out moved IDs and lists every other stakeholder once', () => {
+  it('leaves out moved IDs and stakeholders with no issue, and lists every other stakeholder once', () => {
     const ids = [...allIds(tree.organizations), ...allIds(tree.individuals)]
     expect(ids).not.toContain('O02')
-    expect(ids.sort()).toEqual(index.stakeholders.filter((s) => s.movedTo === null).map((s) => s.id).sort())
+    expect(ids).not.toContain('I34')
+    expect(ids.sort()).toEqual(index.stakeholders.filter((s) => s.movedTo === null && s.issues.length > 0).map((s) => s.id).sort())
   })
 
   it('the 臺北市 storyTotal is the sum of its children and its own stakeholders', () => {
@@ -181,10 +220,11 @@ describe('resolveId', () => {
 describe('filterStakeholders', () => {
   const list = index.stakeholders
 
-  it('returns every active stakeholder with no filter on; moved IDs are left out', () => {
+  it('returns every listed stakeholder with no filter on; moved IDs and I34 (no issue) are left out', () => {
     const all = filterStakeholders(list, { crossIssueOnly: false, focus: [] })
     expect(all.map((s) => s.id)).not.toContain('O02')
-    expect(all).toEqual(list.filter((s) => s.id !== 'O02'))
+    expect(all.map((s) => s.id)).not.toContain('I34')
+    expect(all).toEqual(list.filter((s) => s.id !== 'O02' && s.id !== 'I34'))
   })
 
   it('leaves out a moved ID even when it matches the other filters', () => {

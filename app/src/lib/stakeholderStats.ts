@@ -7,7 +7,7 @@ import { dataBasedOnly } from './dataBasis'
 import { compareIds } from './ids'
 import { FOCUS_ORDER } from './issues'
 import { menuIdsFor, type SideBarFilters } from './stakeholderFilter'
-import { buildTree, storyCountsByStakeholder, type TreeNode } from './stakeholders'
+import { buildTree, isListed, storyCountsByStakeholder, type TreeNode } from './stakeholders'
 
 export interface StatsTotals {
   /** The stakeholders the side menu lists. */
@@ -78,7 +78,7 @@ export function stakeholderStats(
 ): StakeholderStats {
   const numbers = issues.map((i) => i.number)
   const menuIds = stakeholders
-    .filter((s) => s.movedTo === null && s.issues.some((n) => numbers.includes(n)))
+    .filter((s) => isListed(s) && s.issues.some((n) => numbers.includes(n)))
     .map((s) => s.id)
   const ids = new Set(menuIdsFor(menuIds, stakeholders, filters, null))
   const listed = stakeholders.filter((s) => ids.has(s.id)).sort((a, b) => compareIds(a.id, b.id))

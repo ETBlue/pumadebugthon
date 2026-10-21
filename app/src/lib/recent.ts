@@ -3,6 +3,7 @@
 // first. An item with no date goes last. Never by a count.
 import type { AvailableIssueSummary, CrossIssueFile, CrossSolution, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
 import { compareIds } from './ids'
+import { isListed } from './stakeholders'
 
 /** Newest date first. A missing date (null or "") goes last. Dates are
  * YYYY-MM-DD, so string order is date order. */
@@ -24,11 +25,12 @@ export function recentIssues(issues: IssueSummary[], limit?: number): AvailableI
   return take(list, limit)
 }
 
-/** 最近加入分析的族群: active stakeholders (moved IDs left out) by `added`,
+/** 最近加入分析的族群: listed stakeholders (decision 78: moved IDs and
+ * stakeholders with no issue left out) by `added`,
  * then by ID, highest first (the reverse of compareIds, so I comes before O). */
 export function recentStakeholders(stakeholders: Stakeholder[], limit?: number): Stakeholder[] {
   const list = stakeholders
-    .filter((s) => s.movedTo === null)
+    .filter(isListed)
     .sort((a, b) => compareDatesDesc(a.added, b.added) || compareIds(b.id, a.id))
   return take(list, limit)
 }

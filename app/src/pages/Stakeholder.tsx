@@ -20,7 +20,7 @@ import { tabPath } from '@/lib/issuePage'
 import { availableIssues } from '@/lib/issues'
 import { sideBarFiltersOf } from '@/lib/stakeholderFilter'
 import { movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers } from '@/lib/stakeholderPage'
-import { resolveId } from '@/lib/stakeholders'
+import { hasNoIssue, resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
 import type { IndexFile, Stakeholder as StakeholderType } from '@/types'
@@ -61,6 +61,7 @@ export default function Stakeholder() {
   }
   // resolveId returned id itself, so the stakeholder is in the list.
   const stakeholder = index.data.stakeholders.find((s) => s.id === id)!
+  if (hasNoIssue(stakeholder)) return <NoIssueContent index={index.data} stakeholder={stakeholder} />
   return <StakeholderContent key={id} index={index.data} stakeholder={stakeholder} />
 }
 
@@ -69,6 +70,26 @@ const TAB_CONTENT: Record<StakeholderTab, ComponentType<StakeholderTabProps>> = 
   wants: WantsTab,
   needs: NeedsTab,
   solutions: SolutionsTab,
+}
+
+/** The page of a stakeholder with no issue and no move target (decision 78):
+ * the name, the ID, the path and a short note. No tabs, because there is
+ * nothing to show in them. This stakeholder is not in any list or menu. */
+function NoIssueContent({ index, stakeholder: s }: { index: IndexFile; stakeholder: StakeholderType }) {
+  const trail = pathTrail(s.path, index.pathLabels)
+  return (
+    <>
+      <PageTitle parts={[s.name]} />
+      <h1 className="text-2xl font-bold md:text-3xl">{s.name}</h1>
+      <dl className="mt-3 space-y-1.5 text-sm">
+        <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>
+        {trail.length > 0 && (
+          <Field label={tp.path}>{trail.map((step) => step.label).join(' › ')}</Field>
+        )}
+      </dl>
+      <p className="mt-6">{tp.noIssueNote}</p>
+    </>
+  )
 }
 
 function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stakeholder: StakeholderType }) {

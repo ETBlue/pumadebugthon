@@ -503,6 +503,62 @@ class CheckAnalysisTest(unittest.TestCase):
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
+    # Each step 7 solution table has all 7 rows, once each, in this order
+    # (ETBlue, 2026-10-22). Each cell starts with a tag and has text after it.
+    STEP7_ROWS = ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "災害風險", "主責單位", "成本／可行性／風險"]
+
+    def row_d(self, name):
+        """The full line (with the newline) of the row `name` in the step 7 table of #2 解法 D."""
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        start = text.index("### 7.4 解法 D：")
+        end = text.index("\n### ", start)
+        line = next(l for l in text[start:end].split("\n") if l.startswith(f"| {name} |"))
+        return line + "\n"
+
+    def test_step_7_without_row_fails(self):
+        for name in self.STEP7_ROWS:
+            if name == "災害風險": continue  # tested above
+            with self.subTest(row=name):
+                self.tearDown(); self.setUp()
+                self.edit(f"{ISSUE}/issue-analysis.md", self.row_d(name), "")
+                self.assertFails(f"步驟 7 #2 解法 D: no 「{name}」 row")
+
+    def test_step_7_two_rows_fail(self):
+        line = self.row_d("相關法規")
+        self.edit(f"{ISSUE}/issue-analysis.md", line, line + line)
+        self.assertFails("步驟 7 #2 解法 D: two 「相關法規」 rows")
+
+    def test_step_7_empty_cell_fails(self):
+        for row in ("| 隱私 |  |\n", "| 隱私 | `[AI模擬]` |\n"):
+            with self.subTest(row=row):
+                self.tearDown(); self.setUp()
+                self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("隱私"), row)
+                self.assertFails("步驟 7 #2 解法 D: the 「隱私」 cell is empty")
+
+    def test_step_7_cell_without_tag_fails(self):
+        line = self.row_d("主責單位")
+        self.edit(f"{ISSUE}/issue-analysis.md", line, line.replace("`[AI模擬]` ", ""))
+        self.assertFails("步驟 7 #2 解法 D: the 「主責單位」 cell must start with a tag")
+
+    def test_step_7_unknown_row_fails(self):
+        line = self.row_d("隱私")
+        self.edit(f"{ISSUE}/issue-analysis.md", line, line + "| 備註 | `[AI模擬]` 其他說明 |\n")
+        self.assertFails("步驟 7 #2 解法 D: unknown row 「備註」")
+
+    def test_step_7_wrong_order_fails(self):
+        a, b = self.row_d("隱私"), self.row_d("其他顧慮")
+        self.edit(f"{ISSUE}/issue-analysis.md", a + b, b + a)
+        self.assertFails("步驟 7 #2 解法 D: the rows must be in this order: " + "、".join(self.STEP7_ROWS))
+
+    def test_step_7_every_issue_has_all_rows(self):
+        # The current data of every issue passes the row check.
+        for folder in issue_folders():
+            with self.subTest(folder=folder):
+                code, out = self.run_check(folder)
+                self.assertEqual(code, 0, out)
+                self.assertNotIn("步驟 7 #", out)
+
     def test_solution_without_overview_row_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.OVERVIEW_D + "\n", "")
         self.assertFails("總覽: solution D from 6.1 has no row")

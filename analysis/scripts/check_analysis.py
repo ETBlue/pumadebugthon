@@ -651,10 +651,14 @@ def main(md_path, csv_path):
                 overview_codes.append(c[0])
                 if not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", c[1]):
                     err(f"總覽 row {c[0]}: the 解法 cell must start with the row tag and a short name: {c[1]!r}")
-    # 16b-2. each step 7 solution table has a 「災害風險」 row (ETBlue, 2026-10-22;
-    # see method.md, step 7). The cell starts with a tag. After the tag comes a
-    # list of disasters, or exactly 「無明顯相關災害風險」. The check does not
-    # look at which disasters are listed.
+    # 16b-2. each step 7 solution table has these 7 rows, once each, in this
+    # order, and no other rows (ETBlue, 2026-10-22; see method.md, step 7).
+    # Every cell starts with a tag and has text after the tag. A cell with only
+    # a tag counts as empty. The 「災害風險」 cell is a list of disasters, or
+    # exactly 「無明顯相關災害風險」. The check does not look at which
+    # disasters are listed.
+    STEP7_ROWS = ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "災害風險", "主責單位", "成本／可行性／風險"]
+    disaster_hint = f" (write the disasters that change this solution, or 「{NO_DISASTER}」)"
     own_folder_name = os.path.basename(os.path.dirname(os.path.abspath(md_path)))
     issue_label = f"#{folder_num[own_folder_name]}" if own_folder_name in folder_num else own_folder_name
     for line in text.splitlines():
@@ -662,15 +666,27 @@ def main(md_path, csv_path):
         if not m: continue
         where = f"步驟 7 {issue_label} 解法 {m.group(1)}"
         rows = [c for h, rs in tables(section(text, line) or []) if h[:2] == ["項目", "內容"] for c in rs]
-        risk = [c for c in rows if c and c[0] == "災害風險"]
-        if not risk: err(f"{where}: no 「災害風險」 row (write the disasters that change this solution, or 「{NO_DISASTER}」)"); continue
-        if len(risk) > 1: err(f"{where}: two 「災害風險」 rows")
-        value = risk[0][1].strip() if len(risk[0]) > 1 else ""
-        m_tag = re.match(rf"^`\[(?:{TAG_NAMES})\]`\s*(.*)$", value)
-        body = m_tag.group(1).strip() if m_tag else value
-        if not body: err(f"{where}: the 「災害風險」 cell is empty (write the disasters that change this solution, or 「{NO_DISASTER}」)")
-        elif not m_tag: err(f"{where}: the 「災害風險」 cell must start with a tag, for example 「`[AI模擬]` {NO_DISASTER}」: {value[:30]!r}")
-        elif NO_DISASTER in body and body != NO_DISASTER: err(f"{where}: write 「{NO_DISASTER}」 alone, or list the disasters without it: {body[:30]!r}")
+        if not rows: err(f"{where}: no table with the header 項目 | 內容"); continue
+        names = [c[0] for c in rows if c]
+        for name in names:
+            if name not in STEP7_ROWS: err(f"{where}: unknown row 「{name}」 (the rows are: {'、'.join(STEP7_ROWS)})")
+        for name in STEP7_ROWS:
+            hint = disaster_hint if name == "災害風險" else ""
+            found = [c for c in rows if c and c[0] == name]
+            if not found: err(f"{where}: no 「{name}」 row{hint}"); continue
+            if len(found) > 1: err(f"{where}: two 「{name}」 rows")
+            value = found[0][1].strip() if len(found[0]) > 1 else ""
+            m_tag = re.match(rf"^`\[(?:{TAG_NAMES})\]`\s*(.*)$", value)
+            body = m_tag.group(1).strip() if m_tag else value
+            example = NO_DISASTER if name == "災害風險" else "…"
+            if not body: err(f"{where}: the 「{name}」 cell is empty{hint}")
+            elif not m_tag: err(f"{where}: the 「{name}」 cell must start with a tag, for example 「`[AI模擬]` {example}」: {value[:30]!r}")
+            elif name == "災害風險" and NO_DISASTER in body and body != NO_DISASTER:
+                err(f"{where}: write 「{NO_DISASTER}」 alone, or list the disasters without it: {body[:30]!r}")
+        # The order is checked only when each row is there once and there are
+        # no other rows. Otherwise the messages above already say what is wrong.
+        if sorted(names) == sorted(STEP7_ROWS) and names != STEP7_ROWS:
+            err(f"{where}: the rows must be in this order: {'、'.join(STEP7_ROWS)}")
     for code in codes_61:
         if code not in step7_codes: err(f"步驟 7: solution {code} from 6.1 has no section 「### 7.n 解法 {code}：…」")
         if overview is not None and code not in overview_codes: err(f"總覽: solution {code} from 6.1 has no row")

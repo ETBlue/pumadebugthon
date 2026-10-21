@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { PageTabs } from '@/components/PageTabs'
 import { CellText } from '@/components/CellText'
 import { Field } from '@/components/Field'
@@ -23,6 +24,7 @@ import {
   crossSolutionPath, parseSolutionSlug, parseSolutionTab, SOLUTION_TABS, solutionPath, type SolutionTab,
 } from '@/lib/entityPaths'
 import { findIssue, tabPath } from '@/lib/issuePage'
+import { stripMarkdown } from '@/lib/markdown'
 import { findSolution, solutionTitle } from '@/lib/solutionPage'
 import { solutionTabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
@@ -94,15 +96,13 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
   return (
     <>
       <PageTitle parts={[solutionTitle(n, sol), tab && tab !== 'overview' ? tp.tabs[tab] : null, tp.titlePart]} />
-      <nav aria-label={tp.breadcrumb}>
-        <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
-          <li><Link to="/" className={targetLinkClass}>{tp.home}</Link></li>
-          <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li><Link to={{ pathname: '/solutions', search }} className={targetLinkClass}>{tp.solutions}</Link></li>
-          <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li aria-current="page" className="font-mono">{t.solutionId(n, sol.id)}</li>
-        </ol>
-      </nav>
+      <Breadcrumb
+        items={[
+          { name: t.breadcrumb.home, to: '/' },
+          { name: t.breadcrumb.solutions, to: { pathname: '/solutions', search } },
+          { id: t.solutionId(n, sol.id), name: stripMarkdown(sol.name.text) },
+        ]}
+      />
 
       <h1 className="mt-4 text-2xl font-bold md:text-3xl">
         <span className="mr-1 font-mono">{t.solutionId(n, sol.id)}</span>{' '}
@@ -190,15 +190,13 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
   return (
     <>
       <PageTitle parts={[crossSolutionTitle(sol), tab && tab !== 'overview' ? tp.tabs[tab] : null, tp.titlePart]} />
-      <nav aria-label={tp.breadcrumb}>
-        <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
-          <li><Link to="/" className={targetLinkClass}>{tp.home}</Link></li>
-          <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li><Link to={{ pathname: '/solutions', search }} className={targetLinkClass}>{tp.solutions}</Link></li>
-          <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li aria-current="page" className="font-mono">{sol.code}</li>
-        </ol>
-      </nav>
+      <Breadcrumb
+        items={[
+          { name: t.breadcrumb.home, to: '/' },
+          { name: t.breadcrumb.solutions, to: { pathname: '/solutions', search } },
+          { id: sol.code, name: sol.name },
+        ]}
+      />
 
       <h1 className="mt-4 text-2xl font-bold md:text-3xl">
         <span className="mr-1 font-mono">{sol.code}</span>{' '}

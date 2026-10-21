@@ -1,5 +1,6 @@
 import { useId, type ReactNode } from 'react'
 import { Link, Navigate, useLocation, useParams } from 'react-router'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { CellText } from '@/components/CellText'
 import { ConflictView } from '@/components/ConflictView'
 import { LoadState } from '@/components/LoadState'
@@ -95,19 +96,15 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
   return (
     <>
       <PageTitle parts={[title, s.name]} />
-      <nav aria-label={ts.breadcrumb}>
-        <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
-          <li><Link to="/" className={linkClass}>{ts.home}</Link></li>
-          <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li><Link to="/stakeholders" className={linkClass}>{ts.stakeholders}</Link></li>
-          <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li>
-            <Link to={stakeholderTabPath(s.id, 'overview')} className={linkClass}>{`${s.id} ${s.name}`}</Link>
-          </li>
-          <li aria-hidden="true" className="text-muted-foreground">›</li>
-          <li aria-current="page" className="font-mono">{title}</li>
-        </ol>
-      </nav>
+      {/* A story has no title, so its item is the ID only (decision 99). */}
+      <Breadcrumb
+        items={[
+          { name: t.breadcrumb.home, to: '/' },
+          { name: t.breadcrumb.stakeholders, to: '/stakeholders' },
+          { id: s.id, name: s.name, to: stakeholderTabPath(s.id, 'overview') },
+          { id: title },
+        ]}
+      />
       <h1 className="mt-4 text-2xl font-bold md:text-3xl font-mono">{title}</h1>
 
       <Section heading={ts.storyHeading}>

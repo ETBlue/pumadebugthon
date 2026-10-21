@@ -128,6 +128,8 @@ export const t = {
   },
   /** 「#2 A」: a solution in a list across issues. */
   solutionId: (issueNumber: number, id: string) => `#${issueNumber} ${id}`,
+  /** 「#8」: the issue number, for example in the breadcrumb. */
+  issueId: (issueNumber: number) => `#${issueNumber}`,
   /** The home page (design 3.1): the hero and three blocks. */
   home: {
     intro: '這個網站整理臺北市政議題的分析：每個議題有哪些利害關係人、他們想要什麼、彼此有哪些衝突，以及可能的解法。',
@@ -437,11 +439,17 @@ export const t = {
     /** No stakeholder matches the side bar filters. */
     none: '沒有符合篩選的利害關係人。',
   },
+  /** The shared breadcrumb (design 3.2, decision 99). */
+  breadcrumb: {
+    /** The aria-label of the nav. */
+    label: '頁面位置',
+    home: '首頁',
+    issues: '議題',
+    stakeholders: '利害關係人',
+    solutions: '解法',
+  },
   /** The story page #/stakeholders/:id/stories/:number/:storyId (design 3.15). */
   storyPage: {
-    breadcrumb: '頁面位置',
-    home: '首頁',
-    stakeholders: '利害關係人',
     /** The h1 and the last breadcrumb item: 「#2 I06-US01」. */
     title: (n: number, storyId: string) => `#${n} ${storyId}`,
     notFoundTitle: '找不到這則使用者故事',
@@ -503,9 +511,6 @@ export const t = {
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',
     slugNotFoundBody: (slug: string) => `沒有代號為 ${slug} 的解法。網址可能打錯了。`,
-    breadcrumb: '頁面位置',
-    home: '首頁',
-    solutions: '解法',
     /** The second part of the page title: 「#2 A 名稱 · 解法 · 市政提案小幫手」. */
     titlePart: '解法',
     issueNotFoundTitle: '找不到這個議題',

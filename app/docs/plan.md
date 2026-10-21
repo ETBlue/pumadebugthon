@@ -505,7 +505,7 @@ Design 3.15: the breadcrumb, h1, page title, all the parts in the table, the red
 
 Design 3.12: the header above the tabs (breadcrumb, h1, the issue line), 總覽 with 解開的衝突, the 需求 tab (covered by priority; not covered with 「由其他解法涵蓋」), the 利害關係人 tab (covered and not covered, with their needs). Labels with counts from `solutionTabCounts`.
 
-**Done when:** `#/solutions/2-A` shows 「需求　涵蓋 9・未涵蓋 12」 and 「利害關係人　涵蓋 14・未涵蓋 13」; the breadcrumb is 首頁 › 解法 › #2 A and the header link 解法 is active; an unknown tab or slug shows the message with links. Build the tab parts so that Task N11 can reuse them for a cross-issue solution (the needs and stakeholders come in as props, split by issue).
+**Done when:** `#/solutions/2-A` shows 「需求　涵蓋 9・未涵蓋 12」 and 「利害關係人　涵蓋 14・未涵蓋 13」; the breadcrumb is 首頁 › 解法 › #2 A (since L11: 首頁 › 解法 › #2 A 清潔箱佈建建議地圖, decision 99) and the header link 解法 is active; an unknown tab or slug shows the message with links. Build the tab parts so that Task N11 can reuse them for a cross-issue solution (the needs and stakeholders come in as props, split by issue).
 
 ### Task N10: link sweep and list pages
 
@@ -788,15 +788,16 @@ Design 3.23.13, decisions 95 and 96:
 **Files (new):** `src/components/Breadcrumb.tsx`. **Change:** `src/pages/Issue.tsx` (the breadcrumb above the h1, also on the page of a 製作中 issue), `src/pages/Solution.tsx` (both breadcrumbs use the component), `src/pages/StakeholderStory.tsx` (uses the component), `src/i18n/zh-TW.ts` (new block `breadcrumb` with 「頁面位置」, 「首頁」, 「議題」; remove `breadcrumb` and `home` from `storyPage` and `solutionPage` when nothing else uses them).
 
 Design 3.2 (Breadcrumb), decision 99:
-1. `Breadcrumb` takes `items: { label, to? }[]`. It writes `<nav aria-label="頁面位置">` with an `<ol>`, a 「›」 `<li aria-hidden="true">` in muted text between items, links with `targetLinkClass`, and the last item as plain text with `aria-current="page"`. A label can be set to `font-mono` (for IDs).
-2. The issue page: 首頁 › 議題 › #8 on every tab. 議題 links to `#/issues` with no params. The "not found" message has no breadcrumb.
-3. The solution pages and the story page: the same items as today, now through the component. No visible change.
+1. `Breadcrumb` takes `items: { id?, name?, to? }[]`. It writes `<nav aria-label="頁面位置">` with an `<ol>`, a 「›」 `<li aria-hidden="true">` in muted text between items, links with `targetLinkClass`, and the last item as plain text with `aria-current="page"`. An item shows the ID in `font-mono`, a space, then the name. A long name wraps inside its item.
+2. The ID plus the name, on every page (ETBlue, 2026-10-22): an item that names an issue, a stakeholder or a solution shows both. An item with no name keeps its ID only. A story has no title in the data, so the story item stays 「#2 I06-US01」. A solution name is shown as plain text (`stripMarkdown`, no tag badge).
+3. The issue page: 首頁 › 議題 › #8 無菸城市 on every tab, also on the page of a 製作中 issue. 議題 links to `#/issues` with no params. The "not found" message has no breadcrumb.
+4. The solution pages: 首頁 › 解法 › #2 A 清潔箱佈建建議地圖 and 首頁 › 解法 › X-A 同一段人行道的共同參與式選址. The story page: 首頁 › 利害關係人 › I06 身心障礙者（視障、輪椅使用者） › #2 I06-US01 (the same items as before, now through the component).
 
-**Tests:** no pure logic, so no new Vitest file. Check by hand in the dev server and in L9: the old breadcrumbs look the same (compare a screenshot of `#/solutions/2-A` and `#/stakeholders/I06/stories/2/I06-US01` before and after).
+**Tests:** no pure logic, so no new Vitest file. Check by hand in the dev server and in L9: the breadcrumbs show the ID and the name, and the longest names wrap at 360 px (compare a screenshot of `#/solutions/2-A` and `#/stakeholders/I06/stories/2/I06-US01` before and after).
 
 **Checks:** the app checks.
 
-**Done when:** `#/issues/8` and `#/issues/8/wants` show 首頁 › 議題 › #8; the solution and story breadcrumbs look and work as before; the keyboard order on the issue page is breadcrumb, h1 area, tab list, tab content; 360 px has no sideways scroll.
+**Done when:** `#/issues/8` and `#/issues/8/wants` show 首頁 › 議題 › #8 無菸城市; `#/solutions/2-A` shows 首頁 › 解法 › #2 A 清潔箱佈建建議地圖; `#/solutions/X-A` shows 首頁 › 解法 › X-A 同一段人行道的共同參與式選址; the story breadcrumb works as before; the keyboard order on the issue page is breadcrumb, h1 area, tab list, tab content; 360 px has no sideways scroll.
 
 ### Task L5: `#/issues`
 
@@ -824,7 +825,7 @@ Needs L1, L3, L10 and L11.
 Design 3.23.9–3.23.11 and 3.23.13, decisions 87, 88, 92–99:
 1. `#/stakeholders` outside the side bar layout: the h1 with `sr-only`, the bar (search 「搜尋利害關係人」 with 「輸入編號或名稱」; sort: 最近更新, 最近新增, 依資料根據比例, 依解法涵蓋比例; filters: 議題 with 「跨議題」, 只看特別關注族群; the view switch), the result line, the notes, then the cards or the tree view (two columns from `md`).
 2. The list is: filter, then search (`stakeholderMatches`), then sort. In tree view: filter and search, then `sideMenuTree` with the matching IDs, every group open while `q` is set.
-3. The stakeholder page (decision 94): no side bar; the breadcrumb 首頁 › 利害關係人 › I06 (decision 99); the filter row at the top of the tab content; tab links keep only `evidence`; `cross` and `special` are dropped with `replace`. The page of a stakeholder with no issue (decision 78) has no side menu.
+3. The stakeholder page (decision 94): no side bar; the breadcrumb 首頁 › 利害關係人 › I06 身心障礙者（視障、輪椅使用者）, the ID plus the name (decision 99; ETBlue, 2026-10-22); the filter row at the top of the tab content; tab links keep only `evidence`; `cross` and `special` are dropped with `replace`. The page of a stakeholder with no issue (decision 78) has no side menu.
 4. Remove the statistics (decision 88).
 5. The legacy redirects (`cross=1`, `special=`, `evidence=1`).
 
@@ -832,7 +833,7 @@ Design 3.23.9–3.23.11 and 3.23.13, decisions 87, 88, 92–99:
 
 **Checks:** the app checks.
 
-**Done when:** `#/stakeholders?sort=added` shows the same first 5 as the home block; `?sort=solutions` shows the percents and the note; `?issue=X` lists only the stakeholders in 2 or more issues; `?view=tree` shows 組織 and 個人 side by side from `md` and stacked at 360 px, with the sort disabled; `?q=i6` shows only I06; `?q=身心&view=tree` shows I06 and only the groups above it, all open; the page has no statistics; `#/stakeholders?cross=1` lands on `?issue=X`; `#/stakeholders/O02/wants` still lands on `#/stakeholders/I12/wants?from=O02`; `#/stakeholders/I06/needs?evidence=1` has no side bar, shows the breadcrumb 首頁 › 利害關係人 › I06 and the toggle on in the filter row, and the 需求 tab label still shows the total; the issue tabs keep their side bar and their counts.
+**Done when:** `#/stakeholders?sort=added` shows the same first 5 as the home block; `?sort=solutions` shows the percents and the note; `?issue=X` lists only the stakeholders in 2 or more issues; `?view=tree` shows 組織 and 個人 side by side from `md` and stacked at 360 px, with the sort disabled; `?q=i6` shows only I06; `?q=身心&view=tree` shows I06 and only the groups above it, all open; the page has no statistics; `#/stakeholders?cross=1` lands on `?issue=X`; `#/stakeholders/O02/wants` still lands on `#/stakeholders/I12/wants?from=O02`; `#/stakeholders/I06/needs?evidence=1` has no side bar, shows the breadcrumb 首頁 › 利害關係人 › I06 身心障礙者（視障、輪椅使用者） and the toggle on in the filter row, and the 需求 tab label still shows the total; the issue tabs keep their side bar and their counts.
 
 ### Task L7: `#/solutions`
 

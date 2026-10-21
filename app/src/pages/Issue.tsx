@@ -5,6 +5,7 @@ import { OverviewTab } from '@/components/issue/OverviewTab'
 import { SolutionsTab } from '@/components/issue/SolutionsTab'
 import { WantsTab } from '@/components/issue/WantsTab'
 import type { IssueTabProps } from '@/components/issue/types'
+import { Breadcrumb } from '@/components/Breadcrumb'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { SpaceLinks } from '@/components/SpaceLinks'
@@ -43,6 +44,20 @@ function BackHome() {
   )
 }
 
+/** The breadcrumb above the h1 on every tab (design 3.2, decision 99):
+ * 首頁 › 議題 › #8 無菸城市. 議題 links to the list with no params. */
+function IssueBreadcrumb({ number, title }: { number: number; title: string }) {
+  return (
+    <Breadcrumb
+      items={[
+        { name: t.breadcrumb.home, to: '/' },
+        { name: t.breadcrumb.issues, to: '/issues' },
+        { id: t.issueId(number), name: title },
+      ]}
+    />
+  )
+}
+
 /** Issue page (design 3.2): #/issues/:number/:tab? with four tabs. The old
  * tabs opinion, conflicts and stakeholders redirect (legacyIssueTab). */
 export default function Issue() {
@@ -70,7 +85,8 @@ export default function Issue() {
     return (
       <>
         <PageTitle parts={[t.issueCard.numberTitle(found.issue.number, found.issue.title)]} />
-        <h1 className="text-2xl font-bold">{t.issueCard.numberTitle(found.issue.number, found.issue.title)}</h1>
+        <IssueBreadcrumb number={found.issue.number} title={found.issue.title} />
+        <h1 className="mt-4 text-2xl font-bold">{t.issueCard.numberTitle(found.issue.number, found.issue.title)}</h1>
         <p className="mt-3">{ti.unavailableBody}</p>
         <BackHome />
       </>
@@ -91,7 +107,8 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
       <PageTitle
         parts={[t.issueCard.numberTitle(summary.number, summary.title), tab && tab !== 'overview' ? ti.tabs[tab] : null]}
       />
-      <h1 className="text-2xl font-bold md:text-3xl">{t.issueCard.numberTitle(summary.number, summary.title)}</h1>
+      <IssueBreadcrumb number={summary.number} title={summary.title} />
+      <h1 className="mt-4 text-2xl font-bold md:text-3xl">{t.issueCard.numberTitle(summary.number, summary.title)}</h1>
       <dl className="mt-3 space-y-1.5 text-sm">
         {summary.spaces.length > 0 && (
           <Field label={ti.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={summary.spaces} /></Field>

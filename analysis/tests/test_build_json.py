@@ -145,10 +145,14 @@ class BuildJsonOutputTest(unittest.TestCase):
         # The rows of the step 7 section 「### 7.n 解法 X：…」, in file order.
         a = self.solution("A")
         self.assertEqual([r["item"] for r in a["detail"]],
-                         ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "主責單位", "成本／可行性／風險"])
-        self.assertEqual(a["detail"][4]["content"],
+                         ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "災害風險", "主責單位", "成本／可行性／風險"])
+        self.assertEqual(a["detail"][5]["content"],
                          {"text": "環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局",
                           "tag": "AI模擬", "pending": False})
+        # A solution with no related disaster says so in its 災害風險 row.
+        self.assertEqual(self.solution("C")["detail"][4],
+                         {"item": "災害風險",
+                          "content": {"text": "無明顯相關災害風險", "tag": "AI模擬", "pending": False}})
 
     def test_solution_overview(self):
         # The solution's row of the 總覽 table, found by its 代號 cell. The row tag (in the 解法 cell) is on every field.
@@ -200,7 +204,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertTrue(a1["ideas"][0]["idea"]["text"].startswith("可參考新加坡"))
         self.assertEqual(self.solution("E", trees)["overview"]["owner"]["text"], "公園處")
         for s in trees["solutions"] + smoke["solutions"]:
-            self.assertEqual(len(s["detail"]), 6, s["id"])
+            self.assertEqual(len(s["detail"]), 7, s["id"])
             self.assertTrue(s["measures"], s["id"])
         self.assertEqual([s["ideas"] for s in smoke["solutions"]], [[]] * 5)
         b8 = self.solution("B", smoke)

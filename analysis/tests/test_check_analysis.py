@@ -225,6 +225,26 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md", "| O02-US01 | I12-US01 |", "| O02-US01 | I12-US09 |")
         self.assertFails("I12-US09")
 
+    # A deleted ID has 「—」 as its new ID. The old ID must still be gone from step 1 or step 4.
+    DELETED_ROW = "| O02-US02 | — | 2026-10-21 | 刪除。 |\n"
+
+    def add_change_log_row(self, row):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| O03-US03 | I13-US02 |", f"{row}| O03-US03 | I13-US02 |")
+
+    def test_change_log_deleted_story_passes(self):
+        self.add_change_log_row(self.DELETED_ROW)
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_change_log_deleted_stakeholder_passes(self):
+        self.add_change_log_row("| I99 | — | 2026-10-21 | 刪除。 |\n")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_change_log_deleted_story_still_in_step_4_fails(self):
+        self.add_change_log_row("| I12-US01 | — | 2026-10-21 | 刪除。 |\n")
+        self.assertFails("old ID I12-US01 is still in step 4")
+
     def test_id_in_change_log_only_is_allowed_but_not_elsewhere(self):
         # O02 is in the 編號異動紀錄 section only. Using it elsewhere must fail.
         self.edit(f"{ISSUE}/issue-analysis.md",

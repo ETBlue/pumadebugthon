@@ -522,7 +522,7 @@ def main(md_path, csv_path):
         name = re.sub(rf"^`\[(?:{TAG_NAMES})\]` ", "", c[1])
         compare_shared(n37, c[0], name, c[2], c[3])
 
-    # 12. 編號異動紀錄: each new ID exists; each old ID is gone from step 1 and step 4
+    # 12. 編號異動紀錄: each new ID exists (「—」 for a deleted ID); each old ID is gone from step 1 and step 4
     if CHANGE_LOG in text:
         seclog = text.split(CHANGE_LOG, 1)[1].split("\n## ", 1)[0]
         log_rows = [cells(l) for l in seclog.splitlines() if re.match(r"^\| [OI]\d\d(?:-US\d\d)? \|", l)]
@@ -530,9 +530,11 @@ def main(md_path, csv_path):
         for c in log_rows:
             old_id, new_id = c[0], c[1] if len(c) > 1 else ""
             story = "-US" in old_id
-            if story != ("-US" in new_id): err(f"編號異動紀錄: {old_id} -> {new_id} mixes a story ID and a stakeholder ID")
             known = set(ids4) if story else set(stake)
-            if new_id not in known: err(f"編號異動紀錄: new ID {new_id} (from {old_id}) is not in {'step 4' if story else 'step 1'}")
+            # 「—」: the ID was deleted. It has no new ID, and the old ID is not used again.
+            deleted = new_id == "—"
+            if not deleted and story != ("-US" in new_id): err(f"編號異動紀錄: {old_id} -> {new_id} mixes a story ID and a stakeholder ID")
+            if not deleted and new_id not in known: err(f"編號異動紀錄: new ID {new_id} (from {old_id}) is not in {'step 4' if story else 'step 1'}")
             if old_id in known: err(f"編號異動紀錄: old ID {old_id} is still in {'step 4' if story else 'step 1'}")
 
     # 12b. stakeholders.csv has a 新增日期 column; every row has a valid date

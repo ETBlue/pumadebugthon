@@ -190,20 +190,33 @@ export const t = {
       wants: '訴求',
       needs: '需求',
       solutions: '解法',
+      // The 分析摘要 topics (decision 102). 相依與現行政策 is the short name of
+      // 相依事項與現行政策的關係 (ETBlue, 2026-10-22).
+      decisions: '難以取捨的決定',
+      controversies: '可能的爭議',
+      disadvantaged: '受影響較大的弱勢族群',
+      legal: '法規上的障礙',
+      dependencies: '相依與現行政策',
     },
-    /** The tab labels with the counts of the issue (issueTabCounts). A count
-     * is a plain number, not a score. */
+    /** The tab labels with the counts of the issue (issueTabCounts and
+     * summaryTabCounts). A count is a plain number, not a score. */
     tabLabels: {
       wants: (wants: number, conflicts: number): TabLabel => ({ main: `訴求 ${wants}`, sep: '・', sub: `衝突 ${conflicts}` }),
       needs: (n: number): TabLabel => ({ main: `需求 ${n}` }),
       solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
+      /** A 分析摘要 topic tab, for example 「可能的爭議 5」. */
+      summary: (name: string, n: number): TabLabel => ({ main: `${name} ${n}` }),
+    },
+    /** The 分析摘要 topic tabs (design 3.2, decision 102). */
+    summaryTab: {
+      /** One short line at the top of each topic tab. */
+      intro: '分析摘要不加入新的事實，每一項都列出它來自哪些故事、衝突或解法。大部分是 AI 的判斷。',
+      none: '這個議題的這一項還沒有內容。',
     },
   },
   overview: {
-    /** 分析摘要 (design 3.2, decision 29): the first section of the tab. */
-    summaryHeading: '分析摘要',
-    summaryIntro:
-      '整理本議題難以取捨的決定、可能的爭議、受影響較大的弱勢族群、法規上的障礙，以及相依事項與現行政策的關係。摘要不加入新的事實，每一項都列出它來自哪些故事、衝突或解法。大部分是 AI 的判斷。',
+    /** 分析摘要 (design 3.2, decision 29): the refs line of a row. The rows
+     * are on the topic tabs now (decision 102). */
     summaryRefs: '相關：',
     countsHeading: '數量',
     stakeholders: '利害關係人',

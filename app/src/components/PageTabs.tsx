@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useEffect, useRef, type ReactNode } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router'
 import { linkClass } from '@/components/styles'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -11,7 +11,7 @@ import { useFocusTarget } from './FocusTarget'
  * ?stakeholder= (keptSearch). It drops ?pick= and ?focus=. It also runs
  * useFocusTarget, so ?focus= works on every tab. */
 export function PageTabs<T extends string>({
-  label, tabs, current, nameOf, labelOf, pathOf, notFound, overviewPath, overviewLink, children,
+  label, tabs, current, nameOf, labelOf, pathOf, notFound, overviewPath, overviewLink, scrollOnPhone = false, children,
 }: {
   /** The accessible name of the tab list. */
   label: string
@@ -27,6 +27,9 @@ export function PageTabs<T extends string>({
   notFound: string
   overviewPath: string
   overviewLink: string
+  /** true: below md the tab list is one row that scrolls sideways (the
+   * issue page with nine tabs, decision 102). false: it wraps. */
+  scrollOnPhone?: boolean
   /** The content of the current tab. */
   children: (tab: T) => ReactNode
 }) {
@@ -34,6 +37,22 @@ export function PageTabs<T extends string>({
   const [params] = useSearchParams()
   // ?focus=<value>: scroll to that part of the tab and focus it (design 3.2).
   useFocusTarget()
+  const listRef = useRef<HTMLDivElement>(null)
+
+  // A list that scrolls sideways shows the current tab: when it is outside
+  // the visible part, the list (not the page) scrolls to put it in the middle.
+  // It runs again when the labels change, because the counts come in after
+  // the issue loads and make the tabs wider.
+  const labels = tabs.map((name) => tabLabelText(labelOf(name))).join('|')
+  useEffect(() => {
+    const list = listRef.current
+    if (!scrollOnPhone || !list || list.scrollWidth <= list.clientWidth) return
+    const active = list.querySelector<HTMLElement>('[data-state="active"]')
+    if (!active) return
+    const l = list.getBoundingClientRect()
+    const a = active.getBoundingClientRect()
+    if (a.left < l.left || a.right > l.right) list.scrollLeft += a.left - l.left - (l.width - a.width) / 2
+  }, [scrollOnPhone, current, labels])
 
   // A new history entry per tab, so the back button returns to the tab
   // before. activationMode="manual": with automatic activation, Radix calls
@@ -46,8 +65,16 @@ export function PageTabs<T extends string>({
 
   return (
     <Tabs value={current ?? ''} onValueChange={onTabChange} activationMode="manual" className="mt-6">
-      {/* On a phone the tab list wraps onto two rows. It never scrolls sideways. */}
-      <TabsList aria-label={label} className="h-auto w-full flex-wrap items-stretch justify-start group-data-horizontal/tabs:h-auto">
+      {/* On a phone the tab list wraps onto two rows. With scrollOnPhone it is
+          one row that scrolls sideways inside itself; the page does not. From
+          md it wraps. */}
+      <TabsList
+        ref={listRef}
+        aria-label={label}
+        className={`h-auto w-full items-stretch justify-start group-data-horizontal/tabs:h-auto ${
+          scrollOnPhone ? 'flex-nowrap overflow-x-auto md:flex-wrap md:overflow-visible' : 'flex-wrap'
+        }`}
+      >
         {tabs.map((name) => {
           const l = labelOf(name)
           // On a phone the second part (the counts) is on its own line, in
@@ -60,7 +87,7 @@ export function PageTabs<T extends string>({
               key={name}
               value={name}
               aria-label={tabLabelText(l)}
-              className="h-auto flex-1 whitespace-normal px-2 py-1.5 md:px-3"
+              className={`h-auto whitespace-normal px-2 py-1.5 md:flex-1 md:px-3 ${scrollOnPhone ? 'flex-none' : 'flex-1'}`}
             >
               <span className="flex flex-col items-center leading-tight md:flex-row md:leading-normal">
                 <span className="whitespace-nowrap">{l.main}</span>

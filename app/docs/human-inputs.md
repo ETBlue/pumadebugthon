@@ -14,7 +14,7 @@ directions:
 * license for source code: MIT. license for content I produced: CC-BY 4.0. license for content from the hackathon host: depends on the host
 
 information architecture:
-* the app header should include: app name (link to home), "議題" with count, "利害關係人" with count, "解法" with count, and theme toggle on the right
+* the app header should include: app name (link to home), "議題" with count, "利害關係人" with count, spaces with count, "解法" with count, and theme toggle on the right
 * home page should include: a full-width hero section with background images or colors, providing a brief intro of the app (disclaimers are in footer, not here), followed by 3 call-to-action blocks (3 columns on desktop, 1 column on mobile) -- 
   * "最近更新的議題", showing latest updated issues, with a link guiding users to the issue list page
   * "最近加入分析的族群", showing latest added stakeholders, with a link guiding users to the stakeholder list page
@@ -77,19 +77,15 @@ information architecture:
     * title in the same row with the back button
   * a side menu
     * overview
+    * stakeholders with count / disadvantaged count
     * 訴求 with count and conflicting count
     * 需求 with count
     * solutions with count
     * hard decisions with count
     * potential controversies with count
-    * affected groups with count / disadvantaged count
     * legal blockers with count
     * related policies with count
-  * 訴求, 需求, 解法 tabs: add an extra stakeholder side menu
-    * render all organization and individual stakeholder groups in tree shape, with expand / collapse buttons for each group and expanded by default.
-    * for each stakeholder item in the menu, show counts based on the page context
-    * place all filters in the side bar on tabs that have one; on other tabs, place the filter toggle above the content
-    * place filter info and "clear filter" button in the main block
+  * if there are filters, place filters in a menu bar in the content column
 * the stakeholder page should include
   * a full width container with background color, containing
     * a back button
@@ -122,4 +118,3 @@ visual:
 * on issue > stakeholders tab
   * render detailed stakeholder cards
   * expand all tree levels by default
-  * render a menu bar, place all filters in the menu bar

@@ -56,18 +56,20 @@ describe('the issue page tabs', () => {
   it('has nine tabs: the five 分析摘要 topics after 解法, with their counts (#1)', () => {
     expect(tabNames(render('/issues/1'))).toEqual([
       '總覽', '訴求 50・衝突 9', '需求 31', '解法 5',
-      '難以取捨的決定 5', '可能的爭議 5', '受影響較大的弱勢族群 4', '法規上的障礙 5', '相依與現行政策 6',
+      '難以取捨 5', '可能爭議 5', '影響到弱勢 4', '法規障礙 5', '相關解法與政策 6',
     ])
   })
 
   it('does not count the 【待補】 rows of 受影響較大的弱勢族群 (#2: 6 rows, 1 待補)', () => {
-    expect(tabNames(render('/issues/2'))).toContain('受影響較大的弱勢族群 5')
+    expect(tabNames(render('/issues/2'))).toContain('影響到弱勢 5')
   })
 
   it('opens a topic tab from its URL, with the tab name in the page title', () => {
     const html = render('/issues/1/disadvantaged')
-    expect(activeTab(html)).toBe('受影響較大的弱勢族群 4')
-    expect(titleOf(html)).toContain('受影響較大的弱勢族群')
+    expect(activeTab(html)).toBe('影響到弱勢 4')
+    expect(titleOf(html)).toContain('影響到弱勢')
+    // The hidden h2 of the tab keeps the full name of the topic.
+    expect(html).toContain('<h2 class="sr-only">受影響較大的弱勢族群</h2>')
     expect(titleOf(html)).toContain('#1')
   })
 
@@ -111,6 +113,17 @@ describe('the issue page tabs', () => {
     const list = /role="tablist"[^>]*class="([^"]*)"|class="([^"]*)"[^>]*role="tablist"/.exec(render('/issues/1'))
     const cls = (list?.[1] ?? list?.[2] ?? '').split(' ')
     expect(cls).toEqual(expect.arrayContaining(['flex-nowrap', 'overflow-x-auto', 'md:flex-wrap']))
+  })
+
+  it('on a phone the scrolling tab list is as wide as the screen and never scrolls up and down', () => {
+    const html = render('/issues/1')
+    const list = /role="tablist"[^>]*class="([^"]*)"|class="([^"]*)"[^>]*role="tablist"/.exec(html)
+    const cls = (list?.[1] ?? list?.[2] ?? '').split(' ')
+    // -mx-4 cancels the px-4 of the page column; px-4 inside keeps the first tab in line.
+    expect(cls).toEqual(expect.arrayContaining(['-mx-4', 'w-[calc(100%+2rem)]', 'px-4', 'overflow-y-hidden', 'md:mx-0']))
+    // A label is one line in the scrolling list, so a tab is never taller than the others.
+    const triggers = [...html.matchAll(/role="tab"[^>]*class="([^"]*)"/g)].map((m) => m[1])
+    expect(triggers.every((c) => c.split(' ').includes('whitespace-nowrap'))).toBe(true)
   })
 })
 

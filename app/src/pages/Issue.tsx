@@ -142,7 +142,7 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
         label={ti.tabsLabel}
         tabs={ISSUE_TABS}
         current={tab}
-        nameOf={(name) => ti.tabs[name]}
+        nameOf={(name) => (isSummaryTab(name) ? ti.summaryHeadings[name] : ti.tabs[name])}
         labelOf={(name) => tabLabel(name, counts)}
         pathOf={(name) => tabPath(summary.number, name)}
         notFound={ti.tabNotFound}

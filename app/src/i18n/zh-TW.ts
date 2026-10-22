@@ -189,13 +189,23 @@ export const t = {
       wants: '訴求',
       needs: '需求',
       solutions: '解法',
-      // The 分析摘要 topics (decision 102). 相依與現行政策 is the short name of
-      // 相依事項與現行政策的關係 (ETBlue, 2026-10-22).
+      // The 分析摘要 topics (decision 102), with short names so the tab list
+      // is shorter on a phone (ETBlue, 2026-10-22). The full names are in
+      // summaryHeadings.
+      decisions: '難以取捨',
+      controversies: '可能爭議',
+      disadvantaged: '影響到弱勢',
+      legal: '法規障礙',
+      dependencies: '相關解法與政策',
+    },
+    /** The full names of the 分析摘要 topics, for the hidden h2 of each topic
+     * tab (decision 102). The tab list and the page title use the short names. */
+    summaryHeadings: {
       decisions: '難以取捨的決定',
       controversies: '可能的爭議',
       disadvantaged: '受影響較大的弱勢族群',
       legal: '法規上的障礙',
-      dependencies: '相依與現行政策',
+      dependencies: '相依事項與現行政策的關係',
     },
     /** The tab labels with the counts of the issue (issueTabCounts and
      * summaryTabCounts). A count is a plain number, not a score. */
@@ -576,7 +586,7 @@ export const t = {
     dependencyKind: '相依與現行政策',
     /** Where a dependency row comes from: the 分析摘要 topic of the issue. */
     dependencySource: '來源：分析摘要的「相依事項與現行政策的關係」',
-    dependencyLink: (n: number) => `到 #${n} 的相依與現行政策分頁`,
+    dependencyLink: (n: number) => `到 #${n} 的相關解法與政策分頁`,
     /** A cross-issue solution: the topic is in the cross-issue file, which has no page. */
     crossDependencySource: '來源：跨議題分析的分析摘要「相依事項與現行政策的關係」。',
     overviewHeading: '總覽',

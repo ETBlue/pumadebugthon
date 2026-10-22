@@ -415,7 +415,7 @@ class CheckAnalysisTest(unittest.TestCase):
         code, out = self.run_check("1-trees")
         self.assertEqual(code, 0, out)
         with open(os.path.join(self.dir, "1-trees", "issue-analysis.md"), encoding="utf-8") as f:
-            self.assertIn("| Nature Ways | `[AI整理]` 新聞報導指出", f.read())
+            self.assertIn("| 新加坡：Nature Ways | `[AI整理]` 新聞報導指出", f.read())
 
     def test_news_cell_without_verify_item_fails(self):
         self.edit("1-trees/issue-analysis.md", self.NEWS_ROW, "需真人查證（來源：Mothership，2020）")
@@ -423,8 +423,8 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_news_paragraph_without_verify_item_fails(self):
         self.edit("1-trees/issue-analysis.md", self.NEWS_ROW, "需真人查證（來源：Mothership，2020）")
-        self.edit("1-trees/issue-analysis.md", "| Nature Ways | `[AI整理]` 新聞報導指出",
-                  "| Nature Ways | `[AI模擬]` 新聞報導指出")
+        self.edit("1-trees/issue-analysis.md", "| 新加坡：Nature Ways | `[AI整理]` 新聞報導指出",
+                  "| 新加坡：Nature Ways | `[AI模擬]` 新聞報導指出")
         code, out = self.run_check("1-trees")
         self.assertEqual(code, 0, out)
         self.edit("1-trees/issue-analysis.md", "\n## 步驟 2", "\n`[AI整理]` 新聞報導指出某件事。\n\n## 步驟 2")

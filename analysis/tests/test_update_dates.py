@@ -278,7 +278,8 @@ class ScriptTest(unittest.TestCase):
         self.assertEqual(by_num[8]["added"], "2026-10-18")
         self.assertEqual(by_num[9]["added"], "2026-10-20")
         self.assertEqual(by_num[3]["added"], "2026-10-23")
-        self.assertIsNone(by_num[4]["added"])
+        self.assertEqual(by_num[4]["added"], "2026-10-23")
+        self.assertIsNone(by_num[5]["added"])
         for s in index["stakeholders"]:
             want = None if s["movedTo"] else rows[("利害關係人", s["id"])]["更新日期"]
             self.assertEqual(s["updated"], want, s["id"])

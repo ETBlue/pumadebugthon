@@ -61,19 +61,6 @@ export function stakeholderIssueView(issue: IssueFile, id: string): StakeholderI
   }
 }
 
-/** The stakeholder page has no side bar now (decision 94), so the old side
- * bar params cross and special mean nothing there. Returns the search
- * string without them ("" when nothing is left), or null when the URL has
- * neither. The page replaces the URL with it (history replace). */
-export function legacyStakeholderPageSearch(search: string): string | null {
-  const params = new URLSearchParams(search)
-  if (!params.has('cross') && !params.has('special')) return null
-  params.delete('cross')
-  params.delete('special')
-  const s = params.toString()
-  return s ? `?${s}` : ''
-}
-
 /** The redirect target for a page of a moved stakeholder ID (design 3.3).
  * Mostly the same as movedStakeholderTarget. When pathname is not a page of
  * oldId (for example when the URL writes the ID in another way), it goes to

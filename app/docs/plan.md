@@ -910,8 +910,16 @@ ETBlue, 2026-10-22: the solution page gets seven tabs: 總覽, 需求, 訴求, �
 
 ## Phase V: the 利害關係人 tab of the issue page (design 3.2, decision 109)
 
-ETBlue, 2026-10-22: the 影響到弱勢 tab becomes 「利害關係人 N・弱勢 M」. It shows the disadvantaged groups first (特別關注族群 and 受影響較大的弱勢族群 merged, one card per group), then the stakeholder list. 總覽 loses the 數量, 特別關注族群 and 利害關係人 blocks. `/disadvantaged` and 總覽 `?focus=stakeholders` redirect to the new tab.
+ETBlue, 2026-10-22: the 影響到弱勢 tab becomes 「利害關係人 N・弱勢 M」. It shows the disadvantaged groups first (特別關注族群 and 受影響較大的弱勢族群 merged, one card per group), then the stakeholder list. 總覽 loses the 數量, 特別關注族群 and 利害關係人 blocks. `/disadvantaged` and 總覽 `?focus=stakeholders` redirect to the new tab (these redirects were removed by decision 110).
 
 | Task | Status |
 |---|---|
 | V1: tab, label counts, merged groups, filter, redirects, tests, browser check | Done (2026-10-22). Checked with Playwright at 360 and 1280 px on #1, #2, #8 and #9: no page-level sideways scroll; the redirects and the `#/stakeholders` card links open the tab and focus the stakeholder list |
+
+## Phase W: no old-URL redirects (design 3.19, decision 110)
+
+ETBlue, 2026-10-22: no app link was ever shared, so every redirect that exists only for old app URLs is removed. Old URLs show the normal not-found page or the default page. The moved stakeholder ID redirect and the story redirect stay, because they follow the analysis data.
+
+| Task | Status |
+|---|---|
+| W1: remove `legacyListRedirect`, `homeRedirect`, `legacyIssueTab`, `legacyIssueTabTarget`, `LegacySolution`, `legacySolutionPath`, `legacySolutionTarget`, `legacyStakeholderPageSearch` and their tests | Done (2026-10-22) |

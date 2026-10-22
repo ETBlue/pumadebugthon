@@ -52,6 +52,20 @@ function tabNames(html: string): string[] {
 const titleOf = (html: string) => /data-title="([^"]*)"/.exec(html)?.[1]
 const activeTab = (html: string) => /role="tab" aria-selected="true"[^>]*aria-label="([^"]+)"/.exec(html)?.[1]
 
+describe('old issue URLs (decision 110: no redirects)', () => {
+  it('an old tab name shows 「找不到這個分頁」, like any unknown tab', () => {
+    for (const tab of ['opinion', 'conflicts', 'disadvantaged']) {
+      const html = render(`/issues/1/${tab}`)
+      expect(html).toContain('找不到這個分頁。')
+      expect(activeTab(html)).toBeUndefined()
+    }
+  })
+
+  it('總覽 with ?focus=stakeholders stays on 總覽', () => {
+    expect(activeTab(render('/issues/1?focus=stakeholders'))).toBe('總覽')
+  })
+})
+
 describe('the issue page tabs', () => {
   it('has nine tabs: four 分析摘要 topics and 利害關係人 after 解法, with their counts (#1)', () => {
     expect(tabNames(render('/issues/1'))).toEqual([

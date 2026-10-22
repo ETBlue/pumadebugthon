@@ -13,7 +13,7 @@ import { t } from '@/i18n/zh-TW'
 import { usedSpaceTypes } from '@/lib/issues'
 import { filterIssues } from '@/lib/listFilter'
 import {
-  clearListFilters, DEFAULT_LIST_STATE, legacyListRedirect, listParamsOf, listUrlSearch, PAGE_SORTS, Q_MAX_LENGTH,
+  clearListFilters, DEFAULT_LIST_STATE, listParamsOf, listUrlSearch, PAGE_SORTS, Q_MAX_LENGTH,
   type ListState,
 } from '@/lib/listParams'
 import { issueMatches, parseListQuery } from '@/lib/listSearch'
@@ -53,23 +53,20 @@ function loadingState(params: URLSearchParams): ListState {
 export default function Issues() {
   const index = useIndex()
   const [params] = useSearchParams()
-  const { pathname, search } = useLocation()
+  const { pathname } = useLocation()
   const navigate = useNavigate()
   const noteId = useId()
   const data = index.status === 'ready' ? index.data : null
 
   const parsed = useMemo(() => (data ? listParamsOf(PAGE, params, data) : null), [data, params])
   const state: ListState = parsed ?? loadingState(params)
-  const redirect = legacyListRedirect(PAGE, search)
-
-  // A URL with an old param or a value the page drops: replace it with the
-  // clean URL, so the back button does not loop (design 3.23.5).
+  // A URL with a value the page drops: replace it with the clean URL, so
+  // the back button does not loop (design 3.23.5).
   useEffect(() => {
-    if (redirect !== null) navigate({ pathname, search: redirect }, { replace: true, preventScrollReset: true })
-    else if (parsed?.replace) {
+    if (parsed?.replace) {
       navigate({ pathname, search: listUrlSearch(PAGE, parsed) }, { replace: true, preventScrollReset: true })
     }
-  }, [redirect, parsed, pathname, navigate])
+  }, [parsed, pathname, navigate])
 
   function onNavigate(next: string, mode: HistoryMode) {
     navigate({ pathname, search: next }, { replace: mode === 'replace', preventScrollReset: true })

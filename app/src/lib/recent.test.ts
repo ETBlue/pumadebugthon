@@ -5,7 +5,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { AvailableIssueSummary, CrossIssueFile, IndexFile, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
-import { homeRedirect, recentIssues, recentSolutionItems, recentSolutions, recentStakeholders } from './recent'
+import { recentIssues, recentSolutionItems, recentSolutions, recentStakeholders } from './recent'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
@@ -176,17 +176,5 @@ describe('recentSolutionItems', () => {
 
   it('is the issue solutions only without the file', () => {
     expect(recentSolutionItems([trees, trashcans, smokefree], null, 3).map(key)).toEqual(['8E', '8D', '8C'])
-  })
-})
-
-describe('homeRedirect', () => {
-  it('sends the old home link with the cross-issue filter to the stakeholder list', () => {
-    expect(homeRedirect('?cross=1')).toBe('/stakeholders?issue=X')
-  })
-
-  it('returns null for the plain home page and other values', () => {
-    expect(homeRedirect('')).toBeNull()
-    expect(homeRedirect('?cross=0')).toBeNull()
-    expect(homeRedirect('?other=1')).toBeNull()
   })
 })

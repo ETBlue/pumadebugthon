@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
-import { Link, Navigate, useLocation, useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { NeedsTab } from '@/components/issue/NeedsTab'
 import { OverviewTab } from '@/components/issue/OverviewTab'
 import { SolutionsTab } from '@/components/issue/SolutionsTab'
@@ -18,7 +18,7 @@ import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
 import { availableIssues } from '@/lib/issues'
 import {
-  findIssue, ISSUE_TABS, isSummaryTab, legacyIssueTabTarget, parseIssueNumber, parseTab, tabPath, type IssueTab, type SummaryTab as SummaryTabName,
+  findIssue, ISSUE_TABS, isSummaryTab, parseTab, tabPath, type IssueTab, type SummaryTab as SummaryTabName,
 } from '@/lib/issuePage'
 import { summaryTabCounts, type SummaryTopicKey } from '@/lib/summary'
 import { issueStakeholderTabCounts, issueTabCounts, type TabCounts } from '@/lib/tabCounts'
@@ -78,17 +78,10 @@ function IssueBreadcrumb({ number, title }: { number: number; title: string }) {
 
 /** Issue page (design 3.2): #/issues/:number/:tab? with nine tabs: 總覽,
  * 訴求, 需求, 解法, four 分析摘要 topics (decision 102) and 利害關係人 with
- * the fifth topic, 受影響較大的弱勢族群 (decision 109). The old tabs
- * opinion, conflicts and disadvantaged, and 總覽 with ?focus=stakeholders,
- * redirect (legacyIssueTabTarget). */
+ * the fifth topic, 受影響較大的弱勢族群 (decision 109). */
 export default function Issue() {
   const index = useIndex()
-  const { number, tab } = useParams()
-  const { search } = useLocation()
-  // The old tab URLs need no data, so they redirect before the index loads.
-  const legacy = parseIssueNumber(number)
-  const target = legacy === null ? null : legacyIssueTabTarget(legacy, tab, search)
-  if (target) return <Navigate replace to={target} />
+  const { number } = useParams()
   if (index.status !== 'ready') return <LoadState state={index} />
 
   const found = findIssue(index.data, number)

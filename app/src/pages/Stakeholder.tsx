@@ -21,7 +21,7 @@ import { tabPath } from '@/lib/issuePage'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
 import {
-  legacyStakeholderPageSearch, movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers,
+  movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers,
 } from '@/lib/stakeholderPage'
 import { hasNoIssue, resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
@@ -40,13 +40,11 @@ function tabLabel(tab: StakeholderTab, c: TabCounts | null): TabLabel {
 /** Stakeholder page (design 3.3 and 3.23.10): #/stakeholders/:id/:tab?, with
  * no side bar (decision 94). A moved ID sends the reader to the new ID, with
  * the rest of the path kept and ?from=<old ID> for the note 「O02 已改為
- * I12」. The old side bar params cross and special are dropped with replace. */
+ * I12」. */
 export default function Stakeholder() {
   const index = useIndex()
   const { id = '' } = useParams()
   const location = useLocation()
-  const legacy = legacyStakeholderPageSearch(location.search)
-  if (legacy !== null) return <Navigate replace to={{ pathname: location.pathname, search: legacy }} />
   if (index.status !== 'ready') return <LoadState state={index} />
 
   const resolved = resolveId(index.data.stakeholders, id)

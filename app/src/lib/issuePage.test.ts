@@ -3,7 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Pending } from '@/types'
 import {
-  findIssue, ISSUE_TABS, isSummaryTab, legacyIssueTab, legacyIssueTabTarget, parseIssueNumber, parseTab, pendingBySection, tabPath,
+  findIssue, ISSUE_TABS, isSummaryTab, parseIssueNumber, parseTab, pendingBySection, tabPath,
 } from './issuePage'
 
 const index = indexJson as IndexFile
@@ -38,7 +38,7 @@ describe('parseTab', () => {
     expect(parseTab('Overview')).toBeNull()
   })
 
-  it('the old tab names are not tabs any more (they redirect)', () => {
+  it('the old tab names are not tabs (they show 「tab not found」)', () => {
     expect(parseTab('opinion')).toBeNull()
     expect(parseTab('conflicts')).toBeNull()
     expect(parseTab('disadvantaged')).toBeNull()
@@ -61,59 +61,6 @@ describe('tabPath', () => {
   })
 })
 
-describe('legacyIssueTab', () => {
-  it('maps each old tab to the new tab and the focus to add (design 3.2)', () => {
-    expect(legacyIssueTab('opinion')).toEqual({ tab: 'wants', focus: null })
-    expect(legacyIssueTab('conflicts')).toEqual({ tab: 'wants', focus: 'conflicts' })
-    expect(legacyIssueTab('disadvantaged')).toEqual({ tab: 'stakeholders', focus: null })
-    expect(legacyIssueTab('stakeholders')).toBeNull()
-  })
-
-  it('returns null for a current tab, no tab or an unknown name', () => {
-    for (const tab of ISSUE_TABS) expect(legacyIssueTab(tab)).toBeNull()
-    expect(legacyIssueTab(undefined)).toBeNull()
-    expect(legacyIssueTab('nope')).toBeNull()
-  })
-})
-
-describe('legacyIssueTabTarget', () => {
-  it('opinion keeps the same query', () => {
-    expect(legacyIssueTabTarget(2, 'opinion', '?pick=W08')).toEqual({ pathname: '/issues/2/wants', search: '?pick=W08' })
-    expect(legacyIssueTabTarget(2, 'opinion', '')).toEqual({ pathname: '/issues/2/wants', search: '' })
-  })
-
-  it('conflicts goes to the 訴求 tab with focus=conflicts', () => {
-    expect(legacyIssueTabTarget(2, 'conflicts', '')).toEqual({ pathname: '/issues/2/wants', search: '?focus=conflicts' })
-    expect(legacyIssueTabTarget(2, 'conflicts', '?evidence=1')).toEqual({
-      pathname: '/issues/2/wants',
-      search: '?evidence=1&focus=conflicts',
-    })
-  })
-
-  it('disadvantaged goes to the 利害關係人 tab and keeps the query (decision 109)', () => {
-    expect(legacyIssueTabTarget(1, 'disadvantaged', '')).toEqual({ pathname: '/issues/1/stakeholders', search: '' })
-    expect(legacyIssueTabTarget(8, 'disadvantaged', '?evidence=1')).toEqual({ pathname: '/issues/8/stakeholders', search: '?evidence=1' })
-  })
-
-  it('總覽 with focus=stakeholders goes to the 利害關係人 tab with the same query (decision 109)', () => {
-    expect(legacyIssueTabTarget(2, undefined, '?focus=stakeholders')).toEqual({
-      pathname: '/issues/2/stakeholders',
-      search: '?focus=stakeholders',
-    })
-    expect(legacyIssueTabTarget(2, undefined, '?focus=stakeholders&evidence=1')).toEqual({
-      pathname: '/issues/2/stakeholders',
-      search: '?focus=stakeholders&evidence=1',
-    })
-    // Another focus on 總覽, or focus=stakeholders on another tab, stays.
-    expect(legacyIssueTabTarget(2, undefined, '?focus=C1')).toBeNull()
-    expect(legacyIssueTabTarget(2, 'stakeholders', '?focus=stakeholders')).toBeNull()
-  })
-
-  it('returns null when the segment is not an old tab', () => {
-    expect(legacyIssueTabTarget(2, 'wants', '')).toBeNull()
-    expect(legacyIssueTabTarget(2, undefined, '')).toBeNull()
-  })
-})
 
 describe('parseIssueNumber', () => {
   it('reads a plain positive number', () => {

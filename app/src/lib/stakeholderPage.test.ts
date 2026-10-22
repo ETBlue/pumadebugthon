@@ -6,7 +6,7 @@ import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import {
-  legacyStakeholderPageSearch, movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
+  movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
   stakeholderIssueView, stakeholderSolutionsView,
 } from './stakeholderPage'
 import { stakeholderTabCounts } from './tabCounts'
@@ -171,18 +171,5 @@ describe('stakeholderSolutionsView', () => {
 
   it('is empty for a stakeholder that is not in the issue', () => {
     expect(stakeholderSolutionsView(trees, 'I12')).toEqual({ solutions: [], uncovered: [] })
-  })
-})
-
-describe('legacyStakeholderPageSearch', () => {
-  it('drops cross and every special value, and keeps the rest (decision 94)', () => {
-    expect(legacyStakeholderPageSearch(`?evidence=1&cross=1&special=${encodeURIComponent('高齡')}&special=x`)).toBe('?evidence=1')
-    expect(legacyStakeholderPageSearch('?cross=1')).toBe('')
-    expect(legacyStakeholderPageSearch('?from=O02&special=')).toBe('?from=O02')
-  })
-
-  it('is null when there is nothing to drop', () => {
-    expect(legacyStakeholderPageSearch('')).toBeNull()
-    expect(legacyStakeholderPageSearch('?evidence=1&from=O02')).toBeNull()
   })
 })

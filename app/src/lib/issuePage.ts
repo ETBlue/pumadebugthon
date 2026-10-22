@@ -1,7 +1,6 @@
 // Lookups for the issue page (design 3.2).
 // Order is always the order of the issue file. Nothing here sorts by a count.
 import type { IndexFile, IssueSummary, Pending } from '@/types'
-import { FOCUS_PARAM } from './focus'
 
 /** The tabs that show one 分析摘要 topic, in the fixed topic order (design
  * 3.2, decision 102): 難以取捨的決定, 可能的爭議, 法規上的障礙,
@@ -36,51 +35,6 @@ export function parseTab(segment: string | undefined): IssueTab | null {
  * no tab segment: "/issues/2". */
 export function tabPath(issueNumber: number, tab: IssueTab): string {
   return tab === 'overview' ? `/issues/${issueNumber}` : `/issues/${issueNumber}/${tab}`
-}
-
-/** Where an old tab goes: the new tab, and the ?focus= value to add (null: none). */
-export interface LegacyIssueTab {
-  tab: IssueTab
-  focus: string | null
-}
-
-const LEGACY_TABS: Record<string, LegacyIssueTab> = {
-  opinion: { tab: 'wants', focus: null },
-  conflicts: { tab: 'wants', focus: 'conflicts' },
-  // 影響到弱勢 is part of the 利害關係人 tab now (decision 109).
-  disadvantaged: { tab: 'stakeholders', focus: null },
-}
-
-/** The new place of an old tab name (design 3.2). These URLs were shared on
- * Discord, so they must keep working. null for any other segment.
- * `stakeholders` was an old tab name too (it went to 總覽), but it is a tab
- * again since decision 109. */
-export function legacyIssueTab(segment: string | undefined): LegacyIssueTab | null {
-  return segment !== undefined && Object.hasOwn(LEGACY_TABS, segment) ? LEGACY_TABS[segment] : null
-}
-
-/** The redirect target of an old issue URL. The old query (search, "" or
- * "?…") is kept.
- * - An old tab name: "/issues/2/conflicts" goes to
- *   { pathname: "/issues/2/wants", search: "?focus=conflicts" }.
- * - 總覽 with ?focus=stakeholders (the old place of the stakeholder list,
- *   decision 38) goes to the 利害關係人 tab with the same query, so the
- *   page still scrolls to the list (decision 109).
- * null for any other URL. */
-export function legacyIssueTabTarget(
-  issueNumber: number,
-  segment: string | undefined,
-  search: string,
-): { pathname: string; search: string } | null {
-  const params = new URLSearchParams(search)
-  if (segment === undefined && params.get(FOCUS_PARAM) === 'stakeholders') {
-    return { pathname: tabPath(issueNumber, 'stakeholders'), search: `?${params.toString()}` }
-  }
-  const legacy = legacyIssueTab(segment)
-  if (!legacy) return null
-  if (legacy.focus !== null) params.set(FOCUS_PARAM, legacy.focus)
-  const s = params.toString()
-  return { pathname: tabPath(issueNumber, legacy.tab), search: s ? `?${s}` : '' }
 }
 
 export type FoundIssue =

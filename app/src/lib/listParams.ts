@@ -77,7 +77,7 @@ function listOnlySearch(params: URLSearchParams): string {
 }
 
 /** The state of a list page from its URL params. Unknown values are dropped:
- * a sort the page does not have (also the old sort=id, Q24), an issue with
+ * a sort the page does not have, an issue with
  * no analysis, a space code that is not used, an unknown or unlisted
  * stakeholder, and every param the page does not have. A moved ID in who
  * becomes the new ID. spaceCodes: the space codes the page offers; by
@@ -169,34 +169,6 @@ export function clearListFilters(params: URLSearchParams): string {
   for (const name of [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.who, LIST_PARAMS.specialOnly]) {
     next.delete(name)
   }
-  const s = next.toString()
-  return s ? `?${s}` : ''
-}
-
-/** Old links to the list pages (decisions 91 and 100). On every list page
- * the old evidence param is dropped: the list pages have no data filter.
- * On #/stakeholders, cross=1 also becomes issue=X and special=<group>
- * becomes specialonly=1. Other params are kept. Returns the new search
- * string ("" when nothing is left), or null when there is nothing to
- * change. The page redirects with replace. */
-export function legacyListRedirect(page: ListPage, search: string): string | null {
-  const params = new URLSearchParams(search)
-  if (page !== 'stakeholders') {
-    if (!params.has('evidence')) return null
-    const next = new URLSearchParams(params)
-    next.delete('evidence')
-    const s = next.toString()
-    return s ? `?${s}` : ''
-  }
-  if (!params.has('cross') && !params.has('special') && !params.has('evidence')) return null
-  const next = new URLSearchParams(params)
-  const cross = params.get('cross') === '1'
-  const special = params.getAll('special').some((v) => v !== '')
-  next.delete('cross')
-  next.delete('special')
-  next.delete('evidence')
-  if (cross && !next.getAll(LIST_PARAMS.issue).includes(CROSS_ISSUE_VALUE)) next.append(LIST_PARAMS.issue, CROSS_ISSUE_VALUE)
-  if (special) next.set(LIST_PARAMS.specialOnly, '1')
   const s = next.toString()
   return s ? `?${s}` : ''
 }

@@ -15,7 +15,7 @@ import { evidenceShare, sharePercent } from '@/lib/coverage'
 import { crossSolutionTabCounts, issuesOfCross } from '@/lib/crossIssue'
 import { availableIssues } from '@/lib/issues'
 import {
-  clearListFilters, CROSS_ISSUE_VALUE, legacyListRedirect, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
+  clearListFilters, CROSS_ISSUE_VALUE, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
 } from '@/lib/listParams'
 import { solutionItemKey, type ListContext } from '@/lib/listSort'
 import type { RecentSolution } from '@/lib/recent'
@@ -86,16 +86,12 @@ function SolutionsBody({ index }: { index: IndexFile }) {
     return rest
   }, [p])
 
-  // An old link with ?evidence=1 (decision 100), or a URL with unknown
-  // values (design 3.23.5): replace it with the clean URL, so the back
-  // button does not loop. The old param is dropped at once, also while the
-  // data loads.
-  const redirect = legacyListRedirect('solutions', search)
+  // A URL with unknown values (design 3.23.5): replace it with the clean
+  // URL, so the back button does not loop.
   const cleanSearch = listUrlSearch('solutions', state)
   useEffect(() => {
-    if (redirect !== null) navigate({ pathname, search: redirect }, { replace: true, preventScrollReset: true })
-    else if (replace) navigate({ pathname, search: cleanSearch }, { replace: true, preventScrollReset: true })
-  }, [redirect, replace, cleanSearch, pathname, navigate])
+    if (replace) navigate({ pathname, search: cleanSearch }, { replace: true, preventScrollReset: true })
+  }, [replace, cleanSearch, pathname, navigate])
 
   const onNavigate = (next: string, mode: HistoryMode) =>
     navigate({ pathname, search: next }, { replace: mode === 'replace', preventScrollReset: true })

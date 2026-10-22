@@ -3,7 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import type { IndexFile } from '@/types'
 import { NO_FILTERS } from './listFilter'
 import {
-  clearListFilters, CROSS_STAKEHOLDERS_PATH, DEFAULT_LIST_STATE, HOME_ALL_PATHS, legacyListRedirect, LIST_PARAMS, listParamsOf, listPath, listUrlSearch, Q_MAX_LENGTH,
+  clearListFilters, CROSS_STAKEHOLDERS_PATH, DEFAULT_LIST_STATE, HOME_ALL_PATHS, LIST_PARAMS, listParamsOf, listPath, listUrlSearch, Q_MAX_LENGTH,
   type ListState,
 } from './listParams'
 
@@ -114,45 +114,6 @@ describe('clearListFilters', () => {
     const params = new URLSearchParams('q=x&sort=added&issue=X&issue=2&space=park&who=I06&specialonly=1&view=tree')
     expect(clearListFilters(params)).toBe('?sort=added&view=tree')
     expect(clearListFilters(new URLSearchParams('q=x&space=park'))).toBe('')
-  })
-})
-
-describe('legacyListRedirect', () => {
-  it('turns cross=1 into issue=X on #/stakeholders, and keeps the other params', () => {
-    expect(legacyListRedirect('stakeholders', '?cross=1&sort=added')).toBe('?sort=added&issue=X')
-    expect(legacyListRedirect('stakeholders', '?cross=1&issue=X')).toBe('?issue=X')
-  })
-
-  it('turns special=<group> into specialonly=1', () => {
-    expect(legacyListRedirect('stakeholders', `?special=${encodeURIComponent('高齡')}&special=${encodeURIComponent('兒少')}`)).toBe(
-      '?specialonly=1',
-    )
-  })
-
-  it('drops evidence and an unknown cross value', () => {
-    expect(legacyListRedirect('stakeholders', '?evidence=1&view=tree')).toBe('?view=tree')
-    expect(legacyListRedirect('stakeholders', '?cross=0')).toBe('')
-  })
-
-  it('drops evidence on #/issues and #/solutions too, and keeps the other params', () => {
-    expect(legacyListRedirect('issues', '?evidence=1')).toBe('')
-    expect(legacyListRedirect('issues', '?sort=added&evidence=1&space=park')).toBe('?sort=added&space=park')
-    expect(legacyListRedirect('solutions', '?evidence=1')).toBe('')
-    expect(legacyListRedirect('solutions', '?issue=X&evidence=1')).toBe('?issue=X')
-  })
-
-  it('gives null when there is nothing to change', () => {
-    expect(legacyListRedirect('stakeholders', '?issue=X')).toBeNull()
-    expect(legacyListRedirect('stakeholders', '')).toBeNull()
-    expect(legacyListRedirect('issues', '?sort=added')).toBeNull()
-    expect(legacyListRedirect('issues', '')).toBeNull()
-    expect(legacyListRedirect('solutions', '?issue=2')).toBeNull()
-  })
-
-  it('changes cross and special only on #/stakeholders', () => {
-    expect(legacyListRedirect('solutions', '?cross=1')).toBeNull()
-    expect(legacyListRedirect('issues', `?special=${encodeURIComponent('高齡')}`)).toBeNull()
-    expect(legacyListRedirect('solutions', '?cross=1&evidence=1')).toBe('?cross=1')
   })
 })
 

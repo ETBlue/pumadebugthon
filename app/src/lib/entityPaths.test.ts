@@ -4,8 +4,6 @@ import {
   keyStoryPath,
   crossSolutionPath,
   issueFocusPath,
-  legacySolutionPath,
-  legacySolutionTarget,
   movedStakeholderPath,
   movedStakeholderTarget,
   needFocusPath,
@@ -155,33 +153,6 @@ describe('parseSolutionSlug', () => {
     for (const s of ['2', 'A', '2-', 'X-', '2-a1', '2-a', 'cross', '02-A', '0-A', 'X-a', '2-A-B', '', undefined]) {
       expect(parseSolutionSlug(s)).toBeNull()
     }
-  })
-})
-
-describe('legacySolutionPath', () => {
-  it('maps an old solution URL to the new path', () => {
-    expect(legacySolutionPath(2, 'A')).toBe('/solutions/2-A')
-    expect(legacySolutionPath(2, 'A', 'needs')).toBe('/solutions/2-A/needs')
-    expect(legacySolutionPath(8, 'B', 'stakeholders')).toBe('/solutions/8-B/stakeholders')
-  })
-
-  it('keeps an unknown tab segment, so the new page shows "tab not found"', () => {
-    expect(legacySolutionPath(2, 'A', 'nope')).toBe('/solutions/2-A/nope')
-  })
-})
-
-describe('legacySolutionTarget', () => {
-  it('reads the old URL segments and keeps the query', () => {
-    expect(legacySolutionTarget('2', 'A', undefined, '')).toEqual({ pathname: '/solutions/2-A', search: '' })
-    expect(legacySolutionTarget('2', 'A', 'needs', '?evidence=1')).toEqual({
-      pathname: '/solutions/2-A/needs',
-      search: '?evidence=1',
-    })
-  })
-
-  it('returns null when the issue number is not a plain positive number', () => {
-    expect(legacySolutionTarget('02', 'A', undefined, '')).toBeNull()
-    expect(legacySolutionTarget('x', 'A', undefined, '')).toBeNull()
   })
 })
 

@@ -3,7 +3,6 @@
 // first. An item with no date goes last. Never by a count.
 import type { AvailableIssueSummary, CrossIssueFile, CrossSolution, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
 import { compareIds } from './ids'
-import { CROSS_STAKEHOLDERS_PATH } from './listParams'
 import { isListed } from './stakeholders'
 
 /** Newest date first. A missing date (null or "") goes last. Dates are
@@ -84,10 +83,3 @@ export function recentSolutionItems(issues: IssueFile[], cross: CrossIssueFile |
   return take(out, limit)
 }
 
-/** The home page used to hold the stakeholder list, so links like
- * `#/?cross=1` were shared. They now go to `#/stakeholders?issue=X`, the
- * stakeholders in 2 or more issues (decision 91).
- * Returns the new path, or null when the home page should show. */
-export function homeRedirect(search: string): string | null {
-  return new URLSearchParams(search).get('cross') === '1' ? CROSS_STAKEHOLDERS_PATH : null
-}

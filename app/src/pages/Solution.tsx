@@ -61,7 +61,7 @@ function NotFound({ title, body, issueNumber }: { title: string; body: string; i
 
 /** Solution page (design 3.12): #/solutions/:slug/:tab?, for example
  * #/solutions/2-A/needs. One solution with everything the analysis says
- * about it. The old #/issues/<n>/solutions/<code> redirects here (router). */
+ * about it. */
 export default function Solution() {
   const index = useIndex()
   const { slug = '' } = useParams()

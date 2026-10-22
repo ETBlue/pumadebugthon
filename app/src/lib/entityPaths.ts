@@ -3,7 +3,7 @@
 // their own (decision 45). A link to one goes to the issue tab with ?focus=.
 import { withDataBasisFilter } from './dataBasis'
 import { FOCUS_PARAM } from './focus'
-import { parseIssueNumber, tabPath, type IssueTab } from './issuePage'
+import { tabPath, type IssueTab } from './issuePage'
 import { keptSearch } from './stakeholderFilter'
 
 /** The tabs of the stakeholder page, in display order. The first one is the default. */
@@ -136,27 +136,6 @@ export function parseSolutionSlug(segment: string | undefined): SolutionSlug | n
   const m = /^([1-9]\d*)-([A-Z])$/.exec(segment)
   if (!m) return null
   return { kind: 'issue', issueNumber: Number(m[1]), code: m[2] }
-}
-
-/** The new path for an old URL "/issues/2/solutions/A[/<tab>]" (design
- * 3.12). The tab segment is kept as it is, also an unknown one, so the new
- * page can show its "tab not found" message. */
-export function legacySolutionPath(issueNumber: number, code: string, tab?: string): string {
-  return withTab(`/solutions/${issueNumber}-${code}`, tab)
-}
-
-/** The redirect target of an old solution URL, from its segments and its
- * query (search, "" or "?…", kept as it is). null when the issue number is
- * not a plain positive number; the page then shows "not found". */
-export function legacySolutionTarget(
-  numberSegment: string | undefined,
-  code: string | undefined,
-  tab: string | undefined,
-  search: string,
-): PathTarget | null {
-  const n = parseIssueNumber(numberSegment)
-  if (n === null || code === undefined) return null
-  return { pathname: legacySolutionPath(n, code, tab), search }
 }
 
 /** The same stakeholder path with newId in place of oldId (design 3.3). On a

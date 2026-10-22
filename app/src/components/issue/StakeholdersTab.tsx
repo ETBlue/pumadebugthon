@@ -69,7 +69,7 @@ export function StakeholdersTab({ index, issue, summary, available }: IssueTabPr
         )}
       </section>
 
-      {/* ?focus=stakeholders scrolls here (old links to 總覽, decision 109). */}
+      {/* ?focus=stakeholders scrolls here (the links from the stakeholder cards, decision 109). */}
       <section {...focusTargetProps('stakeholders')} aria-labelledby="stakeholders-heading" className={focusTargetClass}>
         <h3 id="stakeholders-heading" className="text-lg font-semibold">{ts.stakeholdersHeading}</h3>
         <div className="mt-2">

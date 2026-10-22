@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
-import { Link, Navigate, useLocation } from 'react-router'
+import { Link } from 'react-router'
 import { BasisField } from '@/components/BasisField'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
@@ -16,7 +16,7 @@ import { crossSolutionCells, solutionCells, stakeholderCells } from '@/lib/cover
 import { tabPath } from '@/lib/issuePage'
 import { availableIssues, issueNumberTitle, sharedForCard } from '@/lib/issues'
 import { HOME_ALL_PATHS } from '@/lib/listParams'
-import { homeRedirect, recentIssues, recentSolutionItems, recentStakeholders, type RecentSolution } from '@/lib/recent'
+import { recentIssues, recentSolutionItems, recentStakeholders, type RecentSolution } from '@/lib/recent'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 
 const th = t.home
@@ -28,11 +28,7 @@ const BLOCK_SIZE = 5
  * items (3 columns from the lg breakpoint, 1 column below). Each block links
  * to its list page. The order is by date, never by a count. */
 export default function Home() {
-  const { search } = useLocation()
   const index = useIndex()
-  // Old links to the stakeholder filter on the home page (#/?cross=1).
-  const redirect = homeRedirect(search)
-  if (redirect) return <Navigate to={redirect} replace />
   return (
     <>
       <PageTitle />

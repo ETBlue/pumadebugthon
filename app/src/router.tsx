@@ -4,7 +4,6 @@ import About from '@/pages/About'
 import Home from '@/pages/Home'
 import Issue from '@/pages/Issue'
 import Issues from '@/pages/Issues'
-import LegacySolution from '@/pages/LegacySolution'
 import Placeholder from '@/pages/Placeholder'
 import RouteError from '@/pages/RouteError'
 import Solution from '@/pages/Solution'
@@ -33,11 +32,6 @@ export const router = createHashRouter([
       // is a full-width band right under the header. The page puts the rest
       // in the page column (decision 106).
       { path: 'issues', element: <Issues />, handle: { fullWidth: true } },
-      // The old solution URL redirects to #/solutions/<n>-<code> (design
-      // 3.12). More specific than the tab route, so it wins.
-      { path: 'issues/:number/solutions/:code/:tab?', element: <LegacySolution /> },
-      // The issue page also redirects the old tabs opinion, conflicts and
-      // stakeholders (legacyIssueTab).
       { path: 'issues/:number/:tab?', element: <Issue /> },
       // A moved stakeholder ID redirects on every sub-route (design 3.3).
       // There is no want or need page (decision 45). #/stakeholders and the

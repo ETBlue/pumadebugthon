@@ -1,5 +1,6 @@
 import { useMemo, type ComponentType } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
+import { BasisField } from '@/components/BasisField'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { FilterStatus } from '@/components/FilterStatus'
@@ -19,15 +20,17 @@ import { t } from '@/i18n/zh-TW'
 import { parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { backListPath } from '@/lib/backLink'
 import { tabPath } from '@/lib/issuePage'
+import { stakeholderCells } from '@/lib/coverage'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
 import { movedFrom, movedNoteSearch, pathTrail, stakeholderIssueNumbers } from '@/lib/stakeholderPage'
 import { hasNoIssue, resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
-import type { AvailableIssueSummary, IndexFile, Stakeholder as StakeholderType } from '@/types'
+import type { AvailableIssueSummary, CellCounts, IndexFile, Stakeholder as StakeholderType } from '@/types'
 
 const tp = t.stakeholderPage
+const tl = t.stakeholdersList
 
 /** The tab label with its count. While the issues load, the name only. */
 function tabLabel(tab: StakeholderTab, c: TabCounts | null): TabLabel {
@@ -87,24 +90,17 @@ const TAB_CONTENT: Record<StakeholderTab, ComponentType<StakeholderTabProps>> = 
 const backToStakeholders = (): BackTarget => ({ to: backListPath('stakeholders'), label: t.backLink.stakeholders })
 
 /** The ID and the 分類路徑 of a stakeholder, at the top of 總覽 (decision
- * 111), or under the band on the page of a stakeholder with no issue. */
+ * 111), or under the band on the page of a stakeholder with no issue.
+ * 分類路徑 is the same text as on the card of #/stakeholders (decision 118):
+ * the root, then the names of the path, 「個人 › 用路人」. It is built the
+ * same way as `listFields` in `Stakeholders.tsx` does it. */
 function IdAndPath({ index, stakeholder: s }: { index: IndexFile; stakeholder: StakeholderType }) {
-  const trail = pathTrail(s.path, index.pathLabels)
+  const root = t.sideMenu.roots[s.id.startsWith('O') ? 'O' : 'I']
+  const trail = pathTrail(s.path, index.pathLabels).map((step) => step.label)
   return (
     <>
       <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>
-      {trail.length > 0 && (
-        <Field label={tp.path}>
-          <ol className="flex flex-wrap items-center gap-x-1">
-            {trail.map((step, i) => (
-              <li key={step.path} className="flex items-center gap-x-1">
-                {i > 0 && <span aria-hidden="true" className="text-muted-foreground">›</span>}
-                {step.label}
-              </li>
-            ))}
-          </ol>
-        </Field>
-      )}
+      <Field label={tp.path}>{[root, ...trail].join(' › ')}</Field>
     </>
   )
 }
@@ -159,6 +155,11 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
     () => (issues.status === 'ready' ? stakeholderTabCounts(issues.data, s.id) : null),
     [issues, s.id],
   )
+  // 資料根據 of the metadata: null while the issue files load or fail.
+  const cells = useMemo(
+    () => (issues.status === 'ready' ? stakeholderCells(issues.data, s.id) : null),
+    [issues, s.id],
+  )
 
   const body = (name: StakeholderTab) => {
     if (shown.length === 0) return <p>{tp.noIssues}</p>
@@ -175,7 +176,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   // index.json, so it shows while the issues load.
   const content = (name: StakeholderTab) => (
     <>
-      {name === 'overview' && <StakeholderMeta index={index} stakeholder={s} shown={shown} />}
+      {name === 'overview' && <StakeholderMeta index={index} stakeholder={s} shown={shown} cells={cells} />}
       {body(name)}
     </>
   )
@@ -209,12 +210,17 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   )
 }
 
-/** The metadata at the top of 總覽 (decision 111): the ID, 分類路徑,
- * 特別關注 and the issues the stakeholder is in (links). */
-function StakeholderMeta({ index, stakeholder: s, shown }: {
+/** The metadata at the top of 總覽 (decisions 111 and 118): the ID,
+ * 分類路徑, 特別關注, the issues the stakeholder is in (links), 資料根據
+ * over every analyzed issue, 新增日期 and 更新日期. 分類路徑, 資料根據 and
+ * the dates look the same as on the card of #/stakeholders. cells is null
+ * while the issue files load: then BasisField keeps an invisible row. A
+ * stakeholder with no shown issue has no 資料根據 row. */
+function StakeholderMeta({ index, stakeholder: s, shown, cells }: {
   index: IndexFile
   stakeholder: StakeholderType
   shown: AvailableIssueSummary[]
+  cells: CellCounts | null
 }) {
   return (
     <dl className="mb-6 space-y-1.5 text-sm">
@@ -243,6 +249,9 @@ function StakeholderMeta({ index, stakeholder: s, shown }: {
           </ul>
         )}
       </Field>
+      {shown.length > 0 && <BasisField cells={cells} label={tl.basis} />}
+      {s.added && <Field label={tl.added}><time dateTime={s.added}>{s.added}</time></Field>}
+      {s.updated && <Field label={tl.updated}><time dateTime={s.updated}>{s.updated}</time></Field>}
     </dl>
   )
 }

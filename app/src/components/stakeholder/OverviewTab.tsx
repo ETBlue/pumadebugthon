@@ -15,7 +15,10 @@ const tp = t.stakeholderPage
 
 /** 總覽 (design 3.3). Per issue: 與本題的關係, the priority counts (the
  * legend once per page), the input sources, and the stories with links to
- * their want and need on the issue's tabs. */
+ * their want and need on the issue's tabs. The metadata above this tab
+ * (ID, 分類路徑, 特別關注, issues, 資料根據 over every analyzed issue,
+ * 新增日期 and 更新日期; decisions 111 and 118) is `StakeholderMeta` in
+ * `src/pages/Stakeholder.tsx`, because it shows while the issues load. */
 export function OverviewTab({ index, issues, id }: StakeholderTabProps) {
   const [dataBasedOnly] = useDataBasisFilter()
   return (

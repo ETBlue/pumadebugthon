@@ -180,6 +180,6 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
 
   it('does not change the tab counts (they are totals, decision 49)', () => {
     expect(tabNames(render('/issues/1/disadvantaged?evidence=1'))).toEqual(tabNames(render('/issues/1/disadvantaged')))
-    expect(tabNames(render('/issues/2/decisions?evidence=1'))).toContain('難以取捨的決定 4')
+    expect(tabNames(render('/issues/2/decisions?evidence=1'))).toContain('難以取捨 4')
   })
 })

@@ -834,6 +834,10 @@ class CheckAnalysisTest(unittest.TestCase):
             text = f.read()
         text, n = re.subn(r"^(\| 其他顧慮 \|.*\n)", r"\1| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n", text, flags=re.M)
         self.assertEqual(n, 5)
+        # #8 cites an open dataset that is newer than the fixture (2026-10-22),
+        # and open-data.csv lists it for #8. Add it to the end of the appendix
+        # of this copy too (the appendix is the last 「## 」 section).
+        text += "\n- [data.gov.tw 133055](https://data.gov.tw/dataset/133055)\n"
         with open(path, "w", encoding="utf-8") as f:
             f.write(text)
         code, out = self.run_check("8-smokefree")

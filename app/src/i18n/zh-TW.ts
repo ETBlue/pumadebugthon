@@ -211,6 +211,10 @@ export const t = {
       /** One short line at the top of each topic tab. */
       intro: '分析摘要不加入新的事實，每一項都列出它來自哪些故事、衝突或解法。大部分是 AI 的判斷。',
       none: '這個議題的這一項還沒有內容。',
+      /** The end of the filter status line (decision 108). */
+      shown: (n: number) => `顯示 ${n} 項。`,
+      /** When 「只看有資料根據」 hides every row (decision 108). */
+      dataEmpty: '這裡沒有說明標記 [實證] 或 [AI整理] 的項目。',
     },
   },
   overview: {

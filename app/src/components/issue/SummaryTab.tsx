@@ -1,30 +1,47 @@
 import { Link } from 'react-router'
-import { useDataBasisFilter } from '@/components/DataBasisToggle'
+import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { CellText } from '@/components/CellText'
+import { FilterStatus } from '@/components/FilterStatus'
 import { linkClass, proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import type { SummaryTab as SummaryTabName } from '@/lib/issuePage'
-import { summaryItemsOf, summaryRefTo } from '@/lib/summary'
+import { summaryItemsOf, summaryItemsShown, summaryRefTo } from '@/lib/summary'
 import type { IssueTabProps } from './types'
 
-/** A 分析摘要 topic tab of the issue page (design 3.2, decision 102): one
- * short line, then the rows of the topic in file order. A 【待補】 row is
- * shown with a dashed border; it is not in the tab count. There is no side
- * bar. The 「只看有資料根據」 filter does not hide rows (as on 總覽 before);
- * the reference links keep ?evidence=1. */
+const ts = t.issue.summaryTab
+
+/** A 分析摘要 topic tab of the issue page (design 3.2, decisions 102 and
+ * 108): one short line, the 「只看有資料根據」 toggle and the filter status
+ * line, then the rows of the topic in file order. A 【待補】 row is shown
+ * with a dashed border; it is not in the tab count. There is no side bar, so
+ * the toggle is above the rows. With the filter on, only the rows tagged
+ * [實證] or [AI整理] are shown (summaryItemsShown), and the reference links
+ * keep ?evidence=1. */
 export function SummaryTab({ tab, issue, summary }: IssueTabProps & { tab: SummaryTabName }) {
   const [dataBasedOnly] = useDataBasisFilter()
   const items = summaryItemsOf(issue, tab)
+  const shown = summaryItemsShown(items, dataBasedOnly)
   const n = summary.number
 
   return (
     <div>
-      <p className={`text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{t.issue.summaryTab.intro}</p>
+      <p className={`text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{ts.intro}</p>
+      <DataBasisToggle className="mt-4" />
+      {/* The same status line and 「清除篩選」 as the tabs with a side bar.
+          Only the data filter applies here. */}
+      <FilterStatus
+        filters={{ dataBasedOnly, special: [] }}
+        stakeholder={null}
+        shown={ts.shown(shown.length)}
+        className="mt-3"
+      />
       {items.length === 0 ? (
-        <p className="mt-4">{t.issue.summaryTab.none}</p>
+        <p className="mt-4">{ts.none}</p>
+      ) : shown.length === 0 ? (
+        <p className="mt-4 text-muted-foreground">{ts.dataEmpty}</p>
       ) : (
         <ul aria-label={t.issue.tabs[tab]} className={`mt-4 space-y-2 ${proseClass}`}>
-          {items.map((item) => (
+          {shown.map((item) => (
             <li
               key={item.item}
               className={

@@ -6,7 +6,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IssueFile, SummaryItem } from '@/types'
 import { SUMMARY_TABS } from './issuePage'
 import {
-  SUMMARY_TOPICS, parseSummaryRef, summaryItemsOf, summaryRefTo, summaryTabCount, summaryTabCounts, summaryTopicOf,
+  SUMMARY_TOPICS, parseSummaryRef, summaryItemsOf, summaryItemsShown, summaryRefTo, summaryTabCount, summaryTabCounts, summaryTopicOf,
 } from './summary'
 
 const trees = treesJson as IssueFile
@@ -176,5 +176,28 @@ describe('summaryTabCounts', () => {
   it('gives 0 and no rows for a topic the file does not have', () => {
     expect(summaryTabCount({ summary: [] }, 'legal')).toBe(0)
     expect(summaryItemsOf({ summary: [] }, 'legal')).toEqual([])
+  })
+})
+
+describe('summaryItemsShown', () => {
+  const row = (item: string, tag: SummaryItem['text']['tag']): SummaryItem => ({
+    item,
+    text: tag === null ? { text: '【待補：…】', tag: null, pending: true } : { text: '說明', tag, pending: false },
+    refs: [],
+  })
+  const items = [row('a', 'AI模擬'), row('b', '實證'), row('c', null), row('d', 'AI整理'), row('e', 'AI模擬')]
+
+  it('returns every row when the filter is off', () => {
+    expect(summaryItemsShown(items, false)).toBe(items)
+  })
+
+  it('keeps only [實證] and [AI整理] rows, in file order, when the filter is on', () => {
+    expect(summaryItemsShown(items, true).map((i) => i.item)).toEqual(['b', 'd'])
+  })
+
+  it('hides every row of #1 and #2 (all [AI模擬] or 【待補】)', () => {
+    for (const issue of [trees, trashcans]) {
+      for (const tab of SUMMARY_TABS) expect(summaryItemsShown(summaryItemsOf(issue, tab), true)).toEqual([])
+    }
   })
 })

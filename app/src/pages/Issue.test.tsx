@@ -7,6 +7,8 @@ import { describe, expect, it, vi } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
+import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import Issue from './Issue'
 
@@ -14,6 +16,8 @@ const index = indexJson as IndexFile
 const files: Record<string, IssueFile> = {
   [(treesJson as IssueFile).folder]: treesJson as IssueFile,
   [(trashcansJson as IssueFile).folder]: trashcansJson as IssueFile,
+  [(smokefreeJson as IssueFile).folder]: smokefreeJson as IssueFile,
+  [(policyJson as IssueFile).folder]: policyJson as IssueFile,
 }
 
 vi.mock('@/data', () => ({
@@ -84,7 +88,9 @@ describe('the issue page tabs', () => {
   })
 
   it('a reference link keeps 「只看有資料根據」 (?evidence=1)', () => {
-    expect(render('/issues/2/controversies?evidence=1')).toContain('href="/issues/2/wants?focus=C9&amp;evidence=1"')
+    // 參與式預算 is tagged [實證], so the filter keeps it.
+    expect(render('/issues/9/dependencies?evidence=1')).toContain('href="/issues/9/wants?focus=C3&amp;evidence=1"')
+    expect(render('/issues/9/dependencies')).toContain('href="/issues/9/wants?focus=C3"')
     expect(render('/issues/2/controversies')).toContain('href="/issues/2/wants?focus=C9"')
   })
 
@@ -105,5 +111,62 @@ describe('the issue page tabs', () => {
     const list = /role="tablist"[^>]*class="([^"]*)"|class="([^"]*)"[^>]*role="tablist"/.exec(render('/issues/1'))
     const cls = (list?.[1] ?? list?.[2] ?? '').split(' ')
     expect(cls).toEqual(expect.arrayContaining(['flex-nowrap', 'overflow-x-auto', 'md:flex-wrap']))
+  })
+})
+
+/** The row names of a topic tab, in order. */
+function rowNames(html: string): string[] {
+  const list = /<ul aria-label="[^"]*"[^>]*>([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? ''
+  return [...list.matchAll(/<p class="font-medium">([^<]*)<\/p>/g)].map((m) => m[1])
+}
+
+describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', () => {
+  it('has the toggle above the rows, with the same label and hint, off by default', () => {
+    const html = render('/issues/2/decisions')
+    expect(html).toContain('只看有資料根據')
+    expect(html).toContain('顯示標記 [實證] 或 [AI整理] 的內容。')
+    expect(html).toMatch(/aria-pressed="false"/)
+    expect(html.indexOf('只看有資料根據')).toBeLessThan(html.indexOf('<ul aria-label='))
+    expect(html).not.toContain('清除篩選')
+  })
+
+  it('shows every row when the filter is off', () => {
+    expect(rowNames(render('/issues/9/dependencies'))).toHaveLength(5)
+    expect(rowNames(render('/issues/8/disadvantaged'))).toHaveLength(6)
+  })
+
+  it('hides the [AI模擬] rows and keeps the [實證] and [AI整理] rows', () => {
+    const html = render('/issues/8/disadvantaged?evidence=1')
+    expect(html).toMatch(/aria-pressed="true"/)
+    // [AI整理] rows.
+    expect(rowNames(html)).toEqual(['呼吸道疾病', '兒童與照顧者'])
+    // A [實證] row next to [AI模擬] rows.
+    expect(rowNames(render('/issues/9/legal?evidence=1'))).toEqual(['行政院的生成式 AI 參考指引'])
+  })
+
+  it('hides the 【待補】 rows too, as other lists hide items with no data-based tag', () => {
+    const html = render('/issues/9/disadvantaged?evidence=1')
+    expect(rowNames(html)).toEqual(['外籍'])
+    expect(html).not.toContain('border-dashed')
+  })
+
+  it('shows the status line with the shown rows and 「清除篩選」', () => {
+    const html = render('/issues/9/legal?evidence=1')
+    expect(html).toContain('篩選：只看有資料根據。顯示 1 項。')
+    expect(html).toMatch(/href="\/issues\/9\/legal"[^>]*>清除篩選<\/a>/)
+  })
+
+  it('shows a short note when the filter hides every row', () => {
+    for (const path of ['/issues/2/decisions?evidence=1', '/issues/1/disadvantaged?evidence=1']) {
+      const html = render(path)
+      expect(html, path).toContain('這裡沒有說明標記 [實證] 或 [AI整理] 的項目。')
+      expect(rowNames(html), path).toEqual([])
+      expect(html, path).toContain('顯示 0 項。')
+    }
+  })
+
+  it('does not change the tab counts (they are totals, decision 49)', () => {
+    expect(tabNames(render('/issues/1/disadvantaged?evidence=1'))).toEqual(tabNames(render('/issues/1/disadvantaged')))
+    expect(tabNames(render('/issues/2/decisions?evidence=1'))).toContain('難以取捨的決定 4')
   })
 })

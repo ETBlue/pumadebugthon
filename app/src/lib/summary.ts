@@ -1,7 +1,7 @@
 // The 分析摘要 at the top of the 總覽 tab (design 3.2, decision 29).
 // Topics keep the fixed order of the issue file. Nothing here sorts by a count.
 import type { IssueFile, SummaryItem } from '@/types'
-import { withDataBasisFilter } from './dataBasis'
+import { DATA_BASED_TAGS, withDataBasisFilter } from './dataBasis'
 import { conflictFocusPath, needFocusPath, solutionPath, storyPath } from './entityPaths'
 import { SUMMARY_TABS, type SummaryTab } from './issuePage'
 import { opinionPickTo } from './opinion'
@@ -31,10 +31,19 @@ export function summaryItemsOf(issue: Pick<IssueFile, 'summary'>, tab: SummaryTa
   return issue.summary.find((t) => t.topic === topic)?.items ?? []
 }
 
+/** The rows a topic tab shows (decision 108). With 「只看有資料根據」 on,
+ * only the rows whose 說明 is tagged [實證] or [AI整理]: the [AI模擬] rows
+ * and the 【待補】 rows (no tag) are hidden, as the other filtered lists hide
+ * a story with no data-based tag (hasDataBasis). File order is kept. */
+export function summaryItemsShown(items: SummaryItem[], dataBasedOnly: boolean): SummaryItem[] {
+  return dataBasedOnly ? items.filter((i) => DATA_BASED_TAGS.includes(i.text.tag)) : items
+}
+
 /** The count in the tab label of a topic: the number of rows. On the
  * 受影響較大的弱勢族群 tab only the filled rows count. A row whose 說明 is
  * 【待補】 (for example 「呼吸道疾病（尚未納入）」) is still shown in the tab,
- * but it is not counted (ETBlue, 2026-10-22). */
+ * but it is not counted (ETBlue, 2026-10-22). The count is the total: it
+ * does not change when 「只看有資料根據」 is on (decision 49, 108). */
 export function summaryTabCount(issue: Pick<IssueFile, 'summary'>, tab: SummaryTab): number {
   const items = summaryItemsOf(issue, tab)
   return tab === 'disadvantaged' ? items.filter((i) => !i.text.pending).length : items.length

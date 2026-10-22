@@ -891,3 +891,11 @@ The same method as Task S7, with these changes:
 **Checks:** the app checks, after the fixes.
 
 **Done when:** every check passes on every page, the app checks pass, and the report lists what was fixed.
+
+## Phase T: 分析摘要 topic tabs (design 3.2, decision 102)
+
+ETBlue, 2026-10-22: the five 分析摘要 topics move from 總覽 to five tabs of their own, after 解法, with a count in each label. A 【待補】 row of 受影響較大的弱勢族群 is shown but not counted. Below `md` the issue tab list scrolls sideways.
+
+| Task | Status |
+|---|---|
+| T1: tabs, counts, routes, tests, phone check | Done (2026-10-22). Checked with Playwright at 360, 768, 1024, 1280 and 1440 px on #1, #2, #8 and #9: no page-level sideways scroll; the current tab is visible in the scrolled list at 360 px; one row at 1280 and 1440 px |

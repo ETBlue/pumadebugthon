@@ -64,8 +64,9 @@ class CheckCrossIssueTest(unittest.TestCase):
 
     def test_title_names_issue_without_analysis(self):
         # The title names the issues the file compares (「#1、#2、#8、#9」).
-        self.edit("# 跨議題分析：#1、#2、#8、#9（試作）", "# 跨議題分析：#1、#2、#3、#8、#9（試作）")
-        self.assertFails("title", "#3")
+        # #4 has no issue-analysis.md yet (#3 has one since 2026-10-23).
+        self.edit("# 跨議題分析：#1、#2、#8、#9（試作）", "# 跨議題分析：#1、#2、#4、#8、#9（試作）")
+        self.assertFails("title", "#4")
 
     def test_title_without_issue_numbers(self):
         self.edit("# 跨議題分析：#1、#2、#8、#9（試作）", "# 跨議題分析（試作）")
@@ -81,12 +82,15 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertIn("NOTE: issue #9", out)
         self.assertIn("O07", out)
 
-    def test_real_file_compares_9_and_gives_no_note(self):
-        # ETBlue added #9 on 2026-10-20, so no issue is left out.
+    def test_real_file_compares_9_and_notes_3(self):
+        # ETBlue added #9 on 2026-10-20, so #9 gets no note. #3 (added 2026-10-23)
+        # shares stakeholders but is not compared yet, so it gets a note; the owner
+        # decides whether to add it.
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
         self.assertIn("issues: [1, 2, 8, 9]", out)
-        self.assertNotIn("NOTE:", out)
+        self.assertNotIn("NOTE: issue #9", out)
+        self.assertIn("NOTE: issue #3", out)
 
     # ---------- tags and 待補 ----------
 

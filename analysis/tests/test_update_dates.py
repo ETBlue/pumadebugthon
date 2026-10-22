@@ -137,7 +137,7 @@ class ItemsTest(unittest.TestCase):
 
     def test_stakeholder_row_change_changes_it(self):
         before = self.prints()
-        edit(os.path.join(self.dir, "data", "stakeholders.csv"), "O01,商圈店家與攤商,ind-retail,,1 2 8,,", "O01,商圈店家與攤商,ind-retail,,1 2 8,測試,")
+        edit(os.path.join(self.dir, "data", "stakeholders.csv"), "O01,商圈店家與攤商,ind-retail,,1 2 3 8,,", "O01,商圈店家與攤商,ind-retail,,1 2 3 8,測試,")
         self.assertNotEqual(before[("利害關係人", "O01")], self.prints()[("利害關係人", "O01")])
 
     def test_solution_summary_change_changes_only_that_solution(self):
@@ -277,7 +277,8 @@ class ScriptTest(unittest.TestCase):
         self.assertEqual(by_num[2]["added"], "2026-10-16")
         self.assertEqual(by_num[8]["added"], "2026-10-18")
         self.assertEqual(by_num[9]["added"], "2026-10-20")
-        self.assertIsNone(by_num[3]["added"])
+        self.assertEqual(by_num[3]["added"], "2026-10-23")
+        self.assertIsNone(by_num[4]["added"])
         for s in index["stakeholders"]:
             want = None if s["movedTo"] else rows[("利害關係人", s["id"])]["更新日期"]
             self.assertEqual(s["updated"], want, s["id"])

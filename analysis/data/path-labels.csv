@@ -12,15 +12,20 @@ gov-local,地方政府
 gov-local-taipei,臺北市
 gov-local-taipei-ca,民政局
 gov-local-taipei-council,臺北市議會
+gov-local-taipei-ded,產業發展局
+gov-local-taipei-ded-market,市場處
 gov-local-taipei-doh,衛生局
 gov-local-taipei-doit,資訊局
 gov-local-taipei-epb,環保局
 gov-local-taipei-epb-cleaning,清潔隊
+gov-local-taipei-epb-vector,水質病媒管制科
 gov-local-taipei-law,法務局
 gov-local-taipei-li,里辦公處
 gov-local-taipei-pwd,工務局
+gov-local-taipei-pwd-hyd,水利工程處
 gov-local-taipei-pwd-nce,新建工程處
 gov-local-taipei-pwd-parks,公園路燈工程管理處
+gov-local-taipei-pwd-sewer,衛生下水道工程處
 gov-local-taipei-rdec,研究發展考核委員會
 gov-local-taipei-rdec-1999,1999 市民熱線
 gov-local-taipei-rdec-plan,綜合計畫室
@@ -29,13 +34,16 @@ gov-local-taipei-udd,都市發展局
 ind,產業
 ind-construction,營造業
 ind-events,活動產業
+ind-food,餐飲業
 ind-landscape,園藝與樹藝
+ind-pestcontrol,病媒防治業
 ind-realestate,不動產開發
 ind-retail,零售與商圈
 ind-tech,科技業者
 ind-utility,公用事業與管線
 mov,用路人
 ngo,公民團體
+ngo-animal,動物保護與生態保育團體
 ngo-environment,環保團體
 res,居民
 soe,公營事業

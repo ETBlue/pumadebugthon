@@ -7,7 +7,7 @@ import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { ResultLine } from '@/components/ResultLine'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
-import { linkClass, proseClass } from '@/components/styles'
+import { linkClass, listBodyClass, proseClass } from '@/components/styles'
 import { useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { usedSpaceTypes } from '@/lib/issues'
@@ -105,21 +105,23 @@ export default function Issues() {
         resultLine={resultLine(false)}
         onNavigate={onNavigate}
       />
-      {resultLine(true, 'mt-3')}
-      {/* The notes (design 3.23.1): the sort note while the share sort is
-          on, and the 資料根據 note, once on the page, not on each card. */}
-      <div className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
-        {evidenceSort && <p id={noteId}>{tb.sortNotes.evidence}</p>}
-        <p>{t.basis.listNote('議題')}</p>
-      </div>
-      <div className="mt-4">
-        {index.status !== 'ready' ? (
-          <LoadState state={index} />
-        ) : !data || !view ? null : view.shown.length === 0 ? (
-          <EmptyState state={state} filtersOn={view.parts.length > 0} params={params} />
-        ) : (
-          <IssueList index={data} issues={view.shown} headingLevel={2} showShare={evidenceSort} />
-        )}
+      <div className={listBodyClass}>
+        {resultLine(true, 'mt-3')}
+        {/* The notes (design 3.23.1): the sort note while the share sort is
+            on, and the 資料根據 note, once on the page, not on each card. */}
+        <div className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+          {evidenceSort && <p id={noteId}>{tb.sortNotes.evidence}</p>}
+          <p>{t.basis.listNote('議題')}</p>
+        </div>
+        <div className="mt-4">
+          {index.status !== 'ready' ? (
+            <LoadState state={index} />
+          ) : !data || !view ? null : view.shown.length === 0 ? (
+            <EmptyState state={state} filtersOn={view.parts.length > 0} params={params} />
+          ) : (
+            <IssueList index={data} issues={view.shown} headingLevel={2} showShare={evidenceSort} />
+          )}
+        </div>
       </div>
     </>
   )

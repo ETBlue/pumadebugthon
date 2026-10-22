@@ -10,7 +10,7 @@ import { DEFAULT_LIST_STATE, listUrlSearch, Q_MAX_LENGTH, type ListPage, type Li
 import type { ListSort } from '@/lib/listSort'
 import { cn } from '@/lib/utils'
 import { ListSearchBox, type HistoryMode } from './ListSearchBox'
-import { toggleOnClass } from './styles'
+import { containerClass, toggleOnClass } from './styles'
 import { ToggleCheck } from './ToggleCheck'
 
 const tb = t.listBar
@@ -124,6 +124,10 @@ function ChoiceList({ filter, onPick }: {
  * sheet (a Radix dialog) with the filters, the result line, 「清除篩選」 and
  * 「完成」. The search box is never in the sheet.
  *
+ * The bar is a full-width band right under the header. Its controls sit in
+ * the page column (containerClass). The page route has handle.fullWidth, and
+ * the page puts the rest of its content in listBodyClass (decision 106).
+ *
  * The bar does not know the pages. It gets:
  * - page and state: the page and its cleaned URL state (listParamsOf).
  * - sorts: the sort options, in order (PAGE_SORTS[page]).
@@ -163,109 +167,113 @@ export function ListBar({ page, state, sorts, filters, viewSwitch = false, sortN
   return (
     <section
       aria-label={t.listSearch.barLabel}
-      className={cn('flex flex-col gap-3 border-b border-border bg-muted px-3 py-3 md:flex-row md:flex-wrap md:items-center md:gap-x-4', className)}
+      className={cn('border-b border-border bg-muted', className)}
     >
-      <ListSearchBox
-        page={page}
-        q={state.q}
-        onSearch={(text, mode) => go({ ...state, q: cleanQuery(text) }, mode)}
-        className="w-full md:w-auto"
-      />
+      {/* The band is full width. The controls use the page column, so they
+          line up with the header content (decision 106). */}
+      <div className={`${containerClass} flex flex-col gap-3 py-3 md:flex-row md:flex-wrap md:items-center md:gap-x-4`}>
+        <ListSearchBox
+          page={page}
+          q={state.q}
+          onSearch={(text, mode) => go({ ...state, q: cleanQuery(text) }, mode)}
+          className="w-full md:w-auto"
+        />
 
-      {/* Below md this is one row. From md, md:contents puts its children
-          straight into the bar row. */}
-      <div className="flex items-center gap-2 md:contents">
-        <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
-          <label htmlFor={sortId} className="shrink-0 text-sm font-medium">{tb.sortLabel}</label>
-          <select
-            id={sortId}
-            value={state.sort}
-            disabled={tree}
-            aria-describedby={describedBy}
-            onChange={(e) => go({ ...state, sort: e.target.value as ListSort })}
-            className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 md:flex-none"
-          >
-            {sorts.map((s) => (
-              <option key={s} value={s}>{tb.sorts[s]}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* The filters from md. Below md they are in the sheet. */}
-        <div className="hidden md:contents">
-          {filters.map((f) => (
-            <BarFilter key={f.key} filter={f} onState={(s) => go(s)} />
-          ))}
-        </div>
-
-        {viewSwitch && (
-          <ToggleGroup
-            type="single"
-            variant="outline"
-            spacing={0}
-            value={state.view}
-            onValueChange={(v) => {
-              // A click on the item that is on gives ''. Keep the view.
-              if (v === 'cards' || v === 'tree') go({ ...state, view: v })
-            }}
-            aria-label={tb.view}
-            className="shrink-0"
-          >
-            <ToggleGroupItem value="cards" className={cn(toggleOnClass, 'size-8 px-0 md:h-9 md:w-auto md:px-2.5')}>
-              <LayoutGrid aria-hidden="true" />
-              <span className="sr-only md:hidden">{tb.viewNames.cards}</span>
-              <span className="hidden md:inline">{tb.views.cards}</span>
-            </ToggleGroupItem>
-            <ToggleGroupItem value="tree" className={cn(toggleOnClass, 'size-8 px-0 md:h-9 md:w-auto md:px-2.5')}>
-              <ListTree aria-hidden="true" />
-              <span className="sr-only md:hidden">{tb.viewNames.tree}</span>
-              <span className="hidden md:inline">{tb.views.tree}</span>
-            </ToggleGroupItem>
-          </ToggleGroup>
-        )}
-
-        {filters.length > 0 && (
-          <Dialog open={sheetOpen} onOpenChange={setSheetOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="shrink-0 md:hidden" aria-label={tb.filtersButtonName(onCount)}>
-                {tb.filtersButton(onCount)}
-              </Button>
-            </DialogTrigger>
-            <DialogContent
-              showCloseButton={false}
-              aria-describedby={undefined}
-              className="top-auto bottom-0 left-0 flex max-h-[85vh] max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-b-none p-0 sm:max-w-none data-open:zoom-in-100 data-closed:zoom-out-100"
+        {/* Below md this is one row. From md, md:contents puts its children
+            straight into the bar row. */}
+        <div className="flex items-center gap-2 md:contents">
+          <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
+            <label htmlFor={sortId} className="shrink-0 text-sm font-medium">{tb.sortLabel}</label>
+            <select
+              id={sortId}
+              value={state.sort}
+              disabled={tree}
+              aria-describedby={describedBy}
+              onChange={(e) => go({ ...state, sort: e.target.value as ListSort })}
+              className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 md:flex-none"
             >
-              <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
-                <DialogTitle className="text-base font-bold">{tb.sheetTitle}</DialogTitle>
-                <DialogClose asChild>
-                  <Button variant="ghost" size="icon-sm" aria-label={tb.close}>
-                    <X aria-hidden="true" />
-                  </Button>
-                </DialogClose>
-              </div>
-              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4">
-                {filters.map((f) => (
-                  <SheetFilter key={f.key} filter={f} onState={(s) => go(s)} />
-                ))}
-              </div>
-              <div className="space-y-3 border-t border-border px-4 py-3">
-                {resultLine}
-                <div className="flex items-center justify-end gap-2">
-                  <Button variant="outline" onClick={clearFilters}>{tb.clear}</Button>
+              {sorts.map((s) => (
+                <option key={s} value={s}>{tb.sorts[s]}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* The filters from md. Below md they are in the sheet. */}
+          <div className="hidden md:contents">
+            {filters.map((f) => (
+              <BarFilter key={f.key} filter={f} onState={(s) => go(s)} />
+            ))}
+          </div>
+
+          {viewSwitch && (
+            <ToggleGroup
+              type="single"
+              variant="outline"
+              spacing={0}
+              value={state.view}
+              onValueChange={(v) => {
+                // A click on the item that is on gives ''. Keep the view.
+                if (v === 'cards' || v === 'tree') go({ ...state, view: v })
+              }}
+              aria-label={tb.view}
+              className="shrink-0"
+            >
+              <ToggleGroupItem value="cards" className={cn(toggleOnClass, 'size-8 px-0 md:h-9 md:w-auto md:px-2.5')}>
+                <LayoutGrid aria-hidden="true" />
+                <span className="sr-only md:hidden">{tb.viewNames.cards}</span>
+                <span className="hidden md:inline">{tb.views.cards}</span>
+              </ToggleGroupItem>
+              <ToggleGroupItem value="tree" className={cn(toggleOnClass, 'size-8 px-0 md:h-9 md:w-auto md:px-2.5')}>
+                <ListTree aria-hidden="true" />
+                <span className="sr-only md:hidden">{tb.viewNames.tree}</span>
+                <span className="hidden md:inline">{tb.views.tree}</span>
+              </ToggleGroupItem>
+            </ToggleGroup>
+          )}
+
+          {filters.length > 0 && (
+            <Dialog open={sheetOpen} onOpenChange={setSheetOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="shrink-0 md:hidden" aria-label={tb.filtersButtonName(onCount)}>
+                  {tb.filtersButton(onCount)}
+                </Button>
+              </DialogTrigger>
+              <DialogContent
+                showCloseButton={false}
+                aria-describedby={undefined}
+                className="top-auto bottom-0 left-0 flex max-h-[85vh] max-w-none translate-x-0 translate-y-0 flex-col gap-0 rounded-b-none p-0 sm:max-w-none data-open:zoom-in-100 data-closed:zoom-out-100"
+              >
+                <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
+                  <DialogTitle className="text-base font-bold">{tb.sheetTitle}</DialogTitle>
                   <DialogClose asChild>
-                    <Button>{tb.done}</Button>
+                    <Button variant="ghost" size="icon-sm" aria-label={tb.close}>
+                      <X aria-hidden="true" />
+                    </Button>
                   </DialogClose>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-4">
+                  {filters.map((f) => (
+                    <SheetFilter key={f.key} filter={f} onState={(s) => go(s)} />
+                  ))}
+                </div>
+                <div className="space-y-3 border-t border-border px-4 py-3">
+                  {resultLine}
+                  <div className="flex items-center justify-end gap-2">
+                    <Button variant="outline" onClick={clearFilters}>{tb.clear}</Button>
+                    <DialogClose asChild>
+                      <Button>{tb.done}</Button>
+                    </DialogClose>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+
+        {tree && (
+          <p id={treeNoteId} className="text-sm text-muted-foreground md:basis-full">{tb.treeSortNote}</p>
         )}
       </div>
-
-      {tree && (
-        <p id={treeNoteId} className="text-sm text-muted-foreground md:basis-full">{tb.treeSortNote}</p>
-      )}
     </section>
   )
 }

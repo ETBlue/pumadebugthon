@@ -29,7 +29,10 @@ export const router = createHashRouter([
     children: [
       // The home page has a full-width hero (design 3.1).
       { index: true, element: <Home />, handle: { fullWidth: true } },
-      { path: 'issues', element: <Issues /> },
+      // The list pages are full width too: the search, sort and filter bar
+      // is a full-width band right under the header. The page puts the rest
+      // in the page column (decision 106).
+      { path: 'issues', element: <Issues />, handle: { fullWidth: true } },
       // The old solution URL redirects to #/solutions/<n>-<code> (design
       // 3.12). More specific than the tab route, so it wins.
       { path: 'issues/:number/solutions/:code/:tab?', element: <LegacySolution /> },
@@ -40,10 +43,10 @@ export const router = createHashRouter([
       // There is no want or need page (decision 45). #/stakeholders and the
       // stakeholder page have no side bar, so they are plain routes
       // (decisions 87 and 94).
-      { path: 'stakeholders', element: <Stakeholders /> },
+      { path: 'stakeholders', element: <Stakeholders />, handle: { fullWidth: true } },
       { path: 'stakeholders/:id/stories/:number/:storyId', element: <StakeholderStory /> },
       { path: 'stakeholders/:id/:tab?', element: <Stakeholder /> },
-      { path: 'solutions', element: <Solutions /> },
+      { path: 'solutions', element: <Solutions />, handle: { fullWidth: true } },
       // 2-A: a solution of an issue. X-A: a cross-issue solution (Task N11).
       { path: 'solutions/:slug/:tab?', element: <Solution /> },
       { path: 'spaces/:code', element: <Space /> },

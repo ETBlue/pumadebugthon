@@ -17,8 +17,8 @@ function skipToMain(e: MouseEvent<HTMLAnchorElement>) {
 
 /** Page frame: skip link, header, main, footer and the watermark. children
  * replace the route outlet, for the error page. A route with
- * handle.fullWidth (the home page) gets a full-width main and places its
- * own centered column. */
+ * handle.fullWidth (the home page and the three list pages) gets a
+ * full-width main with no padding, and places its own centered column. */
 export function Layout({ children }: { children?: ReactNode }) {
   const fullWidth = isFullWidth(useMatches())
   return (

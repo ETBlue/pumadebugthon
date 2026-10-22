@@ -27,6 +27,12 @@ export const codeClass = 'rounded-sm bg-muted px-1 py-0.5 font-mono text-[0.9em]
  * column stays 1440 px and is centered. */
 export const containerClass = 'mx-auto w-full max-w-[90rem] px-4 md:px-8'
 
+/** The content under the ListBar band on the three list pages. Those
+ * routes have handle.fullWidth, so main has no column and no padding. The
+ * band is full width, and the content below it uses the page column, with
+ * the bottom space that main has on other pages (decision 106). */
+export const listBodyClass = `${containerClass} pb-6`
+
 /** Long text (intro lines, paragraphs, summaries, story text) is at most
  * 48rem wide, so a line is not too long to read (design 3.22). Cards,
  * tables and grids do not use it. They use the full width. */

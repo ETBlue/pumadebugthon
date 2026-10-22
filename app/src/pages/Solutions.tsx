@@ -8,7 +8,7 @@ import { ResultLine } from '@/components/ResultLine'
 import { SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
-import { linkClass, proseClass } from '@/components/styles'
+import { linkClass, listBodyClass, proseClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { evidenceShare, sharePercent } from '@/lib/coverage'
@@ -42,7 +42,15 @@ export default function Solutions() {
       <PageTitle parts={[tl.solutionsTitle]} />
       {/* The highlighted header link is the visible title (decision 79). */}
       <h1 className="sr-only">{tl.solutionsTitle}</h1>
-      {index.status === 'ready' ? <SolutionsBody index={index.data} /> : <LoadState state={index} />}
+      {index.status === 'ready' ? (
+        <SolutionsBody index={index.data} />
+      ) : (
+        // The route is full width (decision 106), so the load state needs
+        // the page column and the top space itself.
+        <div className={`${listBodyClass} pt-6`}>
+          <LoadState state={index} />
+        </div>
+      )}
     </>
   )
 }
@@ -111,34 +119,35 @@ function SolutionsBody({ index }: { index: IndexFile }) {
         sortNoteId={shareOn ? noteId : undefined}
         resultLine={<ResultLine {...resultProps} clearLink={false} />}
         onNavigate={onNavigate}
-        className="rounded-md border"
       />
-      <ResultLine {...resultProps} className="mt-3" />
-      {/* The sort note while 資料根據比例 is on. The 資料根據 explanation
-          is part of it, as on #/stakeholders (design 3.23.9). */}
-      {shareOn && (
-        <div id={noteId} className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
-          <p>{tb.sortNotes.evidence}</p>
-          <p>{t.basis.listNote('解法')}</p>
-        </div>
-      )}
-
-      <div className="mt-4">
-        {issuesState.status !== 'ready' ? (
-          <LoadState state={issuesState} />
-        ) : crossState.status === 'loading' ? (
-          <LoadState state={crossState} />
-        ) : shown.length === 0 ? (
-          <EmptyState state={state} params={params} pathname={pathname} />
-        ) : (
-          <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {shown.map((item) => (
-              <li key={solutionItemKey(item)}>
-                <SolutionItemCard item={item} index={index} ctx={ctx} shareOn={shareOn} />
-              </li>
-            ))}
-          </ul>
+      <div className={listBodyClass}>
+        <ResultLine {...resultProps} className="mt-3" />
+        {/* The sort note while 資料根據比例 is on. The 資料根據 explanation
+            is part of it, as on #/stakeholders (design 3.23.9). */}
+        {shareOn && (
+          <div id={noteId} className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+            <p>{tb.sortNotes.evidence}</p>
+            <p>{t.basis.listNote('解法')}</p>
+          </div>
         )}
+
+        <div className="mt-4">
+          {issuesState.status !== 'ready' ? (
+            <LoadState state={issuesState} />
+          ) : crossState.status === 'loading' ? (
+            <LoadState state={crossState} />
+          ) : shown.length === 0 ? (
+            <EmptyState state={state} params={params} pathname={pathname} />
+          ) : (
+            <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {shown.map((item) => (
+                <li key={solutionItemKey(item)}>
+                  <SolutionItemCard item={item} index={index} ctx={ctx} shareOn={shareOn} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
     </>
   )

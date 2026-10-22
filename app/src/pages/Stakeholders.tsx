@@ -7,7 +7,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { ResultLine } from '@/components/ResultLine'
 import { FocusBadges, StakeholderCard, type StakeholderListFields } from '@/components/StakeholderCard'
 import { StakeholderTree } from '@/components/StakeholderTree'
-import { linkClass, proseClass } from '@/components/styles'
+import { linkClass, listBodyClass, proseClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { evidenceShare, sharePercent, stakeholderCells, stakeholderSolutionCoverage } from '@/lib/coverage'
@@ -118,25 +118,27 @@ export default function Stakeholders() {
         resultLine={resultLine(false)}
         onNavigate={onNavigate}
       />
-      {resultLine(true, 'mt-3')}
-      {/* The notes (design 3.23.1 and 3.23.9): the sort note while a share
-          sort is on. With 資料根據比例 the 資料根據 explanation is part of it. */}
-      {shareSort !== null && (
-        <div id={noteId} className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
-          <p>{tb.sortNotes[shareSort]}</p>
-          {shareSort === 'evidence' && <p>{t.basis.listNote('利害關係人')}</p>}
-        </div>
-      )}
-      <div className="mt-4">
-        {index.status !== 'ready' ? (
-          <LoadState state={index} />
-        ) : !data || !view ? null : view.filtered.length === 0 ? (
-          <EmptyState state={state} filtersOn={view.parts.length > 0} params={params} />
-        ) : tree ? (
-          <TreeView index={data} ids={view.filtered.map((s) => s.id)} searching={state.q !== null} />
-        ) : (
-          <CardView index={data} list={view.filtered} sort={state.sort} />
+      <div className={listBodyClass}>
+        {resultLine(true, 'mt-3')}
+        {/* The notes (design 3.23.1 and 3.23.9): the sort note while a share
+            sort is on. With 資料根據比例 the 資料根據 explanation is part of it. */}
+        {shareSort !== null && (
+          <div id={noteId} className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+            <p>{tb.sortNotes[shareSort]}</p>
+            {shareSort === 'evidence' && <p>{t.basis.listNote('利害關係人')}</p>}
+          </div>
         )}
+        <div className="mt-4">
+          {index.status !== 'ready' ? (
+            <LoadState state={index} />
+          ) : !data || !view ? null : view.filtered.length === 0 ? (
+            <EmptyState state={state} filtersOn={view.parts.length > 0} params={params} />
+          ) : tree ? (
+            <TreeView index={data} ids={view.filtered.map((s) => s.id)} searching={state.q !== null} />
+          ) : (
+            <CardView index={data} list={view.filtered} sort={state.sort} />
+          )}
+        </div>
       </div>
     </>
   )

@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, Navigate, useLocation } from 'react-router'
+import { CellBasis } from '@/components/CellBasis'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
@@ -10,10 +11,11 @@ import { StakeholderCard } from '@/components/StakeholderCard'
 import { containerClass, linkClass, proseClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
+import { stakeholderCells } from '@/lib/coverage'
 import { availableIssues, sharedForCard } from '@/lib/issues'
 import { HOME_ALL_PATHS } from '@/lib/listParams'
 import { homeRedirect, recentIssues, recentSolutionItems, recentStakeholders, type RecentSolution } from '@/lib/recent'
-import type { IndexFile } from '@/types'
+import type { CellCounts, IndexFile } from '@/types'
 
 const th = t.home
 
@@ -104,26 +106,32 @@ function HomeBlocks({ index }: { index: IndexFile }) {
           {stakeholders.length === 0 ? (
             <p>{th.stakeholdersNone}</p>
           ) : (
-            <ul className="space-y-3">
-              {stakeholders.map((s) => (
-                <li key={s.id}>
-                  <StakeholderCard variant="compact" stakeholder={s}>
-                    <dl className="mt-1 space-y-1 text-sm">
-                      {s.issues.length > 0 && (
-                        <Field label={th.issues}>
-                          <ul className="flex flex-wrap gap-x-3">
-                            {s.issues.map((n) => (
-                              <li key={n}><Link to={`/issues/${n}`} className={linkClass}>{th.issueLink(n)}</Link></li>
-                            ))}
-                          </ul>
-                        </Field>
-                      )}
-                      <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
-                    </dl>
-                  </StakeholderCard>
-                </li>
-              ))}
-            </ul>
+            <>
+              <ul className="space-y-3">
+                {stakeholders.map((s) => (
+                  <li key={s.id}>
+                    <StakeholderCard variant="compact" stakeholder={s}>
+                      <dl className="mt-1 space-y-1 text-sm">
+                        {s.issues.length > 0 && (
+                          <Field label={th.issues}>
+                            <ul className="flex flex-wrap gap-x-3">
+                              {s.issues.map((n) => (
+                                <li key={n}><Link to={`/issues/${n}`} className={linkClass}>{th.issueLink(n)}</Link></li>
+                              ))}
+                            </ul>
+                          </Field>
+                        )}
+                        {/* 資料根據 needs the issue files (decision 107). */}
+                        <BasisField cells={issueFiles.status === 'ready' ? stakeholderCells(issueFiles.data, s.id) : null} />
+                        <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
+                      </dl>
+                    </StakeholderCard>
+                  </li>
+                ))}
+              </ul>
+              {/* The 資料根據 explanation, once under the list (decision 107). */}
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('利害關係人')}</p>
+            </>
           )}
         </Block>
 
@@ -142,6 +150,27 @@ function HomeBlocks({ index }: { index: IndexFile }) {
         </Block>
       </div>
     </div>
+  )
+}
+
+/** 資料根據 of a stakeholder card on the home page (decision 107): the
+ * counts and the bar, as on the compact IssueCard. No share: the home page
+ * never ranks by a count (decision 81). cells is null while the issue files
+ * load (or when they fail): then an invisible row of the same height keeps
+ * the place, so the card does not grow when the data comes. */
+function BasisField({ cells }: { cells: CellCounts | null }) {
+  if (cells === null) {
+    return (
+      <div aria-hidden="true" className="invisible flex flex-wrap gap-x-2">
+        <dt>{t.basis.label}</dt>
+        <dd><p>&nbsp;</p><div className="mt-1.5 h-2" /></dd>
+      </div>
+    )
+  }
+  return (
+    <Field label={t.basis.label}>
+      <CellBasis cells={cells} stories={0} compact inlineLabel={false} />
+    </Field>
   )
 }
 

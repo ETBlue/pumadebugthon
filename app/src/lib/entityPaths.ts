@@ -137,28 +137,3 @@ export function parseSolutionSlug(segment: string | undefined): SolutionSlug | n
   if (!m) return null
   return { kind: 'issue', issueNumber: Number(m[1]), code: m[2] }
 }
-
-/** The same stakeholder path with newId in place of oldId (design 3.3). On a
- * story page, a story ID that starts with "<oldId>-" gets the new ID. Any
- * other story ID is kept. null when pathname is not a page of oldId. */
-export function movedStakeholderPath(pathname: string, oldId: string, newId: string): string | null {
-  const parts = pathname.split('/')
-  if (parts[0] !== '' || parts[1] !== 'stakeholders' || parts[2] !== oldId) return null
-  parts[2] = newId
-  if (parts[3] === 'stories' && parts[5]?.startsWith(`${oldId}-`)) {
-    parts[5] = newId + parts[5].slice(oldId.length)
-  }
-  return parts.join('/')
-}
-
-/** The redirect target for a page of a moved stakeholder ID (design 3.3):
- * the path of movedStakeholderPath, and the query with from=<old ID> added,
- * so the page can show the note 「O02 已改為 I12」. Other query values are
- * kept. null when pathname is not a page of oldId. */
-export function movedStakeholderTarget(pathname: string, search: string, oldId: string, newId: string): PathTarget | null {
-  const path = movedStakeholderPath(pathname, oldId, newId)
-  if (path === null) return null
-  const params = new URLSearchParams(search)
-  params.set('from', oldId)
-  return { pathname: path, search: `?${params.toString()}` }
-}

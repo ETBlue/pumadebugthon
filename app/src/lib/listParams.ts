@@ -5,7 +5,7 @@
 import type { IndexFile } from '@/types'
 import { NO_FILTERS, type ListFilters } from './listFilter'
 import type { ListSort } from './listSort'
-import { isListed, resolveId } from './stakeholders'
+import { isListed } from './stakeholders'
 
 export type ListPage = 'issues' | 'stakeholders' | 'solutions'
 
@@ -80,7 +80,7 @@ function listOnlySearch(params: URLSearchParams): string {
  * a sort the page does not have, an issue with
  * no analysis, a space code that is not used, an unknown or unlisted
  * stakeholder, and every param the page does not have. A moved ID in who
- * becomes the new ID. spaceCodes: the space codes the page offers; by
+ * is dropped too: it is not listed (decision 113). spaceCodes: the space codes the page offers; by
  * default the ones the analyzed issues use (index.json). */
 export function listParamsOf(
   page: ListPage,
@@ -110,8 +110,7 @@ export function listParamsOf(
 
   const who = params.get(LIST_PARAMS.who)
   if (has(LIST_PARAMS.who) && who !== null) {
-    const id = resolveId(index.stakeholders, who)
-    const found = id === null ? undefined : index.stakeholders.find((s) => s.id === id)
+    const found = index.stakeholders.find((s) => s.id === who)
     state.who = found && isListed(found) ? found.id : null
   }
 

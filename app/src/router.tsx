@@ -36,7 +36,7 @@ export const router = createHashRouter([
       // and the h1 is full width, and the page puts the rest in the page
       // column (decision 111).
       { path: 'issues/:number/:tab?', element: <Issue />, handle: { fullWidth: true } },
-      // A moved stakeholder ID redirects on every sub-route (design 3.3).
+      // A moved stakeholder ID shows the not-found page (decision 113).
       // There is no want or need page (decision 45). #/stakeholders and the
       // stakeholder page have no side bar, so they are plain routes
       // (decisions 87 and 94).

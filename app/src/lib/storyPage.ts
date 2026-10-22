@@ -1,48 +1,22 @@
 // The story page (design 3.15).
-import type { Group, IssueFile, Need, NeedGroup, Solution, Stakeholder, Story } from '@/types'
-import { storyPath } from './entityPaths'
+import type { Group, IssueFile, Need, NeedGroup, Solution, Story } from '@/types'
 import { compareIds } from './ids'
 import { needKey as needKeyOf, solutionsOfStories } from './needs'
-import { resolveId } from './stakeholders'
 import { storyStakeholderOf } from './stories'
 import { conflictView, wantKey, type ConflictView } from './wantList'
 
 /** The result of findStory. */
 export type FindStoryResult =
   | { kind: 'found'; story: Story }
-  /** The story belongs to another stakeholder. The page redirects there. */
-  | { kind: 'redirect'; stakeholderId: string }
   | { kind: 'notFound' }
 
 /** Find the story of the URL. issue is null for an unknown issue or an issue
- * with no analysis. */
+ * with no analysis. A story of another stakeholder is not found: the page
+ * does not redirect to the right stakeholder (decision 113). */
 export function findStory(issue: IssueFile | null, stakeholderId: string, storyId: string): FindStoryResult {
   const story = issue?.stories.find((s) => s.id === storyId)
-  if (!story) return { kind: 'notFound' }
-  if (story.stakeholder !== stakeholderId) return { kind: 'redirect', stakeholderId: story.stakeholder }
+  if (!story || story.stakeholder !== stakeholderId) return { kind: 'notFound' }
   return { kind: 'found', story }
-}
-
-/** The path for the redirect of findStory: the story page under the
- * stakeholder of the story in the data (storyStakeholder), not under the
- * part of the story ID before 「-」. A moved stakeholder ID goes to its new
- * ID. null when that is the current stakeholder (currentId): a redirect
- * there would load the same page again and again, so the page shows "not
- * found" instead. */
-export function storyRedirectPath(
-  stakeholders: Stakeholder[],
-  issueNumber: number,
-  currentId: string,
-  storyId: string,
-  storyStakeholder: string,
-): string | null {
-  const target = resolveId(stakeholders, storyStakeholder) ?? storyStakeholder
-  if (target === currentId) return null
-  // storyPath puts the story under the part of its ID before 「-」. Here the
-  // stakeholder can differ from that part, so put target in its place.
-  const parts = storyPath(issueNumber, storyId).split('/')
-  parts[2] = target
-  return parts.join('/')
 }
 
 /** A W group or an N group of the story, with the other stakeholders. */

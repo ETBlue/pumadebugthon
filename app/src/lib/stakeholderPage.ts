@@ -1,7 +1,6 @@
 // Lookups for the stakeholder page (design 3.3).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
 import type { Cell, InputSource, IssueFile, Solution, Stakeholder, Story } from '@/types'
-import { movedStakeholderTarget, stakeholderTabPath, type PathTarget } from './entityPaths'
 import { compareIds } from './ids'
 import { dataBasedNeeds, needsOfStakeholder, type StakeholderNeedItem } from './needs'
 import { priorityCounts, type TagPriorityCounts } from './priority'
@@ -34,6 +33,12 @@ export function movedFrom(stakeholders: Stakeholder[], from: string | null, id: 
   return resolveId(stakeholders, from) === id ? from : null
 }
 
+/** The search part of the link from the not-found page of a moved ID to the
+ * new ID: ?from=<old ID>, for the note 「O02 已改為 I12」 (decision 113). */
+export function movedNoteSearch(oldId: string): string {
+  return `?${new URLSearchParams({ from: oldId }).toString()}`
+}
+
 /** The issues of the stakeholder that are available, by number. */
 export function stakeholderIssueNumbers(stakeholder: Stakeholder, available: number[]): number[] {
   return stakeholder.issues.filter((n) => available.includes(n)).sort((a, b) => a - b)
@@ -59,19 +64,6 @@ export function stakeholderIssueView(issue: IssueFile, id: string): StakeholderI
     counts: priorityCounts(stories),
     inputSources: issue.inputSources.filter((src) => src.stakeholders.includes(id)),
   }
-}
-
-/** The redirect target for a page of a moved stakeholder ID (design 3.3).
- * Mostly the same as movedStakeholderTarget. When pathname is not a page of
- * oldId (for example when the URL writes the ID in another way), it goes to
- * the overview of newId with ?from=<old ID>, so the page never breaks. */
-export function movedStakeholderRedirect(pathname: string, search: string, oldId: string, newId: string): PathTarget {
-  return (
-    movedStakeholderTarget(pathname, search, oldId, newId) ?? {
-      pathname: stakeholderTabPath(newId, 'overview'),
-      search: `?${new URLSearchParams({ from: oldId }).toString()}`,
-    }
-  )
 }
 
 export interface StakeholderConflictView {

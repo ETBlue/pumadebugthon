@@ -1,5 +1,5 @@
 import { useMemo, type ComponentType } from 'react'
-import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router'
+import { Link, useParams, useSearchParams } from 'react-router'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { FilterStatus } from '@/components/FilterStatus'
@@ -21,9 +21,7 @@ import { backListPath } from '@/lib/backLink'
 import { tabPath } from '@/lib/issuePage'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
-import {
-  movedFrom, movedStakeholderRedirect, pathTrail, stakeholderIssueNumbers,
-} from '@/lib/stakeholderPage'
+import { movedFrom, movedNoteSearch, pathTrail, stakeholderIssueNumbers } from '@/lib/stakeholderPage'
 import { hasNoIssue, resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
@@ -39,33 +37,39 @@ function tabLabel(tab: StakeholderTab, c: TabCounts | null): TabLabel {
 }
 
 /** Stakeholder page (design 3.3 and 3.23.10): #/stakeholders/:id/:tab?, with
- * no side bar (decision 94). A moved ID sends the reader to the new ID, with
- * the rest of the path kept and ?from=<old ID> for the note 「O02 已改為
- * I12」. */
+ * no side bar (decision 94). A moved ID does not redirect (decision 113). It
+ * shows the not-found page with a link to the new ID. The link adds
+ * ?from=<old ID>, so the new page shows the note 「O02 已改為 I12」. */
 export default function Stakeholder() {
   const index = useIndex()
   const { id = '' } = useParams()
-  const location = useLocation()
   if (index.status !== 'ready') return <PageBody><LoadState state={index} /></PageBody>
 
-  const resolved = resolveId(index.data.stakeholders, id)
-  if (resolved === null) {
+  const stakeholder = index.data.stakeholders.find((s) => s.id === id)
+  if (stakeholder === undefined || stakeholder.movedTo !== null) {
+    // For a moved ID, the ID it was moved to (following each move).
+    const newId = stakeholder ? resolveId(index.data.stakeholders, id) : null
     return (
       <PageBody>
         <PageTitle parts={[tp.notFoundTitle]} />
         <h1 className="text-2xl font-bold">{tp.notFoundTitle}</h1>
         <p className="mt-3">{tp.notFoundBody(id)}</p>
+        {newId !== null && (
+          <p className="mt-3">
+            <Link
+              to={{ pathname: stakeholderTabPath(newId, 'overview'), search: movedNoteSearch(id) }}
+              className={linkClass}
+            >
+              {tp.movedLink(newId)}
+            </Link>
+          </p>
+        )}
         <p className="mt-3">
           <Link to="/" className={linkClass}>{tp.backHome}</Link>
         </p>
       </PageBody>
     )
   }
-  if (resolved !== id) {
-    return <Navigate replace to={movedStakeholderRedirect(location.pathname, location.search, id, resolved)} />
-  }
-  // resolveId returned id itself, so the stakeholder is in the list.
-  const stakeholder = index.data.stakeholders.find((s) => s.id === id)!
   if (hasNoIssue(stakeholder)) return <NoIssueContent index={index.data} stakeholder={stakeholder} />
   return <StakeholderContent key={id} index={index.data} stakeholder={stakeholder} />
 }

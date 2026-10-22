@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from 'react'
-import { Link, Navigate, useLocation, useParams } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { Breadcrumb } from '@/components/Breadcrumb'
 import { CellText } from '@/components/CellText'
 import { ConflictView } from '@/components/ConflictView'
@@ -13,16 +13,14 @@ import { linkClass, proseClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import {
-  movedStakeholderTarget, needFocusPath, stakeholderTabPath, wantFocusPath, type StakeholderTab,
-} from '@/lib/entityPaths'
+import { needFocusPath, stakeholderTabPath, wantFocusPath, type StakeholderTab } from '@/lib/entityPaths'
 import { solutionCells } from '@/lib/coverage'
 import { findIssue, tabPath } from '@/lib/issuePage'
 import { opinionPickTo } from '@/lib/opinion'
 import { storyPriority } from '@/lib/needs'
 import { priorityLabel } from '@/lib/priority'
-import { findStory, storyRedirectPath, storyView, type StoryGroup, type StoryView } from '@/lib/storyPage'
-import { resolveId, stakeholderName } from '@/lib/stakeholders'
+import { findStory, storyView, type StoryGroup, type StoryView } from '@/lib/storyPage'
+import { stakeholderName } from '@/lib/stakeholders'
 import type { AvailableIssueSummary, Group, IndexFile, IssueFile, NeedGroup, Stakeholder } from '@/types'
 
 const ts = t.storyPage
@@ -33,16 +31,11 @@ const ts = t.storyPage
 export default function StakeholderStory() {
   const index = useIndex()
   const { id = '', number = '', storyId = '' } = useParams()
-  const location = useLocation()
   if (index.status !== 'ready') return <PageBody><LoadState state={index} /></PageBody>
 
-  const resolved = resolveId(index.data.stakeholders, id)
-  if (resolved !== null && resolved !== id) {
-    // A moved ID (design 3.3): the new ID, with the story ID changed too.
-    const target = movedStakeholderTarget(location.pathname, location.search, id, resolved)
-    if (target) return <Navigate replace to={target} />
-  }
-  const stakeholder = resolved === null ? null : index.data.stakeholders.find((s) => s.id === resolved) ?? null
+  // A moved ID does not redirect (decision 113): it is not a stakeholder
+  // here, so the page shows "not found".
+  const stakeholder = index.data.stakeholders.find((s) => s.id === id && s.movedTo === null) ?? null
   const found = findIssue(index.data, number)
   if (found.kind !== 'available') {
     return <NotFound number={number} storyId={storyId} stakeholder={stakeholder} />
@@ -58,16 +51,8 @@ function StoryLoader({ index, summary, stakeholder, id, storyId }: {
   storyId: string
 }) {
   const issue = useIssue(summary.folder)
-  const { search } = useLocation()
   if (issue.status !== 'ready') return <PageBody><LoadState state={issue} /></PageBody>
   const result = findStory(issue.data, id, storyId)
-  if (result.kind === 'redirect') {
-    // The story belongs to another stakeholder. The target uses the
-    // stakeholder in the data, not the part of the ID before 「-」. It is
-    // null when it would be this same page; then the page shows "not found".
-    const target = storyRedirectPath(index.stakeholders, summary.number, id, storyId, result.stakeholderId)
-    if (target !== null) return <Navigate replace to={{ pathname: target, search }} />
-  }
   if (result.kind !== 'found' || stakeholder === null) {
     return <NotFound number={String(summary.number)} storyId={storyId} stakeholder={stakeholder} issue={summary} />
   }

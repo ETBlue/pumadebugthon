@@ -375,6 +375,8 @@ export const t = {
     notFoundBody: (id: string) => `沒有編號 ${id} 的利害關係人。網址裡的編號可能打錯了。`,
     backHome: '回到首頁',
     movedNote: (from: string, to: string) => `${from} 已改為 ${to}`,
+    /** The link on the not-found page of a moved ID (decision 113). */
+    movedLink: (to: string) => `這個編號已改為 ${to}`,
     id: '編號',
     path: '分類路徑',
     focus: '特別關注',

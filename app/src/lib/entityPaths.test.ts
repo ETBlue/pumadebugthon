@@ -4,8 +4,6 @@ import {
   keyStoryPath,
   crossSolutionPath,
   issueFocusPath,
-  movedStakeholderPath,
-  movedStakeholderTarget,
   needFocusPath,
   parseSolutionSlug,
   parseSolutionTab,
@@ -153,65 +151,6 @@ describe('parseSolutionSlug', () => {
     for (const s of ['2', 'A', '2-', 'X-', '2-a1', '2-a', 'cross', '02-A', '0-A', 'X-a', '2-A-B', '', undefined]) {
       expect(parseSolutionSlug(s)).toBeNull()
     }
-  })
-})
-
-describe('movedStakeholderPath', () => {
-  it('changes the ID on the page and on a tab', () => {
-    expect(movedStakeholderPath('/stakeholders/O02', 'O02', 'I12')).toBe('/stakeholders/I12')
-    expect(movedStakeholderPath('/stakeholders/O02/needs', 'O02', 'I12')).toBe('/stakeholders/I12/needs')
-  })
-
-  it('a story ID that starts with the old ID gets the new ID', () => {
-    expect(movedStakeholderPath('/stakeholders/O02/stories/2/O02-US01', 'O02', 'I12')).toBe(
-      '/stakeholders/I12/stories/2/I12-US01',
-    )
-  })
-
-  it('keeps any other story ID', () => {
-    expect(movedStakeholderPath('/stakeholders/O02/stories/2/I06-US01', 'O02', 'I12')).toBe(
-      '/stakeholders/I12/stories/2/I06-US01',
-    )
-    expect(movedStakeholderPath('/stakeholders/O02/stories/2/O020-US01', 'O02', 'I12')).toBe(
-      '/stakeholders/I12/stories/2/O020-US01',
-    )
-  })
-
-  it('returns null when the path is not a page of the old ID', () => {
-    expect(movedStakeholderPath('/stakeholders/O03/needs', 'O02', 'I12')).toBeNull()
-    expect(movedStakeholderPath('/issues/2', 'O02', 'I12')).toBeNull()
-    expect(movedStakeholderPath('/stakeholders/O020', 'O02', 'I12')).toBeNull()
-  })
-})
-
-describe('movedStakeholderTarget', () => {
-  it('adds ?from=<old ID> to the new path (design 3.3)', () => {
-    expect(movedStakeholderTarget('/stakeholders/O02', '', 'O02', 'I12')).toEqual({
-      pathname: '/stakeholders/I12',
-      search: '?from=O02',
-    })
-    expect(movedStakeholderTarget('/stakeholders/O02/needs', '', 'O02', 'I12')).toEqual({
-      pathname: '/stakeholders/I12/needs',
-      search: '?from=O02',
-    })
-  })
-
-  it('keeps the other query values', () => {
-    expect(movedStakeholderTarget('/stakeholders/O02/wants', '?evidence=1', 'O02', 'I12')).toEqual({
-      pathname: '/stakeholders/I12/wants',
-      search: '?evidence=1&from=O02',
-    })
-  })
-
-  it('changes the story ID on a story page', () => {
-    expect(movedStakeholderTarget('/stakeholders/O02/stories/2/O02-US01', '', 'O02', 'I12')).toEqual({
-      pathname: '/stakeholders/I12/stories/2/I12-US01',
-      search: '?from=O02',
-    })
-  })
-
-  it('returns null when the path is not a page of the old ID', () => {
-    expect(movedStakeholderTarget('/stakeholders/I12', '', 'O02', 'I12')).toBeNull()
   })
 })
 

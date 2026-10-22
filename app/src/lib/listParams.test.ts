@@ -47,9 +47,9 @@ describe('listParamsOf', () => {
     expect(read('stakeholders', 'space=sidewalk')).toMatchObject({ spaces: [], replace: true })
   })
 
-  it('reads who, resolves a moved ID, and drops an unknown or unlisted ID', () => {
+  it('reads who, and drops a moved, unknown or unlisted ID (decision 113: a moved ID is not changed)', () => {
     expect(read('issues', 'who=I06')).toMatchObject({ who: 'I06', replace: false })
-    expect(read('solutions', 'who=O02')).toMatchObject({ who: 'I12', replace: true })
+    expect(read('solutions', 'who=O02')).toMatchObject({ who: null, replace: true })
     expect(read('solutions', 'who=I999')).toMatchObject({ who: null, replace: true })
     expect(read('issues', 'who=I34')).toMatchObject({ who: null, replace: true })
     expect(read('stakeholders', 'who=I06')).toMatchObject({ who: null, replace: true })

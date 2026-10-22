@@ -70,7 +70,7 @@ describe('isListed, hasNoIssue, listedStakeholders (decision 78)', () => {
     expect(hasNoIssue(byId('I34'))).toBe(true)
   })
 
-  it('leaves out a moved ID, but a moved ID is not a "no issue" stakeholder (its page redirects)', () => {
+  it('leaves out a moved ID, but a moved ID is not a "no issue" stakeholder (its page shows not found)', () => {
     expect(isListed(byId('O02'))).toBe(false)
     expect(hasNoIssue(byId('O02'))).toBe(false)
     expect(isListed(make([1], 'I05'))).toBe(false)

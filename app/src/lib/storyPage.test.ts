@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import indexJson from '@/test/fixtures/index.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
-import type { IndexFile, IssueFile } from '@/types'
+import type { IssueFile } from '@/types'
 import { needKey } from './needs'
-import { findStory, storyRedirectPath, storyView } from './storyPage'
+import { findStory, storyView } from './storyPage'
 
 const trashcans = trashcansJson as IssueFile
-const stakeholders = (indexJson as unknown as IndexFile).stakeholders
 
 const ids = (list: { id: string }[]) => list.map((x) => x.id)
 const story = (id: string) => trashcans.stories.find((s) => s.id === id)!
@@ -16,8 +14,8 @@ describe('findStory', () => {
     expect(findStory(trashcans, 'I06', 'I06-US01')).toEqual({ kind: 'found', story: story('I06-US01') })
   })
 
-  it('redirects to the right stakeholder', () => {
-    expect(findStory(trashcans, 'I01', 'I06-US01')).toEqual({ kind: 'redirect', stakeholderId: 'I06' })
+  it('does not find a story of another stakeholder; no redirect (decision 113)', () => {
+    expect(findStory(trashcans, 'I01', 'I06-US01')).toEqual({ kind: 'notFound' })
   })
 
   it('does not find an unknown story', () => {
@@ -88,24 +86,5 @@ describe('storyView', () => {
     expect(v.needGroup).toBeNull()
     expect(v.need).toBeNull()
     expect(v.wantKey).toBe('W08')
-  })
-})
-
-describe('storyRedirectPath', () => {
-  it('goes to the stakeholder of the story', () => {
-    expect(storyRedirectPath(stakeholders, 2, 'I01', 'I06-US01', 'I06')).toBe('/stakeholders/I06/stories/2/I06-US01')
-  })
-
-  it('uses the stakeholder of the data, not the part of the ID before 「-」', () => {
-    expect(storyRedirectPath(stakeholders, 2, 'I06', 'I06-US01', 'I07')).toBe('/stakeholders/I07/stories/2/I06-US01')
-  })
-
-  it('follows a moved stakeholder ID to its new ID', () => {
-    expect(storyRedirectPath(stakeholders, 2, 'I01', 'X-US01', 'O02')).toBe('/stakeholders/I12/stories/2/X-US01')
-  })
-
-  it('is null when the target is the current stakeholder, so the page never redirects to itself', () => {
-    expect(storyRedirectPath(stakeholders, 2, 'I12', 'X-US01', 'O02')).toBeNull()
-    expect(storyRedirectPath(stakeholders, 2, 'I06', 'I06-US01', 'I06')).toBeNull()
   })
 })

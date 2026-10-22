@@ -6,7 +6,7 @@ import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import {
-  movedFrom, movedStakeholderRedirect, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
+  movedFrom, movedNoteSearch, pathTrail, stakeholderConflictViews, stakeholderIssueNumbers,
   stakeholderIssueView, stakeholderSolutionsView,
 } from './stakeholderPage'
 import { stakeholderTabCounts } from './tabCounts'
@@ -83,20 +83,9 @@ describe('stakeholderIssueView', () => {
   })
 })
 
-describe('movedStakeholderRedirect', () => {
-  it('keeps the rest of the path and adds from=', () => {
-    expect(movedStakeholderRedirect('/stakeholders/O02/wants', '?evidence=1', 'O02', 'I12')).toEqual({
-      pathname: '/stakeholders/I12/wants',
-      search: '?evidence=1&from=O02',
-    })
-  })
-
-  it('falls back to the overview of the new ID when the path is not a page of the old ID', () => {
-    // For example when the URL writes the ID in another way than the route param.
-    expect(movedStakeholderRedirect('/stakeholders/%4F02', '', 'O02', 'I12')).toEqual({
-      pathname: '/stakeholders/I12',
-      search: '?from=O02',
-    })
+describe('movedNoteSearch', () => {
+  it('gives ?from=<old ID> for the link from the not-found page (decision 113)', () => {
+    expect(movedNoteSearch('O02')).toBe('?from=O02')
   })
 })
 

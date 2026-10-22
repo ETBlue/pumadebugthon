@@ -6,7 +6,7 @@ import type { Stakeholder } from '@/types'
 import { FILTER_PARAM, isDataBasisFilterOn } from './dataBasis'
 import { compareIds } from './ids'
 import { FOCUS_ORDER } from './issues'
-import { filterStakeholders, listedStakeholders, resolveId } from './stakeholders'
+import { filterStakeholders, listedStakeholders } from './stakeholders'
 
 export const STAKEHOLDER_PARAM = 'stakeholder'
 
@@ -14,9 +14,9 @@ export const STAKEHOLDER_PARAM = 'stakeholder'
  * name is not "focus", because ?focus= is the jump to an item (design 3.2). */
 export const SPECIAL_PARAM = 'special'
 
-/** The stakeholder picked in the URL. A moved ID becomes the new ID. null
- * when there is no value, or when the ID is unknown or not in issueIds (the
- * filter is then off). */
+/** The stakeholder picked in the URL. null when there is no value, or when
+ * the ID is unknown, moved or not in issueIds (the filter is then off). A
+ * moved ID is not changed to the new ID (decision 113). */
 export function stakeholderFilterOf(
   params: URLSearchParams,
   issueIds: string[],
@@ -24,8 +24,8 @@ export function stakeholderFilterOf(
 ): string | null {
   const value = params.get(STAKEHOLDER_PARAM)
   if (!value) return null
-  const id = resolveId(stakeholders, value)
-  return id !== null && issueIds.includes(id) ? id : null
+  const found = stakeholders.find((s) => s.id === value && s.movedTo === null)
+  return found && issueIds.includes(found.id) ? found.id : null
 }
 
 /** A copy of params with the filter set to id. null removes it (「全部利害關係人」).

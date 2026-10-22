@@ -17,8 +17,9 @@ export type StoryCountsByStakeholder = Map<string, StakeholderIssueStories[]>
 
 /** The list rule (decision 78). A stakeholder is listed when it is not moved
  * and is in at least one issue (議題 is not empty). Every list, menu, count
- * and statistic uses this rule. A moved ID redirects to its new ID. A
- * stakeholder with no issue keeps its own page, which shows only a note. */
+ * and statistic uses this rule. A moved ID shows the not-found page, with a
+ * link to its new ID. A stakeholder with no issue keeps its own page, which
+ * shows only a note. */
 export function isListed(s: Stakeholder): boolean {
   return s.movedTo === null && s.issues.length > 0
 }

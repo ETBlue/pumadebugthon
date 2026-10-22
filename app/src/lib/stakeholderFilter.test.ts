@@ -42,9 +42,10 @@ describe('stakeholderFilterOf', () => {
     expect(of('stakeholder=I14')).toBeNull()
   })
 
-  it('a moved ID becomes the new ID (O02 -> I12)', () => {
+  it('a moved ID turns the filter off; it does not become the new ID (decision 113)', () => {
     expect(issueIds).toContain('I12')
-    expect(of('stakeholder=O02')).toBe('I12')
+    expect(of('stakeholder=O02')).toBeNull()
+    expect(of('stakeholder=I12')).toBe('I12')
   })
 })
 

@@ -4,8 +4,8 @@ import { sideBarFiltersOf, specialStakeholderIds, stakeholderFilterOf } from '@/
 import type { IndexFile, IssueFile } from '@/types'
 
 /** The stakeholder picked with ?stakeholder= on the issue page (design 3.14).
- * A moved ID becomes the new ID. An ID that is not in the issue gives null,
- * so the filter is off. */
+ * A moved ID, or an ID that is not in the issue, gives null, so the filter
+ * is off (decision 113). */
 export function useIssueStakeholder(index: IndexFile, issue: IssueFile): string | null {
   const [params] = useSearchParams()
   return stakeholderFilterOf(params, issue.stakeholders.map((s) => s.id), index.stakeholders)

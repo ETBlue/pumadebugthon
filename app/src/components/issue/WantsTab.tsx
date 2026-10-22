@@ -23,8 +23,8 @@ const tw = t.wantsTab
 export function WantsTab(props: IssueTabProps) {
   const { index, issue } = props
   const [params] = useSearchParams()
-  // The resolved filter (a moved ID becomes the new ID, an ID not in the
-  // issue turns the filter off), never the raw ?stakeholder= value.
+  // The checked filter (a moved ID or an ID not in the issue turns the
+  // filter off), never the raw ?stakeholder= value.
   const stakeholder = useIssueStakeholder(index, issue)
   const dataBasedOnly = isDataBasisFilterOn(params)
   const special = useIssueSpecial(index, issue)

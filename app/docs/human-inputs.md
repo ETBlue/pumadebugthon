@@ -75,8 +75,17 @@ information architecture:
   * a full width container with background color, containing
     * a back button
     * title in the same row with the back button
-  * a side menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count, hard decisions with count, potential controversies with count, affected groups with count / disadvantaged count, legal blockers with count, related policies with count
-  * a stakeholder side menu, only on 訴求, 需求, 解法 tabs
+  * a side menu
+    * overview
+    * 訴求 with count and conflicting count
+    * 需求 with count
+    * solutions with count
+    * hard decisions with count
+    * potential controversies with count
+    * affected groups with count / disadvantaged count
+    * legal blockers with count
+    * related policies with count
+  * 訴求, 需求, 解法 tabs: add an extra stakeholder side menu
     * render all organization and individual stakeholder groups in tree shape, with expand / collapse buttons for each group and expanded by default.
     * for each stakeholder item in the menu, show counts based on the page context
     * place all filters in the side bar on tabs that have one; on other tabs, place the filter toggle above the content
@@ -85,12 +94,23 @@ information architecture:
   * a full width container with background color, containing
     * a back button
     * title in the same row with the back button
-  * a side menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count
+  * a side menu
+    * overview
+    * 訴求 with count and conflicting count
+    * 需求 with count
+    * solutions with count
 * the solution page should include
   * a full width container with background color, containing
     * a back button
     * title in the same row with the back button
-  * a side menu: overview, user needs with fulfilled / not fulfilled count, user wants with covered / not covered count, stakeholders with covered / not covered count, conflicts with resolved / related count, result evaluation methods with count, related or similar policies / solutions with "from domestic country" / "from foreign country" count
+  * a side menu
+    * overview
+    * user needs with fulfilled / not fulfilled count
+    * user wants with covered / not covered count
+    * stakeholders with covered / not covered count
+    * conflicts with resolved / related count
+    * result evaluation methods with count
+    * related or similar policies / solutions with "from domestic country" / "from foreign country" count
 
 visual:
 * for the UI, use design tokens for theme maintenance. apply "solarized light" theme to the app, with "solarized dark" theme togglable
@@ -99,3 +119,7 @@ visual:
 * for all "議題", "利害關係人" and "解法" in list view, reuse shared card components. e.g. IssueCard, SolutionCard. the card components support 2 variations: detailed view and compact view. show data source bar in compact views
 * for issue card, show cross issue info in compact view
 * when mentioning issue in cards, render issue title
+* on issue > stakeholders tab
+  * render detailed stakeholder cards
+  * expand all tree levels by default
+  * render a menu bar, place all filters in the menu bar

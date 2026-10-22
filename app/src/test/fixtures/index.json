@@ -13,7 +13,7 @@
         "bike-lane"
       ],
       "added": "2026-10-18",
-      "updated": "2026-10-21",
+      "updated": "2026-10-22",
       "counts": {
         "stakeholdersO": 14,
         "stakeholdersI": 14,
@@ -45,7 +45,7 @@
         "mrt-exit"
       ],
       "added": "2026-10-16",
-      "updated": "2026-10-21",
+      "updated": "2026-10-22",
       "counts": {
         "stakeholdersO": 12,
         "stakeholdersI": 15,
@@ -126,7 +126,7 @@
         "indoor"
       ],
       "added": "2026-10-18",
-      "updated": "2026-10-20",
+      "updated": "2026-10-22",
       "counts": {
         "stakeholdersO": 10,
         "stakeholdersI": 11,
@@ -150,7 +150,7 @@
       "available": true,
       "spaces": [],
       "added": "2026-10-20",
-      "updated": "2026-10-21",
+      "updated": "2026-10-22",
       "counts": {
         "stakeholdersO": 9,
         "stakeholdersI": 11,
@@ -1187,6 +1187,24 @@
       ]
     },
     {
+      "name": "土壤液化潛勢圖",
+      "url": "https://data.gov.tw/dataset/28708",
+      "agency": "經濟部地質調查及礦業管理中心",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        1
+      ]
+    },
+    {
+      "name": "臺北市土壤液化分析鑽井圖層資料",
+      "url": "https://data.gov.tw/dataset/128222",
+      "agency": "臺北市政府工務局",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        1
+      ]
+    },
+    {
       "name": "臺北市行人專用清潔箱",
       "url": "https://data.gov.tw/dataset/121355",
       "agency": "臺北市政府環境保護局",
@@ -1215,9 +1233,27 @@
       ]
     },
     {
+      "name": "臺北市降雨積水模擬圖（112年更新版）",
+      "url": "https://data.gov.tw/dataset/121550",
+      "agency": "臺北市政府工務局水利工程處",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        2
+      ]
+    },
+    {
       "name": "臺北市指定吸菸區",
       "url": "https://data.gov.tw/dataset/177504",
       "agency": "臺北市政府衛生局",
+      "license": "政府資料開放授權條款第 1 版",
+      "issues": [
+        8
+      ]
+    },
+    {
+      "name": "臺北市火災起火原因及損失情形",
+      "url": "https://data.gov.tw/dataset/133055",
+      "agency": "臺北市政府主計處",
       "license": "政府資料開放授權條款第 1 版",
       "issues": [
         8

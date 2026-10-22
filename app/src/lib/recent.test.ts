@@ -36,8 +36,10 @@ function issueFile(number: number, solutions: Solution[]): IssueFile {
 
 describe('recentIssues', () => {
   it('lists analyzed issues by update date, then by number, highest first', () => {
+    // Built here, so the test does not depend on the dates in the fixture.
     // #1, #2 and #9 have 2026-10-21 and #8 has 2026-10-20. Inside one date the number decides.
-    expect(recentIssues(index.issues).map((i) => i.number)).toEqual([9, 2, 1, 8])
+    const list = [issue(1, '2026-10-21'), issue(8, '2026-10-20'), issue(2, '2026-10-21'), issue(9, '2026-10-21')]
+    expect(recentIssues(list).map((i) => i.number)).toEqual([9, 2, 1, 8])
   })
 
   it('leaves out issues without an analysis', () => {
@@ -62,7 +64,8 @@ describe('recentIssues', () => {
   })
 
   it('keeps only the first items when a limit is given', () => {
-    expect(recentIssues(index.issues, 2).map((i) => i.number)).toEqual([9, 2])
+    const list = [issue(1, '2026-10-21'), issue(8, '2026-10-20'), issue(2, '2026-10-21'), issue(9, '2026-10-21')]
+    expect(recentIssues(list, 2).map((i) => i.number)).toEqual([9, 2])
   })
 
   it('does not change the list it gets', () => {

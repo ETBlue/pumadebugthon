@@ -128,11 +128,17 @@ describe('sortSolutions', () => {
     expect(keys(sortSolutions(allSolutions, 'added', ctx))).toEqual(keys(recentSolutionItems(files, cross)))
   })
 
-  it('最近更新 with the real dates: newest first, then the tie rule of the home block', () => {
+  it('最近更新 with two dates: newest first, then the tie rule of the home block', () => {
+    // The dates are set here, so the test does not depend on the dates in the fixture.
     // 2026-10-21: #9 A, C, D, #2 A, B and #1 A, B. Every other solution has 2026-10-20.
     // Same date: the cross-issue solutions first, then the issue number and
     // the letter, highest first.
-    expect(keys(sortSolutions(allSolutions, 'updated', ctx))).toEqual([
+    const newer = ['9-A', '9-C', '9-D', '2-A', '2-B', '1-A', '1-B']
+    const items = allSolutions.map((x): RecentSolution => {
+      const updated = newer.includes(solutionItemKey(x)) ? '2026-10-21' : '2026-10-20'
+      return { ...x, solution: { ...x.solution, updated } } as RecentSolution
+    })
+    expect(keys(sortSolutions(items, 'updated', ctx))).toEqual([
       '9-D', '9-C', '9-A', '2-B', '2-A', '1-B', '1-A',
       'X-E', 'X-D', 'X-C', 'X-B', 'X-A',
       '9-E', '9-B', '8-E', '8-D', '8-C', '8-B', '8-A', '2-E', '2-D', '2-C', '1-E', '1-D', '1-C',

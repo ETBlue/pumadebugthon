@@ -160,5 +160,45 @@ class SameStep1IdsTest(unittest.TestCase):
                 self.assertEqual(len(self.check.step1_rows(text)[1]), 2)
 
 
+
+class PracticeTest(unittest.TestCase):
+    """The 6.1 practice tables (ETBlue, 2026-10-22)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.common = load("analysis_common")
+
+    def test_place(self):
+        place = self.common.practice_place
+        self.assertEqual(place("美國紐約：Better Bin"), ("美國紐約", "Better Bin"))
+        self.assertEqual(place("臺灣臺北市：參與式預算"), ("臺灣臺北市", "參與式預算"))
+        self.assertEqual(place("英國：演算法透明紀錄標準（ATRS）"), ("英國", "演算法透明紀錄標準（ATRS）"))
+        self.assertIsNone(place("OneMillionTrees 運動"))
+        self.assertIsNone(place("結構土壤（structural soil）"))
+        self.assertIsNone(place("新加坡："))
+
+    def test_refs(self):
+        sections = {"1": "A", "2": "B", "4": "D"}
+        refs = lambda use: self.common.practice_refs(use, sections)
+        self.assertEqual(refs("解法 C、D 的成效衡量（6.3）。見 7.4"), (["C", "D"], []))
+        self.assertEqual(refs("7.2、7.1 的相關法規"), (["B", "A"], []))
+        self.assertEqual(refs("C6 的參考；#8 解法 B 的設備"), ([], []))
+        self.assertEqual(refs("解法 A；見 7.6"), (["A"], ["7.6"]))
+        self.assertEqual(refs("約 17.5 公尺"), ([], []))
+
+    def test_every_issue_row_has_a_place_and_a_solution(self):
+        for folder in ISSUES:
+            text = read(folder)
+            found = self.common.practice_tables(text)
+            self.assertTrue(found, folder)
+            for _, rows in found:
+                for r in rows:
+                    with self.subTest(folder=folder, row=r[0]):
+                        self.assertIsNotNone(self.common.practice_place(r[0]))
+                        codes, bad = self.common.practice_refs(r[2], self.common.step7_sections(text))
+                        self.assertTrue(codes)
+                        self.assertEqual(bad, [])
+
+
 if __name__ == "__main__":
     unittest.main()

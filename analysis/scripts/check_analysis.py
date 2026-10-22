@@ -5,10 +5,10 @@ from collections import Counter, defaultdict
 # python3 -I does not put the script folder on sys.path, so add it for analysis_common.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_REF, FOCUS_GROUPS, FOCUS_HEADER, FOCUS_NONE, NEED_GROUP_HEADING,
-                             NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, NO_SPACE_CELL, NO_SPACE_LINE, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
+                             NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, NO_SPACE_CELL, NO_SPACE_LINE, PRACTICE_HEADER, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
                              SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, WAY_OUT_NONE, conflict_heading, cross_refs,
-                             focus_tables, issue_ids, needs_format, parse_ref, section, split_cells as cells, split_focus,
-                             split_refs, step1_tables, summary_lines, summary_topics, tables, without_cross_refs)
+                             focus_tables, issue_ids, needs_format, parse_ref, practice_place, practice_refs, section, split_cells as cells, split_focus,
+                             split_refs, step1_tables, step7_sections, summary_lines, summary_topics, tables, without_cross_refs)
 
 NO_DISASTER = "無明顯相關災害風險"  # the 災害風險 cell when no disaster changes the solution
 STEP7_TAG = re.compile(rf"`\[(?:{TAG_NAMES})\]`")  # a tag in a step 7 cell (16b-2)
@@ -730,6 +730,38 @@ def main(md_path, csv_path):
             for v in c:
                 for word in ("見下表", "見上表"):
                     if word in v: err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 「{word}」 does not work on the solution page; give the key numbers and name the section of the full table")
+
+    # 16d. the 6.1 practice tables (做法 | 內容 | 本文件怎麼用; ETBlue,
+    # 2026-10-22; method.md, 步驟 6). The app shows each row on the page of
+    # the solutions it names, as a domestic (國內) or foreign (國外) practice.
+    # - 做法 starts with its place and 「：」: the country, and the city if any
+    #   (「美國紐約：」, 「臺灣臺北市：」). A place that starts with 臺灣 is
+    #   domestic. Write 臺灣, not 台灣 (「台…」 is an error).
+    # - 本文件怎麼用 names at least one solution of this issue: 「解法 A」,
+    #   「解法 C、D」 or a step 7 section 「7.1」. A row that names no solution
+    #   would not be shown on any solution page, so it is an error.
+    # - Each code is in 6.1; each 「7.n」 is the section of a solution.
+    sections61 = section(text, "### 6.1") or []
+    for h, rows_p in tables(sections61):
+        if not h or h[0] != "做法": continue
+        if h != PRACTICE_HEADER:
+            err(f"6.1: a practice table must have the header {' | '.join(PRACTICE_HEADER)}; found {' | '.join(h)}"); continue
+        for c in rows_p:
+            if len(c) != len(PRACTICE_HEADER):
+                err(f"6.1 practice 「{c[0]}」: {len(c)} cells, expected {len(PRACTICE_HEADER)}"); continue
+            where = f"6.1 practice 「{c[0]}」"
+            found = practice_place(c[0])
+            if found is None:
+                err(f"{where}: 做法 must start with its place and 「：」, for example 「美國紐約：」, 「英國：」 or 「臺灣臺北市：」")
+            elif found[0].startswith("台"):
+                err(f"{where}: write the place with 臺 (「臺灣」, 「臺灣臺北市」), not 台")
+            codes_p, bad_p = practice_refs(c[2], step7_sections(text))
+            for b in bad_p:
+                err(f"{where}: 本文件怎麼用 names {b}, which is not the step 7 section of a solution")
+            for code in codes_p:
+                if code not in codes61: err(f"{where}: 本文件怎麼用 names 解法 {code}, which is not in 6.1")
+            if not codes_p and not bad_p:
+                err(f"{where}: 本文件怎麼用 must name at least one solution of this issue (「解法 A」, 「解法 C、D」 or 「7.1」)")
 
     # 17. the 相關故事 of the 5.4 conflict table (old format) holds local
     # stories only. The needs-based format checks 6.4 in check_conflicts.

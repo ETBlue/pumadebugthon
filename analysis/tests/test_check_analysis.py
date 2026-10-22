@@ -267,6 +267,39 @@ class CheckAnalysisTest(unittest.TestCase):
                   "| 商圈發展協會、便利商店門市 | `[AI模擬]` O01、O02 |")
         self.assertFails("O02")
 
+    # 16d. the 6.1 practice tables (ETBlue, 2026-10-22).
+    PRACTICE = "| 美國紐約：新設計的清潔箱（Better Bin） |"
+    PRACTICE_USE = "| `[AI模擬]` 解法 B 在被丟家用垃圾的點"
+
+    def test_practice_without_place_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.PRACTICE, "| 新設計的清潔箱（Better Bin） |")
+        self.assertFails("6.1 practice 「新設計的清潔箱（Better Bin）」", "做法 must start with its place")
+
+    def test_practice_place_with_tai_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.PRACTICE, "| 台灣台北市：新設計的清潔箱（Better Bin） |")
+        self.assertFails("write the place with 臺")
+
+    def test_practice_unknown_solution_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.PRACTICE_USE, "| `[AI模擬]` 解法 Z 在被丟家用垃圾的點")
+        self.assertFails("names 解法 Z, which is not in 6.1")
+
+    def test_practice_step7_section_of_no_solution_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "（N04、7.2）", "（N04、7.6）")
+        self.assertFails("names 7.6, which is not the step 7 section of a solution")
+
+    def test_practice_without_solution_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.PRACTICE_USE, "| `[AI模擬]` 在被丟家用垃圾的點")
+        self.assertFails("6.1 practice 「美國紐約：新設計的清潔箱（Better Bin）」", "must name at least one solution")
+
+    def test_practice_solution_of_other_issue_does_not_count(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.PRACTICE_USE, "| `[AI模擬]` #8 解法 B 在被丟家用垃圾的點")
+        self.assertFails("must name at least one solution")
+
+    def test_practice_step7_section_passes(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.PRACTICE_USE, "| `[AI模擬]` 7.2 在被丟家用垃圾的點")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
     # Cross-issue references: 「#2 O01-US01」 written in another issue file.
     # The C4 模擬結果 cell of #1 is free text, so the tests add references there.
     C4_RESULT = "（O01-US02），可以從這點開始談"

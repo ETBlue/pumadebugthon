@@ -50,6 +50,16 @@ Rules:
 - Folders: the scripts get the analysis folder (the folder with the issue
   folders). The shared CSV files are in its data/ folder (data_file) and
   method.md is in its docs/ folder (doc_file).
+- Practice tables (practice_tables): the tables in the section "### 6.1"
+  whose header is PRACTICE_HEADER (做法 | 內容 | 本文件怎麼用), under bold
+  headings such as 「**其他城市的相關做法（…查詢）**」. The 做法 cell starts
+  with its place and 「：」 (practice_place): the country, and the city if
+  any, for example 「美國紐約：」, 「英國：」, 「臺灣臺北市：」. A place that
+  starts with DOMESTIC (「臺灣」) is domestic; any other place is foreign
+  (ETBlue, 2026-10-22). The 本文件怎麼用 cell names solutions of this issue
+  (practice_refs): 「解法 A」, a list 「解法 C、D」, or a step 7 section
+  「7.1」, which means the solution of the heading 「### 7.1 解法 A：…」. A
+  reference to another issue (「#8 解法 B」) is not a solution of this issue.
 - Content fingerprint (fingerprint): the first 12 hex characters of the
   SHA-256 of the content as canonical JSON (keys sorted, no spaces, UTF-8).
   update_dates.py and check_analysis.py use it to see whether the content of
@@ -117,6 +127,19 @@ WAY_OUT_NONE = "未找到"
 # An issue with no city space (see the rules above).
 NO_SPACE_LINE = "無"
 NO_SPACE_CELL = "—"
+
+# 6.1 practice tables (see the rules above).
+PRACTICE_HEADER = ["做法", "內容", "本文件怎麼用"]
+# The 做法 cell: the place (no space, no 「：」, no bracket), 「：」, then the name.
+PRACTICE_NAME = re.compile(r"([^\s：:（）()]+)：(\S.*)")
+# A place that starts with this is domestic (國內); any other place is foreign (國外).
+DOMESTIC = "臺灣"
+# Solutions in a 本文件怎麼用 cell: 「解法 A」 or 「解法 C、D」 (group 1), not
+# after 「#8 」; or a step 7 section 「7.1」 (group 2).
+PRACTICE_SOLUTIONS = re.compile(r"(?<!#\d )(?<!#\d\d )解法 ?([A-Z](?![A-Za-z0-9-])(?:、[A-Z](?![A-Za-z0-9-]))*)"
+                                r"|(?<![0-9.])7\.(\d+)(?![0-9]|\.[0-9])")
+# A step 7 heading for one solution: 「### 7.1 解法 A：…」.
+STEP7_HEADING = re.compile(r"^### 7\.(\d+) 解法 ([A-Z])：")
 
 SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
 HEADING = re.compile(r"^(#{2,3}) (.+)$")
@@ -304,6 +327,43 @@ def parse_ref(ref):
     if rid[0] in "OI":
         return num, "stakeholder", rid
     return num, {"C": "conflict", "W": "group", "N": "need"}[rid[0]], rid
+
+
+def practice_tables(text):
+    """The 6.1 practice tables: a list of (header cells, rows of cells). Only
+    tables whose header is exactly PRACTICE_HEADER. [] when there is no 6.1."""
+    return [(h, rows) for h, rows in tables(section(text, "### 6.1") or []) if h == PRACTICE_HEADER]
+
+
+def practice_place(name):
+    """The 做法 cell -> (place, name after 「：」), or None when it does not
+    start with a place and 「：」."""
+    m = PRACTICE_NAME.fullmatch(name.strip())
+    return (m.group(1), m.group(2).strip()) if m else None
+
+
+def step7_sections(text):
+    """{section number "1": solution code "A"} from the 「### 7.n 解法 X：」 headings."""
+    return {m.group(1): m.group(2) for m in map(STEP7_HEADING.match, text.splitlines()) if m}
+
+
+def practice_refs(use, sections):
+    """The solution codes that a 本文件怎麼用 cell names, in order, without
+    repeats, and the references that are not solutions: (codes, bad).
+    sections: step7_sections(). A code is any capital letter after 「解法」;
+    the caller checks that it is in 6.1. bad lists each 「7.n」 that is not
+    the section of a solution."""
+    codes, bad = [], []
+    for m in PRACTICE_SOLUTIONS.finditer(use):
+        if m.group(1):
+            found = m.group(1).split("、")
+        elif m.group(2) in sections:
+            found = [sections[m.group(2)]]
+        else:
+            bad.append(f"7.{m.group(2)}")
+            found = []
+        codes += [c for c in found if c not in codes]
+    return codes, bad
 
 
 def today():

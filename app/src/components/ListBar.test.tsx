@@ -106,3 +106,14 @@ describe('listBodyClass', () => {
     expect(listBodyClass).toContain(containerClass)
   })
 })
+
+describe('ListBar with no sorts (#/spaces, decision 122)', () => {
+  it('leaves out the sort control', () => {
+    const html = renderToStaticMarkup(
+      <ListBar page="spaces" state={STATE} sorts={[]} filters={FILTERS} onNavigate={() => {}} />,
+    )
+    expect(html).not.toContain('<select')
+    expect(html).not.toContain(`>${t.listBar.sortLabel}</label>`)
+    expect(html).toContain('placeholder="輸入代號或名稱"')
+  })
+})

@@ -132,7 +132,9 @@ function ChoiceList({ filter, onPick }: {
  *
  * The bar does not know the pages. It gets:
  * - page and state: the page and its cleaned URL state (listParamsOf).
- * - sorts: the sort options, in order (PAGE_SORTS[page]).
+ * - sorts: the sort options, in order (PAGE_SORTS[page]). An empty list
+ *   (#/spaces, decision 122) leaves out the sort. Below md the 「篩選」
+ *   button then starts the row.
  * - filters: the filters, in the order of design 3.23.5.
  * - viewSwitch: true on #/stakeholders. In tree view the sort is disabled.
  * - sortNoteId: the id of the sort note under the result line, while a
@@ -162,7 +164,7 @@ export function ListBar({ page, state, sorts, filters, viewSwitch = false, sortN
   const describedBy = [tree ? treeNoteId : null, !tree ? sortNoteId : null].filter(Boolean).join(' ') || undefined
 
   function clearFilters() {
-    const cleared: ListState = { ...DEFAULT_LIST_STATE, issues: [], spaces: [], sort: state.sort, view: state.view }
+    const cleared: ListState = { ...DEFAULT_LIST_STATE, issues: [], spaces: [], groups: [], sort: state.sort, view: state.view }
     if (listUrlSearch(page, cleared) !== listUrlSearch(page, state)) go(cleared)
   }
 
@@ -177,21 +179,23 @@ export function ListBar({ page, state, sorts, filters, viewSwitch = false, sortN
         {/* Below md this is one row. From md, md:contents puts its children
             straight into the bar row. */}
         <div className="flex items-center gap-2 md:contents">
-          <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
-            <label htmlFor={sortId} className="shrink-0 text-sm font-medium">{tb.sortLabel}</label>
-            <select
-              id={sortId}
-              value={state.sort}
-              disabled={tree}
-              aria-describedby={describedBy}
-              onChange={(e) => go({ ...state, sort: e.target.value as ListSort })}
-              className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 md:flex-none"
-            >
-              {sorts.map((s) => (
-                <option key={s} value={s}>{tb.sorts[s]}</option>
-              ))}
-            </select>
-          </div>
+          {sorts.length > 0 && (
+            <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
+              <label htmlFor={sortId} className="shrink-0 text-sm font-medium">{tb.sortLabel}</label>
+              <select
+                id={sortId}
+                value={state.sort}
+                disabled={tree}
+                aria-describedby={describedBy}
+                onChange={(e) => go({ ...state, sort: e.target.value as ListSort })}
+                className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 md:flex-none"
+              >
+                {sorts.map((s) => (
+                  <option key={s} value={s}>{tb.sorts[s]}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* The filters from md. Below md they are in the sheet. */}
           <div className="hidden md:contents">

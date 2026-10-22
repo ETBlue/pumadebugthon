@@ -15,6 +15,7 @@ import { linkClass, proseClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
+import { backListPath } from '@/lib/backLink'
 import { solutionCells, stakeholderCells } from '@/lib/coverage'
 import { availableIssues, sharedForCard } from '@/lib/issues'
 import {
@@ -58,7 +59,7 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
   return (
     <>
       <PageTitle parts={[space.name]} />
-      <PageBand back={{ to: '/spaces', label: t.backLink.spaces }}>{space.name}</PageBand>
+      <PageBand back={{ to: backListPath('spaces'), label: t.backLink.spaces }}>{space.name}</PageBand>
       <PageBody>
         <dl className="space-y-1.5 text-sm">
           <Field label={tp.group}>{space.group}</Field>

@@ -8,7 +8,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IndexFile, IssueFile, IssueSummary, Stakeholder } from '@/types'
 import { crossCoverageIssueNumbers, crossStakeholderCoverage } from './crossIssue'
 import { solutionsTabView } from './issueTabs'
-import { filterIssues, filterSolutions, filterStakeholders, NO_FILTERS } from './listFilter'
+import { filterIssues, filterSolutions, filterSpaces, filterStakeholders, NO_FILTERS } from './listFilter'
 import { compareSolutionItems, solutionItemKey, type ListContext } from './listSort'
 import { recentSolutionItems } from './recent'
 import { isListed } from './stakeholders'
@@ -128,5 +128,29 @@ describe('filterSolutions', () => {
   it('works with no cross-issue file', () => {
     const issueOnly = all.filter((x) => x.kind === 'issue')
     expect(filterSolutions(issueOnly, { ...NO_FILTERS, issues: [1], who: 'I06' }, { issues: files, cross: null }).length).toBeGreaterThan(0)
+  })
+})
+
+describe('filterSpaces (decision 122)', () => {
+  const codes = (f: Partial<typeof NO_FILTERS>) => filterSpaces(index.spaceTypes, { ...NO_FILTERS, ...f }, index.issues).map((s) => s.code)
+
+  it('keeps every space in the data order with no filter', () => {
+    expect(codes({})).toEqual(index.spaceTypes.map((s) => s.code))
+  })
+
+  it('keeps the spaces of any picked group', () => {
+    expect(codes({ groups: ['地下'] })).toEqual(['sewer', 'utility'])
+    expect(codes({ groups: ['地下', '建築'] })).toEqual(['sewer', 'utility', 'indoor', 'building-shell'])
+  })
+
+  it('keeps the spaces that any picked issue uses, and hides the unused spaces', () => {
+    expect(codes({ issues: [1] })).toEqual(['sidewalk', 'bike-lane', 'utility', 'park'])
+    expect(codes({ issues: [1, 2] })).toEqual(['sidewalk', 'arcade', 'bike-lane', 'utility', 'park', 'mrt-exit'])
+    expect(codes({ issues: [1] })).not.toContain('parking')
+  })
+
+  it('needs both filters to match', () => {
+    expect(codes({ issues: [1], groups: ['道路'] })).toEqual(['sidewalk', 'bike-lane'])
+    expect(codes({ issues: [1], groups: ['建築'] })).toEqual([])
   })
 })

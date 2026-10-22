@@ -10,6 +10,7 @@ import {
   issueMatches,
   parseListQuery,
   solutionMatches,
+  spaceMatches,
   stakeholderMatches,
   type SearchSolutionItem,
 } from './listSearch'
@@ -170,5 +171,26 @@ describe('search with a filter and a sort', () => {
   it('returns only true or false', () => {
     const query = parseListQuery('8')
     for (const i of issues) expect(typeof issueMatches(i, query)).toBe('boolean')
+  })
+})
+
+describe('spaceMatches (decision 122)', () => {
+  const codes = (q: string) => index.spaceTypes.filter((s) => spaceMatches(s, parseListQuery(q))).map((s) => s.code)
+
+  it('finds a space by its whole code, in any case, with or without 「-」', () => {
+    expect(codes('sidewalk')).toEqual(['sidewalk'])
+    expect(codes('Bike-Lane')).toEqual(['bike-lane'])
+    expect(codes('bikelane')).toEqual(['bike-lane'])
+    // A part of a code does not match: park finds park, not parking.
+    expect(codes('park')).toEqual(['park'])
+  })
+
+  it('finds a space by a part of its name', () => {
+    expect(codes('建築物')).toEqual(['indoor', 'building-shell'])
+    expect(codes('車道')).toEqual(['bike-lane', 'scooter-lane', 'car-lane'])
+  })
+
+  it('finds every space when the query is empty', () => {
+    expect(codes('  ')).toHaveLength(13)
   })
 })

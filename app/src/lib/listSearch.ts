@@ -1,5 +1,5 @@
-// The text search of the three list pages (design 3.23.13, decisions 95
-// and 96). An item matches when its number matches or its title contains
+// The text search of the list pages (design 3.23.13, decisions 95, 96
+// and 122). An item matches when its number matches or its title contains
 // the search text. Each function returns true or false only. There is no
 // score, and the search never changes the order of a list.
 import type { Cell } from '@/types'
@@ -72,4 +72,12 @@ export function solutionMatches(item: SearchSolutionItem, query: ListQuery | nul
   const codeKey = item.solution.code.toLowerCase().replace(/-/g, '')
   if (key === codeKey || key === codeKey.slice(1)) return true
   return titleHas(item.solution.name, query)
+}
+
+/** #/spaces (decision 122): the code (the whole code, 「-」 and spaces
+ * ignored, so `bikelane` finds bike-lane) or a part of the name. */
+export function spaceMatches(space: { code: string; name: string }, query: ListQuery | null): boolean {
+  if (!query) return true
+  if (query.key === space.code.toLowerCase().replace(/-/g, '')) return true
+  return titleHas(space.name, query)
 }

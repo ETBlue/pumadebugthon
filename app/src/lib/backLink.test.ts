@@ -8,6 +8,7 @@ describe('backListPath', () => {
     expect(backListPath('issues')).toBe('/issues')
     expect(backListPath('stakeholders')).toBe('/stakeholders')
     expect(backListPath('solutions')).toBe('/solutions')
+    expect(backListPath('spaces')).toBe('/spaces')
   })
 
   it('keeps the last sort, filters and search of that list page', () => {
@@ -15,6 +16,11 @@ describe('backListPath', () => {
     expect(backListPath('issues')).toBe('/issues?sort=added&space=park')
     // Each list page has its own value.
     expect(backListPath('solutions')).toBe('/solutions')
+  })
+
+  it('keeps the filters and search of #/spaces (decision 122)', () => {
+    rememberListSearch('spaces', '?q=park&group=%E9%81%93%E8%B7%AF')
+    expect(backListPath('spaces')).toBe('/spaces?q=park&group=%E9%81%93%E8%B7%AF')
   })
 
   it('uses the newest value, also when it is the plain list', () => {

@@ -666,6 +666,19 @@ export const t = {
     solutionsValue: (n: number) => `${n} 個`,
     /** A space type that no analyzed issue uses yet. */
     noIssues: '尚無議題',
+    /** The filter labels in the bar and in the result line (decision 122). */
+    groupFilter: '空間分類',
+    issueFilter: '議題',
+    /** One choice of the 議題 filter: 「#1 把三千棵樹種回來」. */
+    issueOption: (n: number, title: string) => `#${n} ${title}`,
+    /** One picked issue in the result line: 「#1」. */
+    issueShort: (n: number) => `#${n}`,
+    /** The noun in the empty states with a search. */
+    noun: '空間',
+    /** The empty state with filters and no search. */
+    noMatchFilters: '沒有符合目前篩選的空間。',
+    /** The link that removes only the search. */
+    clearSearch: '清除搜尋',
   },
   /** The page shown when a page breaks (the errorElement of the root route). */
   routeError: {
@@ -770,6 +783,7 @@ export const t = {
       issues: (n: number, total: number) => `顯示 ${n} 個議題，共 ${total} 個。`,
       stakeholders: (n: number, total: number) => `顯示 ${n} 位利害關係人，共 ${total} 位。`,
       solutions: (n: number, total: number) => `顯示 ${n} 個解法，共 ${total} 個。`,
+      spaces: (n: number, total: number) => `顯示 ${n} 個空間，共 ${total} 個。`,
     },
     /** The filters that are on: 「篩選：搜尋「無菸」；空間類型：人行道、騎樓。」 */
     status: (parts: string[]) => `篩選：${parts.join('；')}。`,
@@ -780,8 +794,8 @@ export const t = {
   listSearch: {
     label: '搜尋',
     /** Hidden after the label, so the full label is 「搜尋議題」. */
-    labelHidden: { issues: '議題', stakeholders: '利害關係人', solutions: '解法' },
-    placeholder: { issues: '輸入編號或標題', stakeholders: '輸入編號或名稱', solutions: '輸入代號或名稱' },
+    labelHidden: { issues: '議題', stakeholders: '利害關係人', solutions: '解法', spaces: '空間' },
+    placeholder: { issues: '輸入編號或標題', stakeholders: '輸入編號或名稱', solutions: '輸入代號或名稱', spaces: '輸入代號或名稱' },
     clear: '清除搜尋',
     /** The search in the result line, before the filters. */
     statusPart: (q: string) => `搜尋「${q}」`,

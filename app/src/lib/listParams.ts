@@ -1,5 +1,5 @@
-// The URL params of the three list pages (design 3.23.5 and 3.23.13,
-// decisions 85, 91 and 97). Every sort, filter and search is in the URL.
+// The URL params of the list pages (design 3.23.5 and 3.23.13,
+// decisions 85, 91, 97 and 122). Every sort, filter and search is in the URL.
 // The names do not reuse stakeholder, evidence, cross, special, focus, pick
 // or from, because those mean other things on other pages (3.19).
 import type { IndexFile } from '@/types'
@@ -7,7 +7,7 @@ import { NO_FILTERS, type ListFilters } from './listFilter'
 import type { ListSort } from './listSort'
 import { isListed } from './stakeholders'
 
-export type ListPage = 'issues' | 'stakeholders' | 'solutions'
+export type ListPage = 'issues' | 'stakeholders' | 'solutions' | 'spaces'
 
 /** The param names, in the order listUrlSearch writes them. */
 export const LIST_PARAMS = {
@@ -18,6 +18,7 @@ export const LIST_PARAMS = {
   who: 'who',
   specialOnly: 'specialonly',
   view: 'view',
+  group: 'group',
 } as const
 
 /** The value of issue= for 「跨議題」 (and 「跨議題解法」). */
@@ -26,11 +27,14 @@ export const CROSS_ISSUE_VALUE = 'X'
 /** The longest search text in the URL, in characters. */
 export const Q_MAX_LENGTH = 100
 
-/** The sorts of each page (design 3.23.3). The first one is the default. */
+/** The sorts of each page (design 3.23.3). The first one is the default.
+ * #/spaces has none: the spaces have no dates and no share of their own,
+ * so the page keeps the data order and the bar has no sort (decision 122). */
 export const PAGE_SORTS: Record<ListPage, readonly ListSort[]> = {
   issues: ['updated', 'added', 'evidence'],
   stakeholders: ['updated', 'added', 'evidence', 'solutions'],
   solutions: ['updated', 'added', 'evidence'],
+  spaces: [],
 }
 
 /** The params each page reads. Any other list param is dropped. */
@@ -38,6 +42,7 @@ const PAGE_PARAMS: Record<ListPage, readonly string[]> = {
   issues: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.space, LIST_PARAMS.who],
   stakeholders: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.specialOnly, LIST_PARAMS.view],
   solutions: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.who],
+  spaces: [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.group],
 }
 
 /** The whole state of a list page. */
@@ -89,7 +94,7 @@ export function listParamsOf(
   spaceCodes: readonly string[] = index.issues.flatMap((i) => i.spaces),
 ): ListParams {
   const has = (name: string) => PAGE_PARAMS[page].includes(name)
-  const state: ListState = { ...DEFAULT_LIST_STATE, issues: [], spaces: [] }
+  const state: ListState = { ...DEFAULT_LIST_STATE, issues: [], spaces: [], groups: [] }
 
   const sort = params.get(LIST_PARAMS.sort)
   if (has(LIST_PARAMS.sort) && sort !== null && (PAGE_SORTS[page] as readonly string[]).includes(sort)) {
@@ -98,8 +103,12 @@ export function listParamsOf(
 
   if (has(LIST_PARAMS.issue)) {
     const values = params.getAll(LIST_PARAMS.issue)
-    const analyzed = index.issues.filter((i) => i.available).map((i) => i.number)
-    state.crossChoice = values.includes(CROSS_ISSUE_VALUE)
+    // #/spaces offers only the analyzed issues that use a space, and has no
+    // 「跨議題」 (decision 122).
+    const analyzed = index.issues
+      .filter((i) => i.available && (page !== 'spaces' || i.spaces.length > 0))
+      .map((i) => i.number)
+    state.crossChoice = page !== 'spaces' && values.includes(CROSS_ISSUE_VALUE)
     state.issues = analyzed.filter((n) => values.some((v) => /^\d+$/.test(v) && Number(v) === n))
   }
 
@@ -114,11 +123,22 @@ export function listParamsOf(
     state.who = found && isListed(found) ? found.id : null
   }
 
+  if (has(LIST_PARAMS.group)) {
+    const values = params.getAll(LIST_PARAMS.group)
+    state.groups = spaceGroupNames(index).filter((g) => values.includes(g))
+  }
+
   if (has(LIST_PARAMS.specialOnly)) state.specialOnly = params.get(LIST_PARAMS.specialOnly) === '1'
   if (has(LIST_PARAMS.view)) state.view = params.get(LIST_PARAMS.view) === 'tree' ? 'tree' : 'cards'
   state.q = cleanQuery(params.get(LIST_PARAMS.q))
 
   return { ...state, replace: listUrlSearch(page, state) !== listOnlySearch(params) }
+}
+
+/** The space groups (道路, 地下, …) in the order they first come in
+ * index.spaceTypes, the same order as spaceGroups. */
+export function spaceGroupNames(index: IndexFile): string[] {
+  return [...new Set(index.spaceTypes.map((s) => s.group))]
 }
 
 /** The URL search string for a list page state ("?q=…&sort=…", or "" for
@@ -139,6 +159,7 @@ export function listUrlSearch(page: ListPage, state: ListState): string {
   if (has(LIST_PARAMS.who) && state.who !== null) out.set(LIST_PARAMS.who, state.who)
   if (has(LIST_PARAMS.specialOnly) && state.specialOnly) out.set(LIST_PARAMS.specialOnly, '1')
   if (has(LIST_PARAMS.view) && state.view === 'tree') out.set(LIST_PARAMS.view, 'tree')
+  if (has(LIST_PARAMS.group)) for (const g of state.groups) out.append(LIST_PARAMS.group, g)
   const s = out.toString()
   return s ? `?${s}` : ''
 }
@@ -152,7 +173,7 @@ export function listPath(page: ListPage, state: Partial<ListState> = {}): string
 /** The 「看全部」 links of the home blocks (design 3.23.12, decision 91).
  * Each list has the sort of its block, so its first 5 cards are the 5 items
  * of the block. 最近更新 is the default sort, so #/issues has no param. */
-export const HOME_ALL_PATHS: Record<ListPage, string> = {
+export const HOME_ALL_PATHS: Record<Exclude<ListPage, 'spaces'>, string> = {
   issues: listPath('issues'),
   stakeholders: listPath('stakeholders', { sort: 'added' }),
   solutions: listPath('solutions', { sort: 'added' }),
@@ -165,7 +186,7 @@ export const CROSS_STAKEHOLDERS_PATH = listPath('stakeholders', { crossChoice: t
  * view and any other param are kept. "" when nothing is left. */
 export function clearListFilters(params: URLSearchParams): string {
   const next = new URLSearchParams(params)
-  for (const name of [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.who, LIST_PARAMS.specialOnly]) {
+  for (const name of [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.who, LIST_PARAMS.specialOnly, LIST_PARAMS.group]) {
     next.delete(name)
   }
   const s = next.toString()

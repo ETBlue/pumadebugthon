@@ -1,9 +1,9 @@
-// The filters of the three list pages (design 3.23.5, decision 85). Inside
+// The filters of the list pages (design 3.23.5, decisions 85 and 122). Inside
 // one filter an item matches ANY picked value. Between filters an item must
 // match ALL of them. Nothing picked in a filter means no limit. The text
 // search is not here (src/lib/listSearch.ts): the pages apply both.
 // Every function keeps the order of the list it gets. Nothing here sorts.
-import type { IssueSummary, Stakeholder } from '@/types'
+import type { IssueSummary, SpaceType, Stakeholder } from '@/types'
 import { crossCoverageIssueNumbers, crossNeedCoverage } from './crossIssue'
 import type { ListContext } from './listSort'
 import { needsForStakeholder } from './needs'
@@ -24,10 +24,12 @@ export interface ListFilters {
   who: string | null
   /** 只看特別關注族群 (specialonly=1). */
   specialOnly: boolean
+  /** 空間分類 on #/spaces: picked space groups (group=<name>), decision 122. */
+  groups: string[]
 }
 
 /** No filter on. */
-export const NO_FILTERS: ListFilters = { issues: [], crossChoice: false, spaces: [], who: null, specialOnly: false }
+export const NO_FILTERS: ListFilters = { issues: [], crossChoice: false, spaces: [], who: null, specialOnly: false, groups: [] }
 
 /** #/issues: 空間類型 and 利害關係人. A 製作中 issue has no spaces and no
  * stakeholders, so any filter hides it. */
@@ -105,4 +107,23 @@ export function filterSolutions(
       i.coverage.covered.some((n) => n.stakeholders.includes(who)),
     )
   })
+}
+
+/** #/spaces (decision 122): 空間分類 and 議題. 空間分類 keeps a space of a
+ * picked group. 議題 keeps a space that a picked issue uses. A space that
+ * no analyzed issue uses is hidden while the 議題 filter is on. issues: the
+ * issue list of index.json. */
+export function filterSpaces(
+  spaces: SpaceType[],
+  filter: Pick<ListFilters, 'groups' | 'issues'>,
+  issues: IssueSummary[],
+): SpaceType[] {
+  const used = new Set(
+    issues.filter((i) => i.available && filter.issues.includes(i.number)).flatMap((i) => i.spaces),
+  )
+  return spaces.filter(
+    (s) =>
+      (filter.groups.length === 0 || filter.groups.includes(s.group)) &&
+      (filter.issues.length === 0 || used.has(s.code)),
+  )
 }

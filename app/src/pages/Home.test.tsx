@@ -74,7 +74,8 @@ describe('the home page 資料根據', () => {
     expect(shown).toHaveLength(list.length)
     shown.forEach((card, i) => {
       const cells = stakeholderCells(issueFiles, list[i].id)
-      expect(card).toContain(`>${t.basis.label}</dt>`)
+      // The label says the bar counts every issue, as on #/stakeholders.
+      expect(card).toContain(`>${t.stakeholdersList.basis}</dt>`)
       // Each part of the counts: 「實證</span> 3」 and so on.
       for (const p of basisTextParts(cells)) expect(card).toContain(`${t.basis.parts[p.key]}</span> ${p.count}`)
       expect(card).toContain(BAR)

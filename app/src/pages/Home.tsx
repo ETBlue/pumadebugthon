@@ -116,8 +116,13 @@ function HomeBlocks({ index }: { index: IndexFile }) {
                             <IssueTitleLinks numbers={s.issues} titles={index.issues} to={(n) => `/issues/${n}`} />
                           </Field>
                         )}
-                        {/* 資料根據 needs the issue files (decision 107). */}
-                        <BasisField cells={issueFiles.status === 'ready' ? stakeholderCells(issueFiles.data, s.id) : null} />
+                        {/* 資料根據 needs the issue files (decision 107). The bar
+                            counts every analyzed issue, so the label says so,
+                            as on #/stakeholders (ETBlue, 2026-10-22). */}
+                        <BasisField
+                          cells={issueFiles.status === 'ready' ? stakeholderCells(issueFiles.data, s.id) : null}
+                          label={t.stakeholdersList.basis}
+                        />
                         <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
                       </dl>
                     </StakeholderCard>

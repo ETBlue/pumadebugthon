@@ -5,7 +5,7 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile, IssueSummary } from '@/types'
-import { disadvantagedGroups, focusGapsText, focusRows } from './focusGroups'
+import { disadvantagedGroups, focusGapsText, focusRows, groupsNotIncluded } from './focusGroups'
 import { FOCUS_ORDER } from './issues'
 
 const index = indexJson as IndexFile
@@ -106,6 +106,31 @@ describe('disadvantagedGroups', () => {
     expect(groups[6].focus).toBeNull()
     // The rows are matched by name, not by their place in the file.
     expect(groups[1].item?.item).toBe('身心障礙')
+  })
+})
+
+// The line 「本議題尚未納入：…」 of the 利害關係人 tab (decision 115).
+describe('groupsNotIncluded', () => {
+  it('lists the groups with no stakeholder, in the fixed order', () => {
+    expect(groupsNotIncluded(trees, index.stakeholders)).toEqual(['呼吸道疾病', '外籍'])
+    expect(groupsNotIncluded(trashcans, index.stakeholders)).toEqual(['呼吸道疾病'])
+    expect(groupsNotIncluded(smokefree, index.stakeholders)).toEqual([])
+    expect(groupsNotIncluded(policy, index.stakeholders)).toEqual([])
+  })
+
+  it('gives the same groups as the issue card (focusGapsText) on the fixtures', () => {
+    for (const issue of [trees, trashcans, smokefree, policy]) {
+      const s = index.issues.find((i) => i.number === issue.number) as IssueSummary
+      const gaps = focusGapsText(s)
+      expect(groupsNotIncluded(issue, index.stakeholders), issue.folder).toEqual(gaps?.kind === 'gaps' ? gaps.groups : [])
+    }
+  })
+
+  it('with no check row, counts a group whose 分析摘要 row is 【待補】', () => {
+    const summary = trees.summary.map((t) => (t.topic === '受影響較大的弱勢族群'
+      ? { ...t, items: [...t.items, { ...t.items[0], item: '新住民（尚未納入）', text: { ...t.items[0].text, pending: true } }] }
+      : t))
+    expect(groupsNotIncluded({ ...trees, summary }, index.stakeholders)).toEqual(['呼吸道疾病', '外籍', '新住民'])
   })
 })
 

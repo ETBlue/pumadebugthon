@@ -5,7 +5,9 @@
 import type { IssueFile, Stakeholder } from '@/types'
 import { compareIds } from './ids'
 import { needsTabView, solutionsTabView } from './issueTabs'
-import { buildTree, findStakeholder, type TreeNode } from './stakeholders'
+import {
+  buildTree, filterStakeholders, findStakeholder, type StakeholderFilter, type StoryCountsByStakeholder, type TreeNode,
+} from './stakeholders'
 import { wantsTabView } from './wantsTab'
 
 /** One group of the side menu: a root (組織 or 個人) or a level of 分類路徑. */
@@ -63,6 +65,33 @@ export function sideMenuTree(ids: string[], stakeholders: Stakeholder[], pathLab
     groups.push({ key: root, root, path: null, label: null, stakeholders: own, children, stakeholderCount })
   }
   return groups
+}
+
+/** The tree of the 利害關係人 tab of the issue page (decision 115): the
+ * stakeholders that pass the filter (filterStakeholders), in the same tree
+ * as the side menu and the tree view of #/stakeholders. */
+export function filteredSideMenuTree(
+  stakeholders: Stakeholder[],
+  pathLabels: Record<string, string>,
+  filter: StakeholderFilter,
+): SideMenuGroup[] {
+  const ids = filterStakeholders(stakeholders, filter).map((s) => s.id)
+  return sideMenuTree(ids, stakeholders, pathLabels)
+}
+
+/** The number of stories of all stakeholders in a group and every level
+ * below it. counts: from storyCountsByStakeholder. */
+export function groupStoryTotal(group: SideMenuGroup, counts: StoryCountsByStakeholder): number {
+  const own = group.stakeholders.reduce(
+    (sum, s) => sum + (counts.get(s.id) ?? []).reduce((n, e) => n + e.stories.length, 0),
+    0,
+  )
+  return own + group.children.reduce((sum, c) => sum + groupStoryTotal(c, counts), 0)
+}
+
+/** The keys of every group in these groups and below them. */
+export function groupKeys(groups: SideMenuGroup[]): string[] {
+  return groups.flatMap((g) => [g.key, ...groupKeys(g.children)])
 }
 
 /** The keys of the groups above the stakeholder, from the root down. These

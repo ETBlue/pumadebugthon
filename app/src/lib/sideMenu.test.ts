@@ -7,9 +7,12 @@ import discoveryJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile, Stakeholder } from '@/types'
 import { compareIds } from './ids'
 import { needsTabView, solutionsTabView } from './issueTabs'
-import { groupKeysAbove, SIDE_MENU_CONTEXTS, sideMenuCounts, sideMenuTree, type SideMenuGroup } from './sideMenu'
+import {
+  filteredSideMenuTree, groupKeys, groupKeysAbove, groupStoryTotal, SIDE_MENU_CONTEXTS, sideMenuCounts, sideMenuTree,
+  type SideMenuGroup,
+} from './sideMenu'
 import { specialOptions, specialStakeholderIds } from './stakeholderFilter'
-import { isListed } from './stakeholders'
+import { issueStakeholders, isListed, storyCountsByStakeholder } from './stakeholders'
 import { wantsTabView } from './wantsTab'
 
 const index = indexJson as IndexFile
@@ -129,6 +132,53 @@ describe('sideMenuTree', () => {
     const ids = index.stakeholders.filter(isListed).map((s) => s.id)
     const full = sideMenuTree(ids, index.stakeholders, index.pathLabels)
     expect(full.reduce((sum, g) => sum + g.stakeholderCount, 0)).toBe(ids.length)
+  })
+})
+
+// The tree of the issue's 利害關係人 tab (decision 115).
+describe('filteredSideMenuTree', () => {
+  const list = issueStakeholders(index.stakeholders, trashcans)
+  const allIds = (groups: SideMenuGroup[]): string[] =>
+    groups.flatMap((g) => [...g.stakeholders.map((s) => s.id), ...allIds(g.children)])
+
+  it('with no filter, has every stakeholder of the issue, 組織 first, then 個人', () => {
+    const tree = filteredSideMenuTree(list, index.pathLabels, { crossIssueOnly: false, focus: [] })
+    expect(tree.map((g) => g.key)).toEqual(['O', 'I'])
+    expect(allIds(tree).sort(compareIds)).toEqual(list.filter(isListed).map((s) => s.id).sort(compareIds))
+  })
+
+  it('keeps only the stakeholders of the picked 特別關注 group', () => {
+    const tree = filteredSideMenuTree(list, index.pathLabels, { crossIssueOnly: false, focus: ['高齡'] })
+    const ids = allIds(tree)
+    expect(ids.length).toBeGreaterThan(0)
+    expect(ids.length).toBeLessThan(list.length)
+    for (const id of ids) expect(list.find((s) => s.id === id)?.focus, id).toContain('高齡')
+    // 高齡 is a group of individuals, so the 組織 root is left out.
+    expect(tree.map((g) => g.key)).toEqual(['I'])
+  })
+
+  it('keeps only the stakeholders in 2 or more issues with 只看跨議題', () => {
+    const ids = allIds(filteredSideMenuTree(list, index.pathLabels, { crossIssueOnly: true, focus: [] }))
+    expect(ids.length).toBeGreaterThan(0)
+    for (const id of ids) expect(list.find((s) => s.id === id)!.issues.length, id).toBeGreaterThanOrEqual(2)
+  })
+})
+
+describe('groupStoryTotal and groupKeys', () => {
+  const tree = sideMenuTree(issueIds, index.stakeholders, index.pathLabels)
+  const counts = storyCountsByStakeholder([trashcans])
+
+  it('sums the stories of a root and all levels below it', () => {
+    const total = tree.reduce((sum, g) => sum + groupStoryTotal(g, counts), 0)
+    expect(total).toBe(trashcans.stories.length)
+  })
+
+  it('lists the key of every group, the roots and all levels', () => {
+    const keys = groupKeys(tree)
+    expect(keys.slice(0, 1)).toEqual(['O'])
+    expect(keys).toContain('I')
+    expect(new Set(keys).size).toBe(keys.length)
+    expect(keys.filter((k) => k.includes(':')).length).toBeGreaterThan(0)
   })
 })
 

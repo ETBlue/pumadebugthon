@@ -1,5 +1,5 @@
 // The issue page with the 分析摘要 topic tabs and the 利害關係人 tab
-// (ETBlue, 2026-10-22; design 3.2, decisions 102 and 109). The data hooks and the page title are mocked,
+// (ETBlue, 2026-10-22; design 3.2, decisions 102, 109 and 115). The data hooks and the page title are mocked,
 // so the page renders on the server with the fixtures.
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router'
@@ -191,20 +191,13 @@ function rowNames(html: string): string[] {
   return [...list.matchAll(/<p class="font-medium">([^<]*)<\/p>/g)].map((m) => m[1])
 }
 
-/** The group names of the 利害關係人 tab, in order. */
-function groupNames(html: string): string[] {
-  const list = /<ul aria-label="受影響較大的弱勢族群"[^>]*>([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? ''
-  return [...list.matchAll(/<h4 class="font-medium">([^<]*)<\/h4>/g)].map((m) => m[1])
+/** The HTML of the menu box of the 利害關係人 tab (decision 115). */
+function menuBox(html: string): { cls: string; inner: string } {
+  const m = /<div role="group" aria-label="篩選與展開" class="([^"]*)">([\s\S]*?)<\/div><div class="space-y-1">/.exec(html)
+  return { cls: m?.[1] ?? '', inner: m?.[2] ?? '' }
 }
 
-/** The HTML of one group card of the 利害關係人 tab. */
-function groupCard(html: string, name: string): string {
-  const start = html.indexOf(`<h4 class="font-medium">${name}</h4>`)
-  const li = html.lastIndexOf('<li', start)
-  return html.slice(li, html.indexOf('</li>', start))
-}
-
-describe('the 利害關係人 tab (decision 109)', () => {
+describe('the 利害關係人 tab (decision 115)', () => {
   it('opens from its URL, with 利害關係人 in the page title and the hidden h2', () => {
     const html = render('/issues/1/stakeholders')
     expect(activeTab(html)).toBe('利害關係人 28・弱勢 4')
@@ -212,68 +205,67 @@ describe('the 利害關係人 tab (decision 109)', () => {
     expect(html).toContain('<h2 class="sr-only">利害關係人</h2>')
   })
 
-  it('shows the disadvantaged groups first, then the stakeholder list', () => {
+  it('has no group cards and no 「只看有資料根據」 toggle', () => {
     const html = render('/issues/1/stakeholders')
-    const groups = html.indexOf('>受影響較大的弱勢族群</h3>')
-    const list = html.indexOf('id="focus-stakeholders"')
-    expect(groups).toBeGreaterThan(-1)
-    expect(list).toBeGreaterThan(groups)
-    expect(html.indexOf('只看有資料根據')).toBeLessThan(list)
+    expect(html).not.toContain('受影響較大的弱勢族群')
+    expect(html).not.toContain('border-dashed')
+    expect(html).not.toContain('只看有資料根據')
+    expect(html).not.toContain('已隱藏')
   })
 
-  it('shows each group once, in the fixed order', () => {
-    for (const n of [1, 2, 8, 9]) {
-      expect(groupNames(render(`/issues/${n}/stakeholders`)), `#${n}`).toEqual(['高齡', '身心障礙', '呼吸道疾病', '兒童與照顧者', '外籍', '經濟弱勢'])
+  it('names the groups that the issue has not included yet, in the fixed order', () => {
+    expect(render('/issues/1/stakeholders')).toContain('<p>本議題尚未納入：呼吸道疾病、外籍</p>')
+    expect(render('/issues/2/stakeholders')).toContain('<p>本議題尚未納入：呼吸道疾病</p>')
+    for (const n of [8, 9]) {
+      const html = render(`/issues/${n}/stakeholders`)
+      expect(html, `#${n}`).toContain('<p>本議題已納入所有特別關注族群</p>')
+      expect(html, `#${n}`).not.toContain('本議題尚未納入')
     }
   })
 
-  it('a group card has the 分析摘要 說明 and links, and the 特別關注族群 check', () => {
-    const card = groupCard(render('/issues/1/stakeholders'), '身心障礙')
-    expect(card).toContain('樹根頂起鋪面')
-    expect(card).toContain('AI模擬')
-    expect(card).toContain('相關：')
-    expect(card).toContain('href="/issues/1/wants?focus=C1"')
-    expect(card).toContain('href="/stakeholders/I06"')
-    expect(card).toMatch(/\d+ 則故事/)
-    expect(card).not.toContain('border-dashed')
-  })
-
-  it('a group the issue has not included has a dashed border, and its 【待補】 text once', () => {
+  it('has the menu box first, with every filter of the tab and the expand buttons', () => {
     const html = render('/issues/1/stakeholders')
-    expect(html.match(/<li class="[^"]*border-dashed/g)).toHaveLength(2)
-    const card = groupCard(html, '呼吸道疾病')
-    expect(card).toContain('border-dashed')
-    expect(card).toContain('本議題尚未納入')
-    expect(card.match(/本議題是否需要納入過敏或呼吸道疾病者的觀點/g)).toHaveLength(1)
+    const box = menuBox(html)
+    expect(box.cls.split(' ')).toEqual(expect.arrayContaining(['rounded-lg', 'border', 'bg-muted', 'flex-wrap']))
+    // The 特別關注 filter: one toggle per group of the issue's stakeholders.
+    expect(box.inner).toContain('>特別關注</span>')
+    for (const g of ['高齡', '身心障礙', '兒童與照顧者', '經濟弱勢']) expect(box.inner, g).toContain(`${g}</button>`)
+    // 4 issues are available, so 只看跨議題 is there.
+    expect(box.inner).toContain('只看跨議題')
+    expect(box.inner).toContain('全部展開')
+    expect(box.inner).toContain('全部收合')
+    // The box is above the tree.
+    expect(html.indexOf('aria-label="篩選與展開"')).toBeLessThan(html.indexOf('>組織'))
   })
 
-  it('with the filter on, hides the [AI模擬] 說明 but keeps every group card', () => {
-    const html = render('/issues/8/stakeholders?evidence=1')
-    expect(html).toMatch(/aria-pressed="true"/)
-    expect(groupNames(html)).toHaveLength(6)
-    expect(html).toContain('篩選：只看有資料根據。顯示 2 項說明。')
-    // [AI整理] rows stay.
-    expect(groupCard(html, '呼吸道疾病')).not.toContain('已隱藏')
-    expect(groupCard(html, '兒童與照顧者')).not.toContain('已隱藏')
-    // An [AI模擬] row is replaced by a short note; the check part stays.
-    const old = groupCard(html, '高齡')
-    expect(old).toContain('這個族群的說明沒有標記 [實證] 或 [AI整理]，已隱藏。')
-    const oldText = (smokefreeJson as IssueFile).summary.find((t) => t.topic === '受影響較大的弱勢族群')!.items[0].text.text
-    expect(old).not.toContain(oldText.slice(0, 10))
-    expect(old).toMatch(/\d+ 則故事/)
+  it('keeps the count note and the priority legend', () => {
+    const html = render('/issues/1/stakeholders')
+    expect(html).toContain('故事數只表示分析寫了多少，不代表重要程度。')
   })
 
-  it('with the filter on, a 【待補】 row is hidden but the missing group stays', () => {
-    const html = render('/issues/1/stakeholders?evidence=1')
-    expect(html).toContain('顯示 0 項說明。')
-    const card = groupCard(html, '外籍')
-    expect(card).toContain('border-dashed')
-    expect(card).toContain('本議題尚未納入')
-    expect(card).not.toContain('已隱藏')
+  it('shows the tree in two columns from md: 組織, then 個人', () => {
+    const html = render('/issues/1/stakeholders')
+    const grid = html.indexOf('class="grid gap-6 md:grid-cols-2 md:gap-8"')
+    const org = html.indexOf('>組織<')
+    const ind = html.indexOf('>個人<')
+    expect(grid).toBeGreaterThan(-1)
+    expect(org).toBeGreaterThan(grid)
+    expect(ind).toBeGreaterThan(org)
+    // Each root is its own column (a section with an h3).
+    expect(html.match(/<section aria-labelledby="stakeholders-root-[OI]"/g)).toHaveLength(2)
   })
 
-  it('the filter does not change the tab counts', () => {
-    expect(tabNames(render('/issues/1/stakeholders?evidence=1'))).toEqual(tabNames(render('/issues/1/stakeholders')))
+  it('opens every level of the tree at the start and shows a detailed card for each stakeholder', () => {
+    const html = render('/issues/1/stakeholders')
+    expect(html).toContain('data-state="open"')
+    expect(html).not.toContain('data-state="closed"')
+    for (const s of (treesJson as IssueFile).stakeholders) {
+      expect(html, s.id).toContain(`href="/stakeholders/${s.id}"`)
+    }
+  })
+
+  it('is the ?focus=stakeholders target', () => {
+    expect(render('/issues/1/stakeholders?focus=stakeholders')).toContain('id="focus-stakeholders"')
   })
 })
 

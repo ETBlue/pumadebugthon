@@ -159,7 +159,11 @@ export const t = {
     focusAllValue: '都已納入',
   },
   stakeholderList: {
+    /** The name of the menu box at the top of the 利害關係人 tab (decision 115). */
+    menu: '篩選與展開',
     filters: '篩選利害關係人',
+    expandAll: '全部展開',
+    collapseAll: '全部收合',
     crossIssueOnly: '只看跨議題',
     focus: '特別關注',
     countNote: '故事數只表示分析寫了多少，不代表重要程度。',
@@ -230,22 +234,12 @@ export const t = {
       /** When 「只看有資料根據」 hides every row (decision 108). */
       dataEmpty: '這裡沒有說明標記 [實證] 或 [AI整理] 的項目。',
     },
-    /** The 利害關係人 tab (design 3.2, decision 109): the disadvantaged
-     * groups first, then the stakeholder list. */
+    /** The 利害關係人 tab (design 3.2, decision 115). */
     stakeholdersTab: {
-      groupsHeading: '受影響較大的弱勢族群',
-      /** The groups come from the 特別關注族群 check and the 分析摘要. */
-      groupsIntro: '列出 6 類特別關注族群在本議題的利害關係人、故事，以及分析摘要對這個族群的說明。尚未納入的族群，需要由真人判斷是否應該納入。分析摘要不加入新的事實，大部分是 AI 的判斷。',
-      groupStakeholders: '利害關係人',
-      groupStories: (n: number) => `${n} 則故事`,
-      groupNotIncluded: '本議題尚未納入',
-      groupStakeholderLink: (id: string, name: string) => `${id} ${name}`,
-      /** The end of the filter status line: the 說明 rows still shown. */
-      shown: (n: number) => `顯示 ${n} 項說明。`,
-      /** In place of a 說明 that 「只看有資料根據」 hides. */
-      itemHidden: '這個族群的說明沒有標記 [實證] 或 [AI整理]，已隱藏。',
-      stakeholdersHeading: '利害關係人',
-      none: '這個議題還沒有特別關注族群的資料。',
+      /** The groups that the issue has not included yet, in the fixed order. */
+      notIncluded: (groups: string[]) => `本議題尚未納入：${groups.join('、')}`,
+      /** When the issue has included every group. */
+      allIncluded: '本議題已納入所有特別關注族群',
     },
   },
   overview: {

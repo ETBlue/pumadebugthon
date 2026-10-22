@@ -38,6 +38,7 @@ information architecture:
     * filter issues by space
     * filter issues by stakeholder
     * search issue by title or number
+    * order: sort, filters, search on the right
   * a list of issue cards
 * the stakeholders page should include
   * no page title. the highlighted top bar item represents the title of the page
@@ -49,6 +50,7 @@ information architecture:
     * filter stakeholder by toggling "disadvantaged group"
     * search stakeholder by title or number
     * toggle card view / tree view
+    * order: sort, filters, toggle, search on the right
   * a list of stakeholders
     * card view: similar to issues / solutions
     * tree view: similar to the stakeholder sidebar, but split organization and individual into 2 columns
@@ -61,6 +63,7 @@ information architecture:
     * filter solutions by space
     * filter solutions by stakeholder
     * search solution by title or number
+    * order: sort, filters, search on the right
   * a list of solution cards
   * if there are solutions from cross issue analysis, add the cross issue solutions to the app
 * the following entities should have unique urls

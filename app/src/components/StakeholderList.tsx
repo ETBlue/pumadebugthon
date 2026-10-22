@@ -1,17 +1,21 @@
-import { useId, useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Toggle } from '@/components/ui/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { t } from '@/i18n/zh-TW'
+import { dataBasedOnly as onlyDataBased } from '@/lib/dataBasis'
 import { focusOptions } from '@/lib/issues'
 import { filteredSideMenuTree, groupKeys, groupStoryTotal, type SideMenuGroup } from '@/lib/sideMenu'
 import { storyCountsByStakeholder } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
 import type { IssueFile, Stakeholder } from '@/types'
+import { DataBasisToggle } from './DataBasisToggle'
+import { IssueMenuBar, MenuBarGroup } from './IssueMenuBar'
 import { PriorityLegend } from './PriorityCounts'
 import { StakeholderCard } from './StakeholderCard'
+import { StoryLines } from './StoryLines'
 import { toggleOnClass } from './styles'
 import { ToggleCheck } from './ToggleCheck'
 
@@ -21,39 +25,67 @@ export interface StakeholderListProps {
   /** The stakeholders of one issue. */
   stakeholders: Stakeholder[]
   pathLabels: Record<string, string>
-  /** The issues whose stories are counted. */
+  /** The issues whose stories are counted and listed. */
   issues: IssueFile[]
   /** Show the 只看跨議題 toggle. Design: only when 2 or more issues exist. */
   showCrossIssueFilter: boolean
   crossIssueOnly: boolean
   onCrossIssueOnlyChange: (value: boolean) => void
+  /** 只看有資料根據 (?evidence=1, the same setting as the other tabs). It
+   * hides the stories with no data basis (dataBasedOnly in
+   * src/lib/dataBasis.ts), and then the stakeholders and levels with no
+   * story left (decision 116). */
+  dataBasedOnly: boolean
 }
 
 /** The stakeholder list of the issue's 利害關係人 tab (design 3.2 and 3.9,
- * decision 115). From top to bottom:
- * 1. The menu box: the 特別關注 filter, 只看跨議題 (only with 2 or more
- *    issues), 全部展開 and 全部收合. It has the look of the list bar
- *    controls (ListBar), but it is a box in the content column.
+ * decisions 115 and 116). From top to bottom:
+ * 1. The menu bar (IssueMenuBar), in three groups: 特別關注; 篩選 with
+ *    只看跨議題 (only with 2 or more issues) and 只看有資料根據; 分類層級
+ *    with 全部展開 and 全部收合.
  * 2. The count note and the priority legend.
- * 3. The tree in two columns from md: 組織 on the left, 個人 on the right
- *    (sideMenuTree, the same tree as the tree view of #/stakeholders). Each
- *    level is a button that opens or closes it. Every level is open at the
- *    start, and opens again when a filter changes. Each stakeholder is a
- *    detailed StakeholderCard with its story counts by priority.
- * Tree order and ID order only. Nothing is sorted by a count. */
+ * 3. The tree: 組織 and 個人 in two columns from md (sideMenuTree, the same
+ *    tree as the tree view of #/stakeholders). When a filter leaves only one
+ *    of them, it takes the full width. Each level is a button that opens or
+ *    closes it. Every level is open at the start, and opens again when a
+ *    filter changes. Each stakeholder is a detailed StakeholderCard with its
+ *    story counts by priority and its stories (StoryLines).
+ * With 只看有資料根據, the stories, the counts and the totals count only the
+ * stories with a data basis, and a stakeholder with no such story is not
+ * shown. Tree order, ID order and file order only. Nothing is sorted by a
+ * count. */
 export function StakeholderList(props: StakeholderListProps) {
-  const { stakeholders, pathLabels, issues, showCrossIssueFilter, crossIssueOnly, onCrossIssueOnlyChange } = props
+  const { stakeholders, pathLabels, issues, showCrossIssueFilter, crossIssueOnly, onCrossIssueOnlyChange, dataBasedOnly } = props
   const [focus, setFocus] = useState<string[]>([])
   // The levels the reader closed. Every other level is open.
   const [closed, setClosed] = useState<ReadonlySet<string>>(new Set())
-  const focusLabelId = useId()
 
-  const counts = useMemo(() => storyCountsByStakeholder(issues), [issues])
+  // The data filter is in the URL. When it changes, open every level again,
+  // as for the other filters. This runs during render, not in an effect.
+  const [seenDataBased, setSeenDataBased] = useState(dataBasedOnly)
+  if (seenDataBased !== dataBasedOnly) {
+    setSeenDataBased(dataBasedOnly)
+    setClosed(new Set())
+  }
+
+  // The stories the tab shows: all, or only the ones with a data basis.
+  const shownIssues = useMemo(
+    () => (dataBasedOnly ? issues.map((i) => ({ ...i, stories: onlyDataBased(i.stories) })) : issues),
+    [issues, dataBasedOnly],
+  )
+  const counts = useMemo(() => storyCountsByStakeholder(shownIssues), [shownIssues])
   const options = useMemo(() => focusOptions(stakeholders), [stakeholders])
   const crossOnly = showCrossIssueFilter && crossIssueOnly
+  // With the data filter, a stakeholder with no story left is not shown.
+  const withStories = useMemo(
+    () => (dataBasedOnly
+      ? stakeholders.filter((s) => (counts.get(s.id) ?? []).some((e) => e.stories.length > 0))
+      : stakeholders),
+    [stakeholders, counts, dataBasedOnly],
+  )
   const tree = useMemo(
-    () => filteredSideMenuTree(stakeholders, pathLabels, { crossIssueOnly: crossOnly, focus }),
-    [stakeholders, pathLabels, crossOnly, focus],
+    () => filteredSideMenuTree(withStories, pathLabels, { crossIssueOnly: crossOnly, focus }),
+    [withStories, pathLabels, crossOnly, focus],
   )
   // The roots (組織, 個人) are headings, not buttons, so only the levels below them.
   const allKeys = useMemo(() => tree.flatMap((root) => groupKeys(root.children)), [tree])
@@ -74,11 +106,27 @@ export function StakeholderList(props: StakeholderListProps) {
     setClosed(next)
   }
 
-  const card = (s: Stakeholder) => (
-    <li key={s.id}>
-      <StakeholderCard variant="detailed" stakeholder={s} entries={counts.get(s.id) ?? []} issueTitles={issues} />
-    </li>
-  )
+  const card = (s: Stakeholder) => {
+    const entries = counts.get(s.id) ?? []
+    return (
+      <li key={s.id}>
+        <StakeholderCard variant="detailed" stakeholder={s} entries={entries} issueTitles={issues}>
+          {entries.map((e) => {
+            const issue = shownIssues.find((i) => i.number === e.issueNumber)
+            return issue === undefined ? null : (
+              <StoryLines
+                key={e.issueNumber}
+                stories={e.stories}
+                issue={issue}
+                label={t.storyLine.listLabel(s.name)}
+                className="mt-2"
+              />
+            )
+          })}
+        </StakeholderCard>
+      </li>
+    )
+  }
 
   const level = (g: SideMenuGroup): ReactNode => (
     <li key={g.key}>
@@ -102,20 +150,15 @@ export function StakeholderList(props: StakeholderListProps) {
 
   return (
     <div className="space-y-4">
-      <div
-        role="group"
-        aria-label={ts.menu}
-        className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-lg border border-border bg-muted p-3"
-      >
+      <IssueMenuBar label={ts.menu}>
         {options.length > 0 && (
-          <div className="flex min-w-0 flex-wrap items-center gap-2">
-            <span id={focusLabelId} className="text-sm font-medium">{ts.focus}</span>
+          <MenuBarGroup label={ts.focus}>
             <ToggleGroup
               type="multiple"
               variant="outline"
               value={focus}
               onValueChange={changeFocus}
-              aria-labelledby={focusLabelId}
+              aria-label={ts.focus}
               className="min-w-0 flex-wrap"
             >
               {options.map((f) => (
@@ -125,31 +168,38 @@ export function StakeholderList(props: StakeholderListProps) {
                 </ToggleGroupItem>
               ))}
             </ToggleGroup>
-          </div>
+          </MenuBarGroup>
         )}
-        {showCrossIssueFilter && (
-          <Toggle variant="outline" pressed={crossOnly} onPressedChange={changeCrossOnly} className={cn(toggleOnClass, buttonClass)}>
-            <ToggleCheck />
-            {ts.crossIssueOnly}
-          </Toggle>
-        )}
+        <MenuBarGroup label={ts.filterGroup}>
+          {showCrossIssueFilter && (
+            <Toggle variant="outline" pressed={crossOnly} onPressedChange={changeCrossOnly} className={cn(toggleOnClass, buttonClass)}>
+              <ToggleCheck />
+              {ts.crossIssueOnly}
+            </Toggle>
+          )}
+          <DataBasisToggle variant="bar" />
+        </MenuBarGroup>
         {allKeys.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <MenuBarGroup label={ts.levelGroup}>
             <Button variant="outline" className={buttonClass} onClick={() => setClosed(new Set())}>{ts.expandAll}</Button>
             <Button variant="outline" className={buttonClass} onClick={() => setClosed(new Set(allKeys))}>{ts.collapseAll}</Button>
-          </div>
+          </MenuBarGroup>
         )}
-      </div>
+      </IssueMenuBar>
 
       <div className="space-y-1">
-        <p className="text-sm text-muted-foreground">{ts.countNote}</p>
+        <p className="text-sm text-muted-foreground">
+          {ts.countNote}
+          {dataBasedOnly && ts.countNoteDataBased}
+        </p>
         <PriorityLegend />
       </div>
 
       {tree.length === 0 ? (
         <p>{ts.none}</p>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+        // Two columns only when both 組織 and 個人 are left (decision 116).
+        <div className={cn('grid gap-6 md:gap-8', tree.length > 1 && 'md:grid-cols-2')}>
           {tree.map((root) => (
             <section key={root.key} aria-labelledby={`stakeholders-root-${root.key}`} className="min-w-0">
               <h3 id={`stakeholders-root-${root.key}`} className="flex flex-wrap items-baseline gap-x-2 text-lg font-semibold">

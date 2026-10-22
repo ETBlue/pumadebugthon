@@ -100,6 +100,15 @@ export const t = {
     legend:
       '優先順序（MoSCoW）：必須有、應該有、可以有、這次不做。這是這位利害關係人自己有多需要這則故事，不是利害關係人之間的排名。',
   },
+  /** One story in a short list (StoryLines, the cards of the issue's
+   * 利害關係人 tab, decision 116): 「我想要 …，以便 …」. */
+  storyLine: {
+    want: '我想要',
+    soThat: '，以便',
+    priority: '優先順序：',
+    /** The name of the list of one stakeholder's stories. */
+    listLabel: (name: string) => `${name}的故事`,
+  },
   story: {
     want: '我想要…',
     soThat: '以便…',
@@ -161,12 +170,17 @@ export const t = {
   stakeholderList: {
     /** The name of the menu box at the top of the 利害關係人 tab (decision 115). */
     menu: '篩選與展開',
-    filters: '篩選利害關係人',
+    /** The labels of the groups in the menu bar (decision 116). 特別關注 is
+     * the label of its own group (focus). */
+    filterGroup: '篩選',
+    levelGroup: '分類層級',
     expandAll: '全部展開',
     collapseAll: '全部收合',
     crossIssueOnly: '只看跨議題',
     focus: '特別關注',
     countNote: '故事數只表示分析寫了多少，不代表重要程度。',
+    /** Added to the count note while 只看有資料根據 is on (decision 116). */
+    countNoteDataBased: '目前只算標記 [實證] 或 [AI整理] 的故事。',
     organizations: '組織',
     individuals: '個人',
     storyTotal: (n: number) => `${n} 則故事`,
@@ -643,14 +657,12 @@ export const t = {
     notFoundBody: '網址可能打錯了，或這一頁已經移除。',
     backHome: '回到首頁',
   },
-  /** The stakeholder side menu (SideMenu, design 3.21) and the filter status
+  /** The stakeholder filter of the issue tabs (the picker and the menu bar,
+   * decision 116; before, the side menu, design 3.21) and the filter status
    * line (FilterStatus, decision 68). */
   sideMenu: {
-    /** The skip link at the top of the side bar. It moves focus to the main block. */
-    skip: '跳過利害關係人選單',
-    /** The <nav> name of the tree (the issue page, decisions 87 and 94). */
-    navLabel: '依利害關係人篩選',
-    /** The name of the filters group. */
+    /** The name of the menu bar of the 訴求, 需求, 解法 and 分析摘要 tabs
+     * (IssueMenuBar, decision 116). */
     filters: '篩選',
     special: '特別關注',
     /** The first item in filter mode. It has no count. */
@@ -661,9 +673,8 @@ export const t = {
     },
     /** One item: 「I06 身心障礙者（視障、輪椅使用者）」. */
     item: (id: string, name: string) => `${id} ${name}`,
-    /** The Collapsible button below lg. current is 「I06 名稱」, or null for 全部. */
-    trigger: (current: string | null) => `利害關係人與篩選：${current ?? '全部'}`,
-    /** The line above the tree: what the number next to each stakeholder means. */
+    /** What the number next to each stakeholder means, in the 「瀏覽」 dialog
+     * of the stakeholder picker on the issue tabs (decision 116). */
     countLine: {
       'issue-wants': '數字：在本議題的訴求數',
       'issue-needs': '數字：在本議題的需求數',

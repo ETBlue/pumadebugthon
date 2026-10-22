@@ -32,6 +32,14 @@ describe('pickerOptions', () => {
     expect(ids('O02')).toEqual([])
   })
 
+  it('with ids, gives only those stakeholders, in ID order, and still filters by the query (decision 116)', () => {
+    const own = ['I06', 'O14', 'I01', 'O01', 'I06']
+    expect(pickerOptionIds(pickerOptions(all, '', own))).toEqual(['O01', 'O14', 'I01', 'I06'])
+    expect(pickerOptionIds(pickerOptions(all, 'i0', own))).toEqual(['I01', 'I06'])
+    // An ID that is not in ids is never an option.
+    expect(pickerOptionIds(pickerOptions(all, 'I05', own))).toEqual([])
+  })
+
   it('a query of only spaces or 「#」 gives the whole list', () => {
     expect(ids('   ')).toEqual(ids(''))
     expect(ids('#')).toEqual(ids(''))

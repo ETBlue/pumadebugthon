@@ -51,7 +51,8 @@ export function keptSearch(params: URLSearchParams): string {
   return s ? `?${s}` : ''
 }
 
-/** The search part of a link in the menu on the issue page (filter mode):
+/** The search part after a pick in the stakeholder picker of the issue tabs
+ * (decision 116; before, a link in the side menu):
  * the kept values of keptSearch, with the filter set to id. null removes the
  * filter (「全部利害關係人」). pick and focus are dropped. "" when nothing is left. */
 export function stakeholderMenuSearch(params: URLSearchParams, id: string | null): string {
@@ -79,7 +80,8 @@ export function sideBarFiltersOf(params: URLSearchParams): SideBarFilters {
   }
 }
 
-/** The IDs that the side menu lists, in ID order, each once. 特別關注 uses
+/** The IDs that the stakeholder picker of the issue tabs lists (decision
+ * 116; before, the side menu), in ID order, each once. 特別關注 uses
  * the same rule as filterStakeholders. The data filter does not change the
  * list. current (the picked stakeholder) is always kept, also when it is not
  * in ids. An unknown ID is kept only when no filter is on. */

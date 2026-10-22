@@ -1,5 +1,7 @@
-// The stakeholder side menu (design 3.21, decisions 65 and 66): the tree and
-// the count next to each stakeholder. The tree is in tree order and ID
+// The stakeholder tree (design 3.21, decisions 65 and 66) and the count next
+// to each stakeholder. The issue tabs had a side menu with this tree; since
+// decision 116 the tree and the counts are in the 「瀏覽」 dialog and the list
+// of the stakeholder picker. The tree is in tree order and ID
 // order. A count says how many items the main block shows after a click on
 // that stakeholder. It is not a score. Nothing here sorts by a count.
 import type { IssueFile, Stakeholder } from '@/types'
@@ -106,10 +108,10 @@ export function groupKeysAbove(tree: SideMenuGroup[], id: string | null): string
   return []
 }
 
-/** The pages with a side menu, and so the meaning of the count (design 3.21).
- * Only the 訴求, 需求 and 解法 tabs of the issue page have a side menu now:
- * #/stakeholders and the stakeholder page have no side bar (decisions 87
- * and 94). */
+/** The pages with stakeholder counts, and so the meaning of the count
+ * (design 3.21): the stakeholder picker of the 訴求, 需求 and 解法 tabs of
+ * the issue page (decision 116; before, their side menu). #/stakeholders and
+ * the stakeholder page have no side bar (decisions 87 and 94). */
 export const SIDE_MENU_CONTEXTS = [
   'issue-wants',
   'issue-needs',
@@ -137,7 +139,7 @@ function countIn(
   }
 }
 
-/** The count next to each stakeholder in the side menu (decision 66): the
+/** The count next to each stakeholder in the picker (decision 66): the
  * number of items the main block shows after a click on it, with the same
  * 只看有資料根據 filter. The counts are summed over the issues given; the
  * issue page passes only its own issue. The map has one entry per ID, in

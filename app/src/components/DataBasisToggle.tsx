@@ -27,27 +27,27 @@ export function useTabTo(): (issueNumber: number, tab: IssueTab) => To {
 }
 
 /** The 「只看有資料根據」 toggle with a short hint. variant 'page' (default):
- * the toggle at the top of a content block. 'sideBar': the toggle in the
- * filters group of the side menu (design 3.21). It is smaller, as wide as
- * the side bar, and its text can wrap. */
-export function DataBasisToggle({ className, variant = 'page' }: { className?: string; variant?: 'page' | 'sideBar' }) {
+ * the toggle at the top of a content block, with the hint under it. 'bar':
+ * the toggle in the menu bar of an issue tab (IssueMenuBar, decision 116),
+ * with a `bg-background` like the other bar controls and the hint next to
+ * it. The hint goes under the toggle when the bar is narrow. */
+export function DataBasisToggle({ className, variant = 'page' }: { className?: string; variant?: 'page' | 'bar' }) {
   const [on, setOn] = useDataBasisFilter()
   const hintId = useId()
-  const side = variant === 'sideBar'
+  const bar = variant === 'bar'
   return (
-    <div className={className}>
+    <div className={cn(bar && 'flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1', className)}>
       <Toggle
         variant="outline"
-        size={side ? 'sm' : 'default'}
         pressed={on}
         onPressedChange={setOn}
         aria-describedby={hintId}
-        className={cn(toggleOnClass, side && 'h-auto min-h-8 w-full justify-start py-1 text-left whitespace-normal')}
+        className={cn(toggleOnClass, bar && 'bg-background')}
       >
         <ToggleCheck />
         {tf.label}
       </Toggle>
-      <p id={hintId} className={cn('mt-1 text-muted-foreground', side ? 'text-xs' : 'text-sm')}>{tf.hint}</p>
+      <p id={hintId} className={cn('text-sm text-muted-foreground', !bar && 'mt-1')}>{tf.hint}</p>
     </div>
   )
 }

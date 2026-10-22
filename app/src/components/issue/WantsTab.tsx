@@ -13,12 +13,12 @@ import { useIssueSpecial, useIssueStakeholder } from './useIssueStakeholder'
 const tw = t.wantsTab
 
 /** The 訴求 tab of the issue page (design 3.2, decision 38). IssueFilterLayout
- * puts the side bar (with the 「只看有資料根據」 toggle) inside the tab content,
- * so the keyboard order is tab list, side bar, content (decision 58). From
- * top to bottom the content is: the filter status line, 「訴求與意見健檢」
+ * puts the menu bar (the stakeholder picker, 特別關注 and 「只看有資料根據」,
+ * decision 116) and the filter status line at the top of the tab content.
+ * Then the content is: 「訴求與意見健檢」
  * (the opinion check with the wants as its pick list), then 「衝突」. With
  * ?stakeholder=<id>, only the wants and the conflicts with a story of that
- * stakeholder show. ?special= (the 特別關注 chips) works the same way with
+ * stakeholder show. ?special= (the 特別關注 toggles) works the same way with
  * the stakeholders of the picked groups (decision 75). */
 export function WantsTab(props: IssueTabProps) {
   const { index, issue } = props

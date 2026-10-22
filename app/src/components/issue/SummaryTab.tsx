@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { CellText } from '@/components/CellText'
 import { FilterStatus } from '@/components/FilterStatus'
+import { IssueMenuBar } from '@/components/IssueMenuBar'
 import { linkClass, proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import type { SummaryTab as SummaryTabName } from '@/lib/issuePage'
@@ -11,11 +12,11 @@ import type { IssueTabProps } from './types'
 
 const ts = t.issue.summaryTab
 
-/** A 分析摘要 topic tab of the issue page (design 3.2, decisions 102 and
- * 108): one short line, the 「只看有資料根據」 toggle and the filter status
- * line, then the rows of the topic in file order. A 【待補】 row is shown
- * with a dashed border; it is not in the tab count. There is no side bar, so
- * the toggle is above the rows. With the filter on, only the rows tagged
+/** A 分析摘要 topic tab of the issue page (design 3.2, decisions 102, 108
+ * and 116): one short line, the menu bar (IssueMenuBar) with the
+ * 「只看有資料根據」 toggle, the filter status line, then the rows of the
+ * topic in file order. A 【待補】 row is shown with a dashed border; it is
+ * not in the tab count. With the filter on, only the rows tagged
  * [實證] or [AI整理] are shown (summaryItemsShown), and the reference links
  * keep ?evidence=1. */
 export function SummaryTab({ tab, issue, summary }: IssueTabProps & { tab: SummaryTabName }) {
@@ -27,9 +28,11 @@ export function SummaryTab({ tab, issue, summary }: IssueTabProps & { tab: Summa
   return (
     <div>
       <p className={`text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{ts.intro}</p>
-      <DataBasisToggle className="mt-4" />
-      {/* The same status line and 「清除篩選」 as the tabs with a side bar.
-          Only the data filter applies here. */}
+      <IssueMenuBar label={t.sideMenu.filters} className="mt-4">
+        <DataBasisToggle variant="bar" />
+      </IssueMenuBar>
+      {/* The same status line and 「清除篩選」 as the 訴求, 需求 and 解法
+          tabs. Only the data filter applies here. */}
       <FilterStatus
         filters={{ dataBasedOnly, special: [] }}
         stakeholder={null}

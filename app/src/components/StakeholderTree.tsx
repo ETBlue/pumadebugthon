@@ -42,12 +42,13 @@ export interface StakeholderTreeProps {
   rootHeadings?: boolean
 }
 
-/** The stakeholder tree of the side menu (design 3.21) as nested lists: a
+/** The stakeholder tree (design 3.21) as nested lists: a
  * button per group (Collapsible, aria-expanded) and a link per stakeholder.
  * It does not use the ARIA tree role. Every group is open at the start. The
  * groups above the current item open again when the current item changes.
- * It renders the lists only. Put it in a <nav> with a name. Used by the side
- * menu and by the 「瀏覽」 dialog of the stakeholder picker (3.23.7). */
+ * It renders the lists only. Put it in a <nav> with a name. Used by the
+ * 「瀏覽」 dialog of the stakeholder picker (3.23.7; on the issue tabs since
+ * decision 116). */
 export function StakeholderTree({
   tree, targetOf, showAll = true, current, ariaCurrent, counts = null, countUnit = '', onPick, forceOpen = false, extraOf,
   rootHeadings = false,

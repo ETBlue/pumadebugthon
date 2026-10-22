@@ -1,11 +1,11 @@
-// The stakeholder picker of the list pages (design 3.23.7, decision 86): a
-// search box with a list (the ARIA 1.2 combobox pattern). The options are
+// The stakeholder picker of the list pages (design 3.23.7, decision 86) and
+// of the issue tabs 訴求, 需求 and 解法 (decision 116): a search box with a list (the ARIA 1.2 combobox pattern). The options are
 // in two groups, 組織 and 個人, each in ID order. Never sorted by a count.
 import type { Stakeholder } from '@/types'
 import { compareIds } from './ids'
 import { LIST_PARAMS } from './listParams'
 import { parseListQuery } from './listSearch'
-import { isListed } from './stakeholders'
+import { findStakeholder, isListed } from './stakeholders'
 
 /** One group of options: 組織 (O) or 個人 (I). */
 export interface PickerGroup {
@@ -17,13 +17,19 @@ export interface PickerGroup {
 /** The options for the typed text. A stakeholder matches when the text is
  * in its ID (any case; spaces, 「#」 and 「-」 are ignored) or in its name.
  * Full-width letters and digits count as half-width ones (NFKC, as the list
- * search). An empty text gives every listed stakeholder (isListed). The
- * groups are 組織 then 個人. A group with no option is left out. */
-export function pickerOptions(stakeholders: Stakeholder[], query: string): PickerGroup[] {
+ * search). An empty text gives every listed stakeholder (isListed). ids:
+ * only these stakeholders are options (the issue tabs, decision 116, give
+ * the stakeholders of the issue after 特別關注, menuIdsFor); an unknown ID
+ * gets the ID as its name (findStakeholder). The groups are 組織 then 個人.
+ * A group with no option is left out. */
+export function pickerOptions(stakeholders: Stakeholder[], query: string, ids?: string[]): PickerGroup[] {
   const q = parseListQuery(query)
   const matches = (s: Stakeholder) =>
     q === null || s.id.toLowerCase().includes(q.key) || s.name.normalize('NFKC').toLowerCase().includes(q.text)
-  const listed = stakeholders.filter((s) => isListed(s) && matches(s)).sort((a, b) => compareIds(a.id, b.id))
+  const candidates = ids === undefined
+    ? stakeholders.filter(isListed)
+    : [...new Set(ids)].map((id) => findStakeholder(stakeholders, id))
+  const listed = candidates.filter(matches).sort((a, b) => compareIds(a.id, b.id))
   const groups: PickerGroup[] = []
   for (const root of ['O', 'I'] as const) {
     const options = listed.filter((s) => (s.id.startsWith('O') ? root === 'O' : root === 'I'))

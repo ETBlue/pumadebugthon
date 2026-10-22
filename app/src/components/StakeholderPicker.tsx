@@ -33,16 +33,35 @@ export interface StakeholderPickerProps {
    * 'sheet': the phone sheet, with the label above the box and the list
    * inline under the box, in the page flow. Default 'bar'. */
   place?: 'bar' | 'sheet'
+  /** Only these stakeholders are options, in the list and in the tree of
+   * the dialog. Default: every listed stakeholder. The issue tabs pass the
+   * stakeholders of the issue (decision 116). */
+  ids?: string[]
+  /** The search part of the URL after a pick (null: 「全部利害關係人」 or the
+   * clear button). Default whoSearch (who=<id>, the list pages). The issue
+   * tabs pass stakeholderMenuSearch (?stakeholder=<id>, decision 116). */
+  searchOf?: (params: URLSearchParams, id: string | null) => string
+  /** The count next to each option and each stakeholder of the tree
+   * (decision 66, sideMenuCounts), or null for no counts. */
+  counts?: Map<string, number> | null
+  /** Hidden text before a count, for screen readers (「，訴求 」). */
+  countUnit?: string
+  /** One line in the dialog, under its intro, that says what the counts
+   * mean (「數字：在本議題的訴求數」). */
+  countNote?: string
   className?: string
 }
 
 /** The 利害關係人 filter of #/issues and #/solutions (design 3.23.7, decision
- * 86). A search box with a list (the ARIA 1.2 combobox pattern, list
+ * 86), and of the 訴求, 需求 and 解法 tabs of the issue page (decision 116,
+ * with ids, searchOf and counts). A search box with a list (the ARIA 1.2 combobox pattern, list
  * autocomplete), a clear button, a hidden live count, and the 「瀏覽」 button
  * that opens a dialog with the stakeholder tree. A pick sets who=<id> in the
  * URL with a new history entry and keeps every other param. The component
  * reads and writes the URL itself, so the bar only places it. */
-export function StakeholderPicker({ stakeholders, pathLabels, value, place = 'bar', className }: StakeholderPickerProps) {
+export function StakeholderPicker({
+  stakeholders, pathLabels, value, place = 'bar', ids, searchOf = whoSearch, counts = null, countUnit = '', countNote, className,
+}: StakeholderPickerProps) {
   const inline = place === 'sheet'
   const [params] = useSearchParams()
   const { pathname } = useLocation()
@@ -75,15 +94,15 @@ export function StakeholderPicker({ stakeholders, pathLabels, value, place = 'ba
 
   // The box shows the picked label. Then the list shows every option.
   const query = state.text === pickedLabel ? '' : state.text
-  const groups = useMemo(() => pickerOptions(stakeholders, query), [stakeholders, query])
+  const groups = useMemo(() => pickerOptions(stakeholders, query, ids), [stakeholders, query, ids])
   const optionIds = useMemo(() => pickerOptionIds(groups), [groups])
 
   const tree = useMemo(
-    () => sideMenuTree(stakeholders.filter(isListed).map((s) => s.id), stakeholders, pathLabels),
-    [stakeholders, pathLabels],
+    () => sideMenuTree(ids ?? stakeholders.filter(isListed).map((s) => s.id), stakeholders, pathLabels),
+    [stakeholders, pathLabels, ids],
   )
 
-  const targetOf = (id: string | null): To => ({ pathname, search: whoSearch(params, id) })
+  const targetOf = (id: string | null): To => ({ pathname, search: searchOf(params, id) })
   const pick = (id: string | null) => {
     setState({ ...CLOSED_PICKER, text: labelOf(id) })
     // The same pick again: no new history entry.
@@ -192,7 +211,7 @@ export function StakeholderPicker({ stakeholders, pathLabels, value, place = 'ba
             onMouseDown={(e) => e.preventDefault()}
             className={cn(
               'max-h-72 overflow-y-auto rounded-md border bg-popover p-1 text-sm text-popover-foreground',
-              inline ? 'mt-1' : 'absolute top-full left-0 z-20 mt-1 w-full min-w-64 max-w-sm shadow-md',
+              inline ? 'mt-1' : 'absolute top-full left-0 z-20 mt-1 w-full max-w-sm shadow-md md:min-w-64',
             )}
           >
             <div id={listId} role="listbox" aria-labelledby={labelId}>
@@ -203,6 +222,7 @@ export function StakeholderPicker({ stakeholders, pathLabels, value, place = 'ba
                   </div>
                   {g.options.map((s) => {
                     const active = s.id === state.active
+                    const count = counts === null ? undefined : (counts.get(s.id) ?? 0)
                     return (
                       <div
                         key={s.id}
@@ -216,9 +236,15 @@ export function StakeholderPicker({ stakeholders, pathLabels, value, place = 'ba
                           s.id === value && 'font-semibold',
                         )}
                       >
-                        <span className="min-w-0">
+                        <span className="min-w-0 flex-1">
                           <span className="font-mono">{s.id}</span> {s.name}
                         </span>
+                        {count !== undefined && (
+                          <>
+                            <span className="sr-only">{countUnit}</span>
+                            <span className={cn('shrink-0 font-normal tabular-nums', count === 0 && 'text-muted-foreground')}>{count}</span>
+                          </>
+                        )}
                       </div>
                     )
                   })}
@@ -241,6 +267,7 @@ export function StakeholderPicker({ stakeholders, pathLabels, value, place = 'ba
             <DialogHeader className="pr-10">
               <DialogTitle>{tp.dialogTitle}</DialogTitle>
               <DialogDescription>{tp.dialogIntro}</DialogDescription>
+              {countNote !== undefined && <p className="text-sm text-muted-foreground">{countNote}</p>}
             </DialogHeader>
             <div ref={dialogBodyRef} className="min-h-0 flex-1 overflow-y-auto">
               <nav aria-label={tp.treeLabel}>
@@ -249,6 +276,8 @@ export function StakeholderPicker({ stakeholders, pathLabels, value, place = 'ba
                   targetOf={targetOf}
                   current={value}
                   ariaCurrent="true"
+                  counts={counts}
+                  countUnit={countUnit}
                   onPick={() => setDialogOpen(false)}
                 />
               </nav>

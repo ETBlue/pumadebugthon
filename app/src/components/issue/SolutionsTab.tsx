@@ -75,7 +75,7 @@ function NeedPart({ id, title, needs, issueNumber }: { id: string; title: string
 
 /** 解法 (design 3.2): each solution in letter order, with its summary, space
  * types, the needs it covers (the two parts of step 6.2) and 解開的衝突. With
- * a stakeholder picked in the menu, only the solutions with one
+ * a stakeholder picked in the menu bar (decision 116), only the solutions with one
  * of its needs, and only its needs. The 特別關注 chips work the same way
  * (decision 75). With 只看有資料根據, a solution with none of its shown
  * needs left is not listed (decisions 74 and 77). */

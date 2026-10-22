@@ -24,6 +24,7 @@ const files: Record<string, IssueFile> = {
 vi.mock('@/data', () => ({
   useIndex: () => ({ status: 'ready', data: index }),
   useIssue: (folder: string) => ({ status: 'ready', data: files[folder] }),
+  useCrossIssueOrNull: () => null,
 }))
 
 // PageTitle sets document.title in an effect. Here it writes the title into
@@ -74,9 +75,11 @@ describe('the band, the side menu and the metadata (decision 111)', () => {
     expect(links).toHaveLength(9)
     // The same URLs as the tabs: ?evidence= is kept, ?pick= is dropped.
     expect(links[0]).toContain('href="/issues/1?evidence=1"')
-    expect(links[2]).toContain('href="/issues/1/needs?evidence=1"')
-    expect(links.filter((a) => a.includes('aria-current="page"'))).toEqual([links[2]])
-    expect(links[1]).toContain('aria-label="訴求 50・衝突 9"')
+    expect(links[3]).toContain('href="/issues/1/needs?evidence=1"')
+    expect(links.filter((a) => a.includes('aria-current="page"'))).toEqual([links[3]])
+    // 利害關係人 is second, right after 總覽 (decision 116).
+    expect(links[1]).toContain('aria-label="利害關係人 28・弱勢 4"')
+    expect(links[2]).toContain('aria-label="訴求 50・衝突 9"')
   })
 
   it('shows the metadata at the top of 總覽 only', () => {
@@ -100,10 +103,10 @@ describe('old issue URLs (decision 110: no redirects)', () => {
 })
 
 describe('the issue page tabs', () => {
-  it('has nine tabs: four 分析摘要 topics and 利害關係人 after 解法, with their counts (#1)', () => {
+  it('has nine tabs: 利害關係人 right after 總覽 (decision 116), then four 分析摘要 topics after 解法, with their counts (#1)', () => {
     expect(tabNames(render('/issues/1'))).toEqual([
-      '總覽', '訴求 50・衝突 9', '需求 31', '解法 5',
-      '難以取捨 5', '可能爭議 5', '利害關係人 28・弱勢 4', '法規障礙 5', '相關解法與政策 6',
+      '總覽', '利害關係人 28・弱勢 4', '訴求 50・衝突 9', '需求 31', '解法 5',
+      '難以取捨 5', '可能爭議 5', '法規障礙 5', '相關解法與政策 6',
     ])
   })
 
@@ -127,14 +130,6 @@ describe('the issue page tabs', () => {
     // The hidden h2 of the tab keeps the full name of the topic.
     expect(html).toContain('<h2 class="sr-only">法規上的障礙</h2>')
     expect(titleOf(html)).toContain('#1')
-  })
-
-  it('a topic tab has no stakeholder side menu; the 訴求 tab has one', () => {
-    const menu = 'data-slot="collapsible"'
-    for (const tab of ['decisions', 'controversies', 'legal', 'dependencies']) {
-      expect(render(`/issues/2/${tab}`), tab).not.toContain(menu)
-    }
-    expect(render('/issues/2/wants')).toContain(menu)
   })
 
   it('a reference link keeps 「只看有資料根據」 (?evidence=1)', () => {
@@ -193,7 +188,7 @@ function rowNames(html: string): string[] {
 
 /** The HTML of the menu box of the 利害關係人 tab (decision 115). */
 function menuBox(html: string): { cls: string; inner: string } {
-  const m = /<div role="group" aria-label="篩選與展開" class="([^"]*)">([\s\S]*?)<\/div><div class="space-y-1">/.exec(html)
+  const m = /<div role="group" aria-label="篩選與展開" data-slot="issue-menu-bar" class="([^"]*)">([\s\S]*?)<\/div><div class="space-y-1">/.exec(html)
   return { cls: m?.[1] ?? '', inner: m?.[2] ?? '' }
 }
 
@@ -205,11 +200,9 @@ describe('the 利害關係人 tab (decision 115)', () => {
     expect(html).toContain('<h2 class="sr-only">利害關係人</h2>')
   })
 
-  it('has no group cards and no 「只看有資料根據」 toggle', () => {
+  it('has no group cards', () => {
     const html = render('/issues/1/stakeholders')
     expect(html).not.toContain('受影響較大的弱勢族群')
-    expect(html).not.toContain('border-dashed')
-    expect(html).not.toContain('只看有資料根據')
     expect(html).not.toContain('已隱藏')
   })
 
@@ -245,7 +238,7 @@ describe('the 利害關係人 tab (decision 115)', () => {
 
   it('shows the tree in two columns from md: 組織, then 個人', () => {
     const html = render('/issues/1/stakeholders')
-    const grid = html.indexOf('class="grid gap-6 md:grid-cols-2 md:gap-8"')
+    const grid = html.indexOf('class="grid gap-6 md:gap-8 md:grid-cols-2"')
     const org = html.indexOf('>組織<')
     const ind = html.indexOf('>個人<')
     expect(grid).toBeGreaterThan(-1)
@@ -309,5 +302,135 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
   it('does not change the tab counts (they are totals, decision 49)', () => {
     expect(tabNames(render('/issues/1/legal?evidence=1'))).toEqual(tabNames(render('/issues/1/legal')))
     expect(tabNames(render('/issues/2/decisions?evidence=1'))).toContain('難以取捨 4')
+  })
+})
+
+/** The HTML of the menu bar of an issue tab (decision 116), or null. */
+function menuBar(html: string): string | null {
+  const start = html.indexOf('data-slot="issue-menu-bar"')
+  if (start === -1) return null
+  // The bar ends before the filter status line, or before the count note
+  // on the 利害關係人 tab.
+  const ends = ['<p role="status"', '<div class="space-y-1">'].map((m) => html.indexOf(m, start)).filter((i) => i !== -1)
+  return html.slice(start, ends.length > 0 ? Math.min(...ends) : undefined)
+}
+
+describe('the menu bar of the issue tabs (decision 116)', () => {
+  it('every tab with a filter has the menu bar; 總覽 has none', () => {
+    for (const tab of ['stakeholders', 'wants', 'needs', 'solutions', 'decisions', 'controversies', 'legal', 'dependencies']) {
+      const html = render(`/issues/1/${tab}`)
+      expect(html.match(/data-slot="issue-menu-bar"/g), tab).toHaveLength(1)
+      expect(menuBar(html), tab).toContain('只看有資料根據')
+    }
+    expect(render('/issues/1')).not.toContain('data-slot="issue-menu-bar"')
+  })
+
+  it('the bar is a box that wraps, so a 360 px screen does not scroll sideways', () => {
+    const cls = /data-slot="issue-menu-bar" class="([^"]*)"/.exec(render('/issues/1/wants'))?.[1].split(' ') ?? []
+    expect(cls).toEqual(expect.arrayContaining(['flex-wrap', 'rounded-lg', 'border', 'bg-muted', 'min-w-0']))
+  })
+
+  it('訴求, 需求 and 解法 have the stakeholder picker in the bar and no side menu', () => {
+    for (const tab of ['wants', 'needs', 'solutions']) {
+      const html = render(`/issues/1/${tab}`)
+      const bar = menuBar(html) ?? ''
+      expect(bar, tab).toContain('role="combobox"')
+      expect(bar, tab).toContain('aria-label="瀏覽全部利害關係人"')
+      expect(bar, tab).toContain('>特別關注</span>')
+      expect(html, tab).not.toContain('aria-label="依利害關係人篩選"')
+      expect(html, tab).not.toContain('跳過利害關係人選單')
+      expect(html, tab).not.toContain('利害關係人與篩選')
+    }
+  })
+
+  it('the picker lists only the stakeholders of the issue, with the counts of the tab', () => {
+    const bar = menuBar(render('/issues/1/wants')) ?? ''
+    const options = [...bar.matchAll(/role="option"[^>]*>[\s\S]*?<span class="font-mono">([^<]+)<\/span>/g)].map((m) => m[1])
+    expect(options).toHaveLength((treesJson as IssueFile).stakeholders.length)
+    expect(options).toContain('I06')
+    // The hidden unit before each count says what it counts.
+    expect(bar).toContain('<span class="sr-only">，訴求 </span>')
+  })
+
+  it('a stakeholder picked in the URL (?stakeholder=) still filters the tab and shows in the box', () => {
+    const html = render('/issues/1/needs?stakeholder=I06')
+    expect(html).toContain('篩選：I06 身心障礙者（視障、輪椅使用者）。')
+    expect(menuBar(html)).toContain('value="I06 身心障礙者（視障、輪椅使用者）"')
+    // The status line with 「清除篩選」 is under the bar.
+    expect(html.indexOf('data-slot="issue-menu-bar"')).toBeLessThan(html.indexOf('清除篩選'))
+  })
+
+  it('the 特別關注 toggles of the bar are in the URL (?special=)', () => {
+    const html = render('/issues/1/wants?special=高齡')
+    expect(menuBar(html)).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*高齡<\/button>/)
+    expect(html).toContain('特別關注：高齡')
+  })
+
+  it('the 分析摘要 tabs have 「只看有資料根據」 in the bar, above the status line and the rows', () => {
+    for (const tab of ['decisions', 'controversies', 'legal', 'dependencies']) {
+      const html = render(`/issues/9/${tab}?evidence=1`)
+      expect(menuBar(html), tab).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*只看有資料根據/)
+      expect(html.indexOf('data-slot="issue-menu-bar"'), tab).toBeLessThan(html.indexOf('篩選：只看有資料根據'))
+    }
+  })
+
+  it('the 利害關係人 bar has three groups: 特別關注, 篩選 (只看跨議題, 只看有資料根據) and 分類層級', () => {
+    const bar = menuBar(render('/issues/1/stakeholders')) ?? ''
+    const labels = [...bar.matchAll(/<span id="[^"]*" class="text-sm font-medium">([^<]+)<\/span>/g)].map((m) => m[1])
+    expect(labels).toEqual(['特別關注', '篩選', '分類層級'])
+    expect(bar.indexOf('只看跨議題')).toBeLessThan(bar.indexOf('只看有資料根據'))
+    expect(bar.indexOf('只看有資料根據')).toBeLessThan(bar.indexOf('全部展開'))
+  })
+})
+
+describe('the stories on the 利害關係人 tab (decision 116)', () => {
+  it('each card lists the stories of its stakeholder: 我想要…，以便…, the tags, the story link and the priority', () => {
+    const html = render('/issues/1/stakeholders')
+    for (const s of (treesJson as IssueFile).stories) {
+      expect(html, s.id).toContain(`href="/stakeholders/${s.stakeholder}/stories/1/${s.id}"`)
+    }
+    expect(html).toContain('aria-label="商圈店家與攤商的故事"')
+    expect(html).toMatch(/我想要 <span><span[^>]*>AI模擬<\/span>(?:<[^>]+>)*行道樹的位置與修剪不擋住招牌與店門出入口/)
+    expect(html).toContain('，以便 ')
+    expect(html).toContain('優先順序：')
+  })
+
+  it('lists the stories of a stakeholder in file order', () => {
+    const html = render('/issues/1/stakeholders')
+    expect(html.indexOf('O01-US01')).toBeLessThan(html.indexOf('O01-US02'))
+  })
+
+  it('「只看有資料根據」 hides the [AI模擬] stories and the stakeholders with no story left', () => {
+    const html = render('/issues/1/stakeholders?evidence=1')
+    expect(menuBar(html)).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*只看有資料根據/)
+    // A data-based story stays. An [AI模擬] story goes.
+    expect(html).toContain('/stories/1/O14-US01"')
+    expect(html).not.toContain('/stories/1/O01-US01"')
+    // O01 has only [AI模擬] stories, so its card goes. O14 stays.
+    expect(html).not.toContain('href="/stakeholders/O01"')
+    expect(html).toContain('href="/stakeholders/O14"')
+    expect(html).toContain('目前只算標記 [實證] 或 [AI整理] 的故事。')
+  })
+
+  it('the story totals follow the filter', () => {
+    const total = (html: string) => /id="stakeholders-root-O"[^>]*>組織<span[^>]*>(\d+) 則故事/.exec(html)?.[1]
+    const all = (treesJson as IssueFile).stories.filter((s) => s.stakeholder.startsWith('O')).length
+    expect(total(render('/issues/1/stakeholders'))).toBe(String(all))
+    expect(Number(total(render('/issues/1/stakeholders?evidence=1')))).toBeLessThan(all)
+  })
+
+  it('does not change the 「本議題尚未納入」 line or the tab label', () => {
+    const html = render('/issues/1/stakeholders?evidence=1')
+    expect(html).toContain('<p>本議題尚未納入：呼吸道疾病、外籍</p>')
+    expect(activeTab(html)).toBe('利害關係人 28・弱勢 4')
+  })
+
+  it('when only 個人 is left, it takes the full width with no empty column', () => {
+    // In #9 only I31 and I36 have stories with a data basis.
+    const html = render('/issues/9/stakeholders?evidence=1')
+    expect(html).toContain('id="stakeholders-root-I"')
+    expect(html).not.toContain('id="stakeholders-root-O"')
+    expect(html).toContain('class="grid gap-6 md:gap-8"')
+    expect(html).not.toContain('md:grid-cols-2')
   })
 })

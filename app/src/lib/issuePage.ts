@@ -12,9 +12,9 @@ export const SUMMARY_TABS = ['decisions', 'controversies', 'legal', 'dependencie
 export type SummaryTab = (typeof SUMMARY_TABS)[number]
 
 /** The tabs of the issue page, in display order (design 3.2). The first one
- * is the default. */
+ * is the default. 利害關係人 is second, right after 總覽 (decision 116). */
 export const ISSUE_TABS = [
-  'overview', 'wants', 'needs', 'solutions', 'decisions', 'controversies', 'stakeholders', 'legal', 'dependencies',
+  'overview', 'stakeholders', 'wants', 'needs', 'solutions', 'decisions', 'controversies', 'legal', 'dependencies',
 ] as const
 
 export type IssueTab = (typeof ISSUE_TABS)[number]

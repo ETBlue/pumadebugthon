@@ -14,10 +14,10 @@ describe('parseTab', () => {
     expect(parseTab(undefined)).toBe('overview')
   })
 
-  it('accepts every tab name', () => {
+  it('accepts every tab name, with 利害關係人 right after 總覽 (decision 116)', () => {
     expect(ISSUE_TABS).toEqual([
-      'overview', 'wants', 'needs', 'solutions',
-      'decisions', 'controversies', 'stakeholders', 'legal', 'dependencies',
+      'overview', 'stakeholders', 'wants', 'needs', 'solutions',
+      'decisions', 'controversies', 'legal', 'dependencies',
     ])
     for (const tab of ISSUE_TABS) expect(parseTab(tab)).toBe(tab)
   })

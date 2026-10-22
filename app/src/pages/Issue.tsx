@@ -68,8 +68,9 @@ function BackHome() {
 const backToIssues = (): BackTarget => ({ to: backListPath('issues'), label: t.backLink.issues })
 
 /** Issue page (design 3.2): #/issues/:number/:tab? with nine tabs: 總覽,
- * 訴求, 需求, 解法, four 分析摘要 topics (decision 102) and 利害關係人 with
- * the fifth topic, 受影響較大的弱勢族群 (decision 109). */
+ * 利害關係人 (decisions 109, 115 and 116), 訴求, 需求, 解法 and four
+ * 分析摘要 topics (decision 102). Every tab but 總覽 has a menu bar with its
+ * filters (IssueMenuBar, decision 116). */
 export default function Issue() {
   const index = useIndex()
   const { number } = useParams()

@@ -14,8 +14,8 @@ const tm = t.sideMenu
 
 /** 需求 (design 3.2): the needs of the issue, grouped by priority in the
  * fixed order 必須有, 應該有, 可以有, 這次不做. Inside a group, the order of
- * step 5.2. The stakeholder menu and the 特別關注 chips (decision 75)
- * filter the needs. */
+ * step 5.2. The stakeholder picker and the 特別關注 toggles in the menu bar
+ * (decisions 75 and 116) filter the needs. */
 export function NeedsTab({ index, issue }: IssueTabProps) {
   const [dataBasedOnly] = useDataBasisFilter()
   const stakeholder = useIssueStakeholder(index, issue)

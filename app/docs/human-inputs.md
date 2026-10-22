@@ -4,18 +4,18 @@ the problem I want to solve:
 * as a citizen, I want to participate in policy discussions, but I don't know other target audiences' concerns, so my opinions may be limited and useless. I want to be able to get an overview of the whole picture of all possible concerns from all stakeholders around the policy, so that I can improve the quality of my opinions during citizen participation
 
 other concerns:
-* although the app is for citizens, it could be helpful for gov workers who need to deal with multiple policies too. if the policy analysis phase can be recorded in a standardized format, then the stakeholder research content can become structured data, and civil servants can lookup the analysis of previous related issues in an app like this. in this way, the analysis result may be reused and reduce civil servants' workload in future policy analysis phases
+* although the app is for citizens, it could be helpful for gov workers who need to deal with multiple policies too. if the policy analysis phase can be recorded in a standardized format, then the stakeholder research content can become structured data, and civil servants can look up the analysis of previous related issues in an app like this. in this way, the analysis result may be reused and reduce civil servants' workload in future policy analysis phases
 * if the stakeholder analysis result can become structured data, it can become part of the open data released by the government too. civic tech communities and businesses can use the data in their own research or feature analysis phase when they have stakeholders or concerns similar to any of the policies. for example, a Taiwanese business "呼叫小黃" may be interested in the stakeholders related to spaces around sidewalks so that they can give better suggestions to passengers about the pickup location
 * in the future, if the government builds a digital twin of Taipei city (mentioned by Puma in an interview), the stakeholders' pov in the analysis can be used on the evaluation of the simulated solutions in the digital twin
 
 directions:
-* I want to have an UI to browse the issue analysis result in a structured way. as a hackathon submission, the content will come from the analysis folder of this repo. my raw idea is to retrieve structured data from the analysis result, and build a web page that can browse the structured data easily
+* I want to have a UI to browse the issue analysis result in a structured way. as a hackathon submission, the content will come from the analysis folder of this repo. my raw idea is to retrieve structured data from the analysis result, and build a web page that can browse the structured data easily
 * the app can be named as "市政提案小幫手", since the goal is to help people with building proposals. I had built an app named "審稿小幫手", so I think it is easier for people to remember if we follow the same naming pattern
 * license for source code: MIT. license for content I produced: CC-BY 4.0. license for content from the hackathon host: depends on the host
 
 information architecture:
 * the app header should include: app name (link to home), "議題" with count, "利害關係人" with count, "解法" with count, and theme toggle on the right
-* home page should include: a full-width hero section with background images or colors, providing a brief intro of the app (disclaimers are in footer, not here), followed by 3 call-to-action block (3 columns on desktop, 1 column on mobile) -- 
+* home page should include: a full-width hero section with background images or colors, providing a brief intro of the app (disclaimers are in footer, not here), followed by 3 call-to-action blocks (3 columns on desktop, 1 column on mobile) -- 
   * "最近更新的議題", showing latest updated issues, with a link guiding users to the issue list page
   * "最近加入分析的族群", showing latest added stakeholders, with a link guiding users to the stakeholder list page
   * "最近分析出的解法", showing latest formed solutions, with a link guiding users to the solution list page
@@ -61,7 +61,7 @@ information architecture:
     * filter solutions by space
     * filter solutions by stakeholder
     * search solution by title or number
-  * a list of solutions cards
+  * a list of solution cards
   * if there are solutions from cross issue analysis, add the cross issue solutions to the app
 * the following entities should have unique urls
   * issue
@@ -69,26 +69,30 @@ information architecture:
     * user story
   * solution
 * the issue page should include
-  * a breadcrumb
-  * title and metadata 
-  * a tab menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count, hard decisions with count, potential controversies with count, deeply affected disadvantaged groups with count, legal blockers with count, related policies with count
-  * a stakeholder side menu on 訴求, 需求, 解法 tabs
+  * a full width container with background color, containing
+    * a back button
+    * title in the same row with the back button
+  * a side menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count, hard decisions with count, potential controversies with count, affected groups with count / disadvantaged count, legal blockers with count, related policies with count
+  * a stakeholder side menu, only on 訴求, 需求, 解法 tabs
     * render all organization and individual stakeholder groups in tree shape, with expand / collapse buttons for each group and expanded by default.
     * for each stakeholder item in the menu, show counts based on the page context
-    * place all filters in the side bar, e.g. the "只看有資料根據" toggle
+    * place all filters in the side bar on tabs that have one; on other tabs, place the filter toggle above the content
     * place filter info and "clear filter" button in the main block
 * the stakeholder page should include
-  * a breadcrumb
-  * title and metadata 
-  * a tab menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count
+  * a full width container with background color, containing
+    * a back button
+    * title in the same row with the back button
+  * a side menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count
 * the solution page should include
-  * a breadcrumb
-  * title and metadata 
-  * a tab menu: overview, user needs with fulfilled / not fulfilled count, user wants with covered / not covered count, stakeholders with covered / not covered count, conflicts with resolved / related count, result evaluation methods with count, related or similar policies / solutions with "from domestic country" / "from foreign country" count
+  * a full width container with background color, containing
+    * a back button
+    * title in the same row with the back button
+  * a side menu: overview, user needs with fulfilled / not fulfilled count, user wants with covered / not covered count, stakeholders with covered / not covered count, conflicts with resolved / related count, result evaluation methods with count, related or similar policies / solutions with "from domestic country" / "from foreign country" count
 
 visual:
 * for the UI, use design tokens for theme maintenance. apply "solarized light" theme to the app, with "solarized dark" theme togglable
 * render a watermark on the app, so every screenshot can see it. the watermark could be: "市政 debug 松參加者作品・展示用 MVP"
 * support wide viewport up to 1440px
-* for all "議題", "利害關係人" and "解法" in list view, reuse shared card components. e.g. IssueCard, SolutionCard. the card components support 2 variations: detailed view and compact view
-* for issue card, show cross issue info and data source bar in compact view
+* for all "議題", "利害關係人" and "解法" in list view, reuse shared card components. e.g. IssueCard, SolutionCard. the card components support 2 variations: detailed view and compact view. show data source bar in compact views
+* for issue card, show cross issue info in compact view
+* when mentioning issue in cards, render issue title

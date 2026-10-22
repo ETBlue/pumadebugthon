@@ -60,7 +60,7 @@ function Block({ id, heading, allTo, allLabel, children }: {
   children: ReactNode
 }) {
   return (
-    <section aria-labelledby={id} className="min-w-0 border-t pt-5">
+    <section aria-labelledby={id} className="min-w-0">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <h2 id={id} className="text-xl font-bold">{heading}</h2>
         {/* The visible text is the same in all 3 blocks, so the accessible
@@ -81,8 +81,7 @@ function HomeBlocks({ index }: { index: IndexFile }) {
 
   return (
     <div>
-      <p className="text-sm text-muted-foreground">{th.sortNote}</p>
-      <div className="mt-6 grid gap-10 lg:grid-cols-3 lg:gap-8">
+      <div className="grid gap-10 lg:grid-cols-3 lg:gap-8">
         <Block id="recent-issues" heading={th.issuesHeading} allTo={HOME_ALL_PATHS.issues} allLabel={th.issuesAll}>
           {issues.length === 0 ? (
             <p>{th.issuesNone}</p>

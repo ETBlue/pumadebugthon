@@ -71,7 +71,7 @@ Each item shows:
 | 最近加入分析的族群 | The name (link to the stakeholder page), the ID, the 特別關注 badges, the issues it appears in (links), 加入日期 |
 | 最近分析出的解法 | 「#8 E」 and the name with its tag (the code and name are a link to the solution page, 3.12), the one-line summary, 新增日期 |
 
-Sort rule for all three blocks: by date, newest first. Items with the same date are sorted by ID, highest first (issue number; stakeholder ID, the reverse of the usual ID order, so I comes before O and I28 before I27; for solutions the issue number, then the solution letter). **Never sorted by a count** (this still holds for the home blocks after Phase L; decision 81). An item without a date (for example an issue with no git history) goes last. The sort functions are `recentIssues`, `recentStakeholders` and `recentSolutions` in `src/lib/recent.ts`.
+Sort rule for all three blocks: by date, newest first. Items with the same date are sorted by ID, highest first (issue number; stakeholder ID, the reverse of the usual ID order, so I comes before O and I28 before I27; for solutions the issue number, then the solution letter). **Never sorted by a count** (this still holds for the home blocks after Phase L; decision 81). An item without a date (for example an issue with no git history) goes last. The sort functions are `recentIssues`, `recentStakeholders` and `recentSolutions` in `src/lib/recent.ts`. The page does not show a line about this sort, and the three blocks have no line above them (ETBlue, 2026-10-22).
 
 Old links to the stakeholder filter on the home page (`#/?cross=1`, shared on Discord) go to `#/stakeholders?issue=X`, the stakeholders in 2 or more issues (Phase L, decision 91). Before Phase L they went to `#/stakeholders?cross=1`.
 

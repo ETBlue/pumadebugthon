@@ -907,3 +907,11 @@ ETBlue, 2026-10-22: the solution page gets seven tabs: 總覽, 需求, 訴求, �
 | Task | Status |
 |---|---|
 | U1: tabs, counts, routes, the step 7 filter, tests, phone check | Done (2026-10-22). Issue solutions and cross-issue solutions have the same seven tabs |
+
+## Phase V: the 利害關係人 tab of the issue page (design 3.2, decision 109)
+
+ETBlue, 2026-10-22: the 影響到弱勢 tab becomes 「利害關係人 N・弱勢 M」. It shows the disadvantaged groups first (特別關注族群 and 受影響較大的弱勢族群 merged, one card per group), then the stakeholder list. 總覽 loses the 數量, 特別關注族群 and 利害關係人 blocks. `/disadvantaged` and 總覽 `?focus=stakeholders` redirect to the new tab.
+
+| Task | Status |
+|---|---|
+| V1: tab, label counts, merged groups, filter, redirects, tests, browser check | Done (2026-10-22). Checked with Playwright at 360 and 1280 px on #1, #2, #8 and #9: no page-level sideways scroll; the redirects and the `#/stakeholders` card links open the tab and focus the stakeholder list |

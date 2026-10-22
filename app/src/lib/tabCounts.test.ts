@@ -2,8 +2,12 @@ import { describe, expect, it } from 'vitest'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
-import type { IssueFile, Solution } from '@/types'
-import { issueTabCounts, solutionTabCounts, solutionTabLabel, stakeholderTabCounts } from './tabCounts'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
+import indexJson from '@/test/fixtures/index.json'
+import type { IndexFile, IssueFile, Solution } from '@/types'
+import {
+  issueStakeholderTabCounts, issueTabCounts, solutionTabCounts, solutionTabLabel, stakeholderTabCounts,
+} from './tabCounts'
 import { tabLabelText } from './tabLabel'
 
 const trees = treesJson as IssueFile
@@ -20,6 +24,29 @@ describe('issueTabCounts', () => {
   it('works for the other fixtures', () => {
     expect(issueTabCounts(trees)).toEqual({ wants: 50, conflicts: 9, needs: 31, solutions: 5 })
     expect(issueTabCounts(smokefree)).toEqual({ wants: 33, conflicts: 6, needs: 24, solutions: 5 })
+  })
+})
+
+// 「利害關係人 N・弱勢 M」 on the issue page (decision 109).
+describe('issueStakeholderTabCounts', () => {
+  const index = indexJson as IndexFile
+  const issues = [treesJson, trashcansJson, smokefreeJson, policyJson] as IssueFile[]
+
+  it('counts the stakeholders of the issue and the filled 受影響較大的弱勢族群 rows', () => {
+    expect(issues.map((i) => issueStakeholderTabCounts(index.stakeholders, i))).toEqual([
+      { stakeholders: 28, disadvantaged: 4 },
+      { stakeholders: 27, disadvantaged: 5 },
+      { stakeholders: 21, disadvantaged: 6 },
+      { stakeholders: 20, disadvantaged: 6 },
+    ])
+  })
+
+  it('N is the same number as 組織 + 個人 in the index', () => {
+    for (const issue of issues) {
+      const c = index.issues.find((i) => i.number === issue.number)
+      if (!c?.available) throw new Error('missing issue')
+      expect(issueStakeholderTabCounts(index.stakeholders, issue).stakeholders).toBe(c.counts.stakeholdersO + c.counts.stakeholdersI)
+    }
   })
 })
 

@@ -54,7 +54,7 @@ export function keyStoryPath(issueNumber: number, key: string): string | null {
 }
 
 /** A link to one part of an issue tab with ?focus=<value> (design 3.2,
- * decision 53), for example { pathname: "/issues/2", search: "?focus=stakeholders" }.
+ * decision 53), for example { pathname: "/issues/2/stakeholders", search: "?focus=stakeholders" }.
  * The last argument is either dataBasedOnly (adds evidence=1), or the
  * params of the current URL: then evidence and stakeholder are kept, the
  * same as a tab change (keptSearch), and pick and the old focus are dropped. */

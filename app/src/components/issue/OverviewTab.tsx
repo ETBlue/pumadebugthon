@@ -1,114 +1,37 @@
-import { useMemo } from 'react'
 import { Link } from 'react-router'
-import { useDataBasisFilter, useTabTo } from '@/components/DataBasisToggle'
 import { CellBasis } from '@/components/CellBasis'
-import { CellText } from '@/components/CellText'
-import { Field } from '@/components/Field'
 import { METHOD_URL } from '@/components/links'
 import { Markdown } from '@/components/Markdown'
 import { TagBadge, type TagKind } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
-import { issueFocusPath } from '@/lib/entityPaths'
-import { focusRows } from '@/lib/focusGroups'
 import { spaceTypeNames } from '@/lib/issues'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
 import { sameSpaceIssues } from '@/lib/spaces'
-import { issueTabCounts } from '@/lib/tabCounts'
-import { focusTargetProps } from '@/components/FocusTarget'
-import { focusTargetClass, linkClass, proseClass } from '@/components/styles'
-import { StakeholdersTab } from './StakeholdersTab'
+import { linkClass, proseClass } from '@/components/styles'
 import type { IssueTabProps } from './types'
 
 const to = t.overview
 const TAG_KINDS: TagKind[] = ['實證', 'AI整理', 'AI模擬', 'pending']
 
-/** 總覽 (design 3.2): counts, 資料根據, 特別關注族群, tag legend,
- * 使用相同空間的議題, 待補清單 and, at the end, 利害關係人 (decision 38).
- * The 分析摘要 topics have their own tabs (decision 102). */
-export function OverviewTab(props: IssueTabProps) {
-  const { index, summary, issue } = props
+/** 總覽 (design 3.2): 資料根據, tag legend, 使用相同空間的議題 and 待補清單.
+ * The counts are in the tab labels, the 分析摘要 topics have their own tabs
+ * (decision 102), and 特別關注族群 and 利害關係人 are on the 利害關係人 tab
+ * (decision 109). */
+export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const c = summary.counts
   const n = summary.number
   const sameSpace = sameSpaceIssues(index, n)
   const titles = new Map(index.issues.map((i) => [i.number, i.title]))
   const pending = pendingBySection(issue.pending)
-  const tabTo = useTabTo()
-  const focus = focusRows(issue, index.stakeholders)
-  const [dataBasedOnly] = useDataBasisFilter()
-  const tabCounts = useMemo(() => issueTabCounts(issue), [issue])
 
   return (
     <div className="space-y-8">
-      <section aria-labelledby="counts-heading">
-        <h3 id="counts-heading" className="text-lg font-semibold">{to.countsHeading}</h3>
-        <dl className="mt-2 space-y-1.5">
-          <Field label={to.stakeholders}>
-            <Link to={issueFocusPath(n, 'overview', 'stakeholders', dataBasedOnly)} className={linkClass}>
-              {to.stakeholdersValue(c.stakeholdersO, c.stakeholdersI)}
-            </Link>
-          </Field>
-          {/* 使用者故事 has no tab, so its count is plain text (design 3.2). */}
-          <Field label={to.stories}>{to.storiesValue(c.stories)}</Field>
-          <Field label={to.wants}>
-            <Link to={tabTo(n, 'wants')} className={linkClass}>{to.itemsValue(tabCounts.wants)}</Link>
-          </Field>
-          <Field label={to.conflicts}>
-            <Link to={issueFocusPath(n, 'wants', 'conflicts', dataBasedOnly)} className={linkClass}>{to.itemsValue(c.conflicts)}</Link>
-          </Field>
-          <Field label={to.needs}>
-            <Link to={tabTo(n, 'needs')} className={linkClass}>{to.itemsValue(tabCounts.needs)}</Link>
-          </Field>
-          <Field label={to.solutions}>
-            <Link to={tabTo(n, 'solutions')} className={linkClass}>{to.itemsValue(c.solutions)}</Link>
-          </Field>
-        </dl>
-      </section>
-
       <section aria-labelledby="basis-heading">
         <h3 id="basis-heading" className="text-lg font-semibold">{t.basis.label}</h3>
         <div className="mt-2">
           <CellBasis cells={c.cells} stories={c.stories} />
         </div>
         <p className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{t.basis.note}</p>
-      </section>
-
-      <section aria-labelledby="focus-heading">
-        <h3 id="focus-heading" className="text-lg font-semibold">{to.focusHeading}</h3>
-        <p className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{to.focusIntro}</p>
-        {/* Always the 6 groups in the fixed order (FOCUS_ORDER), never by count (design 13). */}
-        <ul className="mt-3 grid gap-3 md:grid-cols-2">
-          {focus.map((g) => (
-            <li
-              key={g.tag}
-              className={g.included ? 'min-w-0 rounded-lg border p-3' : 'min-w-0 rounded-lg border border-dashed border-muted-foreground bg-muted/40 p-3'}
-            >
-              <h4 className="font-medium">{g.tag}</h4>
-              {g.included ? (
-                <div className="mt-1 space-y-1.5 text-sm">
-                  <p className="flex flex-wrap gap-x-2">
-                    <span className="text-muted-foreground">{to.focusStakeholders}</span>
-                    <span className="min-w-0">
-                      {g.stakeholders.map((s, i) => (
-                        <span key={s.id}>
-                          <Link to={`/stakeholders/${s.id}`} className={linkClass}>{to.focusStakeholderLink(s.id, s.name)}</Link>
-                          {i < g.stakeholders.length - 1 && t.listSeparator}
-                        </span>
-                      ))}
-                    </span>
-                  </p>
-                  <p>{to.focusStories(g.stories)}</p>
-                  <CellBasis cells={g.cells} stories={g.stories} compact />
-                  {g.note && <p><CellText cell={g.note} /></p>}
-                </div>
-              ) : (
-                <div className="mt-1 space-y-1.5 text-sm">
-                  <p className="font-medium">{to.focusNotIncluded}</p>
-                  {g.note && <p><CellText cell={g.note} /></p>}
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section aria-labelledby="legend-heading">
@@ -181,11 +104,6 @@ export function OverviewTab(props: IssueTabProps) {
         )}
       </section>
 
-      {/* The old 利害關係人 tab (decision 38). ?focus=stakeholders scrolls here. */}
-      <section {...focusTargetProps('stakeholders')} aria-labelledby="stakeholders-heading" className={focusTargetClass}>
-        <h3 id="stakeholders-heading" className="text-lg font-semibold">{to.stakeholdersHeading}</h3>
-        <div className="mt-2"><StakeholdersTab {...props} /></div>
-      </section>
     </div>
   )
 }

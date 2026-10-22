@@ -6,7 +6,8 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IssueFile, SummaryItem } from '@/types'
 import { SUMMARY_TABS } from './issuePage'
 import {
-  SUMMARY_TOPICS, parseSummaryRef, summaryItemsOf, summaryItemsShown, summaryRefTo, summaryTabCount, summaryTabCounts, summaryTopicOf,
+  SUMMARY_TOPIC_KEYS, SUMMARY_TOPICS, parseSummaryRef, summaryGroupTag, summaryItemsOf, summaryItemsShown, summaryRefTo,
+  summaryTabCount, summaryTabCounts, summaryTopicOf,
 } from './summary'
 
 const trees = treesJson as IssueFile
@@ -138,9 +139,23 @@ describe('the summary in the fixtures', () => {
 
 // The 分析摘要 topic tabs of the issue page (ETBlue, 2026-10-22; decision 102).
 describe('summaryTopicOf', () => {
-  it('maps the five tabs to the five topics, in the same order', () => {
-    expect(SUMMARY_TABS.map(summaryTopicOf)).toEqual([...SUMMARY_TOPICS])
+  it('maps the five keys to the five topics, in the same order', () => {
+    expect(SUMMARY_TOPIC_KEYS.map(summaryTopicOf)).toEqual([...SUMMARY_TOPICS])
     expect(summaryTopicOf('dependencies')).toBe('相依事項與現行政策的關係')
+    expect(summaryTopicOf('disadvantaged')).toBe('受影響較大的弱勢族群')
+  })
+
+  it('the four topic tabs are keys too (the fifth topic is on the 利害關係人 tab, decision 109)', () => {
+    expect(SUMMARY_TABS.every((tab) => (SUMMARY_TOPIC_KEYS as readonly string[]).includes(tab))).toBe(true)
+    expect(SUMMARY_TABS).not.toContain('disadvantaged')
+  })
+})
+
+describe('summaryGroupTag', () => {
+  it('drops the note in full-width brackets at the end', () => {
+    expect(summaryGroupTag({ item: '呼吸道疾病（尚未納入）' })).toBe('呼吸道疾病')
+    expect(summaryGroupTag({ item: '高齡' })).toBe('高齡')
+    expect(summaryGroupTag({ item: '兒童與照顧者' })).toBe('兒童與照顧者')
   })
 })
 
@@ -197,7 +212,7 @@ describe('summaryItemsShown', () => {
 
   it('hides every row of #1 and #2 (all [AI模擬] or 【待補】)', () => {
     for (const issue of [trees, trashcans]) {
-      for (const tab of SUMMARY_TABS) expect(summaryItemsShown(summaryItemsOf(issue, tab), true)).toEqual([])
+      for (const key of SUMMARY_TOPIC_KEYS) expect(summaryItemsShown(summaryItemsOf(issue, key), true)).toEqual([])
     }
   })
 })

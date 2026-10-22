@@ -3,17 +3,20 @@
 import type { IndexFile, IssueSummary, Pending } from '@/types'
 import { FOCUS_PARAM } from './focus'
 
-/** The tabs of the 分析摘要 topics, in the fixed topic order (design 3.2,
- * decision 102): 難以取捨的決定, 可能的爭議, 受影響較大的弱勢族群,
- * 法規上的障礙, 相依事項與現行政策的關係. summaryTopicOf in summary.ts
- * gives the topic of each tab. */
-export const SUMMARY_TABS = ['decisions', 'controversies', 'disadvantaged', 'legal', 'dependencies'] as const
+/** The tabs that show one 分析摘要 topic, in the fixed topic order (design
+ * 3.2, decision 102): 難以取捨的決定, 可能的爭議, 法規上的障礙,
+ * 相依事項與現行政策的關係. summaryTopicOf in summary.ts gives the topic of
+ * each tab. The rows of 受影響較大的弱勢族群 are on the 利害關係人 tab
+ * (`stakeholders`, decision 109), not on a topic tab. */
+export const SUMMARY_TABS = ['decisions', 'controversies', 'legal', 'dependencies'] as const
 
 export type SummaryTab = (typeof SUMMARY_TABS)[number]
 
 /** The tabs of the issue page, in display order (design 3.2). The first one
  * is the default. */
-export const ISSUE_TABS = ['overview', 'wants', 'needs', 'solutions', ...SUMMARY_TABS] as const
+export const ISSUE_TABS = [
+  'overview', 'wants', 'needs', 'solutions', 'decisions', 'controversies', 'stakeholders', 'legal', 'dependencies',
+] as const
 
 export type IssueTab = (typeof ISSUE_TABS)[number]
 
@@ -44,27 +47,37 @@ export interface LegacyIssueTab {
 const LEGACY_TABS: Record<string, LegacyIssueTab> = {
   opinion: { tab: 'wants', focus: null },
   conflicts: { tab: 'wants', focus: 'conflicts' },
-  stakeholders: { tab: 'overview', focus: 'stakeholders' },
+  // 影響到弱勢 is part of the 利害關係人 tab now (decision 109).
+  disadvantaged: { tab: 'stakeholders', focus: null },
 }
 
 /** The new place of an old tab name (design 3.2). These URLs were shared on
- * Discord, so they must keep working. null for any other segment. */
+ * Discord, so they must keep working. null for any other segment.
+ * `stakeholders` was an old tab name too (it went to 總覽), but it is a tab
+ * again since decision 109. */
 export function legacyIssueTab(segment: string | undefined): LegacyIssueTab | null {
   return segment !== undefined && Object.hasOwn(LEGACY_TABS, segment) ? LEGACY_TABS[segment] : null
 }
 
-/** The redirect target of an old tab URL, for example "/issues/2/conflicts"
- * goes to { pathname: "/issues/2/wants", search: "?focus=conflicts" }. The
- * old query (search, "" or "?…") is kept. null when the segment is not an
- * old tab name. */
+/** The redirect target of an old issue URL. The old query (search, "" or
+ * "?…") is kept.
+ * - An old tab name: "/issues/2/conflicts" goes to
+ *   { pathname: "/issues/2/wants", search: "?focus=conflicts" }.
+ * - 總覽 with ?focus=stakeholders (the old place of the stakeholder list,
+ *   decision 38) goes to the 利害關係人 tab with the same query, so the
+ *   page still scrolls to the list (decision 109).
+ * null for any other URL. */
 export function legacyIssueTabTarget(
   issueNumber: number,
   segment: string | undefined,
   search: string,
 ): { pathname: string; search: string } | null {
+  const params = new URLSearchParams(search)
+  if (segment === undefined && params.get(FOCUS_PARAM) === 'stakeholders') {
+    return { pathname: tabPath(issueNumber, 'stakeholders'), search: `?${params.toString()}` }
+  }
   const legacy = legacyIssueTab(segment)
   if (!legacy) return null
-  const params = new URLSearchParams(search)
   if (legacy.focus !== null) params.set(FOCUS_PARAM, legacy.focus)
   const s = params.toString()
   return { pathname: tabPath(issueNumber, legacy.tab), search: s ? `?${s}` : '' }

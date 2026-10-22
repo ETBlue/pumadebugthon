@@ -3,7 +3,6 @@
 import type { IssueFile, SummaryItem } from '@/types'
 import { DATA_BASED_TAGS, withDataBasisFilter } from './dataBasis'
 import { conflictFocusPath, needFocusPath, solutionPath, storyPath } from './entityPaths'
-import { SUMMARY_TABS, type SummaryTab } from './issuePage'
 import { opinionPickTo } from './opinion'
 
 /** The topics of the 分析摘要, in the fixed order. The same list as
@@ -18,16 +17,23 @@ export const SUMMARY_TOPICS = [
 
 export type SummaryTopicName = (typeof SUMMARY_TOPICS)[number]
 
-/** The 分析摘要 topic of a tab of the issue page (decision 102). The tabs
- * and the topics have the same order. */
-export function summaryTopicOf(tab: SummaryTab): SummaryTopicName {
-  return SUMMARY_TOPICS[SUMMARY_TABS.indexOf(tab)]
+/** A short key for each topic, in the same order as SUMMARY_TOPICS. Four of
+ * them are also the tab names of the issue page (SUMMARY_TABS in
+ * issuePage.ts, decision 102). The rows of `disadvantaged`
+ * (受影響較大的弱勢族群) are on the 利害關係人 tab (decision 109). */
+export const SUMMARY_TOPIC_KEYS = ['decisions', 'controversies', 'disadvantaged', 'legal', 'dependencies'] as const
+
+export type SummaryTopicKey = (typeof SUMMARY_TOPIC_KEYS)[number]
+
+/** The 分析摘要 topic of a key. */
+export function summaryTopicOf(key: SummaryTopicKey): SummaryTopicName {
+  return SUMMARY_TOPICS[SUMMARY_TOPIC_KEYS.indexOf(key)]
 }
 
 /** The rows of the topic in the issue file, in file order. An empty list
  * when the file has no such topic. */
-export function summaryItemsOf(issue: Pick<IssueFile, 'summary'>, tab: SummaryTab): SummaryItem[] {
-  const topic = summaryTopicOf(tab)
+export function summaryItemsOf(issue: Pick<IssueFile, 'summary'>, key: SummaryTopicKey): SummaryItem[] {
+  const topic = summaryTopicOf(key)
   return issue.summary.find((t) => t.topic === topic)?.items ?? []
 }
 
@@ -39,19 +45,27 @@ export function summaryItemsShown(items: SummaryItem[], dataBasedOnly: boolean):
   return dataBasedOnly ? items.filter((i) => DATA_BASED_TAGS.includes(i.text.tag)) : items
 }
 
-/** The count in the tab label of a topic: the number of rows. On the
- * 受影響較大的弱勢族群 tab only the filled rows count. A row whose 說明 is
- * 【待補】 (for example 「呼吸道疾病（尚未納入）」) is still shown in the tab,
- * but it is not counted (ETBlue, 2026-10-22). The count is the total: it
- * does not change when 「只看有資料根據」 is on (decision 49, 108). */
-export function summaryTabCount(issue: Pick<IssueFile, 'summary'>, tab: SummaryTab): number {
-  const items = summaryItemsOf(issue, tab)
-  return tab === 'disadvantaged' ? items.filter((i) => !i.text.pending).length : items.length
+/** The count of a topic in a tab label: the number of rows. For
+ * 受影響較大的弱勢族群 (「弱勢 M」 in the 利害關係人 tab label, decision 109)
+ * only the filled rows count. A row whose 說明 is 【待補】 (for example
+ * 「呼吸道疾病（尚未納入）」) is still shown in the tab, but it is not counted
+ * (ETBlue, 2026-10-22). The count is the total: it does not change when
+ * 「只看有資料根據」 is on (decision 49, 108). */
+export function summaryTabCount(issue: Pick<IssueFile, 'summary'>, key: SummaryTopicKey): number {
+  const items = summaryItemsOf(issue, key)
+  return key === 'disadvantaged' ? items.filter((i) => !i.text.pending).length : items.length
 }
 
-/** The counts of the five topic tabs. */
-export function summaryTabCounts(issue: Pick<IssueFile, 'summary'>): Record<SummaryTab, number> {
-  return Object.fromEntries(SUMMARY_TABS.map((tab) => [tab, summaryTabCount(issue, tab)])) as Record<SummaryTab, number>
+/** The counts of the five topics. */
+export function summaryTabCounts(issue: Pick<IssueFile, 'summary'>): Record<SummaryTopicKey, number> {
+  return Object.fromEntries(SUMMARY_TOPIC_KEYS.map((key) => [key, summaryTabCount(issue, key)])) as Record<SummaryTopicKey, number>
+}
+
+/** The group name of a 受影響較大的弱勢族群 row: the 項目 without a note in
+ * full-width brackets at the end, for example 「呼吸道疾病（尚未納入）」 ->
+ * 「呼吸道疾病」. It is the same name as the 特別關注 tag of the group. */
+export function summaryGroupTag(item: Pick<SummaryItem, 'item'>): string {
+  return item.item.replace(/（[^（）]*）$/, '').trim()
 }
 
 /** group: a 相同訴求群組 (W08). need: a 相同需求群組 (N01). */

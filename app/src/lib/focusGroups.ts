@@ -1,9 +1,10 @@
 // 特別關注族群 (design 3.2, 3.9): which of the 6 groups have stakeholders in an
 // issue. The groups are always in the fixed order FOCUS_ORDER, never ordered
 // by a count. Never sort, rank or filter issues by these numbers (design 13).
-import type { Cell, CellCounts, IssueFile, IssueSummary, Stakeholder } from '@/types'
+import type { Cell, CellCounts, IssueFile, IssueSummary, Stakeholder, SummaryItem } from '@/types'
 import { storyCells } from './cellBasis'
 import { FOCUS_ORDER } from './issues'
+import { summaryGroupTag, summaryItemsOf } from './summary'
 
 export interface FocusRow {
   /** 特別關注, for example 「高齡」. */
@@ -49,6 +50,31 @@ export function focusRows(issue: IssueFile, stakeholders: Stakeholder[]): FocusR
       included: ids.length > 0,
     }
   })
+}
+
+/** One group of the 利害關係人 tab (decision 109): the row of the
+ * 特別關注族群檢查 and the row of the 分析摘要 topic 受影響較大的弱勢族群
+ * with the same group name. One of the two can be missing (null). */
+export interface DisadvantagedGroup {
+  tag: string
+  focus: FocusRow | null
+  item: SummaryItem | null
+}
+
+/** The groups of the 利害關係人 tab, each one once, in the fixed order
+ * FOCUS_ORDER (never by a count). A 分析摘要 row matches a group by its name
+ * without the note in brackets (summaryGroupTag). A group in only one of the
+ * two lists is still a group. Unknown groups go last: first those of the
+ * 特別關注族群檢查, then those of the 分析摘要, each in file order. */
+export function disadvantagedGroups(issue: IssueFile, stakeholders: Stakeholder[]): DisadvantagedGroup[] {
+  const groups: DisadvantagedGroup[] = focusRows(issue, stakeholders).map((focus) => ({ tag: focus.tag, focus, item: null }))
+  for (const item of summaryItemsOf(issue, 'disadvantaged')) {
+    const tag = summaryGroupTag(item)
+    const group = groups.find((g) => g.tag === tag && g.item === null)
+    if (group) group.item = item
+    else groups.push({ tag, focus: null, item })
+  }
+  return inFocusOrder(groups, (g) => g.tag)
 }
 
 /** The 特別關注族群 line of the issue card: the groups not included yet, in the

@@ -2,8 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
-import { FOCUS_PARAM } from '@/lib/focus'
-import { tabPath } from '@/lib/issuePage'
+import { issueFocusPath } from '@/lib/entityPaths'
 import type { StakeholderIssueStories } from '@/lib/stakeholders'
 import type { CellCounts, Stakeholder } from '@/types'
 import { CellBasis } from './CellBasis'
@@ -112,7 +111,7 @@ function ListFields({ stakeholder: s, fields: f }: { stakeholder: Stakeholder; f
             {f.issues.map((n, i) => (
               <li key={n}>
                 <Link
-                  to={{ pathname: tabPath(n, 'overview'), search: `?${FOCUS_PARAM}=stakeholders` }}
+                  to={issueFocusPath(n, 'stakeholders', 'stakeholders')}
                   className={linkClass}
                 >
                   {tl.issueLink(n)}

@@ -194,7 +194,8 @@ export const t = {
       // summaryHeadings.
       decisions: '難以取捨',
       controversies: '可能爭議',
-      disadvantaged: '影響到弱勢',
+      // The stakeholders and the 受影響較大的弱勢族群 rows (decision 109).
+      stakeholders: '利害關係人',
       legal: '法規障礙',
       dependencies: '相關解法與政策',
     },
@@ -203,7 +204,6 @@ export const t = {
     summaryHeadings: {
       decisions: '難以取捨的決定',
       controversies: '可能的爭議',
-      disadvantaged: '受影響較大的弱勢族群',
       legal: '法規上的障礙',
       dependencies: '相依事項與現行政策的關係',
     },
@@ -213,6 +213,11 @@ export const t = {
       wants: (wants: number, conflicts: number): TabLabel => ({ main: `訴求 ${wants}`, sep: '・', sub: `衝突 ${conflicts}` }),
       needs: (n: number): TabLabel => ({ main: `需求 ${n}` }),
       solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
+      /** 「利害關係人 28・弱勢 4」 (decision 109): the stakeholders of the
+       * issue and the filled rows of 受影響較大的弱勢族群. */
+      stakeholders: (n: number, disadvantaged: number): TabLabel => ({
+        main: `利害關係人 ${n}`, sep: '・', sub: `弱勢 ${disadvantaged}`,
+      }),
       /** A 分析摘要 topic tab, for example 「可能的爭議 5」. */
       summary: (name: string, n: number): TabLabel => ({ main: `${name} ${n}` }),
     },
@@ -226,21 +231,28 @@ export const t = {
       /** When 「只看有資料根據」 hides every row (decision 108). */
       dataEmpty: '這裡沒有說明標記 [實證] 或 [AI整理] 的項目。',
     },
+    /** The 利害關係人 tab (design 3.2, decision 109): the disadvantaged
+     * groups first, then the stakeholder list. */
+    stakeholdersTab: {
+      groupsHeading: '受影響較大的弱勢族群',
+      /** The groups come from the 特別關注族群 check and the 分析摘要. */
+      groupsIntro: '列出 6 類特別關注族群在本議題的利害關係人、故事，以及分析摘要對這個族群的說明。尚未納入的族群，需要由真人判斷是否應該納入。分析摘要不加入新的事實，大部分是 AI 的判斷。',
+      groupStakeholders: '利害關係人',
+      groupStories: (n: number) => `${n} 則故事`,
+      groupNotIncluded: '本議題尚未納入',
+      groupStakeholderLink: (id: string, name: string) => `${id} ${name}`,
+      /** The end of the filter status line: the 說明 rows still shown. */
+      shown: (n: number) => `顯示 ${n} 項說明。`,
+      /** In place of a 說明 that 「只看有資料根據」 hides. */
+      itemHidden: '這個族群的說明沒有標記 [實證] 或 [AI整理]，已隱藏。',
+      stakeholdersHeading: '利害關係人',
+      none: '這個議題還沒有特別關注族群的資料。',
+    },
   },
   overview: {
     /** 分析摘要 (design 3.2, decision 29): the refs line of a row. The rows
      * are on the topic tabs now (decision 102). */
     summaryRefs: '相關：',
-    countsHeading: '數量',
-    stakeholders: '利害關係人',
-    stakeholdersValue: (o: number, i: number) => `${o + i} 位（組織 ${o}、個人 ${i}）`,
-    stories: '使用者故事',
-    storiesValue: (n: number) => `${n} 則`,
-    wants: '訴求',
-    conflicts: '衝突',
-    needs: '需求',
-    solutions: '解法',
-    itemsValue: (n: number) => `${n} 個`,
     legendHeading: '標記說明',
     legend: {
       實證: '有來源連結或可查證的出處，或 AI 整理的內容已經由真人查核。',
@@ -252,19 +264,10 @@ export const t = {
     sameSpaceHeading: '使用相同空間的議題',
     sameSpaceNone: '目前沒有其他議題使用相同的空間類型。',
     sameSpaceSeparator: '：',
-    /** 特別關注族群 (design 3.2): 6 rows, always in the fixed order. */
-    focusHeading: '特別關注族群',
-    focusIntro: '列出 6 類特別關注族群在本議題的利害關係人與故事。尚未納入的族群，需要由真人判斷是否應該納入。',
-    focusStakeholders: '利害關係人',
-    focusStories: (n: number) => `${n} 則故事`,
-    focusNotIncluded: '本議題尚未納入',
-    focusStakeholderLink: (id: string, name: string) => `${id} ${name}`,
     pendingHeading: '待補清單',
     pendingIntro: '這些地方還需要真人提供資訊。',
     pendingNone: '這個議題沒有待補的項目。',
     noSection: '其他',
-    /** The last section of the tab: the issue's stakeholders (decision 38). */
-    stakeholdersHeading: '利害關係人',
   },
   /** 資料根據 (design 3.2, 3.9): the story cells (我想要… and 以便…) by tag. */
   basis: {

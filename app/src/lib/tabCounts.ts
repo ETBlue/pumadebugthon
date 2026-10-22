@@ -2,13 +2,15 @@
 // number, not a score. The counts are the totals: they do not change when a
 // filter is on (decision 49). Nothing here sorts.
 import { t } from '@/i18n/zh-TW'
-import type { IssueFile, Solution, SolutionPractice } from '@/types'
+import type { IssueFile, Solution, SolutionPractice, Stakeholder } from '@/types'
 import { needCount, wantCount } from './counts'
 import type { SolutionTab } from './entityPaths'
 import { needsOfStakeholder } from './needs'
 import {
   practiceSides, solutionNeedCoverage, solutionRelatedConflicts, solutionStakeholderCoverage, solutionWantCoverage,
 } from './solutionPage'
+import { issueStakeholders } from './stakeholders'
+import { summaryTabCount } from './summary'
 import type { TabLabel } from './tabLabel'
 import { conflictsForStakeholder, wantsOfStakeholder } from './wantList'
 
@@ -28,6 +30,20 @@ export function issueTabCounts(issue: IssueFile): TabCounts {
     conflicts: issue.conflicts.length,
     needs: needCount([issue]),
     solutions: issue.solutions.length,
+  }
+}
+
+/** The counts of the 利害關係人 tab label of the issue page (decision 109),
+ * 「利害關係人 N・弱勢 M」. N: the stakeholders of the issue, the same list
+ * the tab shows (issueStakeholders). M: the filled rows of
+ * 受影響較大的弱勢族群; a 【待補】 row is not counted (summaryTabCount). */
+export function issueStakeholderTabCounts(
+  stakeholders: Stakeholder[],
+  issue: IssueFile,
+): { stakeholders: number; disadvantaged: number } {
+  return {
+    stakeholders: issueStakeholders(stakeholders, issue).length,
+    disadvantaged: summaryTabCount(issue, 'disadvantaged'),
   }
 }
 

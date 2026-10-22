@@ -1,5 +1,5 @@
-// The issue page with the five 分析摘要 topic tabs (ETBlue, 2026-10-22;
-// design 3.2, decision 102). The data hooks and the page title are mocked,
+// The issue page with the 分析摘要 topic tabs and the 利害關係人 tab
+// (ETBlue, 2026-10-22; design 3.2, decisions 102 and 109). The data hooks and the page title are mocked,
 // so the page renders on the server with the fixtures.
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router'
@@ -53,37 +53,38 @@ const titleOf = (html: string) => /data-title="([^"]*)"/.exec(html)?.[1]
 const activeTab = (html: string) => /role="tab" aria-selected="true"[^>]*aria-label="([^"]+)"/.exec(html)?.[1]
 
 describe('the issue page tabs', () => {
-  it('has nine tabs: the five 分析摘要 topics after 解法, with their counts (#1)', () => {
+  it('has nine tabs: four 分析摘要 topics and 利害關係人 after 解法, with their counts (#1)', () => {
     expect(tabNames(render('/issues/1'))).toEqual([
       '總覽', '訴求 50・衝突 9', '需求 31', '解法 5',
-      '難以取捨 5', '可能爭議 5', '影響到弱勢 4', '法規障礙 5', '相關解法與政策 6',
+      '難以取捨 5', '可能爭議 5', '利害關係人 28・弱勢 4', '法規障礙 5', '相關解法與政策 6',
     ])
   })
 
-  it('does not count the 【待補】 rows of 受影響較大的弱勢族群 (#2: 6 rows, 1 待補)', () => {
-    expect(tabNames(render('/issues/2'))).toContain('影響到弱勢 5')
+  it('the 利害關係人 label does not count the 【待補】 rows of 受影響較大的弱勢族群 (decision 109)', () => {
+    // #2: 6 rows, 1 待補. #8 and #9: 6 filled rows.
+    expect(tabNames(render('/issues/2'))).toContain('利害關係人 27・弱勢 5')
+    expect(tabNames(render('/issues/8'))).toContain('利害關係人 21・弱勢 6')
+    expect(tabNames(render('/issues/9'))).toContain('利害關係人 20・弱勢 6')
+  })
+
+  it('the 利害關係人 label has two parts, like 訴求 N・衝突 M', () => {
+    const html = render('/issues/1')
+    expect(html).toMatch(/利害關係人 28<\/span>/)
+    expect(html).toMatch(/弱勢 4<\/span>/)
   })
 
   it('opens a topic tab from its URL, with the tab name in the page title', () => {
-    const html = render('/issues/1/disadvantaged')
-    expect(activeTab(html)).toBe('影響到弱勢 4')
-    expect(titleOf(html)).toContain('影響到弱勢')
+    const html = render('/issues/1/legal')
+    expect(activeTab(html)).toBe('法規障礙 5')
+    expect(titleOf(html)).toContain('法規障礙')
     // The hidden h2 of the tab keeps the full name of the topic.
-    expect(html).toContain('<h2 class="sr-only">受影響較大的弱勢族群</h2>')
+    expect(html).toContain('<h2 class="sr-only">法規上的障礙</h2>')
     expect(titleOf(html)).toContain('#1')
-  })
-
-  it('shows every row of the topic, also the 【待補】 rows, with a dashed border', () => {
-    const html = render('/issues/1/disadvantaged')
-    expect(html).toContain('呼吸道疾病（尚未納入）')
-    expect(html).toContain('外籍（尚未納入）')
-    expect(html.match(/<li class="[^"]*border-dashed/g)).toHaveLength(2)
-    expect(html).toContain('分析摘要不加入新的事實')
   })
 
   it('a topic tab has no stakeholder side menu; the 訴求 tab has one', () => {
     const menu = 'data-slot="collapsible"'
-    for (const tab of ['decisions', 'controversies', 'disadvantaged', 'legal', 'dependencies']) {
+    for (const tab of ['decisions', 'controversies', 'legal', 'dependencies']) {
       expect(render(`/issues/2/${tab}`), tab).not.toContain(menu)
     }
     expect(render('/issues/2/wants')).toContain(menu)
@@ -101,6 +102,16 @@ describe('the issue page tabs', () => {
     expect(html).not.toContain('分析摘要')
     expect(html).not.toContain('呼吸道疾病（尚未納入）')
     expect(titleOf(html)).not.toContain('難以取捨')
+  })
+
+  it('總覽 has no 數量, 特別關注族群 or 利害關係人 block any more (decision 109)', () => {
+    const html = render('/issues/1')
+    expect(html).not.toContain('數量')
+    // 「1.3 特別關注族群檢查」 is still a section of the 待補清單.
+    expect(html).not.toContain('>特別關注族群</h3>')
+    expect(html).not.toContain('id="focus-stakeholders"')
+    expect(html).not.toContain('受影響較大的弱勢族群')
+    for (const h of ['資料根據', '標記說明', '使用相同空間的議題', '待補清單']) expect(html, h).toContain(`>${h}</h3>`)
   })
 
   it('an unknown tab shows 「找不到這個分頁。」', () => {
@@ -133,6 +144,92 @@ function rowNames(html: string): string[] {
   return [...list.matchAll(/<p class="font-medium">([^<]*)<\/p>/g)].map((m) => m[1])
 }
 
+/** The group names of the 利害關係人 tab, in order. */
+function groupNames(html: string): string[] {
+  const list = /<ul aria-label="受影響較大的弱勢族群"[^>]*>([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? ''
+  return [...list.matchAll(/<h4 class="font-medium">([^<]*)<\/h4>/g)].map((m) => m[1])
+}
+
+/** The HTML of one group card of the 利害關係人 tab. */
+function groupCard(html: string, name: string): string {
+  const start = html.indexOf(`<h4 class="font-medium">${name}</h4>`)
+  const li = html.lastIndexOf('<li', start)
+  return html.slice(li, html.indexOf('</li>', start))
+}
+
+describe('the 利害關係人 tab (decision 109)', () => {
+  it('opens from its URL, with 利害關係人 in the page title and the hidden h2', () => {
+    const html = render('/issues/1/stakeholders')
+    expect(activeTab(html)).toBe('利害關係人 28・弱勢 4')
+    expect(titleOf(html)).toContain('利害關係人')
+    expect(html).toContain('<h2 class="sr-only">利害關係人</h2>')
+  })
+
+  it('shows the disadvantaged groups first, then the stakeholder list', () => {
+    const html = render('/issues/1/stakeholders')
+    const groups = html.indexOf('>受影響較大的弱勢族群</h3>')
+    const list = html.indexOf('id="focus-stakeholders"')
+    expect(groups).toBeGreaterThan(-1)
+    expect(list).toBeGreaterThan(groups)
+    expect(html.indexOf('只看有資料根據')).toBeLessThan(list)
+  })
+
+  it('shows each group once, in the fixed order', () => {
+    for (const n of [1, 2, 8, 9]) {
+      expect(groupNames(render(`/issues/${n}/stakeholders`)), `#${n}`).toEqual(['高齡', '身心障礙', '呼吸道疾病', '兒童與照顧者', '外籍', '經濟弱勢'])
+    }
+  })
+
+  it('a group card has the 分析摘要 說明 and links, and the 特別關注族群 check', () => {
+    const card = groupCard(render('/issues/1/stakeholders'), '身心障礙')
+    expect(card).toContain('樹根頂起鋪面')
+    expect(card).toContain('AI模擬')
+    expect(card).toContain('相關：')
+    expect(card).toContain('href="/issues/1/wants?focus=C1"')
+    expect(card).toContain('href="/stakeholders/I06"')
+    expect(card).toMatch(/\d+ 則故事/)
+    expect(card).not.toContain('border-dashed')
+  })
+
+  it('a group the issue has not included has a dashed border, and its 【待補】 text once', () => {
+    const html = render('/issues/1/stakeholders')
+    expect(html.match(/<li class="[^"]*border-dashed/g)).toHaveLength(2)
+    const card = groupCard(html, '呼吸道疾病')
+    expect(card).toContain('border-dashed')
+    expect(card).toContain('本議題尚未納入')
+    expect(card.match(/本議題是否需要納入過敏或呼吸道疾病者的觀點/g)).toHaveLength(1)
+  })
+
+  it('with the filter on, hides the [AI模擬] 說明 but keeps every group card', () => {
+    const html = render('/issues/8/stakeholders?evidence=1')
+    expect(html).toMatch(/aria-pressed="true"/)
+    expect(groupNames(html)).toHaveLength(6)
+    expect(html).toContain('篩選：只看有資料根據。顯示 2 項說明。')
+    // [AI整理] rows stay.
+    expect(groupCard(html, '呼吸道疾病')).not.toContain('已隱藏')
+    expect(groupCard(html, '兒童與照顧者')).not.toContain('已隱藏')
+    // An [AI模擬] row is replaced by a short note; the check part stays.
+    const old = groupCard(html, '高齡')
+    expect(old).toContain('這個族群的說明沒有標記 [實證] 或 [AI整理]，已隱藏。')
+    const oldText = (smokefreeJson as IssueFile).summary.find((t) => t.topic === '受影響較大的弱勢族群')!.items[0].text.text
+    expect(old).not.toContain(oldText.slice(0, 10))
+    expect(old).toMatch(/\d+ 則故事/)
+  })
+
+  it('with the filter on, a 【待補】 row is hidden but the missing group stays', () => {
+    const html = render('/issues/1/stakeholders?evidence=1')
+    expect(html).toContain('顯示 0 項說明。')
+    const card = groupCard(html, '外籍')
+    expect(card).toContain('border-dashed')
+    expect(card).toContain('本議題尚未納入')
+    expect(card).not.toContain('已隱藏')
+  })
+
+  it('the filter does not change the tab counts', () => {
+    expect(tabNames(render('/issues/1/stakeholders?evidence=1'))).toEqual(tabNames(render('/issues/1/stakeholders')))
+  })
+})
+
 describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', () => {
   it('has the toggle above the rows, with the same label and hint, off by default', () => {
     const html = render('/issues/2/decisions')
@@ -145,22 +242,14 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
 
   it('shows every row when the filter is off', () => {
     expect(rowNames(render('/issues/9/dependencies'))).toHaveLength(5)
-    expect(rowNames(render('/issues/8/disadvantaged'))).toHaveLength(6)
+    expect(rowNames(render('/issues/8/legal'))).toHaveLength(6)
   })
 
   it('hides the [AI模擬] rows and keeps the [實證] and [AI整理] rows', () => {
-    const html = render('/issues/8/disadvantaged?evidence=1')
+    const html = render('/issues/9/legal?evidence=1')
     expect(html).toMatch(/aria-pressed="true"/)
-    // [AI整理] rows.
-    expect(rowNames(html)).toEqual(['呼吸道疾病', '兒童與照顧者'])
     // A [實證] row next to [AI模擬] rows.
-    expect(rowNames(render('/issues/9/legal?evidence=1'))).toEqual(['行政院的生成式 AI 參考指引'])
-  })
-
-  it('hides the 【待補】 rows too, as other lists hide items with no data-based tag', () => {
-    const html = render('/issues/9/disadvantaged?evidence=1')
-    expect(rowNames(html)).toEqual(['外籍'])
-    expect(html).not.toContain('border-dashed')
+    expect(rowNames(html)).toEqual(['行政院的生成式 AI 參考指引'])
   })
 
   it('shows the status line with the shown rows and 「清除篩選」', () => {
@@ -170,7 +259,7 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
   })
 
   it('shows a short note when the filter hides every row', () => {
-    for (const path of ['/issues/2/decisions?evidence=1', '/issues/1/disadvantaged?evidence=1']) {
+    for (const path of ['/issues/2/decisions?evidence=1', '/issues/1/legal?evidence=1']) {
       const html = render(path)
       expect(html, path).toContain('這裡沒有說明標記 [實證] 或 [AI整理] 的項目。')
       expect(rowNames(html), path).toEqual([])
@@ -179,7 +268,7 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
   })
 
   it('does not change the tab counts (they are totals, decision 49)', () => {
-    expect(tabNames(render('/issues/1/disadvantaged?evidence=1'))).toEqual(tabNames(render('/issues/1/disadvantaged')))
+    expect(tabNames(render('/issues/1/legal?evidence=1'))).toEqual(tabNames(render('/issues/1/legal')))
     expect(tabNames(render('/issues/2/decisions?evidence=1'))).toContain('難以取捨 4')
   })
 })

@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useParams } from 'react-router'
 import { NeedsTab } from '@/components/issue/NeedsTab'
 import { OverviewTab } from '@/components/issue/OverviewTab'
 import { SolutionsTab } from '@/components/issue/SolutionsTab'
+import { StakeholdersTab } from '@/components/issue/StakeholdersTab'
 import { SummaryTab } from '@/components/issue/SummaryTab'
 import { WantsTab } from '@/components/issue/WantsTab'
 import type { IssueTabProps } from '@/components/issue/types'
@@ -19,8 +20,8 @@ import { availableIssues } from '@/lib/issues'
 import {
   findIssue, ISSUE_TABS, isSummaryTab, legacyIssueTabTarget, parseIssueNumber, parseTab, tabPath, type IssueTab, type SummaryTab as SummaryTabName,
 } from '@/lib/issuePage'
-import { summaryTabCounts } from '@/lib/summary'
-import { issueTabCounts, type TabCounts } from '@/lib/tabCounts'
+import { summaryTabCounts, type SummaryTopicKey } from '@/lib/summary'
+import { issueStakeholderTabCounts, issueTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
 import type { AvailableIssueSummary, IndexFile } from '@/types'
 
@@ -36,19 +37,20 @@ const TAB_CONTENT: Record<IssueTab, (props: IssueTabProps) => ReactNode> = {
   solutions: SolutionsTab,
   decisions: summaryTab('decisions'),
   controversies: summaryTab('controversies'),
-  disadvantaged: summaryTab('disadvantaged'),
+  stakeholders: StakeholdersTab,
   legal: summaryTab('legal'),
   dependencies: summaryTab('dependencies'),
 }
 
 /** All the counts of the tab labels. */
-type IssueCounts = TabCounts & { summary: Record<SummaryTabName, number> }
+type IssueCounts = TabCounts & { summary: Record<SummaryTopicKey, number>; stakeholders: { stakeholders: number; disadvantaged: number } }
 
 /** The tab label with its count. While the issue loads, the name only. */
 function tabLabel(tab: IssueTab, c: IssueCounts | null): TabLabel {
   if (c === null || tab === 'overview') return { main: ti.tabs[tab] }
   if (isSummaryTab(tab)) return ti.tabLabels.summary(ti.tabs[tab], c.summary[tab])
   if (tab === 'wants') return ti.tabLabels.wants(c.wants, c.conflicts)
+  if (tab === 'stakeholders') return ti.tabLabels.stakeholders(c.stakeholders.stakeholders, c.stakeholders.disadvantaged)
   return ti.tabLabels[tab](c[tab])
 }
 
@@ -75,8 +77,10 @@ function IssueBreadcrumb({ number, title }: { number: number; title: string }) {
 }
 
 /** Issue page (design 3.2): #/issues/:number/:tab? with nine tabs: 總覽,
- * 訴求, 需求, 解法 and the five 分析摘要 topics (decision 102). The old
- * tabs opinion, conflicts and stakeholders redirect (legacyIssueTab). */
+ * 訴求, 需求, 解法, four 分析摘要 topics (decision 102) and 利害關係人 with
+ * the fifth topic, 受影響較大的弱勢族群 (decision 109). The old tabs
+ * opinion, conflicts and disadvantaged, and 總覽 with ?focus=stakeholders,
+ * redirect (legacyIssueTabTarget). */
 export default function Issue() {
   const index = useIndex()
   const { number, tab } = useParams()
@@ -117,8 +121,14 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
   const available = useMemo(() => availableIssues(index).map((i) => i.number), [index])
   const tab = parseTab(useParams().tab)
   const counts = useMemo<IssueCounts | null>(
-    () => (issue.status === 'ready' ? { ...issueTabCounts(issue.data), summary: summaryTabCounts(issue.data) } : null),
-    [issue],
+    () => (issue.status === 'ready'
+      ? {
+        ...issueTabCounts(issue.data),
+        summary: summaryTabCounts(issue.data),
+        stakeholders: issueStakeholderTabCounts(index.stakeholders, issue.data),
+      }
+      : null),
+    [index, issue],
   )
 
   return (

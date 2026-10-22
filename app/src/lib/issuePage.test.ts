@@ -17,13 +17,15 @@ describe('parseTab', () => {
   it('accepts every tab name', () => {
     expect(ISSUE_TABS).toEqual([
       'overview', 'wants', 'needs', 'solutions',
-      'decisions', 'controversies', 'disadvantaged', 'legal', 'dependencies',
+      'decisions', 'controversies', 'stakeholders', 'legal', 'dependencies',
     ])
     for (const tab of ISSUE_TABS) expect(parseTab(tab)).toBe(tab)
   })
 
-  it('the five 分析摘要 tabs come after 解法 (decision 102)', () => {
-    expect(ISSUE_TABS.filter(isSummaryTab)).toEqual(['decisions', 'controversies', 'disadvantaged', 'legal', 'dependencies'])
+  it('four 分析摘要 tabs come after 解法 (decision 102); 利害關係人 is not one (decision 109)', () => {
+    expect(ISSUE_TABS.filter(isSummaryTab)).toEqual(['decisions', 'controversies', 'legal', 'dependencies'])
+    expect(isSummaryTab('stakeholders')).toBe(false)
+    expect(tabPath(1, 'stakeholders')).toBe('/issues/1/stakeholders')
     expect(isSummaryTab('overview')).toBe(false)
     expect(isSummaryTab('solutions')).toBe(false)
     expect(tabPath(2, 'legal')).toBe('/issues/2/legal')
@@ -39,7 +41,11 @@ describe('parseTab', () => {
   it('the old tab names are not tabs any more (they redirect)', () => {
     expect(parseTab('opinion')).toBeNull()
     expect(parseTab('conflicts')).toBeNull()
-    expect(parseTab('stakeholders')).toBeNull()
+    expect(parseTab('disadvantaged')).toBeNull()
+  })
+
+  it('stakeholders is a tab again (decision 109)', () => {
+    expect(parseTab('stakeholders')).toBe('stakeholders')
   })
 })
 
@@ -59,7 +65,8 @@ describe('legacyIssueTab', () => {
   it('maps each old tab to the new tab and the focus to add (design 3.2)', () => {
     expect(legacyIssueTab('opinion')).toEqual({ tab: 'wants', focus: null })
     expect(legacyIssueTab('conflicts')).toEqual({ tab: 'wants', focus: 'conflicts' })
-    expect(legacyIssueTab('stakeholders')).toEqual({ tab: 'overview', focus: 'stakeholders' })
+    expect(legacyIssueTab('disadvantaged')).toEqual({ tab: 'stakeholders', focus: null })
+    expect(legacyIssueTab('stakeholders')).toBeNull()
   })
 
   it('returns null for a current tab, no tab or an unknown name', () => {
@@ -83,8 +90,23 @@ describe('legacyIssueTabTarget', () => {
     })
   })
 
-  it('stakeholders goes to the overview with focus=stakeholders', () => {
-    expect(legacyIssueTabTarget(2, 'stakeholders', '')).toEqual({ pathname: '/issues/2', search: '?focus=stakeholders' })
+  it('disadvantaged goes to the 利害關係人 tab and keeps the query (decision 109)', () => {
+    expect(legacyIssueTabTarget(1, 'disadvantaged', '')).toEqual({ pathname: '/issues/1/stakeholders', search: '' })
+    expect(legacyIssueTabTarget(8, 'disadvantaged', '?evidence=1')).toEqual({ pathname: '/issues/8/stakeholders', search: '?evidence=1' })
+  })
+
+  it('總覽 with focus=stakeholders goes to the 利害關係人 tab with the same query (decision 109)', () => {
+    expect(legacyIssueTabTarget(2, undefined, '?focus=stakeholders')).toEqual({
+      pathname: '/issues/2/stakeholders',
+      search: '?focus=stakeholders',
+    })
+    expect(legacyIssueTabTarget(2, undefined, '?focus=stakeholders&evidence=1')).toEqual({
+      pathname: '/issues/2/stakeholders',
+      search: '?focus=stakeholders&evidence=1',
+    })
+    // Another focus on 總覽, or focus=stakeholders on another tab, stays.
+    expect(legacyIssueTabTarget(2, undefined, '?focus=C1')).toBeNull()
+    expect(legacyIssueTabTarget(2, 'stakeholders', '?focus=stakeholders')).toBeNull()
   })
 
   it('returns null when the segment is not an old tab', () => {

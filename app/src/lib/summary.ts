@@ -1,8 +1,9 @@
 // The 分析摘要 at the top of the 總覽 tab (design 3.2, decision 29).
 // Topics keep the fixed order of the issue file. Nothing here sorts by a count.
-import type { IssueFile } from '@/types'
+import type { IssueFile, SummaryItem } from '@/types'
 import { withDataBasisFilter } from './dataBasis'
 import { conflictFocusPath, needFocusPath, solutionPath, storyPath } from './entityPaths'
+import { SUMMARY_TABS, type SummaryTab } from './issuePage'
 import { opinionPickTo } from './opinion'
 
 /** The topics of the 分析摘要, in the fixed order. The same list as
@@ -14,6 +15,35 @@ export const SUMMARY_TOPICS = [
   '法規上的障礙',
   '相依事項與現行政策的關係',
 ] as const
+
+export type SummaryTopicName = (typeof SUMMARY_TOPICS)[number]
+
+/** The 分析摘要 topic of a tab of the issue page (decision 102). The tabs
+ * and the topics have the same order. */
+export function summaryTopicOf(tab: SummaryTab): SummaryTopicName {
+  return SUMMARY_TOPICS[SUMMARY_TABS.indexOf(tab)]
+}
+
+/** The rows of the topic in the issue file, in file order. An empty list
+ * when the file has no such topic. */
+export function summaryItemsOf(issue: Pick<IssueFile, 'summary'>, tab: SummaryTab): SummaryItem[] {
+  const topic = summaryTopicOf(tab)
+  return issue.summary.find((t) => t.topic === topic)?.items ?? []
+}
+
+/** The count in the tab label of a topic: the number of rows. On the
+ * 受影響較大的弱勢族群 tab only the filled rows count. A row whose 說明 is
+ * 【待補】 (for example 「呼吸道疾病（尚未納入）」) is still shown in the tab,
+ * but it is not counted (ETBlue, 2026-10-22). */
+export function summaryTabCount(issue: Pick<IssueFile, 'summary'>, tab: SummaryTab): number {
+  const items = summaryItemsOf(issue, tab)
+  return tab === 'disadvantaged' ? items.filter((i) => !i.text.pending).length : items.length
+}
+
+/** The counts of the five topic tabs. */
+export function summaryTabCounts(issue: Pick<IssueFile, 'summary'>): Record<SummaryTab, number> {
+  return Object.fromEntries(SUMMARY_TABS.map((tab) => [tab, summaryTabCount(issue, tab)])) as Record<SummaryTab, number>
+}
 
 /** group: a 相同訴求群組 (W08). need: a 相同需求群組 (N01). */
 export type SummaryRefKind = 'story' | 'stakeholder' | 'conflict' | 'group' | 'need' | 'solution'

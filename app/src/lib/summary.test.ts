@@ -3,8 +3,11 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
-import type { IssueFile } from '@/types'
-import { SUMMARY_TOPICS, parseSummaryRef, summaryRefTo } from './summary'
+import type { IssueFile, SummaryItem } from '@/types'
+import { SUMMARY_TABS } from './issuePage'
+import {
+  SUMMARY_TOPICS, parseSummaryRef, summaryItemsOf, summaryRefTo, summaryTabCount, summaryTabCounts, summaryTopicOf,
+} from './summary'
 
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
@@ -130,5 +133,48 @@ describe('the summary in the fixtures', () => {
     const item = topic?.items.find((i) => i.refs.includes('C9'))
     expect(item?.refs).toContain('#8 解法 B')
     expect(item?.text.tag).toBe('AI模擬')
+  })
+})
+
+// The 分析摘要 topic tabs of the issue page (ETBlue, 2026-10-22; decision 102).
+describe('summaryTopicOf', () => {
+  it('maps the five tabs to the five topics, in the same order', () => {
+    expect(SUMMARY_TABS.map(summaryTopicOf)).toEqual([...SUMMARY_TOPICS])
+    expect(summaryTopicOf('dependencies')).toBe('相依事項與現行政策的關係')
+  })
+})
+
+describe('summaryTabCounts', () => {
+  it('counts the rows of each topic', () => {
+    expect(summaryTabCounts(smokefree)).toEqual({ decisions: 4, controversies: 5, disadvantaged: 6, legal: 6, dependencies: 5 })
+    expect(summaryTabCounts(policy)).toEqual({ decisions: 6, controversies: 5, disadvantaged: 6, legal: 6, dependencies: 5 })
+  })
+
+  it('does not count the 【待補】 rows of 受影響較大的弱勢族群', () => {
+    // #1 has 6 rows; 呼吸道疾病（尚未納入） and 外籍（尚未納入） are 【待補】.
+    expect(summaryItemsOf(trees, 'disadvantaged')).toHaveLength(6)
+    expect(summaryItemsOf(trees, 'disadvantaged').filter((i) => i.text.pending).map((i) => i.item))
+      .toEqual(['呼吸道疾病（尚未納入）', '外籍（尚未納入）'])
+    expect(summaryTabCounts(trees)).toEqual({ decisions: 5, controversies: 5, disadvantaged: 4, legal: 5, dependencies: 6 })
+    // #2 has 6 rows; 呼吸道疾病（尚未納入） is 【待補】.
+    expect(summaryTabCounts(trashcans)).toEqual({ decisions: 4, controversies: 5, disadvantaged: 5, legal: 4, dependencies: 5 })
+  })
+
+  it('counts a filled row and leaves out a 【待補】 row', () => {
+    const row = (item: string, pending: boolean): SummaryItem => ({
+      item,
+      text: pending ? { text: '【待補：…】', tag: null, pending: true } : { text: '說明', tag: 'AI模擬', pending: false },
+      refs: [],
+    })
+    const issue = {
+      summary: [{ topic: '受影響較大的弱勢族群', items: [row('高齡', false), row('外籍（尚未納入）', true), row('兒童', false)] }],
+    }
+    expect(summaryTabCount(issue, 'disadvantaged')).toBe(2)
+    expect(summaryItemsOf(issue, 'disadvantaged')).toHaveLength(3)
+  })
+
+  it('gives 0 and no rows for a topic the file does not have', () => {
+    expect(summaryTabCount({ summary: [] }, 'legal')).toBe(0)
+    expect(summaryItemsOf({ summary: [] }, 'legal')).toEqual([])
   })
 })

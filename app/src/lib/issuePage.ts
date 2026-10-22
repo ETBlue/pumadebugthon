@@ -3,11 +3,24 @@
 import type { IndexFile, IssueSummary, Pending } from '@/types'
 import { FOCUS_PARAM } from './focus'
 
+/** The tabs of the 分析摘要 topics, in the fixed topic order (design 3.2,
+ * decision 102): 難以取捨的決定, 可能的爭議, 受影響較大的弱勢族群,
+ * 法規上的障礙, 相依事項與現行政策的關係. summaryTopicOf in summary.ts
+ * gives the topic of each tab. */
+export const SUMMARY_TABS = ['decisions', 'controversies', 'disadvantaged', 'legal', 'dependencies'] as const
+
+export type SummaryTab = (typeof SUMMARY_TABS)[number]
+
 /** The tabs of the issue page, in display order (design 3.2). The first one
  * is the default. */
-export const ISSUE_TABS = ['overview', 'wants', 'needs', 'solutions'] as const
+export const ISSUE_TABS = ['overview', 'wants', 'needs', 'solutions', ...SUMMARY_TABS] as const
 
 export type IssueTab = (typeof ISSUE_TABS)[number]
+
+/** True for the tab of a 分析摘要 topic. */
+export function isSummaryTab(tab: IssueTab): tab is SummaryTab {
+  return (SUMMARY_TABS as readonly string[]).includes(tab)
+}
 
 /** The tab of the URL segment. No segment is the overview. An unknown name
  * returns null. */

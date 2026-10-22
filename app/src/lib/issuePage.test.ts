@@ -3,7 +3,7 @@ import indexJson from '@/test/fixtures/index.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { IndexFile, IssueFile, Pending } from '@/types'
 import {
-  findIssue, ISSUE_TABS, legacyIssueTab, legacyIssueTabTarget, parseIssueNumber, parseTab, pendingBySection, tabPath,
+  findIssue, ISSUE_TABS, isSummaryTab, legacyIssueTab, legacyIssueTabTarget, parseIssueNumber, parseTab, pendingBySection, tabPath,
 } from './issuePage'
 
 const index = indexJson as IndexFile
@@ -15,8 +15,19 @@ describe('parseTab', () => {
   })
 
   it('accepts every tab name', () => {
-    expect(ISSUE_TABS).toEqual(['overview', 'wants', 'needs', 'solutions'])
+    expect(ISSUE_TABS).toEqual([
+      'overview', 'wants', 'needs', 'solutions',
+      'decisions', 'controversies', 'disadvantaged', 'legal', 'dependencies',
+    ])
     for (const tab of ISSUE_TABS) expect(parseTab(tab)).toBe(tab)
+  })
+
+  it('the five 分析摘要 tabs come after 解法 (decision 102)', () => {
+    expect(ISSUE_TABS.filter(isSummaryTab)).toEqual(['decisions', 'controversies', 'disadvantaged', 'legal', 'dependencies'])
+    expect(isSummaryTab('overview')).toBe(false)
+    expect(isSummaryTab('solutions')).toBe(false)
+    expect(tabPath(2, 'legal')).toBe('/issues/2/legal')
+    expect(tabPath(9, 'dependencies')).toBe('/issues/9/dependencies')
   })
 
   it('returns null for an unknown tab', () => {

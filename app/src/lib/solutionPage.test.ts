@@ -15,6 +15,8 @@ import {
   dataBasedCoverage,
   solutionRelatedConflicts,
   stakeholderEntries,
+  practiceSides,
+  solutionWantCoverage,
 } from './solutionPage'
 
 const trees = treesJson as IssueFile
@@ -236,5 +238,47 @@ describe('stakeholderEntries', () => {
     expect(i01?.issues.map((i) => i.issueNumber)).toEqual([2])
     expect(ids(i01?.issues[0].covered ?? [])).toEqual(['N01', 'N04', 'I01-US09'])
     expect(ids(i01?.issues[0].notCovered ?? [])).toEqual(['N06'])
+  })
+})
+
+describe('solutionWantCoverage (decision 103)', () => {
+  it('a want (one story) is covered when the solution covers the need of its story', () => {
+    for (const issue of [trees, trashcans, smokefree]) {
+      for (const solution of issue.solutions) {
+        const { covered, notCovered } = solutionWantCoverage(issue, solution)
+        // 6.2 lists the same stories.
+        expect(covered.map((s) => s.id).sort()).toEqual([...solution.stories].sort())
+        expect(covered.length + notCovered.length).toBe(issue.stories.length)
+        const keys = new Set([...solution.needs!.must, ...solution.needs!.shouldCould])
+        for (const s of covered) expect(keys.has(s.needGroup ?? s.id)).toBe(true)
+        for (const s of notCovered) expect(keys.has(s.needGroup ?? s.id)).toBe(false)
+      }
+    }
+  })
+
+  it('keeps the order of the stories in the issue file', () => {
+    const { covered } = solutionWantCoverage(trashcans, sol(trashcans, 'A'))
+    const order = trashcans.stories.map((s) => s.id)
+    const at = covered.map((s) => order.indexOf(s.id))
+    expect(at).toEqual([...at].sort((a, b) => a - b))
+  })
+})
+
+describe('practiceSides (decision 104)', () => {
+  it('splits into 國內 and 國外 and keeps the file order', () => {
+    const { practices } = sol(trashcans, 'A')
+    const sides = practiceSides(practices)
+    expect(sides.domestic.every((p) => p.domestic)).toBe(true)
+    expect(sides.foreign.every((p) => !p.domestic)).toBe(true)
+    expect(sides.domestic.length + sides.foreign.length).toBe(practices.length)
+    expect(sides.domestic).toEqual(practices.filter((p) => p.domestic))
+  })
+
+  it('every dependency row is 國內', () => {
+    for (const issue of [trees, trashcans, smokefree]) {
+      for (const s of issue.solutions) {
+        expect(practiceSides(s.practices).foreign.some((p) => p.source === 'dependency')).toBe(false)
+      }
+    }
   })
 })

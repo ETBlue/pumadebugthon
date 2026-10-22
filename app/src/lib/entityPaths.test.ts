@@ -111,12 +111,12 @@ describe('parseSolutionTab', () => {
   })
 
   it('accepts every tab name', () => {
-    expect(SOLUTION_TABS).toEqual(['overview', 'needs', 'stakeholders'])
+    expect(SOLUTION_TABS).toEqual(['overview', 'needs', 'wants', 'stakeholders', 'conflicts', 'measures', 'policies'])
     for (const tab of SOLUTION_TABS) expect(parseSolutionTab(tab)).toBe(tab)
   })
 
   it('returns null for an unknown tab', () => {
-    for (const s of ['wants', 'solutions', '', 'Needs']) expect(parseSolutionTab(s)).toBeNull()
+    for (const s of ['solutions', 'practices', '', 'Needs', 'Wants']) expect(parseSolutionTab(s)).toBeNull()
   })
 })
 

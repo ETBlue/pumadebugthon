@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
-import type { IssueFile, Story } from '@/types'
+import type { Cell, IssueFile, Story } from '@/types'
 import {
-  DATA_BASED_TAGS, FILTER_PARAM, dataBasedCount, dataBasedOnly, dataBasedPickList, dataBasisFilterSearch,
-  hasDataBasis, isDataBasisFilterOn, withDataBasisFilter,
+  DATA_BASED_TAGS, FILTER_PARAM, dataBasedCount, dataBasedOnly, dataBasedParts, dataBasedPickList, dataBasedWants,
+  dataBasisFilterSearch, hasDataBasis, isDataBasisFilterOn, withDataBasisFilter,
 } from './dataBasis'
 import { pickList } from './opinion'
 
@@ -143,5 +143,33 @@ describe('URL setting', () => {
   it('dataBasisFilterSearch keeps only the filter setting, for a link to another tab', () => {
     expect(dataBasisFilterSearch(new URLSearchParams('pick=W01&evidence=1'))).toBe('?evidence=1')
     expect(dataBasisFilterSearch(new URLSearchParams('pick=W01'))).toBe('')
+  })
+})
+
+describe('dataBasedParts (decision 105)', () => {
+  const cell = (tag: Cell['tag'], text: string, pending = false): Cell => ({ text, tag, pending })
+  const parts = [cell('AI模擬', 'a'), cell('實證', 'b'), cell('AI整理', 'c'), cell(null, '【待補：x】', true)]
+
+  it('with the filter off keeps every part', () => {
+    expect(dataBasedParts(parts, false)).toBe(parts)
+  })
+
+  it('with the filter on removes only the [AI模擬] parts, in file order', () => {
+    expect(dataBasedParts(parts, true).map((p) => p.text)).toEqual(['b', 'c', '【待補：x】'])
+  })
+
+  it('gives an empty list when every part is [AI模擬]', () => {
+    expect(dataBasedParts([cell('AI模擬', 'a'), cell('AI模擬', 'b')], true)).toEqual([])
+  })
+})
+
+describe('dataBasedWants (decision 103)', () => {
+  it('keeps the stories whose 我想要… cell is [實證] or [AI整理], and looks only at that cell', () => {
+    const stories = trashcans.stories
+    const kept = dataBasedWants(stories)
+    expect(kept.length).toBeGreaterThan(0)
+    expect(kept.length).toBeLessThan(stories.length)
+    expect(kept.every((s) => DATA_BASED_TAGS.includes(s.want.tag))).toBe(true)
+    expect(stories.filter((s) => !kept.includes(s)).every((s) => !DATA_BASED_TAGS.includes(s.want.tag))).toBe(true)
   })
 })

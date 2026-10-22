@@ -4,12 +4,12 @@
 // Order is always code order (X-A, X-B, …), file order, issue number order or
 // ID order. Nothing here sorts by a count.
 import type {
-  CrossConflict, CrossIssueFile, CrossNeedGroup, CrossSolution, CrossSolutionFocus, IssueFile, Story,
+  CrossConflict, CrossIssueFile, CrossNeedGroup, CrossRef, CrossSolution, CrossSolutionFocus, IssueFile, Story,
 } from '@/types'
 import { compareIds } from './ids'
 import { issueNeeds, needsOfStakeholder, type NeedItem } from './needs'
-import type { CoveredNeed, NeedCoverage, StakeholderEntry } from './solutionPage'
-import type { SolutionTabCounts } from './tabCounts'
+import { wantsOfCoverage, type CoveredNeed, type NeedCoverage, type StakeholderEntry, type WantCoverage } from './solutionPage'
+import { practiceCounts, type SolutionTabCounts } from './tabCounts'
 
 /** The cross-issue solution for the code in the URL, for example "X-A".
  * null for an unknown code, or when the file does not exist. */
@@ -177,17 +177,69 @@ export function crossStakeholderCoverage(
   return out
 }
 
-/** The counts of the 需求 and 利害關係人 tab labels: the needs summed over
- * the issues, and the stakeholders (each once). Plain numbers (decision 48). */
+export interface IssueWantCoverage {
+  issueNumber: number
+  /** As in IssueCoverage: false means the issue is not in parts, and
+   * wants.notCovered is empty. */
+  inParts: boolean
+  wants: WantCoverage
+}
+
+/** The 訴求 tab (decision 103): the stories of the covered and the not
+ * covered needs, per issue of crossNeedCoverage (number order). One want is
+ * one story. An issue that is not in parts has only covered wants. */
+export function crossWantCoverage(data: CrossIssueFile, solution: CrossSolution, issues: IssueFile[]): IssueWantCoverage[] {
+  return crossNeedCoverage(data, solution, issues).flatMap(({ issueNumber, inParts, coverage }) => {
+    const issue = issues.find((i) => i.number === issueNumber)
+    return issue ? [{ issueNumber, inParts, wants: wantsOfCoverage(issue, coverage) }] : []
+  })
+}
+
+export interface CrossRelatedConflict {
+  conflict: CrossConflict
+  /** The covered stories in the conflict: side A first, then side B. */
+  covered: CrossRef[]
+}
+
+/** 相關的衝突 of a cross-issue solution (decision 103): the cross-issue
+ * conflicts with a covered story (crossWantCoverage) on either side, but not
+ * the ones whose way out lists the code. File order. */
+export function crossRelatedConflicts(data: CrossIssueFile, solution: CrossSolution, issues: IssueFile[]): CrossRelatedConflict[] {
+  const key = (issue: number | null, id: string) => `${issue}-${id}`
+  const covered = new Set(
+    crossWantCoverage(data, solution, issues).flatMap((i) => i.wants.covered.map((s) => key(i.issueNumber, s.id))),
+  )
+  return data.conflicts.flatMap((conflict) => {
+    if (conflict.wayOutSolutions.includes(solution.code)) return []
+    const refs = [...conflict.sideA, ...conflict.sideB].filter((r) => covered.has(key(r.issue, r.id)))
+    const unique = refs.filter((r, i) => refs.findIndex((o) => o.issue === r.issue && o.id === r.id) === i)
+    return unique.length === 0 ? [] : [{ conflict, covered: unique }]
+  })
+}
+
+/** The counts of the tab labels: the needs and the wants summed over the
+ * issues, the stakeholders (each once), the cross-issue conflicts, the
+ * measures and the practices. Plain numbers (decision 48). */
 export function crossSolutionTabCounts(data: CrossIssueFile, solution: CrossSolution, issues: IssueFile[]): SolutionTabCounts {
   const needs = crossNeedCoverage(data, solution, issues)
+  const wants = crossWantCoverage(data, solution, issues)
   const stakeholders = crossStakeholderCoverage(data, solution, issues)
   return {
     needs: {
       covered: needs.reduce((n, i) => n + i.coverage.covered.length, 0),
       notCovered: needs.reduce((n, i) => n + i.coverage.notCovered.length, 0),
     },
+    wants: {
+      covered: wants.reduce((n, i) => n + i.wants.covered.length, 0),
+      notCovered: wants.reduce((n, i) => n + i.wants.notCovered.length, 0),
+    },
     stakeholders: { covered: stakeholders.covered.length, notCovered: stakeholders.notCovered.length },
+    conflicts: {
+      wayOut: crossWayOutConflicts(data, solution.code).length,
+      related: crossRelatedConflicts(data, solution, issues).length,
+    },
+    measures: solution.measures.length,
+    policies: practiceCounts(solution.practices),
   }
 }
 

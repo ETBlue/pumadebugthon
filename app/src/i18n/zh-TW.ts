@@ -460,21 +460,35 @@ export const t = {
   },
   /** The solution page #/solutions/<n>-<code> (design 3.12). */
   solutionPage: {
-    /** The tabs (design 3.12). The names are also for the page title. */
+    /** The tabs (design 3.12, decision 103). The names are also for the page title. */
     tabsLabel: '解法內容',
     tabs: {
       overview: '總覽',
       needs: '需求',
+      wants: '訴求',
       stakeholders: '利害關係人',
+      conflicts: '衝突',
+      measures: '成效衡量',
+      policies: '相關政策',
     },
-    /** The tab labels with the coverage counts (solutionTabCounts). Plain
-     * numbers: no percent, no bar. */
+    /** The tab labels with the counts (solutionTabCounts). Plain numbers:
+     * no percent, no bar. */
     tabLabels: {
       needs: (covered: number, notCovered: number): TabLabel => ({
         main: '需求', sep: '　', sub: `涵蓋 ${covered}・未涵蓋 ${notCovered}`,
       }),
+      wants: (covered: number, notCovered: number): TabLabel => ({
+        main: '訴求', sep: '　', sub: `涵蓋 ${covered}・未涵蓋 ${notCovered}`,
+      }),
       stakeholders: (covered: number, notCovered: number): TabLabel => ({
         main: '利害關係人', sep: '　', sub: `涵蓋 ${covered}・未涵蓋 ${notCovered}`,
+      }),
+      conflicts: (wayOut: number, related: number): TabLabel => ({
+        main: '衝突', sep: '　', sub: `解開 ${wayOut}・相關 ${related}`,
+      }),
+      measures: (n: number): TabLabel => ({ main: `成效衡量 ${n}` }),
+      policies: (domestic: number, foreign: number): TabLabel => ({
+        main: '相關政策', sep: '　', sub: `國內 ${domestic}・國外 ${foreign}`,
       }),
     },
     tabNotFound: '找不到這個分頁。',
@@ -504,6 +518,7 @@ export const t = {
     /** 解開的衝突 on the 總覽 tab: the conflicts whose way out lists the solution. */
     wayOutHeading: '解開的衝突',
     wayOutIntro: '這些衝突的「以需求為本的解方」用到這個解法。',
+    wayOutNone: '沒有衝突的「以需求為本的解方」用到這個解法。',
     wayOutLink: (n: number, id: string) => `到 #${n} 的訴求分頁看 ${id}`,
     conflictsHeading: '相關的衝突',
     conflictsIntro: '衝突的一方或另一方，有這個解法涵蓋的故事，但衝突的解方沒有用到這個解法。',
@@ -528,12 +543,42 @@ export const t = {
     stakeholderNotCovered: '未涵蓋的需求',
     otherSolutions: '由其他解法涵蓋：',
     otherSolutionsNone: '沒有任何解法涵蓋',
+    /** The 訴求 tab (decision 103). One want is the 我想要… cell of one story. */
+    wantsIntro: '每一則故事的「我想要…」是一個訴求。這個解法涵蓋了故事的需求（以便…），這個訴求就算被涵蓋。',
+    coveredWantsHeading: '涵蓋的訴求',
+    coveredWantsNone: '這個解法沒有涵蓋任何訴求。',
+    notCoveredWantsHeading: '未涵蓋的訴求',
+    notCoveredWantsIntro: '一個解法不需要涵蓋所有訴求。未涵蓋的訴求，可能由其他解法涵蓋。',
+    notCoveredWantsNone: '這個議題的訴求都被這個解法涵蓋。',
+    wantsFilteredNone: '這裡沒有我想要…標記 [實證] 或 [AI整理] 的訴求。',
     measuresHeading: '成效衡量',
     measuresNone: '分析裡沒有這個解法的成效指標。',
     baseline: '目前數值（基準值）',
     source: '資料來源',
     detailHeading: '資源、法規、隱私與風險',
     detailIntro: '這部分由 AI 整理，可以作為討論的起點。成本與法條適用需由專業人士確認。',
+    /** A step 7 cell whose parts are all hidden by 「只看有資料根據」 (decision 105). */
+    detailFilteredNone: '這一格只有標記 [AI模擬] 的內容。',
+    /** The 相關政策 tab (decisions 103 and 104). */
+    policiesHeading: '相關或類似的政策與做法',
+    policiesIntro: '國內與國外和這個解法相關或類似的政策與做法。',
+    policiesNone: '分析裡沒有和這個解法相關或類似的政策與做法。',
+    policiesDomestic: '國內',
+    policiesForeign: '國外',
+    policiesDomesticNone: '沒有國內的項目。',
+    policiesForeignNone: '沒有國外的項目。',
+    practiceUse: '本文件怎麼用',
+    /** Where a practice row comes from: the practice table of step 6.1. */
+    practiceSource: (n: number) => `來源：#${n} 議題分析步驟 6.1 的相關做法表。`,
+    practiceNote: '標記「相關做法」的項目來自議題分析步驟 6.1。其他地方的做法只是參考，不代表台北一定適用。「本文件怎麼用」是 AI 的想法。',
+    /** The kind of an item: a row of a 6.1 practice table, or a dependency row. */
+    practiceKind: '相關做法',
+    dependencyKind: '相依與現行政策',
+    /** Where a dependency row comes from: the 分析摘要 topic of the issue. */
+    dependencySource: '來源：分析摘要的「相依事項與現行政策的關係」',
+    dependencyLink: (n: number) => `到 #${n} 的相依與現行政策分頁`,
+    /** A cross-issue solution: the topic is in the cross-issue file, which has no page. */
+    crossDependencySource: '來源：跨議題分析的分析摘要「相依事項與現行政策的關係」。',
     overviewHeading: '總覽',
     cost: '成本',
     feasibility: '可行性',
@@ -772,6 +817,11 @@ export const t = {
     groupNeeds: '各議題的需求',
     /** Above the needs of an issue that is not in parts (design 3.18). */
     notInPartsNote: '這個議題沒有解法被合併進來。這裡只列出透過「跨議題的共同需求」涵蓋的需求。',
+    /** The same note on the 訴求 tab (decision 103). */
+    wantsNotInPartsNote: '這個議題沒有解法被合併進來。這裡只列出透過「跨議題的共同需求」涵蓋的訴求。',
+    /** 相關的衝突 of a cross-issue solution (decision 103). */
+    relatedConflictsIntro: '跨議題衝突的一方或另一方，有這個解法涵蓋的故事，但衝突的解方沒有用到這個解法。',
+    relatedConflictsNone: '沒有其他和這個解法涵蓋的故事有關的跨議題衝突。',
   },
   /** One conflict (ConflictView, design 3.2). */
   conflict: {

@@ -11,8 +11,9 @@ export const STAKEHOLDER_TABS = ['overview', 'wants', 'needs', 'solutions'] as c
 
 export type StakeholderTab = (typeof STAKEHOLDER_TABS)[number]
 
-/** The tabs of the solution page, in display order. The first one is the default. */
-export const SOLUTION_TABS = ['overview', 'needs', 'stakeholders'] as const
+/** The tabs of the solution page, in display order. The first one is the
+ * default (design 3.12, decision 103). A cross-issue solution has the same tabs. */
+export const SOLUTION_TABS = ['overview', 'needs', 'wants', 'stakeholders', 'conflicts', 'measures', 'policies'] as const
 
 export type SolutionTab = (typeof SOLUTION_TABS)[number]
 

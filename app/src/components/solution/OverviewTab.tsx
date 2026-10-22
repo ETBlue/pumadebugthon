@@ -1,179 +1,53 @@
-import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { CellParts } from '@/components/CellParts'
 import { CellText } from '@/components/CellText'
-import { ConflictView } from '@/components/ConflictView'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { Markdown } from '@/components/Markdown'
-import { linkClass, targetLinkClass } from '@/components/styles'
-import { TagBadge } from '@/components/TagBadge'
+import { targetLinkClass } from '@/components/styles'
 import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { crossSolutionsOfSolution } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
-import { conflictFocusPath, issueFocusPath, stakeholderTabPath } from '@/lib/entityPaths'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
-import { solutionGroupCoverage, solutionRelatedConflicts, solutionWayOutConflicts } from '@/lib/solutionPage'
-import { stakeholderName } from '@/lib/stakeholders'
-import type { ConflictView as ConflictData } from '@/lib/wantList'
-import type { IndexFile, IssueFile, Solution } from '@/types'
+import type { IssueFile, Solution } from '@/types'
 import { CrossSolutionLink } from './CrossSolutionCard'
 import { PartEmpty, SolutionPart } from './Parts'
 
 const tp = t.solutionPage
 
-/** 解開的衝突 (design 3.12): each conflict whose way out lists the solution,
- * as ConflictView, with a link to the conflict on the issue's 訴求 tab.
- * Nothing when the list is empty. The 「只看有資料根據」 toggle filters the
- * story lists of the conflicts. */
-export function WayOutConflicts({ views, issue, index }: { views: ConflictData[]; issue: IssueFile; index: IndexFile }) {
-  const [dataBasedOnly] = useDataBasisFilter()
-  if (views.length === 0) return null
-  return (
-    <SolutionPart id="solution-way-out" title={tp.wayOutHeading}>
-      <p className="text-sm text-muted-foreground">{tp.wayOutIntro}</p>
-      <DataBasisToggle className="mt-3" />
-      <ul className="mt-4 space-y-4">
-        {views.map((view) => (
-          <li key={view.conflict.id}>
-            {/* focusTarget off: the same conflict ID is on the issue's 訴求 tab, not here. */}
-            <ConflictView
-              view={view}
-              issue={issue}
-              stakeholders={index.stakeholders}
-              dataBasedOnly={dataBasedOnly}
-              focusTarget={false}
-            />
-            <p className="mt-2 text-sm">
-              <Link to={conflictFocusPath(issue.number, view.conflict.id, dataBasedOnly)} className={targetLinkClass}>
-                {tp.wayOutLink(issue.number, view.conflict.id)}
-              </Link>
-            </p>
-          </li>
-        ))}
-      </ul>
-    </SolutionPart>
-  )
-}
-
-/** The 總覽 tab of an issue solution (design 3.12), in this order: 解開的衝突,
- * 相關的衝突, 涵蓋的相同訴求群組, 成效衡量, 資源、法規、隱私與風險,
- * 題目或研究中的構想, 跨議題解法 (only when the solution is in the parts of
- * a cross-issue solution, design 3.18), 待補, 更多. */
-export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile; issue: IssueFile; solution: Solution }) {
+/** The 總覽 tab of an issue solution (design 3.12, decision 103), in this
+ * order: 資源、法規、隱私與風險, 題目或研究中的構想, 跨議題解法 (only when the
+ * solution is in the parts of a cross-issue solution, design 3.18), 待補,
+ * 更多. The conflicts, the groups and the measures have their own tabs.
+ * The step 7 cells follow the 「只看有資料根據」 filter (decision 105). */
+export function OverviewTab({ issue, solution: sol }: { issue: IssueFile; solution: Solution }) {
   const n = issue.number
   const [params] = useSearchParams()
   const search = dataBasisFilterSearch(params)
   const [dataBasedOnly] = useDataBasisFilter()
-  const name = (id: string) => stakeholderName(index.stakeholders, id)
-  const wayOut = useMemo(() => solutionWayOutConflicts(issue, sol), [issue, sol])
-  const related = useMemo(() => solutionRelatedConflicts(issue, sol), [issue, sol])
-  const groups = useMemo(() => solutionGroupCoverage(issue, sol), [issue, sol])
   const pending = pendingBySection(sol.pending)
   const crossList = crossSolutionsOfSolution(useCrossIssueOrNull(), n, sol.id)
 
   return (
     <div className="space-y-10">
-      <WayOutConflicts views={wayOut} issue={issue} index={index} />
-
-      <SolutionPart id="solution-conflicts" title={tp.conflictsHeading}>
-        {related.length === 0 ? (
-          <PartEmpty>{tp.conflictsNone}</PartEmpty>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground">{tp.conflictsIntro}</p>
-            <ul className="mt-3 space-y-3">
-              {related.map(({ conflict: c, covered }) => (
-                <li key={c.id} className="rounded-md border p-3">
-                  <p>
-                    <Link to={conflictFocusPath(n, c.id, dataBasedOnly)} className={`${linkClass} mr-2 font-mono font-semibold`}>
-                      {c.id}
-                    </Link>
-                    <CellText cell={c.text} />
-                  </p>
-                  <p className="mt-1 break-words text-sm text-muted-foreground">{tp.conflictCovered(covered)}</p>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-        <p className="mt-3">
-          <Link to={issueFocusPath(n, 'wants', 'conflicts', dataBasedOnly)} className={targetLinkClass}>{tp.conflictsLink(n)}</Link>
-        </p>
-      </SolutionPart>
-
-      <SolutionPart id="solution-groups" title={tp.groupsHeading}>
-        {groups.length === 0 ? (
-          <PartEmpty>{tp.groupsNone}</PartEmpty>
-        ) : (
-          <>
-            <p className="text-sm text-muted-foreground">{tp.groupsIntro}</p>
-            <ul className="mt-3 space-y-3">
-              {groups.map(({ group: g, full, covered, stakeholders: members }) => (
-                <li key={g.id} className="rounded-md border p-3">
-                  <p>
-                    <span className="mr-2 font-mono font-semibold">{g.id}</span>
-                    {g.tag && <TagBadge kind={g.tag} className="mr-1.5" />}
-                    <Markdown text={g.summary} />
-                  </p>
-                  <p className="mt-1 text-sm">
-                    <span className="font-semibold">{full ? tp.groupFull : tp.groupPartial}</span>
-                    {!full && <span className="ml-2 break-words text-muted-foreground">{tp.groupCovered(covered)}</span>}
-                  </p>
-                  <div className="mt-1 text-sm">
-                    <span className="text-muted-foreground">{tp.groupMembers}</span>
-                    <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
-                      {members.map((id) => (
-                        <li key={id}>
-                          <Link to={{ pathname: stakeholderTabPath(id, 'wants'), search }} className={targetLinkClass}>
-                            {name(id)}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </SolutionPart>
-
-      <SolutionPart id="solution-measures" title={tp.measuresHeading}>
-        {sol.measures.length === 0 ? (
-          <PartEmpty>{tp.measuresNone}</PartEmpty>
-        ) : (
-          <ul className="space-y-3">
-            {sol.measures.map((m, i) => (
-              <li key={i} className="rounded-md border p-3">
-                <h4 className="font-medium"><Markdown text={m.metric} /></h4>
-                <dl className="mt-2 space-y-1.5 text-sm">
-                  <Field label={tp.baseline}><CellText cell={m.baseline} /></Field>
-                  <Field label={tp.source}><Markdown text={m.source} /></Field>
-                </dl>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SolutionPart>
-
       <SolutionPart id="solution-detail" title={tp.detailHeading}>
         <p className="text-sm text-muted-foreground">{tp.detailIntro}</p>
+        <DataBasisToggle className="mt-3" />
         <section aria-labelledby="solution-overview" className="mt-4 rounded-md border p-3">
           <h4 id="solution-overview" className="font-semibold">{tp.overviewHeading}</h4>
           <dl className="mt-2 space-y-1.5">
-            <Field label={tp.cost}><CellText cell={sol.overview.cost} /></Field>
-            <Field label={tp.feasibility}><CellText cell={sol.overview.feasibility} /></Field>
-            <Field label={tp.risk}><CellText cell={sol.overview.risk} /></Field>
-            <Field label={tp.owner}><CellText cell={sol.overview.owner} /></Field>
+            <Field label={tp.cost}><CellParts parts={[sol.overview.cost]} dataBasedOnly={dataBasedOnly} /></Field>
+            <Field label={tp.feasibility}><CellParts parts={[sol.overview.feasibility]} dataBasedOnly={dataBasedOnly} /></Field>
+            <Field label={tp.risk}><CellParts parts={[sol.overview.risk]} dataBasedOnly={dataBasedOnly} /></Field>
+            <Field label={tp.owner}><CellParts parts={[sol.overview.owner]} dataBasedOnly={dataBasedOnly} /></Field>
           </dl>
         </section>
         <dl className="mt-4 space-y-4">
           {sol.detail.map((r) => (
             <div key={r.item}>
               <dt className="font-semibold">{r.item}</dt>
-              <dd className="mt-1 leading-relaxed"><CellParts parts={r.content} /></dd>
+              <dd className="mt-1 leading-relaxed"><CellParts parts={r.content} dataBasedOnly={dataBasedOnly} /></dd>
             </div>
           ))}
         </dl>

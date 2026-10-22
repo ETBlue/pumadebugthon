@@ -1,7 +1,7 @@
 // The 「只看有資料根據」 filter (design 3.5). It hides [AI模擬] content in
 // lists and keeps [實證] and [AI整理] content. It only removes items. It keeps
 // the order of the list it gets.
-import type { Story, Tag } from '@/types'
+import type { Cell, Story, Tag } from '@/types'
 import type { PickItem } from './opinion'
 
 /** The tags with data behind them: a checkable source ([實證]) or an AI
@@ -57,4 +57,21 @@ export function withDataBasisFilter(params: URLSearchParams, on: boolean): URLSe
  * is on, else "". Other values (such as pick) are left out. */
 export function dataBasisFilterSearch(params: URLSearchParams): string {
   return isDataBasisFilterOn(params) ? `?${FILTER_PARAM}=1` : ''
+}
+
+/** The 「只看有資料根據」 filter on a cell of a step 7 table (decision 105).
+ * With on, it removes the [AI模擬] parts and keeps the [實證] and [AI整理]
+ * parts. A 【待補】 part (no tag) stays, because it is not content: it says
+ * what is still missing. Keeps the order. With off, it keeps every part.
+ * An empty result means every part was [AI模擬]. */
+export function dataBasedParts(parts: Cell[], on: boolean): Cell[] {
+  return on ? parts.filter((p) => p.tag !== 'AI模擬') : parts
+}
+
+/** The 「只看有資料根據」 filter on the 訴求 tab of the solution page
+ * (decision 103): the stories whose 我想要… cell has a data-based tag. The
+ * tab shows only that cell, so the filter looks only at it, the same way the
+ * 需求 tab looks only at the 以便… cell. Keeps the order. */
+export function dataBasedWants(stories: Story[]): Story[] {
+  return stories.filter((s) => DATA_BASED_TAGS.includes(s.want.tag))
 }

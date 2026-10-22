@@ -11,10 +11,14 @@ import { SpaceLinks } from '@/components/SpaceLinks'
 import { linkClass, proseClass, targetLinkClass } from '@/components/styles'
 import { CrossIssueLinks } from '@/components/solution/CrossSolutionCard'
 import { CrossOverviewTab } from '@/components/solution/CrossOverviewTab'
+import { ConflictsTab, CrossConflictsTab } from '@/components/solution/ConflictsTab'
 import { CrossNeedsTab, CrossStakeholdersTab } from '@/components/solution/CrossTabs'
+import { CrossMeasuresTab, MeasuresTab } from '@/components/solution/MeasuresTab'
 import { NeedsTab } from '@/components/solution/NeedsTab'
 import { OverviewTab } from '@/components/solution/OverviewTab'
+import { PoliciesTab } from '@/components/solution/PoliciesTab'
 import { StakeholdersTab } from '@/components/solution/StakeholdersTab'
+import { CrossWantsTab, WantsTab } from '@/components/solution/WantsTab'
 import { TagBadge } from '@/components/TagBadge'
 import { useCrossIssue, useIndex, useIssue, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
@@ -26,12 +30,15 @@ import {
 import { findIssue, tabPath } from '@/lib/issuePage'
 import { stripMarkdown } from '@/lib/markdown'
 import { findSolution, solutionTitle } from '@/lib/solutionPage'
-import { solutionTabCounts } from '@/lib/tabCounts'
-import type { TabLabel } from '@/lib/tabLabel'
+import { solutionTabCounts, solutionTabLabel } from '@/lib/tabCounts'
 import type { AvailableIssueSummary, CrossIssueFile, CrossSolution, IndexFile, IssueFile, Solution as SolutionType } from '@/types'
 
 const tp = t.solutionPage
 const tx = t.crossIssue
+
+/** The name of a tab for its hidden h2 (decision 103). 相關政策 uses its full
+ * name 「相關或類似的政策與做法」. The page title uses the short tab name. */
+const tabHeading = (name: SolutionTab) => (name === 'policies' ? tp.policiesHeading : tp.tabs[name])
 
 /** The links shown when the issue or the solution is not found. */
 function NotFound({ title, body, issueNumber }: { title: string; body: string; issueNumber?: number }) {
@@ -90,8 +97,6 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
   const issueTitle = t.issueCard.numberTitle(n, issue.title)
   const tab = parseSolutionTab(useParams().tab)
   const counts = useMemo(() => solutionTabCounts(issue, sol), [issue, sol])
-  const tabLabel = (name: SolutionTab): TabLabel =>
-    name === 'overview' ? { main: tp.tabs.overview } : tp.tabLabels[name](counts[name].covered, counts[name].notCovered)
 
   return (
     <>
@@ -124,21 +129,25 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
         label={tp.tabsLabel}
         tabs={SOLUTION_TABS}
         current={tab}
-        nameOf={(name) => tp.tabs[name]}
-        labelOf={tabLabel}
+        nameOf={tabHeading}
+        labelOf={(name) => solutionTabLabel(name, counts)}
+        scrollOnPhone
         pathOf={(name) => solutionPath(n, sol.id, name)}
         notFound={tp.tabNotFound}
         overviewPath={solutionPath(n, sol.id)}
         overviewLink={tp.goToOverview}
       >
-        {(name) =>
-          name === 'overview' ? (
-            <OverviewTab index={index} issue={issue} solution={sol} />
-          ) : name === 'needs' ? (
-            <NeedsTab issue={issue} solution={sol} stakeholders={index.stakeholders} />
-          ) : (
-            <StakeholdersTab index={index} issue={issue} solution={sol} />
-          )}
+        {(name) => {
+          switch (name) {
+            case 'overview': return <OverviewTab issue={issue} solution={sol} />
+            case 'needs': return <NeedsTab issue={issue} solution={sol} stakeholders={index.stakeholders} />
+            case 'wants': return <WantsTab index={index} issue={issue} solution={sol} />
+            case 'stakeholders': return <StakeholdersTab index={index} issue={issue} solution={sol} />
+            case 'conflicts': return <ConflictsTab index={index} issue={issue} solution={sol} />
+            case 'measures': return <MeasuresTab solution={sol} />
+            case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={n} />
+          }
+        }}
       </PageTabs>
     </>
   )
@@ -181,8 +190,6 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
 }) {
   const tab = parseSolutionTab(useParams().tab)
   const counts = useMemo(() => crossSolutionTabCounts(data, sol, issues), [data, sol, issues])
-  const tabLabel = (name: SolutionTab): TabLabel =>
-    name === 'overview' ? { main: tp.tabs.overview } : tp.tabLabels[name](counts[name].covered, counts[name].notCovered)
   const common = { data, index, issues, solution: sol }
 
   return (
@@ -217,21 +224,25 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
         label={tp.tabsLabel}
         tabs={SOLUTION_TABS}
         current={tab}
-        nameOf={(name) => tp.tabs[name]}
-        labelOf={tabLabel}
+        nameOf={tabHeading}
+        labelOf={(name) => solutionTabLabel(name, counts)}
+        scrollOnPhone
         pathOf={(name) => crossSolutionPath(sol.code, name)}
         notFound={tp.tabNotFound}
         overviewPath={crossSolutionPath(sol.code)}
         overviewLink={tp.goToOverview}
       >
-        {(name) =>
-          name === 'overview' ? (
-            <CrossOverviewTab {...common} />
-          ) : name === 'needs' ? (
-            <CrossNeedsTab {...common} />
-          ) : (
-            <CrossStakeholdersTab {...common} />
-          )}
+        {(name) => {
+          switch (name) {
+            case 'overview': return <CrossOverviewTab {...common} />
+            case 'needs': return <CrossNeedsTab {...common} />
+            case 'wants': return <CrossWantsTab {...common} />
+            case 'stakeholders': return <CrossStakeholdersTab {...common} />
+            case 'conflicts': return <CrossConflictsTab {...common} />
+            case 'measures': return <CrossMeasuresTab solution={sol} />
+            case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={null} />
+          }
+        }}
       </PageTabs>
     </>
   )

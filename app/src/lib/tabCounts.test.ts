@@ -3,7 +3,8 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { IssueFile, Solution } from '@/types'
-import { issueTabCounts, solutionTabCounts, stakeholderTabCounts } from './tabCounts'
+import { issueTabCounts, solutionTabCounts, solutionTabLabel, stakeholderTabCounts } from './tabCounts'
+import { tabLabelText } from './tabLabel'
 
 const trees = treesJson as IssueFile
 const trashcans = trashcansJson as IssueFile
@@ -49,7 +50,11 @@ describe('solutionTabCounts', () => {
   it('gives the covered and not covered counts (#2 A: needs 9 / 13, stakeholders 14 / 13)', () => {
     expect(solutionTabCounts(trashcans, sol(trashcans, 'A'))).toEqual({
       needs: { covered: 9, notCovered: 13 },
+      wants: { covered: 28, notCovered: 25 },
       stakeholders: { covered: 14, notCovered: 13 },
+      conflicts: { wayOut: 5, related: 3 },
+      measures: 4,
+      policies: { domestic: 2, foreign: 2 },
     })
   })
 
@@ -59,7 +64,44 @@ describe('solutionTabCounts', () => {
         const c = solutionTabCounts(issue, solution)
         expect(c.needs.covered + c.needs.notCovered).toBe(issue.needs.length)
         expect(c.stakeholders.covered + c.stakeholders.notCovered).toBe(issue.stakeholders.length)
+        // One want is one story: every story is covered or not covered.
+        expect(c.wants.covered + c.wants.notCovered).toBe(issue.stories.length)
+        // A want is covered when the solution covers its need: the stories of 6.2.
+        expect(c.wants.covered).toBe(solution.stories.length)
+        expect(c.measures).toBe(solution.measures.length)
+        expect(c.policies.domestic + c.policies.foreign).toBe(solution.practices.length)
       }
     }
+  })
+})
+
+describe('solutionTabCounts: 衝突, 成效衡量 and 相關政策 (decision 103)', () => {
+  it('counts 國內 and 國外 by domestic (#2 B: only 國外; #8 E: none)', () => {
+    expect(solutionTabCounts(trashcans, sol(trashcans, 'B')).policies).toEqual({ domestic: 0, foreign: 3 })
+    const smokefree = issues.find((i) => i.number === 8)!
+    expect(solutionTabCounts(smokefree, sol(smokefree, 'E')).policies).toEqual({ domestic: 0, foreign: 0 })
+  })
+
+  it('never counts a conflict as both 解開 and 相關', () => {
+    for (const issue of issues) {
+      for (const solution of issue.solutions) {
+        const c = solutionTabCounts(issue, solution)
+        expect(c.conflicts.wayOut + c.conflicts.related).toBeLessThanOrEqual(issue.conflicts.length)
+      }
+    }
+  })
+})
+
+describe('solutionTabLabel', () => {
+  it('gives the label of each tab (#2 A)', () => {
+    const c = solutionTabCounts(trashcans, sol(trashcans, 'A'))
+    const text = (tab: Parameters<typeof solutionTabLabel>[0]) => tabLabelText(solutionTabLabel(tab, c))
+    expect(text('overview')).toBe('總覽')
+    expect(text('needs')).toBe('需求　涵蓋 9・未涵蓋 13')
+    expect(text('wants')).toBe('訴求　涵蓋 28・未涵蓋 25')
+    expect(text('stakeholders')).toBe('利害關係人　涵蓋 14・未涵蓋 13')
+    expect(text('conflicts')).toBe('衝突　解開 5・相關 3')
+    expect(text('measures')).toBe('成效衡量 4')
+    expect(text('policies')).toBe('相關政策　國內 2・國外 2')
   })
 })

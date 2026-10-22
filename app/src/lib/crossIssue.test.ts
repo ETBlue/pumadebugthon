@@ -7,8 +7,8 @@ import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import {
-  crossConflictView, crossCoverageIssueNumbers, crossIssueNumbers, crossNeedCoverage, crossNeedGroupsOf, crossSolutionFocus,
-  crossSolutionsOfIssue, crossSolutionsOfSolution, crossSolutionTabCounts,
+  crossConflictView, crossCoverageIssueNumbers, crossIssueNumbers, crossNeedCoverage, crossNeedGroupsOf, crossRelatedConflicts,
+  crossSolutionFocus, crossSolutionsOfIssue, crossSolutionsOfSolution, crossSolutionTabCounts, crossWantCoverage,
   crossSolutionTitle, crossStakeholderCoverage, crossWayOutConflicts, findCrossSolution, issuesOfCross,
 } from './crossIssue'
 import { compareIds } from './ids'
@@ -222,13 +222,19 @@ describe('crossSolutionTabCounts', () => {
   it('sums the needs over the issues and counts each stakeholder once', () => {
     expect(crossSolutionTabCounts(cross, xa, files)).toEqual({
       needs: { covered: 17, notCovered: 60 },
+      wants: { covered: 44, notCovered: 123 },
       stakeholders: { covered: 21, notCovered: 30 },
+      conflicts: { wayOut: 1, related: 1 },
+      measures: 4,
+      policies: { domestic: 2, foreign: 0 },
     })
     // X-E: 9 needs of #2 and #8, plus #1 N15 through X-N03 (decision 60).
     // N15 (O05, O13) moves one stakeholder from not covered to covered.
-    expect(crossSolutionTabCounts(cross, xe, files)).toEqual({
+    expect(crossSolutionTabCounts(cross, xe, files)).toMatchObject({
       needs: { covered: 10, notCovered: 37 },
       stakeholders: { covered: 16, notCovered: 20 },
+      measures: xe.measures.length,
+      policies: { domestic: xe.practices.length, foreign: 0 },
     })
   })
 })
@@ -277,5 +283,42 @@ describe('fixture', () => {
     expect(cross.issues).toEqual([1, 2, 8, 9])
     const available = index.issues.filter((i) => i.available).map((i) => i.number)
     for (const n of cross.issues) expect(available).toContain(n)
+  })
+})
+
+describe('crossWantCoverage (decision 103)', () => {
+  it('gives the stories of the covered and the not covered needs, per issue', () => {
+    for (const sol of [xa, xe]) {
+      const needs = crossNeedCoverage(cross, sol, files)
+      const wants = crossWantCoverage(cross, sol, files)
+      expect(wants.map((w) => w.issueNumber)).toEqual(needs.map((n) => n.issueNumber))
+      wants.forEach((w, i) => {
+        const storyIds = (list: { stories: { id: string }[] }[]) => list.flatMap((n) => n.stories.map((s) => s.id)).sort()
+        expect(w.wants.covered.map((s) => s.id).sort()).toEqual(storyIds(needs[i].coverage.covered))
+        expect(w.wants.notCovered.map((s) => s.id).sort()).toEqual(storyIds(needs[i].coverage.notCovered))
+      })
+    }
+  })
+
+  it('has no not covered wants for an issue that is not in parts (X-E and #1)', () => {
+    const one = crossWantCoverage(cross, xe, files).find((w) => w.issueNumber === 1)!
+    expect(one.inParts).toBe(false)
+    expect(one.wants.covered.length).toBeGreaterThan(0)
+    expect(one.wants.notCovered).toEqual([])
+  })
+})
+
+describe('crossRelatedConflicts (decision 103)', () => {
+  it('lists the conflicts with a covered story that do not list the code in their way out', () => {
+    for (const sol of cross.solutions) {
+      const related = crossRelatedConflicts(cross, sol, files)
+      for (const r of related) {
+        expect(r.conflict.wayOutSolutions).not.toContain(sol.code)
+        expect(r.covered.length).toBeGreaterThan(0)
+      }
+    }
+    // X-B is in the way out of both conflicts, so none is only related.
+    expect(crossRelatedConflicts(cross, findCrossSolution(cross, 'X-B')!, files)).toEqual([])
+    expect(crossRelatedConflicts(cross, xa, files).map((r) => r.conflict.id)).toEqual(['X-C2'])
   })
 })

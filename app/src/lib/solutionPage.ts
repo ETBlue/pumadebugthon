@@ -1,7 +1,7 @@
 // Lookups for the solution page #/solutions/<n>-<code> (design 3.12).
 // The paths are in entityPaths.ts (solutionPath).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
-import type { Conflict, Group, IssueFile, Solution } from '@/types'
+import type { Conflict, Group, IssueFile, Solution, SolutionPractice, Story } from '@/types'
 import { compareIds } from './ids'
 import { stripMarkdown } from './markdown'
 import {
@@ -200,4 +200,52 @@ export function stakeholderEntries(
     issues: [{ issueNumber, covered, notCovered }],
   })
   return { covered: coverage.covered.map(entry), notCovered: coverage.notCovered.map(entry) }
+}
+
+// ---------- 訴求 tab (decision 103) ----------
+// A want is the 我想要… cell of one story, so one want is one story. A want is
+// covered when the solution covers the need of its story.
+
+export interface WantCoverage {
+  /** The stories whose need the solution covers, in the order of step 3. */
+  covered: Story[]
+  /** The stories whose need the solution does not cover, in the order of step 3. */
+  notCovered: Story[]
+}
+
+/** The stories of the covered and the not covered needs. A story that is in
+ * neither list of needs is left out (a cross-issue solution lists only the
+ * covered needs of an issue that is not in its parts). Keeps the order of
+ * issue.stories. */
+export function wantsOfCoverage(issue: IssueFile, coverage: NeedCoverage): WantCoverage {
+  const ids = (needs: NeedItem[]) => new Set(needs.flatMap((n) => n.stories.map((s) => s.id)))
+  const covered = ids(coverage.covered)
+  const notCovered = ids(coverage.notCovered)
+  return {
+    covered: issue.stories.filter((s) => covered.has(s.id)),
+    notCovered: issue.stories.filter((s) => notCovered.has(s.id) && !covered.has(s.id)),
+  }
+}
+
+/** The 訴求 tab of an issue solution: every story of the issue, split by
+ * whether the solution covers its need (solutionNeedCoverage). */
+export function solutionWantCoverage(issue: IssueFile, solution: Solution): WantCoverage {
+  return wantsOfCoverage(issue, solutionNeedCoverage(issue, solution))
+}
+
+// ---------- 相關政策 tab (decisions 103 and 104) ----------
+
+export interface PracticeSides {
+  /** 國內: domestic is true. Every dependency row is here. File order. */
+  domestic: SolutionPractice[]
+  /** 國外: domestic is false. File order. */
+  foreign: SolutionPractice[]
+}
+
+/** The practices of a solution split into 國內 and 國外. Keeps the file order. */
+export function practiceSides(practices: SolutionPractice[]): PracticeSides {
+  return {
+    domestic: practices.filter((p) => p.domestic),
+    foreign: practices.filter((p) => !p.domestic),
+  }
 }

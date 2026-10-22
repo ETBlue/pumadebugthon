@@ -22,11 +22,15 @@ describe('activeNavItem', () => {
     ['/solutions/2-A', 'solutions'],
     ['/solutions/2-A/needs', 'solutions'],
     ['/solutions/X-A', 'solutions'],
+    // Decision 120: the space list and the space pages belong to 空間.
+    ['/spaces', 'spaces'],
+    ['/spaces/', 'spaces'],
+    ['/spaces/sidewalk', 'spaces'],
   ] as const)('%s is %s', (path, item) => {
     expect(activeNavItem(path)).toBe(item)
   })
 
-  it.each(['/', '', '/spaces/sidewalk', '/nope', '/issuesx', '/issuesx/2', '/stakeholdersx', '/solutionsx', '/about', '/wants', '/needs'])(
+  it.each(['/', '', '/spacesx', '/nope', '/issuesx', '/issuesx/2', '/stakeholdersx', '/solutionsx', '/about', '/wants', '/needs'])(
     '%s has no active item',
     (path) => {
       expect(activeNavItem(path)).toBeNull()
@@ -47,6 +51,7 @@ describe('isNavListPage', () => {
     expect(isNavListPage('/issues/2/solutions/A')).toBe(false)
     expect(isNavListPage('/solutions/2-A')).toBe(false)
     expect(isNavListPage('/')).toBe(false)
+    expect(isNavListPage('/spaces')).toBe(true)
     expect(isNavListPage('/spaces/sidewalk')).toBe(false)
   })
 })

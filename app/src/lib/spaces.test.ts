@@ -6,7 +6,8 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { IndexFile, IssueFile } from '@/types'
 import { compareIds } from './ids'
 import {
-  findSpaceType, issuesBySpace, otherSpaces, sameSpaceIssues, solutionsBySpace, stakeholdersBySpace, stakeholdersInSeveralIssues,
+  findSpaceType, issuesBySpace, otherSpaces, sameSpaceIssues, solutionsBySpace, spaceGroups, spaceStakeholderCount,
+  stakeholdersBySpace, stakeholdersInSeveralIssues,
 } from './spaces'
 
 const index = indexJson as IndexFile
@@ -145,5 +146,34 @@ describe('an issue with no space type (#9, 空間類型：無)', () => {
 
   it('has no other issues with the same space', () => {
     expect(sameSpaceIssues(index, 9)).toEqual([])
+  })
+})
+
+describe('spaceGroups (decision 120)', () => {
+  it('keeps the order in which the groups first appear, and the order of spaceTypes inside a group', () => {
+    const groups = spaceGroups(index.spaceTypes)
+    expect(groups.map((g) => g.group)).toEqual(['道路', '地下', '公共空間', '建築'])
+    expect(groups[0].spaces.map((s) => s.code)).toEqual(['sidewalk', 'arcade', 'bike-lane', 'scooter-lane', 'car-lane', 'bus-stop'])
+    expect(groups[2].spaces.map((s) => s.code)).toEqual(['park', 'mrt-exit', 'parking'])
+    expect(groups.flatMap((g) => g.spaces)).toHaveLength(13)
+  })
+
+  it('does not order by the number of space types in a group', () => {
+    const groups = spaceGroups([
+      { code: 'a', name: 'A', group: '少', description: '' },
+      { code: 'b', name: 'B', group: '多', description: '' },
+      { code: 'c', name: 'C', group: '多', description: '' },
+    ])
+    expect(groups.map((g) => g.group)).toEqual(['少', '多'])
+  })
+})
+
+describe('spaceStakeholderCount', () => {
+  it('counts a stakeholder in two issues once', () => {
+    expect(spaceStakeholderCount([
+      { issueNumber: 1, stakeholders: ['I06', 'O01'] },
+      { issueNumber: 2, stakeholders: ['I06'] },
+    ])).toBe(2)
+    expect(spaceStakeholderCount([])).toBe(0)
   })
 })

@@ -95,3 +95,30 @@ export function stakeholdersInSeveralIssues(list: SpaceStakeholders[]): SharedSp
     .map(([id, issues]) => ({ id, issues: [...issues].sort((a, b) => a - b) }))
     .sort((a, b) => compareIds(a.id, b.id))
 }
+
+export interface SpaceGroup {
+  /** The group name, for example 道路. */
+  group: string
+  /** The space types of the group, in the order of index.spaceTypes. */
+  spaces: SpaceType[]
+}
+
+/** #/spaces (decision 120): the space types by group. The groups are in the
+ * order they first appear in spaceTypes, and each group keeps the order of
+ * spaceTypes. A fixed order: never sorted by a count. */
+export function spaceGroups(spaceTypes: SpaceType[]): SpaceGroup[] {
+  const groups: SpaceGroup[] = []
+  for (const space of spaceTypes) {
+    const found = groups.find((g) => g.group === space.group)
+    if (found) found.spaces.push(space)
+    else groups.push({ group: space.group, spaces: [space] })
+  }
+  return groups
+}
+
+/** The number of different stakeholders in the result of stakeholdersBySpace.
+ * A stakeholder in two issues counts once. These are the people the space
+ * page lists under 「相關的利害關係人」 (decision 120). */
+export function spaceStakeholderCount(list: SpaceStakeholders[]): number {
+  return new Set(list.flatMap((entry) => entry.stakeholders)).size
+}

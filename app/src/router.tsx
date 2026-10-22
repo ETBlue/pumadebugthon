@@ -9,6 +9,7 @@ import RouteError from '@/pages/RouteError'
 import Solution from '@/pages/Solution'
 import Solutions from '@/pages/Solutions'
 import Space from '@/pages/Space'
+import Spaces from '@/pages/Spaces'
 import Stakeholder from '@/pages/Stakeholder'
 import StakeholderStory from '@/pages/StakeholderStory'
 import Stakeholders from '@/pages/Stakeholders'
@@ -46,6 +47,9 @@ export const router = createHashRouter([
       { path: 'solutions', element: <Solutions />, handle: { fullWidth: true } },
       // 2-A: a solution of an issue. X-A: a cross-issue solution (Task N11).
       { path: 'solutions/:slug/:tab?', element: <Solution />, handle: { fullWidth: true } },
+      // #/spaces has no sort, filter or search bar, so it is not full width:
+      // main gives the page column (decision 120).
+      { path: 'spaces', element: <Spaces /> },
       { path: 'spaces/:code', element: <Space />, handle: { fullWidth: true } },
       { path: 'about', element: <About /> },
       // Unknown pages, also the removed #/wants and #/needs (design 3.7).

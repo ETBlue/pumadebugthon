@@ -15,7 +15,6 @@ import { linkClass, proseClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
-import { backListPath } from '@/lib/backLink'
 import { solutionCells, stakeholderCells } from '@/lib/coverage'
 import { availableIssues, sharedForCard } from '@/lib/issues'
 import {
@@ -28,8 +27,8 @@ const tp = t.spacePage
 
 /** Space page (design 3.6): #/spaces/:code. City space is limited, so this
  * page lists what competes for the same space. The band has the back button
- * to the issue list (decision 111): space types belong to issues, and the
- * issue list can filter by space. */
+ * to the space list #/spaces (decision 120; before: the issue list, decision
+ * 111). #/spaces has no search, so the button goes to the plain list. */
 export default function Space() {
   const index = useIndex()
   const { code = '' } = useParams()
@@ -59,7 +58,7 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
   return (
     <>
       <PageTitle parts={[space.name]} />
-      <PageBand back={{ to: backListPath('issues'), label: t.backLink.issues }}>{space.name}</PageBand>
+      <PageBand back={{ to: '/spaces', label: t.backLink.spaces }}>{space.name}</PageBand>
       <PageBody>
         <dl className="space-y-1.5 text-sm">
           <Field label={tp.group}>{space.group}</Field>

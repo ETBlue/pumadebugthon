@@ -20,6 +20,7 @@ export const t = {
     nav: '主要導覽',
     issues: '議題',
     stakeholders: '利害關係人',
+    spaces: '空間',
     solutions: '解法',
   },
   /** The page footer (design 3.8). */
@@ -446,6 +447,7 @@ export const t = {
     issues: '回到議題列表',
     stakeholders: '回到利害關係人列表',
     solutions: '回到解法列表',
+    spaces: '回到空間列表',
     /** The story page: the visible text 「回到 I06」. */
     stakeholderShort: (id: string) => `回到 ${id}`,
     /** The story page: the accessible name, which starts with the visible text. */
@@ -648,6 +650,19 @@ export const t = {
     /** The issues of a stakeholder in 「在多個議題都出現的利害關係人」. */
     sharedIssues: '出現的議題',
     byIssueHeading: '各議題的利害關係人',
+  },
+  /** #/spaces (design 3.9, decision 120). */
+  spacesList: {
+    /** The hidden h1 and the page title. */
+    title: '空間',
+    issues: '議題',
+    stakeholders: '利害關係人',
+    solutions: '解法',
+    issuesValue: (n: number) => `${n} 個`,
+    stakeholdersValue: (n: number) => `${n} 位`,
+    solutionsValue: (n: number) => `${n} 個`,
+    /** A space type that no analyzed issue uses yet. */
+    noIssues: '尚無議題',
   },
   /** The page shown when a page breaks (the errorElement of the root route). */
   routeError: {

@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router'
 import { useCrossIssueOrNull, useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { issueCount, solutionCount, stakeholderCount } from '@/lib/counts'
+import { issueCount, solutionCount, spaceCount, stakeholderCount } from '@/lib/counts'
 import { activeNavItem, isNavListPage, type NavItem } from '@/lib/nav'
 import type { CrossIssueFile, IndexFile } from '@/types'
 import { ThemeToggle } from './ThemeToggle'
@@ -34,12 +34,13 @@ function Links({ index, cross }: { index: IndexFile | null; cross: CrossIssueFil
     <ul className="flex flex-wrap items-center gap-x-4 gap-y-0 text-sm md:gap-x-5">
       <li><CountLink item="issues" label={th.issues} count={index && issueCount(index)} /></li>
       <li><CountLink item="stakeholders" label={th.stakeholders} count={index && stakeholderCount(index)} /></li>
+      <li><CountLink item="spaces" label={th.spaces} count={index && spaceCount(index)} /></li>
       <li><CountLink item="solutions" label={th.solutions} count={index && solutionCount(index, cross)} /></li>
     </ul>
   )
 }
 
-/** The page header (design 3.7): app name, the three count links, and the
+/** The page header (design 3.7): app name, the four count links, and the
  * theme toggle. On a phone the links and the toggle wrap to a second row,
  * in the same order as the keyboard order. */
 export function Header({ container }: { container: string }) {

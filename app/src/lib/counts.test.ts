@@ -5,11 +5,17 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import type { CrossIssueFile, IndexFile, IssueFile, Need, Story } from '@/types'
-import { issueCount, needCount, solutionCount, stakeholderCount, wantCount } from './counts'
+import { issueCount, needCount, solutionCount, spaceCount, stakeholderCount, wantCount } from './counts'
 import { pickList } from './opinion'
 
 const index = indexJson as IndexFile
 const issues = [treesJson, trashcansJson, smokefreeJson] as IssueFile[]
+
+describe('spaceCount', () => {
+  it('counts every space type, also the unused ones (decision 120)', () => {
+    expect(spaceCount(index)).toBe(13)
+  })
+})
 
 describe('issueCount', () => {
   it('counts only the analyzed issues', () => {

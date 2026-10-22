@@ -18,6 +18,12 @@ export function stakeholderCount(index: IndexFile): number {
   return listedStakeholders(index.stakeholders).length
 }
 
+/** 空間: every space type in index.json, also the ones that no analyzed
+ * issue uses yet (decision 120). #/spaces lists all of them. */
+export function spaceCount(index: IndexFile): number {
+  return index.spaceTypes.length
+}
+
 /** 解法: the solutions of the analyzed issues, summed, plus the cross-issue
  * solutions when cross-issue.json exists (decision 51). The header link goes
  * to #/solutions, and that list shows both. */

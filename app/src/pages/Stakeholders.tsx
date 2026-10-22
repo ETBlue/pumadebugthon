@@ -10,7 +10,9 @@ import { StakeholderTree } from '@/components/StakeholderTree'
 import { linkClass, listBodyClass, proseClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { evidenceShare, sharePercent, stakeholderCells, stakeholderSolutionCoverage } from '@/lib/coverage'
+import {
+  evidenceShare, sharePercent, stakeholderCells, stakeholderSolutionCount, stakeholderSolutionCoverage,
+} from '@/lib/coverage'
 import { stakeholderTabPath } from '@/lib/entityPaths'
 import { rememberListSearch } from '@/lib/backLink'
 import { availableIssues } from '@/lib/issues'
@@ -247,10 +249,23 @@ function listFields(
 
 /** The tree view (design 3.23.11): the tree of the side menu with 組織 and
  * 個人 as h2 headings, side by side from md. Each stakeholder is a link to
- * its page with the 特別關注 badges. With a search, every group is open, so
- * every match is shown (decision 96). No count next to a stakeholder. */
+ * its page with the 特別關注 badges, then its counts 「議題 2・解法 3」
+ * (decision 117). 議題: the analyzed issues it is in, as 出現的議題 of the
+ * card view. 解法: stakeholderSolutionCount. While the issue files load,
+ * only 「議題 2」 shows. The counts never change the order. With a search,
+ * every group is open, so every match is shown (decision 96). */
 function TreeView({ index, ids, searching }: { index: IndexFile; ids: string[]; searching: boolean }) {
   const groups = useMemo(() => sideMenuTree(ids, index.stakeholders, index.pathLabels), [ids, index])
+  const available = useMemo(() => availableIssues(index).map((i) => i.number), [index])
+  const folders = useMemo(() => availableIssues(index).map((i) => i.folder), [index])
+  const issuesState = useIssues(folders)
+  const crossState = useCrossIssue()
+  // null while the issue files or the cross-issue file load. A cross-issue
+  // file that fails to load is left out, like a missing one (as CardView).
+  // When the issue files fail, only the issue count shows.
+  const solutionFiles = issuesState.status === 'ready' && crossState.status !== 'loading'
+    ? { issues: issuesState.data, cross: crossState.status === 'ready' ? crossState.data : null }
+    : null
   return (
     <section aria-label={tl.treeLabel}>
       <StakeholderTree
@@ -264,7 +279,13 @@ function TreeView({ index, ids, searching }: { index: IndexFile; ids: string[]; 
         extraOf={(s) => (
           <>
             {s.focus.length > 0 && ' '}
-            <FocusBadges stakeholder={s} />
+            <FocusBadges stakeholder={s} />{' '}
+            <span className="text-xs whitespace-nowrap text-muted-foreground">
+              {tl.treeCounts(
+                s.issues.filter((n) => available.includes(n)).length,
+                solutionFiles === null ? null : stakeholderSolutionCount(solutionFiles.issues, solutionFiles.cross, s.id),
+              )}
+            </span>
           </>
         )}
       />

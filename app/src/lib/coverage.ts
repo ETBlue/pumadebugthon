@@ -68,12 +68,21 @@ function crossCoveredNeeds(cross: CrossIssueFile | null): Set<string> {
   const out = new Set<string>()
   if (cross === null) return out
   for (const solution of cross.solutions) {
-    for (const r of [...solution.needs.must, ...solution.needs.shouldCould]) {
-      if (r.issue !== null) out.add(`${r.issue}:${r.id}`)
-    }
-    for (const g of crossNeedGroupsOf(cross, solution)) {
-      for (const m of g.needs) out.add(`${m.issue}:${m.id}`)
-    }
+    for (const key of crossSolutionNeedKeys(cross, solution)) out.add(key)
+  }
+  return out
+}
+
+/** The issue needs that one cross-issue solution covers, as
+ * "<issue>:<need ID>": in needs.must, needs.shouldCould, or an X-N group of
+ * needs.crossIssue (decision 60). */
+function crossSolutionNeedKeys(cross: CrossIssueFile, solution: CrossSolution): Set<string> {
+  const out = new Set<string>()
+  for (const r of [...solution.needs.must, ...solution.needs.shouldCould]) {
+    if (r.issue !== null) out.add(`${r.issue}:${r.id}`)
+  }
+  for (const g of crossNeedGroupsOf(cross, solution)) {
+    for (const m of g.needs) out.add(`${m.issue}:${m.id}`)
   }
   return out
 }
@@ -99,6 +108,29 @@ export function stakeholderSolutionCoverage(
     }
   }
   return { covered, total }
+}
+
+/** The number of solutions of a stakeholder (the tree view of
+ * #/stakeholders, decision 117): the solutions that cover at least one of
+ * its needs. Issue solutions are counted as in the 解法 tab label of the
+ * stakeholder page (stakeholderTabCounts): the different solutions per
+ * issue, summed over the issues. Then each cross-issue solution that covers
+ * at least one of its needs in the given issues adds 1, with the coverage
+ * rule of stakeholderSolutionCoverage. cross is null when cross-issue.json
+ * does not exist. A plain count, not a share. */
+export function stakeholderSolutionCount(issues: IssueFile[], cross: CrossIssueFile | null, id: string): number {
+  let count = 0
+  const needKeys = new Set<string>()
+  for (const issue of issues) {
+    const needs = needsOfStakeholder(issue, id)
+    count += new Set(needs.flatMap((n) => n.solutions.map((s) => s.solution.id))).size
+    for (const n of needs) needKeys.add(`${issue.number}:${n.need.id}`)
+  }
+  if (cross === null) return count
+  for (const solution of cross.solutions) {
+    if ([...crossSolutionNeedKeys(cross, solution)].some((key) => needKeys.has(key))) count += 1
+  }
+  return count
 }
 
 /** The share as a whole percent, with the rounding of evidencePercent. */

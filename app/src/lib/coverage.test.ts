@@ -9,9 +9,10 @@ import type { AvailableIssueSummary, CrossIssueFile, IndexFile, IssueFile } from
 import { basisTotal, evidencePercent } from './cellBasis'
 import {
   compareShares, crossSolutionCells, evidenceShare, sharePercent, solutionCells, stakeholderCells,
-  stakeholderSolutionCoverage,
+  stakeholderSolutionCount, stakeholderSolutionCoverage,
 } from './coverage'
 import { findCrossSolution } from './crossIssue'
+import { stakeholderTabCounts } from './tabCounts'
 
 const cross = crossJson as CrossIssueFile
 const index = indexJson as IndexFile
@@ -142,6 +143,46 @@ describe('stakeholderSolutionCoverage', () => {
 
   it('gives total 0 for a stakeholder with no need', () => {
     expect(stakeholderSolutionCoverage(files, cross, 'I999')).toEqual({ covered: 0, total: 0 })
+  })
+})
+
+describe('stakeholderSolutionCount', () => {
+  it('counts the issue solutions as the 解法 tab of the stakeholder page', () => {
+    // With no cross-issue file, it is the 解法 tab count.
+    for (const id of ['I06', 'O09', 'O12', 'I01']) {
+      expect(stakeholderSolutionCount(files, null, id)).toBe(stakeholderTabCounts(files, id).solutions)
+    }
+    expect(stakeholderSolutionCount(files, null, 'I06')).toBe(5)
+  })
+
+  it('adds each cross-issue solution that covers one of its needs once', () => {
+    // I06: 5 issue solutions and 2 cross-issue solutions.
+    expect(stakeholderSolutionCount(files, cross, 'I06')).toBe(7)
+    // O09: 1 issue solution and no cross-issue solution.
+    expect(stakeholderSolutionCount(files, cross, 'O09')).toBe(1)
+  })
+
+  it('counts a cross-issue solution that covers two of its needs once', () => {
+    const issue: IssueFile = { ...trashcans, solutions: [] }
+    // A stakeholder with 2 or more needs in #2.
+    const keysOf = (id: string) => [...new Set(issue.stories.filter((s) => s.stakeholder === id).map((s) => s.needGroup ?? s.id))]
+    const id = issue.stories.map((s) => s.stakeholder).find((x) => keysOf(x).length > 1)!
+    expect(id).toBeDefined()
+    const keys = keysOf(id)
+    const fakeCross: CrossIssueFile = {
+      ...cross,
+      needGroups: [],
+      solutions: [{
+        ...cross.solutions[0],
+        needs: { must: keys.map((id) => ({ issue: 2, id })), shouldCould: [], crossIssue: [] },
+      }],
+    }
+    expect(stakeholderSolutionCount([issue], null, id)).toBe(0)
+    expect(stakeholderSolutionCount([issue], fakeCross, id)).toBe(1)
+  })
+
+  it('gives 0 for a stakeholder with no need', () => {
+    expect(stakeholderSolutionCount(files, cross, 'I999')).toBe(0)
   })
 })
 

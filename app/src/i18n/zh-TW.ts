@@ -944,5 +944,10 @@ export const t = {
     updated: '更新日期',
     /** The name of the tree in tree view. */
     treeLabel: '利害關係人分類',
+    /** The counts after a stakeholder in tree view (decision 117):
+     * 「議題 2・解法 3」. solutions is null while the issue files load, so
+     * only 「議題 2」 shows, never a wrong 0. */
+    treeCounts: (issues: number, solutions: number | null) =>
+      solutions === null ? `議題 ${issues}` : `議題 ${issues}・解法 ${solutions}`,
   },
 } as const

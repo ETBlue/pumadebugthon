@@ -1,17 +1,20 @@
 import { useMemo } from 'react'
 import { Link, useParams } from 'react-router'
+import { BasisField } from '@/components/BasisField'
 import { Field } from '@/components/Field'
 import { LabelledSection } from '@/components/LabelledSection'
 import { AlsoInLine } from '@/components/issue/AlsoIn'
 import { IssueCard } from '@/components/IssueCard'
+import { IssueTitleLinks } from '@/components/IssueTitleLinks'
 import { LoadState } from '@/components/LoadState'
-import { SolutionCard } from '@/components/SolutionCard'
+import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { StakeholderCard } from '@/components/StakeholderCard'
 import { linkClass, proseClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
+import { solutionCells, stakeholderCells } from '@/lib/coverage'
 import { availableIssues, sharedForCard } from '@/lib/issues'
 import {
   findSpaceType, issuesBySpace, otherSpaces, solutionsBySpace, stakeholdersBySpace, stakeholdersInSeveralIssues,
@@ -122,6 +125,9 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                             solution={sol}
                             issueNumber={issue.number}
                           >
+                            <dl className="mt-2 text-sm">
+                              <CoveredBasisField basis={{ cells: solutionCells(issue, sol), percent: null }} />
+                            </dl>
                             {others.length > 0 && (
                               <div className="mt-1 flex flex-wrap gap-x-2 text-sm">
                                 <span className="text-muted-foreground">{tp.otherSpaces}</span>
@@ -135,6 +141,10 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                 </ul>
               </LabelledSection>
             ))
+        )}
+        {/* The 資料根據 explanation, once under the list (decision 112). */}
+        {solutions.length > 0 && (
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>
         )}
       </LabelledSection>
 
@@ -156,7 +166,14 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                   {shared.map((s) => (
                     <li key={s.id}>
                       <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, s.id)}>
-                        <p className="mt-1 text-sm text-muted-foreground">{tp.sharedIssues(s.issues)}</p>
+                        {/* The issues with their titles, one per line, and the
+                            資料根據 of the stakeholder in those issues (decision 112). */}
+                        <dl className="mt-1 space-y-1 text-sm">
+                          <Field label={tp.sharedIssues}>
+                            <IssueTitleLinks numbers={s.issues} titles={index.issues} to={(n) => `/issues/${n}`} />
+                          </Field>
+                          <BasisField cells={stakeholderCells(issues.filter((i) => s.issues.includes(i.number)), s.id)} />
+                        </dl>
                       </StakeholderCard>
                     </li>
                   ))}
@@ -173,12 +190,18 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                     <li key={id}>
                       <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
                         <AlsoInLine index={index} id={id} issueNumber={entry.issueNumber} available={available} />
+                        {/* 資料根據 of the stakeholder in this issue (decision 112). */}
+                        <dl className="mt-1 text-sm">
+                          <BasisField cells={stakeholderCells(issues.filter((i) => i.number === entry.issueNumber), id)} />
+                        </dl>
                       </StakeholderCard>
                     </li>
                   ))}
                 </ul>
               </LabelledSection>
             ))}
+            {/* The 資料根據 explanation, once under the lists (decision 112). */}
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('利害關係人')}</p>
           </>
         )}
       </LabelledSection>

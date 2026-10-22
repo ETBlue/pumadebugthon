@@ -1,4 +1,4 @@
-import { availableIssues, sharedStakeholders } from '@/lib/issues'
+import { sharedForCard } from '@/lib/issues'
 import { evidenceShare } from '@/lib/coverage'
 import type { IndexFile, IssueSummary } from '@/types'
 import { IssueCard } from './IssueCard'
@@ -13,7 +13,6 @@ export function IssueList({ index, issues, headingLevel, showShare = false }: {
   headingLevel: 2 | 3
   showShare?: boolean
 }) {
-  const multi = availableIssues(index).length >= 2
   return (
     <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
       {issues.map((issue) => (
@@ -22,7 +21,7 @@ export function IssueList({ index, issues, headingLevel, showShare = false }: {
             variant="detailed"
             issue={issue}
             spaceTypes={index.spaceTypes}
-            shared={multi && issue.available ? sharedStakeholders(index.stakeholders, issue.number) : null}
+            shared={sharedForCard(index, issue)}
             share={showShare && issue.available ? evidenceShare(issue.counts.cells) : null}
             headingLevel={headingLevel}
           />

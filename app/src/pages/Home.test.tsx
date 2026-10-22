@@ -12,8 +12,9 @@ import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { t } from '@/i18n/zh-TW'
 import { basisTextParts } from '@/lib/cellBasis'
-import { stakeholderCells } from '@/lib/coverage'
-import { recentStakeholders } from '@/lib/recent'
+import { crossSolutionCells, solutionCells, stakeholderCells } from '@/lib/coverage'
+import { issueNumberTitle, sharedForCard } from '@/lib/issues'
+import { recentIssues, recentSolutionItems, recentStakeholders } from '@/lib/recent'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import Home from './Home'
 
@@ -98,5 +99,67 @@ describe('the home page 資料根據', () => {
     // The cards and the explanation are already there.
     expect(cards(html)).toHaveLength(recentStakeholders(index.stakeholders, 5).length)
     expect(html).toContain(t.basis.listNote('利害關係人'))
+  })
+})
+
+describe('the home page issue titles on cards (decision 112)', () => {
+  it('shows each issue of a stakeholder card as 「#n 標題」, one link per line', () => {
+    const shown = cards(block(render(), 'recent-stakeholders'))
+    recentStakeholders(index.stakeholders, 5).forEach((s, i) => {
+      for (const n of s.issues) {
+        expect(shown[i]).toContain(`<li class="break-words"><a class="text-link`)
+        expect(shown[i]).toContain(`>${issueNumberTitle(index.issues, n)}</a></li>`)
+      }
+    })
+  })
+
+  it('shows the other issues of 跨議題共用的利害關係人 with their titles', () => {
+    const shown = cards(block(render(), 'recent-issues'))
+    recentIssues(index.issues, 5).forEach((issue, i) => {
+      const shared = sharedForCard(index, issue)
+      if (shared && shared.titles.length > 0) {
+        expect(shown[i]).toContain(t.issueCard.sharedValue(shared.count, shared.titles))
+        expect(shared.titles[0]).toMatch(/^#\d+ \S/)
+      }
+    })
+  })
+
+  it('shows the issue of an issue solution, and the issues of a cross-issue solution, with titles', () => {
+    const html = block(render(), 'recent-solutions')
+    const items = recentSolutionItems(issueFiles, crossJson as CrossIssueFile, 5)
+    const lis = html.split('<li>').slice(1)
+    expect(lis).toHaveLength(items.length)
+    items.forEach((item, i) => {
+      if (item.kind === 'cross') {
+        for (const part of item.solution.parts) expect(lis[i]).toContain(issueNumberTitle(index.issues, part.issue))
+      } else {
+        expect(lis[i]).toContain(`>${t.home.solutionIssue}</dt>`)
+        expect(lis[i]).toContain(issueNumberTitle(index.issues, item.issueNumber))
+      }
+    })
+  })
+})
+
+describe('the home page solution cards 資料根據 (decision 112)', () => {
+  it('shows 涵蓋需求的資料根據 (counts and bar, no share) on each solution card', () => {
+    const html = block(render(), 'recent-solutions')
+    const items = recentSolutionItems(issueFiles, crossJson as CrossIssueFile, 5)
+    const lis = html.split('<li>').slice(1)
+    items.forEach((item, i) => {
+      const cells = item.kind === 'cross'
+        ? crossSolutionCells(crossJson as CrossIssueFile, item.solution, issueFiles)
+        : solutionCells(issueFiles.find((f) => f.number === item.issueNumber)!, item.solution)
+      expect(lis[i]).toContain(`>${t.solutionsList.basis}</dt>`)
+      const parts = basisTextParts(cells)
+      if (parts.length === 0) {
+        expect(lis[i]).toContain(t.solutionsList.basisNone)
+      } else {
+        for (const p of parts) expect(lis[i]).toContain(`${t.basis.parts[p.key]}</span> ${p.count}`)
+        expect(lis[i]).toContain(BAR)
+      }
+      // No share: the summary text may have a 「%」, so look for the share text.
+      expect(lis[i]).not.toContain('實證＋AI整理')
+    })
+    expect(html).toContain(t.basis.listNote('解法'))
   })
 })

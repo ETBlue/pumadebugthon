@@ -132,7 +132,8 @@ export const t = {
     added: '加入日期',
     solutionAdded: '新增日期',
     issues: '出現的議題',
-    issueLink: (n: number) => `#${n}`,
+    /** The issue of a solution card: 「議題 #2 找回消失的垃圾桶」 (decision 112). */
+    solutionIssue: '議題',
   },
   issueCard: {
     numberTitle: (n: number, title: string) => `#${n} ${title}`,
@@ -146,8 +147,9 @@ export const t = {
     solutions: '解法',
     itemsValue: (n: number) => `${n} 個`,
     shared: '跨議題共用的利害關係人',
-    sharedValue: (n: number, issues: number[]) =>
-      issues.length > 0 ? `${n} 位，也出現在 ${issues.map((i) => `#${i}`).join('、')}` : `${n} 位`,
+    /** titles: 「#1 把三千棵樹種回來」 (decision 112). */
+    sharedValue: (n: number, titles: string[]) =>
+      titles.length > 0 ? `${n} 位，也出現在 ${titles.join('、')}` : `${n} 位`,
     /** 新增日期 on the detailed card (design 3.23.9). */
     added: '新增日期',
     updated: '更新日期',
@@ -171,7 +173,6 @@ export const t = {
   /** StakeholderCard (design 3.9). */
   stakeholderCard: {
     focusLabel: '特別關注：',
-    issueEntry: (n: number) => `#${n}`,
   },
   issue: {
     notFoundTitle: '找不到這個議題',
@@ -364,7 +365,8 @@ export const t = {
     notMentionedHeading: '這個意見沒有直接提到的人',
     notMentionedPrompt: '你的意見會影響他們嗎？',
     notMentionedNone: '這個議題的利害關係人都已經在上面出現。',
-    alsoIn: (issues: number[]) => `也出現在 ${issues.map((n) => `#${n}`).join('、')}`,
+    /** titles: 「#1 把三千棵樹種回來」 (decision 112). */
+    alsoIn: (titles: string[]) => `也出現在 ${titles.join('、')}`,
     /** Accessible name of the 「也出現在」 link. The visible text is the same
      * for many stakeholders, so the name adds who it is and the issue titles.
      * Each item of issues is 「#1 把三千棵樹種回來」. */
@@ -624,7 +626,8 @@ export const t = {
     sharedHeading: '在多個議題都出現的利害關係人',
     sharedIntro: '同樣的人會同時受到好幾個議題影響。',
     sharedNone: '目前沒有在多個議題都出現的利害關係人。',
-    sharedIssues: (issues: number[]) => issues.map((n) => `#${n}`).join('、'),
+    /** The issues of a stakeholder in 「在多個議題都出現的利害關係人」. */
+    sharedIssues: '出現的議題',
     byIssueHeading: '各議題的利害關係人',
   },
   /** The page shown when a page breaks (the errorElement of the root route). */
@@ -894,7 +897,7 @@ export const t = {
     crossBadge: '跨議題解法',
     /** A cross-issue solution that also covers needs of issues outside its
      * parts (X-E): 「也涵蓋 #1 的需求」. */
-    alsoCovers: (numbers: number[]) => `也涵蓋 ${numbers.map((n) => `#${n}`).join('、')} 的需求`,
+    alsoCovers: (titles: string[]) => `也涵蓋 ${titles.join('、')} 的需求`,
     basis: '涵蓋需求的資料根據',
     basisNone: '沒有涵蓋的需求',
     /** Next to the counts while 資料根據比例 is on. */
@@ -924,8 +927,6 @@ export const t = {
     /** The fields of the cards (design 3.23.9). */
     path: '分類路徑',
     issues: '出現的議題',
-    issueLink: (n: number) => `#${n}`,
-    issueSeparator: '、',
     basis: '資料根據（各議題合計）',
     /** Next to the counts while 資料根據比例 is on. */
     evidencePercent: (p: number) => `實證＋AI整理 ${p}%`,

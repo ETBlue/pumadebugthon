@@ -148,7 +148,13 @@ export function CrossStakeholdersTab({ data, index, issues, solution }: {
   return (
     <>
       <DataBasisToggle className="mb-6" />
-      <StakeholderCoverageParts index={index} covered={entries.covered} notCovered={entries.notCovered} showIssue />
+      <StakeholderCoverageParts
+        index={index}
+        covered={entries.covered}
+        notCovered={entries.notCovered}
+        showIssue
+        basisIssues={issues}
+      />
     </>
   )
 }

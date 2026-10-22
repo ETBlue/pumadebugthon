@@ -237,6 +237,7 @@ function listFields(
   return {
     path: [root, ...trail].join(' › '),
     issues: s.issues.filter((n) => available.includes(n)).sort((a, b) => a - b),
+    issueTitles: index.issues,
     cells,
     evidencePercent: share === null ? null : sharePercent(share),
     needs,

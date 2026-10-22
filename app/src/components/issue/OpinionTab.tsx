@@ -1,14 +1,16 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router'
+import { BasisField } from '@/components/BasisField'
 import { CellText } from '@/components/CellText'
 import { PickLabel } from '@/components/PickLabel'
-import { SolutionCard } from '@/components/SolutionCard'
+import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { StakeholderCard } from '@/components/StakeholderCard'
 import { StoryCard } from '@/components/StoryCard'
 import { WantItem } from '@/components/WantItem'
 import { Input } from '@/components/ui/input'
 import { proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
+import { solutionCells, stakeholderCells } from '@/lib/coverage'
 import { dataBasedCount, isDataBasisFilterOn } from '@/lib/dataBasis'
 import { filterPickList, opinionResult, type PickItem } from '@/lib/opinion'
 import { findStakeholder, stakeholderName } from '@/lib/stakeholders'
@@ -199,13 +201,22 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
         {result.solutions.length === 0 ? (
           <p className="mt-2">{to.solutionsNone}</p>
         ) : (
-          <ul className="mt-2 space-y-3">
-            {result.solutions.map((sol) => (
-              <li key={sol.id}>
-                <SolutionCard variant="compact" solution={sol} issueNumber={n} />
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="mt-2 space-y-3">
+              {result.solutions.map((sol) => (
+                <li key={sol.id}>
+                  <SolutionCard variant="compact" solution={sol} issueNumber={n}>
+                    {/* The cells of the needs it covers (decision 112). */}
+                    <dl className="mt-2 text-sm">
+                      <CoveredBasisField basis={{ cells: solutionCells(issue, sol), percent: null }} />
+                    </dl>
+                  </SolutionCard>
+                </li>
+              ))}
+            </ul>
+            {/* The 資料根據 explanation, once under the list (decision 112). */}
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>
+          </>
         )}
       </section>
 
@@ -221,10 +232,16 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
                 <li key={id}>
                   <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
                     <AlsoInLine index={index} id={id} issueNumber={n} available={available} />
+                    {/* 資料根據 of the stakeholder in this issue (decision 112). */}
+                    <dl className="mt-1 text-sm">
+                      <BasisField cells={stakeholderCells([issue], id)} />
+                    </dl>
                   </StakeholderCard>
                 </li>
               ))}
             </ul>
+            {/* The 資料根據 explanation, once under the list (decision 112). */}
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('利害關係人')}</p>
           </>
         )}
       </section>

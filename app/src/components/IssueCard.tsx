@@ -5,7 +5,7 @@ import { CellBasis } from './CellBasis'
 import { Field } from './Field'
 import { sharePercent, type Share } from '@/lib/coverage'
 import { focusGapsText } from '@/lib/focusGroups'
-import { isParticipantIssue, type Shared } from '@/lib/issues'
+import { isParticipantIssue, type SharedForCard } from '@/lib/issues'
 import { CROSS_STAKEHOLDERS_PATH } from '@/lib/listParams'
 import type { IssueSummary, SpaceType } from '@/types'
 import { SpaceLinks } from './SpaceLinks'
@@ -24,13 +24,13 @@ export type IssueCardProps =
       variant: 'detailed'
       issue: IssueSummary
       spaceTypes: SpaceType[]
-      shared: Shared | null
+      shared: SharedForCard | null
       headingLevel?: 2 | 3
       /** The 資料根據比例 share, shown as a percent next to the counts. Only
        * while the 資料根據比例 sort is on (design 3.23.3). */
       share?: Share | null
     }
-  | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: Shared | null }
+  | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: SharedForCard | null }
 
 /** One issue in a list (design 3.9). Two variants:
  * - detailed: a box with all the counts, 資料根據, 特別關注族群 (the groups not
@@ -50,11 +50,12 @@ export function IssueCard(props: IssueCardProps) {
       <SpaceLinks spaceTypes={spaceTypes} codes={issue.spaces} />
     </Field>
   )
-  // The same text and link in both variants (decision 72).
+  // The same text and link in both variants (decision 72). The other
+  // issues show their titles (decision 112).
   const sharedField = props.shared && (
     <Field label={tc.shared}>
       <Link to={CROSS_STAKEHOLDERS_PATH} className={linkClass}>
-        {tc.sharedValue(props.shared.count, props.shared.issues)}
+        {tc.sharedValue(props.shared.count, props.shared.titles)}
       </Link>
     </Field>
   )

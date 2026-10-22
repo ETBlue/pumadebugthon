@@ -17,15 +17,15 @@ import { ToggleCheck } from './ToggleCheck'
 const ts = t.stakeholderList
 
 /** One stakeholder in the tree: a detailed card (design 3.9). */
-function StakeholderRow({ stakeholder: s, counts }: { stakeholder: Stakeholder; counts: StoryCountsByStakeholder }) {
+function StakeholderRow({ stakeholder: s, counts, issues }: { stakeholder: Stakeholder; counts: StoryCountsByStakeholder; issues: IssueFile[] }) {
   return (
     <li>
-      <StakeholderCard variant="detailed" stakeholder={s} entries={counts.get(s.id) ?? []} />
+      <StakeholderCard variant="detailed" stakeholder={s} entries={counts.get(s.id) ?? []} issueTitles={issues} />
     </li>
   )
 }
 
-function TreeLevel({ node, depth, openAll, counts }: { node: TreeNode; depth: number; openAll: boolean; counts: StoryCountsByStakeholder }) {
+function TreeLevel({ node, depth, openAll, counts, issues }: { node: TreeNode; depth: number; openAll: boolean; counts: StoryCountsByStakeholder; issues: IssueFile[] }) {
   return (
     <li>
       <Collapsible defaultOpen={openAll || depth === 0}>
@@ -36,9 +36,9 @@ function TreeLevel({ node, depth, openAll, counts }: { node: TreeNode; depth: nu
         </CollapsibleTrigger>
         <CollapsibleContent>
           <ul className="ml-3 space-y-2 border-l pb-2 pl-3 md:ml-4 md:pl-4">
-            {node.stakeholders.map((s) => <StakeholderRow key={s.id} stakeholder={s} counts={counts} />)}
+            {node.stakeholders.map((s) => <StakeholderRow key={s.id} stakeholder={s} counts={counts} issues={issues} />)}
             {node.children.map((c) => (
-              <TreeLevel key={c.path} node={c} depth={depth + 1} openAll={openAll} counts={counts} />
+              <TreeLevel key={c.path} node={c} depth={depth + 1} openAll={openAll} counts={counts} issues={issues} />
             ))}
           </ul>
         </CollapsibleContent>
@@ -126,7 +126,7 @@ export function StakeholderList(props: StakeholderListProps) {
           <H className="text-lg font-semibold">{ts.organizations}</H>
           <ul key={treeKey} className="mt-1">
             {tree.organizations.map((n) => (
-              <TreeLevel key={n.path} node={n} depth={0} openAll={filtering} counts={counts} />
+              <TreeLevel key={n.path} node={n} depth={0} openAll={filtering} counts={counts} issues={issues} />
             ))}
           </ul>
         </section>
@@ -142,7 +142,7 @@ export function StakeholderList(props: StakeholderListProps) {
                 <span className="text-sm font-normal text-muted-foreground">{ts.storyTotal(n.storyTotal)}</span>
               </H2>
               <ul className="mt-2 ml-1 space-y-2 border-l pl-3 md:pl-4">
-                {n.stakeholders.map((s) => <StakeholderRow key={s.id} stakeholder={s} counts={counts} />)}
+                {n.stakeholders.map((s) => <StakeholderRow key={s.id} stakeholder={s} counts={counts} issues={issues} />)}
               </ul>
             </div>
           ))}

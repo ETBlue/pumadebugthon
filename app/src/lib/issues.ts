@@ -1,5 +1,6 @@
 // Issue list lookups for the home page (design 3.1).
 // Order is always by issue number or by file order. Nothing here sorts by a count.
+import { t } from '@/i18n/zh-TW'
 import type { AvailableIssueSummary, IndexFile, IssueSummary, SpaceType, Stakeholder } from '@/types'
 import { isListed, listedStakeholders } from './stakeholders'
 
@@ -33,12 +34,30 @@ export function sharedStakeholders(stakeholders: Stakeholder[], issueNumber: num
   return { count: shared.length, issues: [...others].sort((a, b) => a - b) }
 }
 
+/** The issues that a card names, with their titles: index.issues, or the
+ * loaded issue files. Only number and title are used. */
+export type IssueTitles = readonly { number: number; title: string }[]
+
+/** 「#1 把三千棵樹種回來」 for issue n (decision 112). Only 「#1」 when the
+ * issue is not in issues. */
+export function issueNumberTitle(issues: IssueTitles, n: number): string {
+  const issue = issues.find((i) => i.number === n)
+  return issue ? t.issueCard.numberTitle(n, issue.title) : `#${n}`
+}
+
+/** Shared with the other issues as 「#1 把三千棵樹種回來」, for the card text
+ * (decision 112). */
+export interface SharedForCard extends Shared {
+  titles: string[]
+}
+
 /** The 跨議題共用的利害關係人 of one issue card (design 3.9, decision 72).
  * Null when the issue is 製作中 or fewer than 2 issues are analyzed; then
  * the card leaves the field out. */
-export function sharedForCard(index: IndexFile, issue: IssueSummary): Shared | null {
+export function sharedForCard(index: IndexFile, issue: IssueSummary): SharedForCard | null {
   if (!issue.available || availableIssues(index).length < 2) return null
-  return sharedStakeholders(index.stakeholders, issue.number)
+  const shared = sharedStakeholders(index.stakeholders, issue.number)
+  return { ...shared, titles: shared.issues.map((n) => issueNumberTitle(index.issues, n)) }
 }
 
 /** The space types that at least one analyzed issue uses, in the order of

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import type { IndexFile, IssueSummary, Stakeholder } from '@/types'
 import {
-  availableIssues, focusOptions, isParticipantIssue, sharedForCard, sharedStakeholders, spaceTypeNames, usedSpaceTypes,
+  availableIssues, focusOptions, isParticipantIssue, issueNumberTitle, sharedForCard, sharedStakeholders, spaceTypeNames, usedSpaceTypes,
 } from './issues'
 
 const index = indexJson as IndexFile
@@ -26,12 +26,31 @@ describe('isParticipantIssue', () => {
   })
 })
 
+describe('issueNumberTitle', () => {
+  it('gives 「#n 標題」 from the issue list (decision 112)', () => {
+    expect(issueNumberTitle(index.issues, 2)).toBe('#2 找回消失的垃圾桶')
+    // An issue that is 製作中 still has its title.
+    expect(issueNumberTitle(index.issues, 3)).toBe(`#3 ${index.issues.find((i) => i.number === 3)!.title}`)
+  })
+
+  it('gives only 「#n」 when the issue is not in the list', () => {
+    expect(issueNumberTitle(index.issues, 99)).toBe('#99')
+    expect(issueNumberTitle([], 1)).toBe('#1')
+  })
+})
+
 describe('sharedForCard', () => {
   const byNumber = (n: number) => index.issues.find((i) => i.number === n)!
 
   it('gives the shared stakeholders of an analyzed issue when 2 or more issues are analyzed', () => {
-    expect(sharedForCard(index, byNumber(2))).toEqual({ count: 15, issues: [1, 8, 9] })
-    expect(sharedForCard(index, byNumber(9))).toEqual({ count: 6, issues: [1, 2, 8] })
+    expect(sharedForCard(index, byNumber(2))).toMatchObject({ count: 15, issues: [1, 8, 9] })
+    expect(sharedForCard(index, byNumber(9))).toMatchObject({ count: 6, issues: [1, 2, 8] })
+  })
+
+  it('gives the other issues with their titles, for the card text (decision 112)', () => {
+    expect(sharedForCard(index, byNumber(2))?.titles).toEqual([
+      '#1 把三千棵樹種回來', '#8 無菸城市', '#9 將產品探索技巧運用到政策前期研究',
+    ])
   })
 
   it('is null for an issue that is 製作中', () => {

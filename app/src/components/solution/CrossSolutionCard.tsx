@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Field } from '@/components/Field'
+import { IssueTitleLinks } from '@/components/IssueTitleLinks'
 import { Markdown } from '@/components/Markdown'
 import { CoveredBasisField, SolutionDateFields, type CoveredBasis } from '@/components/SolutionCard'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +13,7 @@ import { crossIssueNumbers } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { crossSolutionPath } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
+import { issueNumberTitle, type IssueTitles } from '@/lib/issues'
 import type { CrossSolution, SpaceType } from '@/types'
 
 const tx = t.crossIssue
@@ -34,10 +36,20 @@ export function CrossSolutionLink({ solution: sol }: { solution: CrossSolution }
 }
 
 /** The issues of a cross-issue solution as links: 「#1、#2、#8」. The links
- * keep the 「只看有資料根據」 setting. */
-export function CrossIssueLinks({ solution }: { solution: CrossSolution }) {
+ * keep the 「只看有資料根據」 setting. With titles (on a card, decision 112):
+ * 「#1 把三千棵樹種回來」, one issue per line. */
+export function CrossIssueLinks({ solution, titles }: { solution: CrossSolution; titles?: IssueTitles }) {
   const [params] = useSearchParams()
   const search = dataBasisFilterSearch(params)
+  if (titles) {
+    return (
+      <IssueTitleLinks
+        numbers={crossIssueNumbers(solution)}
+        titles={titles}
+        to={(n) => ({ pathname: tabPath(n, 'overview'), search })}
+      />
+    )
+  }
   return (
     <>
       {crossIssueNumbers(solution).map((n, i) => (
@@ -56,8 +68,11 @@ export function CrossIssueLinks({ solution }: { solution: CrossSolution }) {
  * covers needs of issues outside its parts, the space types, 新增日期,
  * 更新日期, the number of needs it covers and 「涵蓋需求的資料根據」.
  * children come last (for example the date on the home page). */
-export function CrossSolutionCard({ solution: sol, detailed, children }: {
+export function CrossSolutionCard({ solution: sol, issueTitles, detailed, children }: {
   solution: CrossSolution
+  /** The titles of the issues (index.issues), for 「#1 把三千棵樹種回來」
+   * (decision 112). */
+  issueTitles: IssueTitles
   /** For #/solutions: spaceTypes for the links, the covered need count,
    * the cells of the covered needs (with the percent while 資料根據比例 is
    * on), and the issues of crossAlsoCovers. */
@@ -75,9 +90,9 @@ export function CrossSolutionCard({ solution: sol, detailed, children }: {
       <p className="mt-1 text-sm"><Markdown text={sol.summary} /></p>
       <dl className="mt-2 space-y-1 text-sm">
         <Field label={tx.cardIssues}>
-          <CrossIssueLinks solution={sol} />
+          <CrossIssueLinks solution={sol} titles={issueTitles} />
           {detailed && detailed.alsoCovers.length > 0 && (
-            <span className="block">{ts.alsoCovers(detailed.alsoCovers)}</span>
+            <span className="block">{ts.alsoCovers(detailed.alsoCovers.map((n) => issueNumberTitle(issueTitles, n)))}</span>
           )}
         </Field>
         {detailed && sol.spaces.length > 0 && (

@@ -1,7 +1,8 @@
 import { DataBasisEmpty, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { NeedItem, NeedSummaryLink } from '@/components/NeedItem'
-import { SolutionCard } from '@/components/SolutionCard'
+import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { t } from '@/i18n/zh-TW'
+import { solutionCells } from '@/lib/coverage'
 import { needsOfStakeholder } from '@/lib/needs'
 import { stakeholderSolutionsView } from '@/lib/stakeholderPage'
 import { Empty, IssueSection, Part, type StakeholderTabProps } from './IssueSection'
@@ -13,6 +14,8 @@ const tp = t.stakeholderPage
  * The same need key can show under two issues, so the items get no focus ID. */
 export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
   const [dataBasedOnly] = useDataBasisFilter()
+  // The 資料根據 note is shown once, when some issue shows a solution card.
+  const anySolution = issues.some((issue) => stakeholderSolutionsView(issue, id, dataBasedOnly).solutions.length > 0)
   return (
     <div className="space-y-10">
       {issues.map((issue) => {
@@ -41,6 +44,10 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
                       {v.solutions.map(({ solution, needs }) => (
                         <li key={solution.id}>
                           <SolutionCard variant="compact" solution={solution} issueNumber={issue.number}>
+                            {/* The cells of all the needs it covers (decision 112). */}
+                            <dl className="mt-2 text-sm">
+                              <CoveredBasisField basis={{ cells: solutionCells(issue, solution), percent: null }} />
+                            </dl>
                             <div className="mt-2 text-sm">
                               <p className="text-muted-foreground">{tp.coveredNeeds}</p>
                               <ul className="mt-1 space-y-1">
@@ -83,6 +90,8 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
           </IssueSection>
         )
       })}
+      {/* The 資料根據 explanation, once under the lists (decision 112). */}
+      {anySolution && <p className="text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>}
     </div>
   )
 }

@@ -263,6 +263,7 @@ function SolutionItemCard({ item, index, ctx, shareOn }: {
     return (
       <CrossSolutionCard
         solution={sol}
+        issueTitles={index.issues}
         detailed={{
           spaceTypes: index.spaceTypes,
           coveredNeeds: issuesOfCross(sol, ctx.issues).length === 0 ? null : crossSolutionTabCounts(cross, sol, ctx.issues).needs.covered,

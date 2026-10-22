@@ -3,10 +3,12 @@ import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { t } from '@/i18n/zh-TW'
 import { issueFocusPath } from '@/lib/entityPaths'
+import { issueNumberTitle, type IssueTitles } from '@/lib/issues'
 import type { StakeholderIssueStories } from '@/lib/stakeholders'
 import type { CellCounts, Stakeholder } from '@/types'
 import { CellBasis } from './CellBasis'
 import { Field } from './Field'
+import { IssueTitleLinks } from './IssueTitleLinks'
 import { PriorityCounts } from './PriorityCounts'
 import { linkClass } from './styles'
 
@@ -20,6 +22,9 @@ export interface StakeholderListFields {
   path: string
   /** The analyzed issues of the stakeholder, by number. */
   issues: number[]
+  /** The titles of the issues (index.issues), for 「#1 把三千棵樹種回來」
+   * (decision 112). */
+  issueTitles: IssueTitles
   /** The cells of all its stories, in every analyzed issue (stakeholderCells). */
   cells: CellCounts
   /** 「實證＋AI整理 8%」 next to the counts, only while 資料根據比例 is on.
@@ -48,7 +53,14 @@ interface CommonProps {
  * - compact: short lists (home page, solution page, space page, opinion
  *   check). */
 export type StakeholderCardProps =
-  | (CommonProps & { variant: 'detailed'; entries: StakeholderIssueStories[]; listFields?: undefined })
+  | (CommonProps & {
+      variant: 'detailed'
+      entries: StakeholderIssueStories[]
+      /** The titles of the issues of entries, for 「#1 把三千棵樹種回來」
+       * (decision 112). Without them, only 「#1」. */
+      issueTitles?: IssueTitles
+      listFields?: undefined
+    })
   | (CommonProps & { variant: 'detailed'; listFields: StakeholderListFields; entries?: undefined })
   | (CommonProps & { variant: 'compact' })
 
@@ -71,7 +83,7 @@ export function StakeholderCard(props: StakeholderCardProps) {
         <ul className="mt-1 space-y-1 text-sm">
           {props.entries.map((e) => (
             <li key={e.issueNumber} className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <span className="font-medium">{tc.issueEntry(e.issueNumber)}</span>
+              <span className="min-w-0 font-medium break-words">{issueNumberTitle(props.issueTitles ?? [], e.issueNumber)}</span>
               <PriorityCounts counts={e.counts} />
             </li>
           ))}
@@ -107,19 +119,11 @@ function ListFields({ stakeholder: s, fields: f }: { stakeholder: Stakeholder; f
       {f.path !== '' && <Field label={tl.path}>{f.path}</Field>}
       {f.issues.length > 0 && (
         <Field label={tl.issues}>
-          <ul className="flex flex-wrap gap-x-1">
-            {f.issues.map((n, i) => (
-              <li key={n}>
-                <Link
-                  to={issueFocusPath(n, 'stakeholders', 'stakeholders')}
-                  className={linkClass}
-                >
-                  {tl.issueLink(n)}
-                </Link>
-                {i < f.issues.length - 1 && tl.issueSeparator}
-              </li>
-            ))}
-          </ul>
+          <IssueTitleLinks
+            numbers={f.issues}
+            titles={f.issueTitles}
+            to={(n) => issueFocusPath(n, 'stakeholders', 'stakeholders')}
+          />
         </Field>
       )}
       <div>

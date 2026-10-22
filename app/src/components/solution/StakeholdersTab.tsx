@@ -1,4 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
+import { BasisField } from '@/components/BasisField'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Heading, type HeadingLevel } from '@/components/Heading'
 import { AlsoInLine } from '@/components/issue/AlsoIn'
@@ -6,6 +7,7 @@ import { NeedSummaryLink } from '@/components/NeedItem'
 import { SolutionTitleLink } from '@/components/SolutionCard'
 import { StakeholderCard } from '@/components/StakeholderCard'
 import { t } from '@/i18n/zh-TW'
+import { stakeholderCells } from '@/lib/coverage'
 import { availableIssues } from '@/lib/issues'
 import {
   dataBasedCoverage, solutionStakeholderCoverage, stakeholderEntries,
@@ -109,6 +111,10 @@ export interface StakeholderCoveragePartsProps {
   cardExtra?: (id: string) => ReactNode
   /** The level of the two part headings. Default 3. */
   headingLevel?: HeadingLevel
+  /** The issues whose stories give the 資料根據 of each card (decision
+   * 112): the issue of the solution, or the issues of a cross-issue
+   * solution. */
+  basisIssues: IssueFile[]
 }
 
 /** The two parts of the 利害關係人 tab (design 3.12): 「涵蓋的利害關係人」 and
@@ -117,7 +123,7 @@ export interface StakeholderCoveragePartsProps {
  * 「只看有資料根據」 setting; the stakeholder lists do not change, like the
  * tab counts (decision 49). */
 export function StakeholderCoverageParts({
-  index, covered, notCovered, showIssue = false, cardExtra, headingLevel = 3,
+  index, covered, notCovered, showIssue = false, cardExtra, headingLevel = 3, basisIssues,
 }: StakeholderCoveragePartsProps) {
   const issueTitle = (n: number) => {
     const issue = index.issues.find((i) => i.number === n)
@@ -136,6 +142,9 @@ export function StakeholderCoverageParts({
               <li key={entry.id} className="min-w-0">
                 <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, entry.id)}>
                   {cardExtra?.(entry.id)}
+                  <dl className="mt-1 text-sm">
+                    <BasisField cells={stakeholderCells(basisIssues, entry.id)} />
+                  </dl>
                   <StakeholderNeeds entry={entry} issueTitle={issueTitle} showIssue={showIssue} />
                 </StakeholderCard>
               </li>
@@ -152,6 +161,10 @@ export function StakeholderCoverageParts({
         tp.coveredStakeholdersNone, covered)}
       {part('solution-stakeholders-not-covered', tp.notCoveredStakeholdersHeading, tp.notCoveredStakeholdersIntro,
         tp.notCoveredStakeholdersNone, notCovered)}
+      {/* The 資料根據 explanation, once under the lists (decision 112). */}
+      {covered.length + notCovered.length > 0 && (
+        <p className="text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('利害關係人')}</p>
+      )}
     </div>
   )
 }
@@ -171,6 +184,7 @@ export function StakeholdersTab({ index, issue, solution }: { index: IndexFile; 
         index={index}
         covered={entries.covered}
         notCovered={entries.notCovered}
+        basisIssues={[issue]}
         cardExtra={(id) => <AlsoInLine index={index} id={id} issueNumber={issue.number} available={available} />}
       />
     </>

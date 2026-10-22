@@ -155,6 +155,19 @@ class BuildJsonOutputTest(unittest.TestCase):
                          {"item": "災害風險",
                           "content": [{"text": "無明顯相關災害風險", "tag": "AI模擬", "pending": False}]})
 
+    def test_mixed_step_7_cell(self):
+        # #2 解法 E: the 災害風險 cell is split into parts with their own tags
+        # (ETBlue, 2026-10-22): official sources [實證], news and a plan copied
+        # on a school website [AI整理], AI judgement [AI模擬].
+        e = self.solution("E")["detail"][4]
+        self.assertEqual(e["item"], "災害風險")
+        self.assertEqual([p["tag"] for p in e["content"]],
+                         ["AI模擬", "實證", "AI整理", "AI模擬", "實證", "AI模擬", "實證", "AI整理"])
+        self.assertTrue(e["content"][1]["text"].startswith("傳染病防治法第 25 條規定"))
+        self.assertTrue(e["content"][7]["text"].startswith("新聞報導指出"))
+        self.assertIn("【待補：查證", e["content"][7]["text"])
+        self.assertTrue(all(p["text"] and not p["pending"] for p in e["content"]))
+
     def test_solution_overview(self):
         # The solution's row of the 總覽 table, found by its 代號 cell. The row tag (in the 解法 cell) is on every field.
         b = self.solution("B")

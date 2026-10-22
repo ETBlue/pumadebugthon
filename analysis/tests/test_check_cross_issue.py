@@ -94,6 +94,12 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.edit("| 人行道設施帶的分配 | `[AI模擬]` 樹", "| 人行道設施帶的分配 | [AI模擬] 樹")
         self.assertFails("without backticks")
 
+    def test_cell_with_two_tags(self):
+        # Only the step 7 solution tables of an issue file may have cells with
+        # more than one tag (ETBlue, 2026-10-22). This file keeps one tag per cell.
+        self.edit("| 人行道設施帶的分配 | `[AI模擬]` 樹", "| 人行道設施帶的分配 | `[實證]` 官方資料 `[AI模擬]` 樹")
+        self.assertFails("a cell has 2 tags")
+
     def test_empty_pending_item(self):
         self.edit("【待補：試點後由 X-A 產生】", "【待補】")
         self.assertFails("bad 待補 item")

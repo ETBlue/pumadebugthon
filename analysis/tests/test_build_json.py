@@ -146,13 +146,14 @@ class BuildJsonOutputTest(unittest.TestCase):
         a = self.solution("A")
         self.assertEqual([r["item"] for r in a["detail"]],
                          ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "災害風險", "主責單位", "成本／可行性／風險"])
+        # content is a list of parts; a cell with one tag is a list of one Cell.
         self.assertEqual(a["detail"][5]["content"],
-                         {"text": "環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局",
-                          "tag": "AI模擬", "pending": False})
+                         [{"text": "環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局",
+                           "tag": "AI模擬", "pending": False}])
         # A solution with no related disaster says so in its 災害風險 row.
         self.assertEqual(self.solution("C")["detail"][4],
                          {"item": "災害風險",
-                          "content": {"text": "無明顯相關災害風險", "tag": "AI模擬", "pending": False}})
+                          "content": [{"text": "無明顯相關災害風險", "tag": "AI模擬", "pending": False}]})
 
     def test_solution_overview(self):
         # The solution's row of the 總覽 table, found by its 代號 cell. The row tag (in the 解法 cell) is on every field.
@@ -208,8 +209,8 @@ class BuildJsonOutputTest(unittest.TestCase):
             self.assertTrue(s["measures"], s["id"])
         self.assertEqual([s["ideas"] for s in smoke["solutions"]], [[]] * 5)
         b8 = self.solution("B", smoke)
-        self.assertEqual(b8["detail"][1]["content"]["tag"], "AI模擬")
-        self.assertEqual(self.solution("A", smoke)["detail"][1]["content"]["tag"], "實證")
+        self.assertEqual(b8["detail"][1]["content"][0]["tag"], "AI模擬")
+        self.assertEqual(self.solution("A", smoke)["detail"][1]["content"][0]["tag"], "實證")
 
     def test_pending_has_6_3_and_step_7(self):
         sections = [p["section"] for p in self.issue["pending"]]
@@ -511,6 +512,30 @@ class BuildJsonUnitTest(unittest.TestCase):
 
     def test_cell_pending(self):
         self.assertEqual(self.mod.parse_cell("【待補】"), {"text": "【待補】", "tag": None, "pending": True})
+
+    def test_cell_with_two_tags_is_an_error(self):
+        # Only step 7 cells may hold more than one tag; they use parse_parts.
+        with self.assertRaises(ValueError):
+            self.mod.parse_cell("`[實證]` 官方資料 `[AI模擬]` 推想")
+
+    def test_parts_of_a_mixed_step_7_cell(self):
+        # Each part starts with its own tag (ETBlue, 2026-10-22).
+        self.assertEqual(
+            self.mod.parse_parts("`[AI模擬]` 推想。 `[實證]` 官方資料（見附錄）【待補：查證】； `[AI整理]` 新聞報導指出…，需真人查證"),
+            [{"text": "推想。", "tag": "AI模擬", "pending": False},
+             {"text": "官方資料（見附錄）【待補：查證】；", "tag": "實證", "pending": False},
+             {"text": "新聞報導指出…，需真人查證", "tag": "AI整理", "pending": False}])
+
+    def test_parts_of_a_cell_with_one_tag(self):
+        # One tag, or none: a list of one Cell, the same as parse_cell.
+        self.assertEqual(self.mod.parse_parts("`[AI模擬]` 文字"), [{"text": "文字", "tag": "AI模擬", "pending": False}])
+        self.assertEqual(self.mod.parse_parts("【待補：法務確認】"),
+                         [{"text": "【待補：法務確認】", "tag": None, "pending": True}])
+
+    def test_parts_need_a_tag_first_and_text_after_each_tag(self):
+        for s in ("前言 `[實證]` 官方 `[AI模擬]` 推想", "`[實證]` 官方 `[AI模擬]`", "`[實證]` `[AI模擬]` 推想"):
+            with self.subTest(s=s), self.assertRaises(ValueError):
+                self.mod.parse_parts(s)
 
     def test_cell_basis_counts_want_and_so_that(self):
         def c(tag):

@@ -299,6 +299,13 @@ def read_cross_issue(text, ctx):
                 err(f"line {n}: 「{w}」: examples from this place are not used (method.md, 步驟 6)")
         if re.search(r"`\[AI整理\]`\s*新聞報導", line) and "【待補：查證" not in line:
             err(f"line {n}: an [AI整理] news cell needs a 【待補：查證…】 item in the same row")
+        # A cell holds at most one tag. Only the step 7 solution tables of an
+        # issue file may hold more (ETBlue, 2026-10-22; method.md, 標記).
+        if line.startswith("|"):
+            for c in common.split_cells(line):
+                k = len(re.findall(rf"`{common.TAG_RE}`", c))
+                if k > 1:
+                    err(f"line {n}: a cell has {k} tags; a cell in this file has at most one: {c[:40]!r}")
 
     # Every 「#n ID」 exists; no story, need, conflict, group or solution ID without 「#n」.
     for m in REF.finditer(text):

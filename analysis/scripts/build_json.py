@@ -39,7 +39,11 @@ In other text it stays as written; check_analysis.py checks that it exists.
 Each solution also gets the fields for its own page in the app:
 - measures: the 6.3 rows whose 解法 cell lists its code (a cell can list
   several, separated by 「、」, for example 「A、D」).
-- detail: the 項目 | 內容 rows of its step 7 section, in file order.
+- detail: the 項目 | 內容 rows of its step 7 section, in file order:
+  {item, content}. content is a list of parts, one Cell per tag
+  (parse_parts). Only these cells may hold more than one tag (ETBlue,
+  2026-10-22). A cell with one tag is a list of one Cell. Every other cell
+  in the JSON is one Cell with at most one tag.
 - overview: its row of the 總覽 table (成本, 可行性, 主要風險, 主責單位). The
   row is found by its 代號 cell (the code only). The 解法 cell holds the row
   tag and a short name; every field gets the row tag.
@@ -146,6 +150,29 @@ def parse_cell(s):
     text = re.sub(r"  +", " ", text)
     tag = tags[0] if tags else None
     return {"text": text, "tag": tag, "pending": tag is None and text.startswith("【待補")}
+
+
+def parse_parts(s):
+    """A cell of a step 7 solution table -> a list of parts, one Cell per tag.
+    Only these cells may hold more than one tag (ETBlue, 2026-10-22; method.md,
+    標記). Each part starts with its own tag and has text after it:
+    「`[實證]` 官方資料… `[AI模擬]` 推想…」 -> [{"text": "官方資料…", "tag":
+    "實證", "pending": False}, {"text": "推想…", "tag": "AI模擬", "pending":
+    False}]. A cell with one tag, or none, is a list of one Cell (parse_cell).
+    A cell with several tags must start with a tag, and no tag may be empty."""
+    s = s.strip()
+    marks = list(TAG.finditer(s))
+    if len(marks) <= 1:
+        return [parse_cell(s)]
+    if s[:marks[0].start()].strip():
+        raise ValueError(f"a cell with {len(marks)} tags must start with a tag: 「{s}」")
+    parts = []
+    for m, nxt in zip(marks, marks[1:] + [None]):
+        text = re.sub(r"  +", " ", s[m.end():nxt.start() if nxt else len(s)].strip())
+        if not text:
+            raise ValueError(f"the tag [{m.group(1)}] has no text after it: 「{s}」")
+        parts.append({"text": text, "tag": m.group(1), "pending": False})
+    return parts
 
 
 # 資料根據: the keys of counts.cells, in the fixed order 實證, AI整理, AI模擬, 待補.
@@ -312,6 +339,13 @@ def row_codes(value, known, section_name, where):
 def cell(s, section_name, where):
     try:
         return parse_cell(s)
+    except ValueError as e:
+        raise ReadError(section_name, f"{where}: {e}")
+
+
+def cell_parts(s, section_name, where):
+    try:
+        return parse_parts(s)
     except ValueError as e:
         raise ReadError(section_name, f"{where}: {e}")
 
@@ -729,7 +763,7 @@ def parse_issue(text, space_codes):
         if head is None:
             raise ReadError("步驟 7", f"solution {s['id']} has no section 「### 7.n 解法 {s['id']}：…」")
         name = head[4:].replace("`", "").strip()
-        s["detail"] = [{"item": r["項目"], "content": cell(r["內容"], name, r["項目"])}
+        s["detail"] = [{"item": r["項目"], "content": cell_parts(r["內容"], name, r["項目"])}
                        for r in table_rows(common.tables(common.section(text, head)), name, ["項目", "內容"])]
 
     # 總覽 (### 7.n 總覽): one row per solution. The 代號 cell is the code only

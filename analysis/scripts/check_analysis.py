@@ -11,6 +11,8 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              split_refs, step1_tables, summary_lines, summary_topics, tables, without_cross_refs)
 
 NO_DISASTER = "無明顯相關災害風險"  # the 災害風險 cell when no disaster changes the solution
+STEP7_TAG = re.compile(rf"`\[(?:{TAG_NAMES})\]`")  # a tag in a step 7 cell (16b-2)
+STEP7_SOLUTION = re.compile(r"^### 7\.\d+ 解法 ([A-Z])：")  # the heading of a step 7 solution table
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
 # 新增日期: the date a stakeholder (stakeholders.csv) or a solution (6.1) was added.
 DATE_COL = "新增日期"
@@ -356,6 +358,18 @@ def main(md_path, csv_path):
         if re.search(r"`\[AI整理\]`\s*新聞報導", line) and "【待補：查證" not in line:
             err(f"line {n}: an [AI整理] cell mentions 新聞 (新聞報導) but its row has no 【待補：查證…】 item: {line[:50]!r}")
 
+    # 0e. a table cell holds at most one tag. Only the cells of the step 7
+    # solution tables (「### 7.n 解法 X：…」) may hold more (ETBlue,
+    # 2026-10-22; method.md, 標記); 16b-2 checks them.
+    in_step7 = False
+    for n, line in enumerate(text.splitlines(), 1):
+        if line.startswith("#"):
+            in_step7 = STEP7_SOLUTION.match(line) is not None
+        if in_step7 or not line.startswith("|"): continue
+        for c in cells(line):
+            k = len(STEP7_TAG.findall(c))
+            if k > 1: err(f"line {n}: a cell has {k} tags; only the cells of the step 7 solution tables may have more than one: {c[:40]!r}")
+
     # 1. no old S\d\d IDs
     old = re.findall(r"(?<![A-Za-z0-9])S\d\d(?:-US\d\d)?", text)
     csv_raw = open(csv_path, encoding="utf-8").read()
@@ -654,9 +668,11 @@ def main(md_path, csv_path):
     # 16b-2. each step 7 solution table has these 7 rows, once each, in this
     # order, and no other rows (ETBlue, 2026-10-22; see method.md, step 7).
     # Every cell starts with a tag and has text after the tag. A cell with only
-    # a tag counts as empty. The 「災害風險」 cell is a list of disasters, or
-    # exactly 「無明顯相關災害風險」. The check does not look at which
-    # disasters are listed.
+    # a tag counts as empty. These cells may hold more than one tag (ETBlue,
+    # 2026-10-22; method.md, 標記): each part starts with its own tag, and
+    # each tag has text after it. The 「災害風險」 cell is a list of
+    # disasters, or exactly 「無明顯相關災害風險」 with one tag. The check
+    # does not look at which disasters are listed.
     STEP7_ROWS = ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "災害風險", "主責單位", "成本／可行性／風險"]
     disaster_hint = f" (write the disasters that change this solution, or 「{NO_DISASTER}」)"
     own_folder_name = os.path.basename(os.path.dirname(os.path.abspath(md_path)))
@@ -676,13 +692,17 @@ def main(md_path, csv_path):
             if not found: err(f"{where}: no 「{name}」 row{hint}"); continue
             if len(found) > 1: err(f"{where}: two 「{name}」 rows")
             value = found[0][1].strip() if len(found[0]) > 1 else ""
-            m_tag = re.match(rf"^`\[(?:{TAG_NAMES})\]`\s*(.*)$", value)
-            body = m_tag.group(1).strip() if m_tag else value
+            marks = list(STEP7_TAG.finditer(value))
+            starts = bool(marks) and marks[0].start() == 0
+            # The text after each tag, up to the next tag.
+            bodies = [value[m.end():n.start() if n else len(value)].strip() for m, n in zip(marks, marks[1:] + [None])]
+            body = "".join(bodies) if starts else value
             example = NO_DISASTER if name == "災害風險" else "…"
-            if not body: err(f"{where}: the 「{name}」 cell is empty{hint}")
-            elif not m_tag: err(f"{where}: the 「{name}」 cell must start with a tag, for example 「`[AI模擬]` {example}」: {value[:30]!r}")
-            elif name == "災害風險" and NO_DISASTER in body and body != NO_DISASTER:
-                err(f"{where}: write 「{NO_DISASTER}」 alone, or list the disasters without it: {body[:30]!r}")
+            if not STEP7_TAG.sub("", value).strip(): err(f"{where}: the 「{name}」 cell is empty{hint}")
+            elif not starts: err(f"{where}: the 「{name}」 cell must start with a tag, for example 「`[AI模擬]` {example}」: {value[:30]!r}")
+            elif not all(bodies): err(f"{where}: the 「{name}」 cell has a tag with no text after it; each tag needs its own text: {value[:30]!r}")
+            elif name == "災害風險" and NO_DISASTER in value and bodies != [NO_DISASTER]:
+                err(f"{where}: write 「{NO_DISASTER}」 alone, with one tag, or list the disasters without it: {body[:30]!r}")
         # The order is checked only when each row is there once and there are
         # no other rows. Otherwise the messages above already say what is wrong.
         if sorted(names) == sorted(STEP7_ROWS) and names != STEP7_ROWS:

@@ -303,8 +303,11 @@ export interface Measure {
 export interface DetailRow {
   /** 項目, for example 「需要的資料／API」 or 「隱私」. */
   item: string
-  /** 內容 */
-  content: Cell
+  /** 內容: the parts of the cell, in file order, one Cell per tag. Only these
+   * cells may hold more than one tag (ETBlue, 2026-10-22; design decision 101):
+   * 「`[實證]` 官方資料… `[AI模擬]` 推想…」 is two parts. A cell with one
+   * tag is a list of one Cell. Never empty. */
+  content: Cell[]
 }
 
 /** A row of the step 7 總覽 table. */

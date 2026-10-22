@@ -551,6 +551,40 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md", a + b, b + a)
         self.assertFails("步驟 7 #2 解法 D: the rows must be in this order: " + "、".join(self.STEP7_ROWS))
 
+    # A step 7 cell may hold more than one tag (ETBlue, 2026-10-22). Each part
+    # starts with its own tag and has text after it. Other cells keep one tag.
+    def test_step_7_mixed_cell_passes(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("相關法規"),
+                  "| 相關法規 | `[實證]` 官方資料寫的規定 `[AI整理]` 新聞報導指出的做法，需真人查證【待補：查證新聞】 `[AI模擬]` 推想 |\n")
+        self.set_disaster_d("| 災害風險 | `[AI模擬]` 風災：颱風時工作坊可能取消。 `[實證]` 官方資料的停班規定 |\n")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_step_7_mixed_cell_with_empty_tag_fails(self):
+        for value in ("`[實證]` 官方資料 `[AI模擬]`", "`[實證]` `[AI模擬]` 推想"):
+            with self.subTest(value=value):
+                self.tearDown(); self.setUp()
+                self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("隱私"), f"| 隱私 | {value} |\n")
+                self.assertFails("步驟 7 #2 解法 D: the 「隱私」 cell has a tag with no text after it")
+
+    def test_step_7_cell_with_only_tags_is_empty(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("隱私"), "| 隱私 | `[實證]` `[AI模擬]` |\n")
+        self.assertFails("步驟 7 #2 解法 D: the 「隱私」 cell is empty")
+
+    def test_step_7_mixed_cell_must_start_with_tag(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("隱私"), "| 隱私 | 說明 `[實證]` 官方資料 `[AI模擬]` 推想 |\n")
+        self.assertFails("步驟 7 #2 解法 D: the 「隱私」 cell must start with a tag")
+
+    def test_step_7_no_disaster_text_must_stand_alone_in_mixed_cell(self):
+        self.set_disaster_d("| 災害風險 | `[AI模擬]` 無明顯相關災害風險 `[實證]` 官方資料 |\n")
+        self.assertFails("步驟 7 #2 解法 D: write 「無明顯相關災害風險」 alone")
+
+    def test_two_tags_outside_step_7_fail(self):
+        # A cell outside the step 7 solution tables keeps one tag: here a 6.1 row.
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`",
+                  "| D | `[AI模擬]` 參與式選址流程 `[實證]` 官方 | `sidewalk`")
+        self.assertFails("a cell has 2 tags; only the cells of the step 7 solution tables may have more than one")
+
     def test_step_7_every_issue_has_all_rows(self):
         # The current data of every issue passes the row check.
         for folder in issue_folders():

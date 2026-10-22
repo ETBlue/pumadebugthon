@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router'
+import { CellParts } from '@/components/CellParts'
 import { CellText } from '@/components/CellText'
 import { ConflictView } from '@/components/ConflictView'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
@@ -172,7 +173,7 @@ export function OverviewTab({ index, issue, solution: sol }: { index: IndexFile;
           {sol.detail.map((r) => (
             <div key={r.item}>
               <dt className="font-semibold">{r.item}</dt>
-              <dd className="mt-1 leading-relaxed"><CellText cell={r.content} /></dd>
+              <dd className="mt-1 leading-relaxed"><CellParts parts={r.content} /></dd>
             </div>
           ))}
         </dl>

@@ -211,7 +211,15 @@ describe('issue files', () => {
           expect(sol.detail.length, sol.id).toBeGreaterThan(0)
           for (const r of sol.detail) {
             expect(typeof r.item).toBe('string')
-            expectCell(r.content)
+            expect(r.content.length, `${sol.id} ${r.item}`).toBeGreaterThan(0)
+            for (const part of r.content) expectCell(part)
+            // A cell with several parts: each part has its own tag and text.
+            if (r.content.length > 1) {
+              for (const part of r.content) {
+                expect(part.tag).not.toBeNull()
+                expect(part.text).not.toBe('')
+              }
+            }
           }
           for (const c of Object.values(sol.overview)) expectCell(c)
           expect(Object.keys(sol.overview)).toEqual(['cost', 'feasibility', 'risk', 'owner'])

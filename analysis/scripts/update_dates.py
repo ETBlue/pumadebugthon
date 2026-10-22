@@ -74,6 +74,14 @@ def without_pending(x):
     return x
 
 
+def old_detail(detail):
+    """The step 7 rows in the fingerprint. Since 2026-10-22 a step 7 cell is
+    a list of parts (build_json.parse_parts). A cell with one part counts as
+    that one Cell, the same as before, so the new JSON shape alone does not
+    change any date. A cell with several parts counts as the list."""
+    return [{**r, "content": r["content"][0] if len(r["content"]) == 1 else r["content"]} for r in detail]
+
+
 def stakeholder_order(sid):
     return (sid[0] != "O", int(sid[1:]))
 
@@ -103,6 +111,7 @@ def items(analysis_dir):
     for d in issues:
         for s in sorted(d["solutions"], key=lambda s: s["id"]):
             content = {k: s[k] for k in SOLUTION_KEYS}
+            content["detail"] = old_detail(s["detail"])
             if s["needs"] is None:
                 content["stories"] = s["stories"]  # the old format maps solutions to stories
             out.append({"type": SOLUTION, "id": f"{d['number']}-{s['id']}", "added": s["added"],

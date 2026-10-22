@@ -71,7 +71,7 @@ information architecture:
 * the issue page should include
   * a breadcrumb
   * title and metadata 
-  * a tab menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count
+  * a tab menu: overview, 訴求 with count and conflicting count, 需求 with count, solutions with count, hard decisions with count, potential controversies with count, deeply affected disadvantaged groups with count, legal blockers with count, related policies with count
   * a stakeholder side menu on 訴求, 需求, 解法 tabs
     * render all organization and individual stakeholder groups in tree shape, with expand / collapse buttons for each group and expanded by default.
     * for each stakeholder item in the menu, show counts based on the page context
@@ -84,7 +84,7 @@ information architecture:
 * the solution page should include
   * a breadcrumb
   * title and metadata 
-  * a tab menu: overview, user needs with fulfilled / not fulfilled count, stakeholders with covered / not covered count
+  * a tab menu: overview, user needs with fulfilled / not fulfilled count, user wants with covered / not covered count, stakeholders with covered / not covered count, conflicts with resolved / related count, result evaluation methods with count, related or similar policies / solutions with "from domestic country" / "from foreign country" count
 
 visual:
 * for the UI, use design tokens for theme maintenance. apply "solarized light" theme to the app, with "solarized dark" theme togglable

@@ -2456,6 +2456,48 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "政府服務手冊的探索階段（discovery）",
+          "place": "英國",
+          "domestic": false,
+          "content": {
+            "text": "英國政府數位服務署（GDS）的服務手冊說明：在決定建置一個服務之前，要先了解要解決的問題；探索階段不應該開始建置；要研究使用者（也包括無障礙需要與數位能力）、找出法規、合約與現有流程等限制、規劃怎麼衡量成效；通常約 4–8 週；如果研究顯示停下來比較好，在探索階段結束時停下來不是失敗（2021-06-21 更新）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "本題的方法名稱「產品探索」就是這種做法。解法 A 可以參考「先研究、不先建置」與「停下來不是失敗」；也提醒本專案自己還在探索階段，還沒有真人的研究（O25-US01）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "研考會的職掌",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "研考會組織規程：研究發展組掌理市政研究發展與市民參與；綜合計畫室掌理年度施政計畫的先期作業與研究分析。本題的提案和這兩個單位的工作有關。",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "本專案已有的分析",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "本專案已用同一套方法分析 #1、#2、#8 三個議題，加上本題共 4 個，都由一位參加者用 AI 協助製作。",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -2614,6 +2656,24 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "演算法透明紀錄標準（ATRS）",
+          "place": "英國",
+          "domestic": false,
+          "content": {
+            "text": "英國公部門用一套標準化的方式，公開它們使用的演算法工具與演算法輔助的決策；這套標準由 GDS 的團隊發展，對中央政府部會，以及直接服務民眾的部分公共機構是強制的（2025-05-08 更新）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 B 公開市府使用 AI 的方式時，可以參考這種固定格式的公開紀錄（N03、O29-US02）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -2755,6 +2815,80 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "公共政策網路參與平臺",
+          "place": "臺灣",
+          "domestic": true,
+          "content": {
+            "text": "國家發展委員會營運。民眾可以提議、附議、在「眾開講」對政策草案表達意見，也可以「來監督」政府計畫。提議在 60 日內有 5,000 份附議就成案，主管機關在 2 個月內回應參採情形，並公布在平臺上",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 C 的「有期限地回覆參與者」可以參考這種規則（N04）；也可以把分析當成提案或草案的背景資料，不另開新的管道（O25-US03）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "vTaiwan",
+          "place": "臺灣",
+          "domestic": true,
+          "content": {
+            "text": "vTaiwan 網站說明：2014 年由 g0v 社群和政府合作發起，結合線上與實體的討論，分成提案、意見、反映與立法 4 個階段，使用 Pol.is 收集意見；網站說明已討論 28 個以上的案例，其中 80% 有政府的後續行動。【待補：查證 vTaiwan 案例的政府後續行動】",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 C 可以參考「意見收集之後，有明確的後續階段」；解法 D 可以參考社群與政府合作的方式（O07-US02）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "參與式預算",
+          "place": "臺灣臺北市",
+          "domestic": true,
+          "content": {
+            "text": "臺北市自 2015 年起推動參與式預算，由民政局訂定公民提案與審查的作業程序；111 年的高中職推廣教育執行計畫由民政局主辦（見題目原文重點）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 C 先把分析當作參與式預算的背景資料，不改變現行程序（O27-US01、O27-US02）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "參與式預算",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "111 年的臺北市參與式預算執行計畫中，民政局是主辦機關。新工具如果放進參與式預算，需要配合現行的作業程序與時程；現行的分工需要查證。",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "公共政策網路參與平臺的回應規則",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "國家發展委員會的平臺規定：提議在 60 日內有 5,000 份附議就成案，主管機關在 2 個月內回應。本題的「回覆參與者」可以參考這種有期限的回應。",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -2914,6 +3048,36 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "vTaiwan",
+          "place": "臺灣",
+          "domestic": true,
+          "content": {
+            "text": "vTaiwan 網站說明：2014 年由 g0v 社群和政府合作發起，結合線上與實體的討論，分成提案、意見、反映與立法 4 個階段，使用 Pol.is 收集意見；網站說明已討論 28 個以上的案例，其中 80% 有政府的後續行動。【待補：查證 vTaiwan 案例的政府後續行動】",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 C 可以參考「意見收集之後，有明確的後續階段」；解法 D 可以參考社群與政府合作的方式（O07-US02）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "開放資料管理規範",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "臺北市政府開放資料管理規範（115-06-26 修正）：開放資料要即時更新，不得涉及內部機敏資料，個資依個資法處理；資訊局檢核各機關的開放資料。",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -3067,6 +3231,7 @@
         }
       },
       "ideas": [],
+      "practices": [],
       "pending": [
         {
           "section": "6.3 成效衡量",

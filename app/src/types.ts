@@ -284,6 +284,10 @@ export interface Solution {
   overview: SolutionOverview
   /** Rows of the 6.1 構想 table whose 本文件的處理 cell names this solution. */
   ideas: SolutionIdea[]
+  /** 相關或類似的政策與做法 (ETBlue, 2026-10-22; design decision 104): the
+   * 6.1 practice rows that name this solution, then the 分析摘要 rows of
+   * 相依事項與現行政策的關係 that name it. In file order. Can be []. */
+  practices: SolutionPractice[]
   /** The 【待補】 items of its step 7 section and of its 6.3 rows. The same
    * items are also in IssueFile.pending. */
   pending: Pending[]
@@ -328,6 +332,26 @@ export interface SolutionIdea {
   idea: Cell
   /** 本文件的處理 */
   handling: Cell
+}
+
+/** A related or similar policy or practice of a solution (design decision 104).
+ * Domestic (國內): domestic is true. Foreign (國外): domestic is false. */
+export interface SolutionPractice {
+  /** source "practice": the 做法 cell after 「<place>：」, for example
+   * 「新設計的清潔箱（Better Bin）」. source "dependency": the 項目 cell. */
+  name: string
+  /** The place before 「：」: the country, and the city if any, for example
+   * 「美國紐約」, 「英國」, 「臺灣臺北市」. null for a dependency row. */
+  place: string | null
+  /** true when place starts with 「臺灣」, and for every dependency row. */
+  domestic: boolean
+  /** 內容 (practice) or 說明 (dependency). */
+  content: Cell
+  /** 本文件怎麼用. null for a dependency row. */
+  use: Cell | null
+  /** "practice": a row of a 6.1 practice table (做法 | 內容 | 本文件怎麼用).
+   * "dependency": a row of the 分析摘要 topic 相依事項與現行政策的關係. */
+  source: 'practice' | 'dependency'
 }
 
 /** A row of a 分析摘要 topic table (項目 | 說明 | 相關編號). */
@@ -508,6 +532,9 @@ export interface CrossSolution {
   }
   measures: CrossMeasure[]
   detail: { owner: Cell; laws: Cell; privacy: Cell; risks: Cell }
+  /** The 分析摘要 rows of 相依事項與現行政策的關係 that name it (「解法 X-A」).
+   * All domestic, source "dependency". The file has no practice table. */
+  practices: SolutionPractice[]
 }
 
 /** A 特別關注族群 note on some cross-issue solutions. */

@@ -2975,6 +2975,64 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "太陽能壓縮清潔箱",
+          "place": "美國費城",
+          "domestic": false,
+          "content": {
+            "text": "美國費城街道局管理超過 1,020 個太陽能壓縮清潔箱（Bigbelly），其中 450 個附回收箱。市府說這些清潔箱讓清運從每週 17 次減為 5 次，負責的人員從 33 人減為 9 人。選點前，街道局和商務局與商圈團體一起評估人流與清運能力（來源：費城市政府 2023 年新聞稿）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 B 的壓縮式垃圾桶試點，可以比較試點前後的清運趟次（6.3）；解法 A 選點時和商圈一起評估人流",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "計量付費後撤桶，再改為增設",
+          "place": "韓國首爾",
+          "domestic": false,
+          "content": {
+            "text": "新聞報導指出，韓國首爾在 1995 年 1 月實施垃圾計量付費（專用垃圾袋）後，因為有人把家用垃圾丟進街頭垃圾桶，街頭垃圾桶從 1995 年的 7,607 個逐年減少，到 2023 年約 4,956 個。2023 年 10 月，首爾市政府改變方向，計畫在 2025 年前增加到 7,500 個，設置地點由各區決定；市府調查 3,112 人，超過七成認為垃圾桶不夠。需真人查證【待補：查證首爾市政府的原始公告與 2025 年的實際數量】（來源：Korea JoongAng Daily）",
+            "tag": "AI整理",
+            "pending": false
+          },
+          "use": {
+            "text": "背景和本題相似（隨袋徵收後撤桶）。C2 的參考：增設清潔箱時，怎麼同時照顧隨袋徵收的公平（O04-US02）；解法 A 的選點可以由各區參與",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "現行的裁撤與復設做法",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "現行做法是依家戶垃圾違規棄置量評估清潔箱的裁撤或復設（題目原文）。解法 A、D 在這個做法上加入行人流量與里民討論，需要和環保局確認兩者怎麼銜接。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "開放資料的更新",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "清潔箱開放資料只涵蓋到 2018-01；解法 A 的建議與解法 C 的找桶指引，都依賴資料更新。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -3205,6 +3263,56 @@
           }
         }
       ],
+      "practices": [
+        {
+          "name": "新設計的清潔箱（Better Bin）",
+          "place": "美國紐約",
+          "domestic": false,
+          "content": {
+            "text": "美國紐約市清潔局（DSNY）全市約有 23,000 個清潔箱。2023 年秋天開始，用新的 Better Bin 取代舊的鐵網清潔箱，計畫在幾年內換掉全市的清潔箱。DSNY 說新的清潔箱防鼠、不漏水、比較難被丟家用垃圾，清潔隊員清運也比較容易、比較安全（來源：DSNY Better Bin 網頁）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 B 在被丟家用垃圾的點，可以參考不易被丟家用垃圾的投入口設計（O04-US02）；清運的方便與安全和清潔隊員有關（N03）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "太陽能壓縮清潔箱",
+          "place": "美國費城",
+          "domestic": false,
+          "content": {
+            "text": "美國費城街道局管理超過 1,020 個太陽能壓縮清潔箱（Bigbelly），其中 450 個附回收箱。市府說這些清潔箱讓清運從每週 17 次減為 5 次，負責的人員從 33 人減為 9 人。選點前，街道局和商務局與商圈團體一起評估人流與清運能力（來源：費城市政府 2023 年新聞稿）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 B 的壓縮式垃圾桶試點，可以比較試點前後的清運趟次（6.3）；解法 A 選點時和商圈一起評估人流",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "對節省經費的不同看法",
+          "place": "美國費城",
+          "domestic": false,
+          "content": {
+            "text": "新聞報導指出，美國費城市審計長在 2017 年表示，沒有足夠的文件證明這些清潔箱節省了經費，也沒有可用的維護追蹤系統；街道局局長回應，每個點的清運從每週 17 次減為 3.5 次，每年約省 65 萬美元。兩方的數字不同，需真人查證【待補：查證費城審計報告的原文與市府的回應】（來源：CBS Philadelphia）",
+            "tag": "AI整理",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 B 的試點需要先決定怎麼記錄維護與清運成本，試點結果才能說明（N04、7.2）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -3388,6 +3496,20 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "開放資料的更新",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "清潔箱開放資料只涵蓋到 2018-01；解法 A 的建議與解法 C 的找桶指引，都依賴資料更新。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -3567,6 +3689,20 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "現行的裁撤與復設做法",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "現行做法是依家戶垃圾違規棄置量評估清潔箱的裁撤或復設（題目原文）。解法 A、D 在這個做法上加入行人流量與里民討論，需要和環保局確認兩者怎麼銜接。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -3730,6 +3866,20 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "家戶垃圾收運",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "解法 E 不在本題範圍內，需要和負責家戶收運的單位另外討論。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",

@@ -3572,6 +3572,152 @@
           }
         }
       ],
+      "practices": [
+        {
+          "name": "結構土壤（structural soil）",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "NParks 技術文件 RTN 01-2014 介紹在受限空間種樹的結構土壤。試辦地點有 Springleaf Park（2010）、PIE 快速道路沿線（2011）、Old Choa Chu Kang Road（2013）。其中一處在道路拓寬後，把結構土壤鋪在車道下方，讓變窄的植栽帶仍有樹根空間（來源：NParks RTN 01-2014）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 A 的窄人行道根系空間（O14-US06）",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "土壤格框（soil cells）",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "用聚丙烯做的模組化格框，埋在道路與鋪面下方。重量由格框承受，所以裡面的土壤比較不會被壓實，樹根有更多空間。2015 年用在市政區（Civic District）（來源：NParks 2015 新聞稿）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 A 的窄人行道根系空間（O14-US06）",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "植栽帶寬度與設施集中",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "新聞報導指出，新加坡大型樹的植栽帶約 3 公尺以上，中型樹約 1.5–3 公尺；變電箱與路燈集中放在綠帶內，需真人查證。網頁本身無法開啟，內容來自搜尋摘要【待補：查證植栽帶寬度與設施集中的官方來源】（來源：關鍵評論網）",
+            "tag": "AI整理",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 A 的管線箱集中（O16-US03）；解法 D 的設施帶（I06-US02、I07-US03）",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "Nature Ways",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "新聞報導指出，新加坡約有 24 條道路旁的 Nature Ways，長約 100 公里，用多層次的植栽，需真人查證【待補：查證 Nature Ways 的官方數字】（來源：Mothership，2020）",
+            "tag": "AI整理",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 A 的參考",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "窄人行道與多層次植栽的對照",
+          "place": "臺灣臺北市",
+          "domestic": true,
+          "content": {
+            "text": "新聞報導引用專家的說法：2.5 公尺以下的人行道不適合種大型樹；仁愛路的多層次植栽，體感溫度比附近柏油路面低約 3 °C，需真人查證【待補：查證原始量測與專家說法】（來源：聯合新聞網與相關報導）",
+            "tag": "AI整理",
+            "pending": false
+          },
+          "use": {
+            "text": "7.1 的其他顧慮",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "依熱的影響安排種樹的地區",
+          "place": "美國紐約",
+          "domestic": false,
+          "content": {
+            "text": "新聞報導指出，美國紐約市公園局在 2024 年 11 月宣布改用分區的方式種行道樹：到 2035 年每年種 18,000 棵樹，每個社區委員會（community board）每 3 年輪到一次，並優先在容易受熱影響的社區種樹。種樹的地點不再主要依個別民眾的申請決定。目標是全市樹冠覆蓋率 30%（報導說目前是 22%）。需真人查證【待補：查證紐約市公園局 2024 年 11 月新聞稿的原文，以及之後的輪替週期是否改變】（來源：amNY，2024-11-12）",
+            "tag": "AI整理",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 A 的補植先後：依熱的影響安排地區，並公開輪替的時間表（I18-US02、N01、N02）；C6 的參考",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "地下管線",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "補植與擴大根系空間前要先查管線；管線箱移位的成本由誰負擔，需要管線單位與市府協商。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "資料的共同編號",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "行道樹資料與樹穴資料沒有共同編號，解法 A 的比對與解法 B 的追蹤都會受影響。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "民防與防災的規劃",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "樹冠能不能降低武力侵犯時被找到目標的風險，需要國防與民防的專業評估；行道樹的防災養護也要配合各區的避難路線。這些規劃不只在公園處的職掌內。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "解法之間的相依",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "解法 E 的名單可以當成解法 B 保留樹清單的來源；市民種樹活動需要先有解法 A 的補植地點。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -3837,6 +3983,76 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "樹木保護區（Tree Conservation Areas）",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "依《公園與樹木法》（Parks and Trees Act），在 2 個樹木保護區內與空地上，砍伐樹圍超過 1 公尺的樹，要先得到主管官員（Commissioner）核准；違反者最高可罰 5 萬新幣。量樹圍的高度在不同來源寫法不同【待補：查證樹圍的量測高度】（來源：NParks 樹木保護區頁面與法條摘錄）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "7.2、7.5 的相關法規（參考）",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "Plan Arbre 與砍樹、種樹地圖",
+          "place": "法國巴黎",
+          "domestic": false,
+          "content": {
+            "text": "法國巴黎市政府的 Plan Arbre 從 2020 到 2026 年，目標是在可以種樹的地方種 170,000 棵樹。巴黎有超過 200,000 棵樹種在街道、綠地與市立設施。每年不到 1.5% 的樹因為安全的原因要砍除；病弱的樹砍除後，一定會種新的樹接替。市府的互動地圖列出最近或即將因為安全原因砍除的樹（含原因，例如病害或結構缺陷，以及預計補種的樹種），也列出 2021 年 11 月 1 日以後種的樹（含地址、樹種與種植日期）；地圖的資料不是即時更新。巴黎也列出約 191 棵特別的樹（arbres remarquables），屬於 52 種樹（來源：巴黎市政府「L'arbre à Paris」網頁，2026-10-16 更新）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 B 的移除紀錄公開：砍除的原因與補種的樹種一起公開（N06、O14-US05）；C6 的參考：砍除後補種新的樹；解法 E 的公開名單（I20-US04）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "資料的共同編號",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "行道樹資料與樹穴資料沒有共同編號，解法 A 的比對與解法 B 的追蹤都會受影響。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "民防與防災的規劃",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "樹冠能不能降低武力侵犯時被找到目標的風險，需要國防與民防的專業評估；行道樹的防災養護也要配合各區的避難路線。這些規劃不只在公園處的職掌內。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "解法之間的相依",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "解法 E 的名單可以當成解法 B 保留樹清單的來源；市民種樹活動需要先有解法 A 的補植地點。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -4051,6 +4267,36 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "OneMillionTrees 運動",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "從 2020 年 4 月開始，目標是 10 年內多種 100 萬棵樹。種樹的地點包括街道、公園與公園連結道。預計 2027 年完成，比 2030 年的目標早。市民可以參加種樹活動；企業可以透過 Plant-A-Tree 與 Garden City Fund 出資種樹（來源：新加坡國家公園局 NParks、SG101）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 C 的市民種樹活動（O19-US02）；7.3 的經費來源",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "公告與緊急移除",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "解法 C 的公告與意見期間，要和現行的公告規定銜接；危險樹木需要緊急移除時，要有例外規則。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -4242,6 +4488,52 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "開發案的綠化與樹木保護準則",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "NParks 的《Guidelines on Greenery Provision and Tree Conservation for Developments》（5.1 版，2026）有道路旁綠化與植栽帶土壤的章節。本次沒有打開全文（檔案太大）【待補：閱讀道路旁綠化與植栽帶土壤的章節】（來源：NParks 準則頁面）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 D 的設計規範（參考）",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "植栽帶寬度與設施集中",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "新聞報導指出，新加坡大型樹的植栽帶約 3 公尺以上，中型樹約 1.5–3 公尺；變電箱與路燈集中放在綠帶內，需真人查證。網頁本身無法開啟，內容來自搜尋摘要【待補：查證植栽帶寬度與設施集中的官方來源】（來源：關鍵評論網）",
+            "tag": "AI整理",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 A 的管線箱集中（O16-US03）；解法 D 的設施帶（I06-US02、I07-US03）",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "和 #2、#8 共用人行道",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "設施帶的規則也會影響 #2 清潔箱與 #8 吸菸區的位置，需要一起討論。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",
@@ -4411,6 +4703,68 @@
         }
       },
       "ideas": [],
+      "practices": [
+        {
+          "name": "樹木保護區（Tree Conservation Areas）",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "依《公園與樹木法》（Parks and Trees Act），在 2 個樹木保護區內與空地上，砍伐樹圍超過 1 公尺的樹，要先得到主管官員（Commissioner）核准；違反者最高可罰 5 萬新幣。量樹圍的高度在不同來源寫法不同【待補：查證樹圍的量測高度】（來源：NParks 樹木保護區頁面與法條摘錄）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "7.2、7.5 的相關法規（參考）",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "遺產樹計畫（Heritage Tree Scheme）",
+          "place": "新加坡",
+          "domestic": false,
+          "content": {
+            "text": "任何人都可以提名一棵樹。條件通常是樹圍超過 5 公尺，或有植物學、社會、歷史、文化或美觀上的價值。樹藝師到現場檢查，並詢問相關利害關係人；遺產樹委員會每 2 年決定一次。目前名單上約有 260 棵樹（來源：NParks 遺產樹網站）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 E（I20-US04）",
+            "tag": null,
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "Plan Arbre 與砍樹、種樹地圖",
+          "place": "法國巴黎",
+          "domestic": false,
+          "content": {
+            "text": "法國巴黎市政府的 Plan Arbre 從 2020 到 2026 年，目標是在可以種樹的地方種 170,000 棵樹。巴黎有超過 200,000 棵樹種在街道、綠地與市立設施。每年不到 1.5% 的樹因為安全的原因要砍除；病弱的樹砍除後，一定會種新的樹接替。市府的互動地圖列出最近或即將因為安全原因砍除的樹（含原因，例如病害或結構缺陷，以及預計補種的樹種），也列出 2021 年 11 月 1 日以後種的樹（含地址、樹種與種植日期）；地圖的資料不是即時更新。巴黎也列出約 191 棵特別的樹（arbres remarquables），屬於 52 種樹（來源：巴黎市政府「L'arbre à Paris」網頁，2026-10-16 更新）",
+            "tag": "實證",
+            "pending": false
+          },
+          "use": {
+            "text": "解法 B 的移除紀錄公開：砍除的原因與補種的樹種一起公開（N06、O14-US05）；C6 的參考：砍除後補種新的樹；解法 E 的公開名單（I20-US04）",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "source": "practice"
+        },
+        {
+          "name": "解法之間的相依",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "解法 E 的名單可以當成解法 B 保留樹清單的來源；市民種樹活動需要先有解法 A 的補植地點。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ],
       "pending": [
         {
           "section": "6.3 成效衡量",

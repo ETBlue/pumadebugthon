@@ -2000,7 +2000,33 @@
           "pending": false
         }
       },
-      "updated": "2026-10-20"
+      "updated": "2026-10-20",
+      "practices": [
+        {
+          "name": "以各議題的解法為基礎",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "現行的清潔箱做法",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "#2 的現行做法是依家戶垃圾違規棄置量評估清潔箱的裁撤或復設。合併的選址討論需要和這個做法銜接。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ]
     },
     {
       "code": "X-B",
@@ -2182,7 +2208,33 @@
           "pending": false
         }
       },
-      "updated": "2026-10-20"
+      "updated": "2026-10-20",
+      "practices": [
+        {
+          "name": "以各議題的解法為基礎",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "現行的吸菸區設置要點",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "解法 X-B 的檢查清單，以 #8 的「臺北市吸菸區設置及管理要點」（115 年 10 月 1 日生效）的距離與淨寬規定為起點之一。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ]
     },
     {
       "code": "X-C",
@@ -2331,7 +2383,21 @@
           "pending": false
         }
       },
-      "updated": "2026-10-20"
+      "updated": "2026-10-20",
+      "practices": [
+        {
+          "name": "以各議題的解法為基礎",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ]
     },
     {
       "code": "X-D",
@@ -2538,7 +2604,33 @@
           "pending": false
         }
       },
-      "updated": "2026-10-20"
+      "updated": "2026-10-20",
+      "practices": [
+        {
+          "name": "以各議題的解法為基礎",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        },
+        {
+          "name": "開放資料的現況",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "清潔箱開放資料只涵蓋到 2018-01，禁菸範圍沒有開放資料，行道樹與樹穴資料沒有共同編號。整合的地圖要先處理這些缺口。#9 建議用現有的平臺（例如臺北市資料大平臺）發布，不另建系統。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ]
     },
     {
       "code": "X-E",
@@ -2674,7 +2766,21 @@
           "pending": false
         }
       },
-      "updated": "2026-10-20"
+      "updated": "2026-10-20",
+      "practices": [
+        {
+          "name": "以各議題的解法為基礎",
+          "place": null,
+          "domestic": true,
+          "content": {
+            "text": "合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。",
+            "tag": "AI模擬",
+            "pending": false
+          },
+          "use": null,
+          "source": "dependency"
+        }
+      ]
     }
   ],
   "solutionFocus": [

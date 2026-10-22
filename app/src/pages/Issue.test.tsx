@@ -385,6 +385,44 @@ describe('the menu bar of the issue tabs (decision 116)', () => {
   })
 })
 
+/** The HTML of the first box with this data-slot, up to the end of its two
+ * outer divs (the box and the group inside it), or ''. */
+function joinedBox(html: string, slot: string): string {
+  const start = html.indexOf(`data-slot="${slot}"`)
+  if (start === -1) return ''
+  const end = html.indexOf('</div></div>', start)
+  return html.slice(start, end === -1 ? undefined : end)
+}
+
+describe('joined button groups in the menu bar (decision 125)', () => {
+  it('the 特別關注 toggles are one joined group (spacing 0) in a box that scrolls sideways, and keep aria-pressed', () => {
+    for (const path of ['/issues/1/wants?special=高齡', '/issues/1/stakeholders?special=高齡']) {
+      const box = joinedBox(menuBar(render(path)) ?? '', 'joined-scroll')
+      const cls = /^data-slot="joined-scroll" class="([^"]*)"/.exec(box)?.[1].split(' ') ?? []
+      expect(cls, path).toEqual(expect.arrayContaining(['overflow-x-auto', 'min-w-0']))
+      expect(box, path).toMatch(/data-slot="toggle-group"[^>]*data-spacing="0"/)
+      expect(box, path).toMatch(/role="toolbar"[^>]*aria-label="特別關注"/)
+      expect(box, path).not.toContain('flex-wrap')
+      const pressed = [...box.matchAll(/<button[^>]*aria-pressed="(true|false)"[^>]*>(?:(?!<\/button>)[\s\S])*?([^>]+)<\/button>/g)]
+        .map((m) => [m[2], m[1]])
+      expect(pressed, path).toEqual([['高齡', 'true'], ['身心障礙', 'false'], ['兒童與照顧者', 'false'], ['經濟弱勢', 'false']])
+    }
+  })
+
+  it('全部展開 and 全部收合 are one joined block inside the 分類層級 group', () => {
+    const bar = menuBar(render('/issues/1/stakeholders')) ?? ''
+    const box = joinedBox(bar, 'joined-buttons').replace(/<\/div>$/, '')
+    const names = [...box.matchAll(/<button[^>]*>([^<]+)<\/button>/g)].map((m) => m[1])
+    expect(names).toEqual(['全部展開', '全部收合'])
+    expect(box).toContain('*:not-first:border-l-0')
+    // The block is after the visible label 分類層級, in the same group.
+    expect(bar.indexOf('分類層級')).toBeLessThan(bar.indexOf('data-slot="joined-buttons"'))
+    // The 篩選 group stays separate buttons.
+    expect(joinedBox(bar, 'joined-scroll')).not.toContain('只看跨議題')
+    expect(box).not.toContain('只看有資料根據')
+  })
+})
+
 describe('the stories on the 利害關係人 tab (decision 116)', () => {
   it('each card lists the stories of its stakeholder: 我想要…，以便…, the tags, the story link and the priority', () => {
     const html = render('/issues/1/stakeholders')

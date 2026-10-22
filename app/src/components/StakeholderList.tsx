@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import type { IssueFile, Stakeholder } from '@/types'
 import { DataBasisToggle } from './DataBasisToggle'
 import { FilterStatus } from './FilterStatus'
-import { IssueMenuBar, MenuBarGroup } from './IssueMenuBar'
+import { IssueMenuBar, JoinedButtons, JoinedScroll, MenuBarGroup } from './IssueMenuBar'
 import { PriorityLegend } from './PriorityCounts'
 import { StakeholderCard } from './StakeholderCard'
 import { StoryLines } from './StoryLines'
@@ -158,21 +158,23 @@ export function StakeholderList(props: StakeholderListProps) {
       <IssueMenuBar label={ts.menu}>
         {options.length > 0 && (
           <MenuBarGroup label={ts.focus}>
-            <ToggleGroup
-              type="multiple"
-              variant="outline"
-              value={focus}
-              onValueChange={onFocusChange}
-              aria-label={ts.focus}
-              className="min-w-0 flex-wrap"
-            >
-              {options.map((f) => (
-                <ToggleGroupItem key={f} value={f} className={cn(toggleOnClass, 'bg-background')}>
-                  <ToggleCheck />
-                  {f}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+            <JoinedScroll>
+              <ToggleGroup
+                type="multiple"
+                variant="outline"
+                spacing={0}
+                value={focus}
+                onValueChange={onFocusChange}
+                aria-label={ts.focus}
+              >
+                {options.map((f) => (
+                  <ToggleGroupItem key={f} value={f} className={cn(toggleOnClass, 'bg-background')}>
+                    <ToggleCheck />
+                    {f}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </JoinedScroll>
           </MenuBarGroup>
         )}
         <MenuBarGroup label={ts.filterGroup}>
@@ -186,8 +188,10 @@ export function StakeholderList(props: StakeholderListProps) {
         </MenuBarGroup>
         {allKeys.length > 0 && (
           <MenuBarGroup label={ts.levelGroup}>
-            <Button variant="outline" className={buttonClass} onClick={() => setClosed(new Set())}>{ts.expandAll}</Button>
-            <Button variant="outline" className={buttonClass} onClick={() => setClosed(new Set(allKeys))}>{ts.collapseAll}</Button>
+            <JoinedButtons>
+              <Button variant="outline" className={buttonClass} onClick={() => setClosed(new Set())}>{ts.expandAll}</Button>
+              <Button variant="outline" className={buttonClass} onClick={() => setClosed(new Set(allKeys))}>{ts.collapseAll}</Button>
+            </JoinedButtons>
           </MenuBarGroup>
         )}
       </IssueMenuBar>

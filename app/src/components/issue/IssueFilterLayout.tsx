@@ -2,7 +2,7 @@ import { useMemo, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { FilterStatus } from '@/components/FilterStatus'
-import { IssueMenuBar, MenuBarGroup } from '@/components/IssueMenuBar'
+import { IssueMenuBar, JoinedScroll, MenuBarGroup } from '@/components/IssueMenuBar'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
 import { toggleOnClass } from '@/components/styles'
 import { ToggleCheck } from '@/components/ToggleCheck'
@@ -76,21 +76,23 @@ export function IssueFilterLayout({ index, issue, current, context, shown, child
         />
         {specialOptions.length > 0 && (
           <MenuBarGroup label={tm.special}>
-            <ToggleGroup
-              type="multiple"
-              variant="outline"
-              value={filters.special}
-              onValueChange={setSpecial}
-              aria-label={tm.special}
-              className="min-w-0 flex-wrap"
-            >
-              {specialOptions.map((f) => (
-                <ToggleGroupItem key={f} value={f} className={cn(toggleOnClass, 'bg-background')}>
-                  <ToggleCheck />
-                  {f}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
+            <JoinedScroll>
+              <ToggleGroup
+                type="multiple"
+                variant="outline"
+                spacing={0}
+                value={filters.special}
+                onValueChange={setSpecial}
+                aria-label={tm.special}
+              >
+                {specialOptions.map((f) => (
+                  <ToggleGroupItem key={f} value={f} className={cn(toggleOnClass, 'bg-background')}>
+                    <ToggleCheck />
+                    {f}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </JoinedScroll>
           </MenuBarGroup>
         )}
         <DataBasisToggle variant="bar" />

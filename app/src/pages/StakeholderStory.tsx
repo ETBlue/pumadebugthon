@@ -8,7 +8,7 @@ import { Markdown } from '@/components/Markdown'
 import { PageBand, PageBody } from '@/components/PageBand'
 import { PageTitle } from '@/components/PageTitle'
 import { PriorityLegend } from '@/components/PriorityCounts'
-import { SolutionCard } from '@/components/SolutionCard'
+import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { linkClass, proseClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { useIndex, useIssue } from '@/data'
@@ -16,6 +16,7 @@ import { t } from '@/i18n/zh-TW'
 import {
   movedStakeholderTarget, needFocusPath, stakeholderTabPath, wantFocusPath, type StakeholderTab,
 } from '@/lib/entityPaths'
+import { solutionCells } from '@/lib/coverage'
 import { findIssue, tabPath } from '@/lib/issuePage'
 import { opinionPickTo } from '@/lib/opinion'
 import { storyPriority } from '@/lib/needs'
@@ -228,9 +229,18 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
               <p className="mt-2 text-sm text-muted-foreground">{ts.solutionsIntro}</p>
               <ul className="mt-2 space-y-2">
                 {view.solutions.map((sol) => (
-                  <li key={sol.id}><SolutionCard variant="compact" solution={sol} issueNumber={n} /></li>
+                  <li key={sol.id}>
+                    {/* 資料根據 of the covered needs, as on the other compact solution cards (decision 112). */}
+                    <SolutionCard variant="compact" solution={sol} issueNumber={n}>
+                      <dl className="mt-2 text-sm">
+                        <CoveredBasisField basis={{ cells: solutionCells(issue, sol), percent: null }} />
+                      </dl>
+                    </SolutionCard>
+                  </li>
                 ))}
               </ul>
+              {/* The 資料根據 explanation, once under the list (decisions 72 and 112). */}
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>
             </>
           )}
         </Section>

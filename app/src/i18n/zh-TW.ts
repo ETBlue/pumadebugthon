@@ -408,6 +408,9 @@ export const t = {
     /** 解法 tab (design 3.3). */
     solutionsHeading: '涵蓋這些需求的解法',
     solutionsNone: '還沒有解法涵蓋這位利害關係人的需求。',
+    /** No issue solution covers its needs in this issue, but a cross-issue
+     * solution covers some of them (decision 124). */
+    solutionsNoneCrossOnly: '這個議題的解法沒有涵蓋這位利害關係人的需求。有些需求由下方的跨議題解法涵蓋。',
     coveredNeeds: '涵蓋的需求：',
     uncoveredNeeds: '尚未有解法涵蓋的需求',
     uncoveredNeedsNone: '這位利害關係人的需求都有解法涵蓋。',

@@ -9,7 +9,7 @@ import type { AvailableIssueSummary, CrossIssueFile, IndexFile, IssueFile } from
 import { basisTotal, evidencePercent } from './cellBasis'
 import {
   compareShares, crossSolutionCells, evidenceShare, sharePercent, solutionCells, stakeholderCells,
-  stakeholderCrossSolutions, stakeholderSolutionCount, stakeholderSolutionCoverage,
+  stakeholderCrossSolutions, stakeholderSolutionCount, stakeholderSolutionCoverage, stakeholderUncoveredNeeds,
 } from './coverage'
 import { stakeholderSolutionsView } from './stakeholderPage'
 import { findCrossSolution } from './crossIssue'
@@ -224,6 +224,49 @@ describe('stakeholderCrossSolutions', () => {
     expect(view('I06', cross, true)).toEqual([])
     // Every listed need of I01 is data-based.
     expect(view('I01', cross, true)).toEqual(view('I01', cross))
+  })
+})
+
+describe('stakeholderUncoveredNeeds', () => {
+  // A modified copy of #2 with no issue solution. Only the fake cross-issue
+  // solution covers the need O12-US01 of O12 (decision 124).
+  const issue: IssueFile = { ...trashcans, solutions: [] }
+  const fakeCross: CrossIssueFile = {
+    ...cross,
+    needGroups: [],
+    solutions: [{ ...cross.solutions[0], needs: { must: [{ issue: 2, id: 'O12-US01' }], shouldCould: [], crossIssue: [] } }],
+  }
+  const ids = (items: { need: { id: string } }[]) => items.map((n) => n.need.id)
+
+  it('leaves out a need that only a cross-issue solution covers', () => {
+    expect(ids(stakeholderSolutionsView(issue, 'O12').uncovered)).toEqual(['O12-US01'])
+    expect(ids(stakeholderUncoveredNeeds(issue, fakeCross, 'O12'))).toEqual([])
+    // The same need is listed under 「跨議題解法」.
+    expect(stakeholderCrossSolutions([issue], fakeCross, 'O12')).toHaveLength(1)
+  })
+
+  it('lists the need without the cross-issue file', () => {
+    expect(ids(stakeholderUncoveredNeeds(issue, null, 'O12'))).toEqual(['O12-US01'])
+  })
+
+  it('follows the 「只看有資料根據」 filter', () => {
+    const dataBased = ids(stakeholderSolutionsView(issue, 'O12', true).uncovered)
+    expect(ids(stakeholderUncoveredNeeds(issue, null, 'O12', true))).toEqual(dataBased)
+    expect(ids(stakeholderUncoveredNeeds(issue, fakeCross, 'O12', true))).toEqual([])
+  })
+
+  it('agrees with 解法涵蓋 for every stakeholder, with and without the cross-issue file', () => {
+    for (const s of index.stakeholders) {
+      for (const c of [cross, null]) {
+        const uncovered = files.reduce((n, i) => n + stakeholderUncoveredNeeds(i, c, s.id).length, 0)
+        const { covered, total } = stakeholderSolutionCoverage(files, c, s.id)
+        expect(uncovered).toBe(total - covered)
+      }
+    }
+    for (const c of [fakeCross, null]) {
+      const { covered, total } = stakeholderSolutionCoverage([issue], c, 'O12')
+      expect(stakeholderUncoveredNeeds(issue, c, 'O12').length).toBe(total - covered)
+    }
   })
 })
 

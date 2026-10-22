@@ -146,6 +146,27 @@ export function stakeholderCrossSolutions(
     .filter((s) => s.needs.length > 0)
 }
 
+/** 「尚未有解法涵蓋的需求」 of one issue on the stakeholder page's 解法 tab
+ * (decision 124): the needs of the stakeholder in the issue that no issue
+ * solution covers and no cross-issue solution covers, in the order of step
+ * 5.2. The cross-issue rule is the rule of stakeholderSolutionCoverage
+ * (decision 84) and stakeholderCrossSolutions, so a need listed under
+ * 「跨議題解法」 is never listed here. dataBased: the 「只看有資料根據」
+ * filter, as in stakeholderSolutionsView. cross is null when
+ * cross-issue.json does not exist, is still loading or fails to load. Then
+ * the tab does not show 「跨議題解法」, so a need covered only by a
+ * cross-issue solution is listed here. */
+export function stakeholderUncoveredNeeds(
+  issue: IssueFile,
+  cross: CrossIssueFile | null,
+  id: string,
+  dataBased = false,
+): StakeholderNeedItem[] {
+  const crossCovered = crossCoveredNeeds(cross)
+  return stakeholderSolutionsView(issue, id, dataBased).uncovered
+    .filter((n) => !crossCovered.has(`${issue.number}:${n.need.id}`))
+}
+
 /** The number of solutions of a stakeholder (decisions 117 and 119). It is
  * the one source for the tree view of #/stakeholders and for the 解法 tab
  * label of the stakeholder page, so the two always show the same number.

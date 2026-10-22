@@ -34,11 +34,16 @@ const cross = crossJson as CrossIssueFile
 // The issue files are ready, unless a test sets loading. cross: the state
 // of cross-issue.json. 'none' is a site with no such file.
 type CrossState = 'none' | 'ready' | 'loading' | 'error'
-const state: { loading: boolean; cross: CrossState } = { loading: false, cross: 'none' }
+// crossFile and override replace the fixture files in a test.
+const state: { loading: boolean; cross: CrossState; crossFile: CrossIssueFile | null; override: Record<string, IssueFile> } = {
+  loading: false, cross: 'none', crossFile: null, override: {},
+}
+const filesNow = (): Record<string, IssueFile> => ({ ...files, ...state.override })
+const crossNow = (): CrossIssueFile => state.crossFile ?? cross
 
 function crossState() {
   if (state.cross === 'none') return { status: 'ready', data: null }
-  if (state.cross === 'ready') return { status: 'ready', data: cross }
+  if (state.cross === 'ready') return { status: 'ready', data: crossNow() }
   if (state.cross === 'loading') return { status: 'loading', message: '' }
   return { status: 'error', message: '', error: new Error('x') }
 }
@@ -48,9 +53,9 @@ vi.mock('@/data', () => ({
   useIssues: (folders: string[]) =>
     state.loading
       ? { status: 'loading' }
-      : { status: 'ready', data: folders.filter((f) => f in files).map((f) => files[f]) },
+      : { status: 'ready', data: folders.filter((f) => f in filesNow()).map((f) => filesNow()[f]) },
   useCrossIssue: () => crossState(),
-  useCrossIssueOrNull: () => (state.cross === 'ready' ? cross : null),
+  useCrossIssueOrNull: () => (state.cross === 'ready' ? crossNow() : null),
 }))
 
 vi.mock('@/components/PageTitle', () => ({ PageTitle: () => null }))
@@ -202,6 +207,55 @@ describe('the 解法 tab of the stakeholder page (decision 119)', () => {
     const html = render('I06')
     expect(html).not.toContain('解法 5')
     expect(html).not.toContain('解法 7')
+    expect(html).not.toContain('跨議題解法</h2>')
+  })
+})
+
+describe('「尚未有解法涵蓋的需求」 of the 解法 tab (decision 124)', () => {
+  // A modified copy of #2 with no issue solution, and one fake cross-issue
+  // solution that covers only the need O12-US01 of O12 in #2.
+  beforeEach(() => {
+    state.loading = false
+    state.cross = 'ready'
+    state.override = { '2-trashcans': { ...(trashcansJson as IssueFile), solutions: [] } }
+    state.crossFile = {
+      ...cross,
+      needGroups: [],
+      solutions: [{ ...cross.solutions[0], needs: { must: [{ issue: 2, id: 'O12-US01' }], shouldCould: [], crossIssue: [] } }],
+    }
+    return () => {
+      state.override = {}
+      state.crossFile = null
+    }
+  })
+
+  /** The 解法 part and the 「尚未有解法涵蓋的需求」 part of #2. */
+  function partsOf2(html: string): { solutions: string; uncovered: string } {
+    const start = html.indexOf('id="stakeholder-solutions-2-covering"')
+    const mid = html.indexOf('id="stakeholder-solutions-2-uncovered"')
+    const end = html.indexOf('id="stakeholder-solutions-', mid + 1)
+    expect(start).toBeGreaterThan(-1)
+    expect(mid).toBeGreaterThan(start)
+    return { solutions: html.slice(start, mid), uncovered: html.slice(mid, end === -1 ? undefined : end) }
+  }
+
+  it('does not list a need that only a cross-issue solution covers', () => {
+    const html = render('O12')
+    const { solutions, uncovered } = partsOf2(html)
+    expect(uncovered).toContain(t.stakeholderPage.uncoveredNeedsNone)
+    expect(uncovered).not.toContain('focus=O12-US01')
+    expect(solutions).toContain(t.stakeholderPage.solutionsNoneCrossOnly)
+    // It is listed under 「跨議題解法」.
+    expect(html.split('id="stakeholder-solutions-cross"')[1]).toContain('focus=O12-US01')
+  })
+
+  it('lists the need when the cross-issue file fails to load', () => {
+    state.cross = 'error'
+    const html = render('O12')
+    const { solutions, uncovered } = partsOf2(html)
+    expect(uncovered).not.toContain(t.stakeholderPage.uncoveredNeedsNone)
+    expect(uncovered).toContain('focus=O12-US01')
+    expect(solutions).toContain(t.stakeholderPage.solutionsNone)
     expect(html).not.toContain('跨議題解法</h2>')
   })
 })

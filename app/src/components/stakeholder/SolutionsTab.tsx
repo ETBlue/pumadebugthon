@@ -6,7 +6,9 @@ import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
 import { useCrossIssueOrNull, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { crossSolutionCells, solutionCells, stakeholderCrossSolutions, type StakeholderCrossSolution } from '@/lib/coverage'
+import {
+  crossSolutionCells, solutionCells, stakeholderCrossSolutions, stakeholderUncoveredNeeds, type StakeholderCrossSolution,
+} from '@/lib/coverage'
 import { availableIssues } from '@/lib/issues'
 import { needsOfStakeholder } from '@/lib/needs'
 import { stakeholderSolutionsView } from '@/lib/stakeholderPage'
@@ -16,6 +18,9 @@ const tp = t.stakeholderPage
 
 /** 解法 (design 3.3). Per issue: the solutions that cover at least one of
  * its needs, each with the needs it covers, then 「尚未有解法涵蓋的需求」.
+ * That list leaves out the needs that a cross-issue solution covers
+ * (stakeholderUncoveredNeeds, decision 124), because they are listed under
+ * 「跨議題解法」.
  * Then 「跨議題解法」: the cross-issue solutions that cover at least one of
  * its needs (decision 119). The tab label counts the same solutions
  * (stakeholderSolutionCount). Without cross-issue.json, or while it loads or
@@ -34,6 +39,9 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
       {issues.map((issue) => {
         const hasNeeds = needsOfStakeholder(issue, id).length > 0
         const v = stakeholderSolutionsView(issue, id, dataBasedOnly)
+        const uncovered = stakeholderUncoveredNeeds(issue, cross, id, dataBasedOnly)
+        // Some needs are covered only by a cross-issue solution.
+        const crossOnly = uncovered.length < v.uncovered.length
         const p = `stakeholder-solutions-${issue.number}`
         if (!hasNeeds) {
           return (
@@ -42,6 +50,8 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
             </IssueSection>
           )
         }
+        // v.uncovered, not uncovered: a need covered only by a cross-issue
+        // solution still passes the filter.
         const filteredOut = dataBasedOnly && v.solutions.length === 0 && v.uncovered.length === 0
         return (
           <IssueSection key={issue.number} issue={issue} tab="solutions">
@@ -51,7 +61,7 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
               <>
                 <Part id={`${p}-covering`} title={tp.solutionsHeading}>
                   {v.solutions.length === 0 ? (
-                    <Empty>{tp.solutionsNone}</Empty>
+                    <Empty>{crossOnly ? tp.solutionsNoneCrossOnly : tp.solutionsNone}</Empty>
                   ) : (
                     <ul className="space-y-3">
                       {v.solutions.map(({ solution, needs }) => (
@@ -79,11 +89,11 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
                 </Part>
 
                 <Part id={`${p}-uncovered`} title={tp.uncoveredNeeds}>
-                  {v.uncovered.length === 0 ? (
+                  {uncovered.length === 0 ? (
                     <Empty>{tp.uncoveredNeedsNone}</Empty>
                   ) : (
                     <ul className="space-y-3">
-                      {v.uncovered.map((item) => (
+                      {uncovered.map((item) => (
                         <li key={item.need.id}>
                           <NeedItem
                             item={item}

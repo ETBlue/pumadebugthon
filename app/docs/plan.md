@@ -923,3 +923,11 @@ ETBlue, 2026-10-22: no app link was ever shared, so every redirect that exists o
 | Task | Status |
 |---|---|
 | W1: remove `legacyListRedirect`, `homeRedirect`, `legacyIssueTab`, `legacyIssueTabTarget`, `LegacySolution`, `legacySolutionPath`, `legacySolutionTarget`, `legacyStakeholderPageSearch` and their tests | Done (2026-10-22) |
+
+## Phase X: detail page layout (design 3.2, decision 111)
+
+ETBlue, 2026-10-22: the detail pages get a full-width band with a back button and the h1. The tabs become a side menu from `md`. The metadata moves to the top of 總覽. Only the story page keeps the breadcrumb.
+
+| Task | Status |
+|---|---|
+| X1: `PageBand`, `BackLink`, `backLink.ts`, side menu in `PageTabs`, stakeholder menu column from `xl`, metadata on 總覽, tests, browser check | Done (2026-10-22). Checked with Playwright at 360, 768, 1024, 1280 and 1440 px, light and dark: no page-level sideways scroll, no console errors, no axe-core violations; the back button returns to a filtered list |

@@ -13,6 +13,7 @@ import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { evidenceShare, sharePercent } from '@/lib/coverage'
 import { crossSolutionTabCounts, issuesOfCross } from '@/lib/crossIssue'
+import { rememberListSearch } from '@/lib/backLink'
 import { availableIssues } from '@/lib/issues'
 import {
   clearListFilters, CROSS_ISSUE_VALUE, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
@@ -92,6 +93,12 @@ function SolutionsBody({ index }: { index: IndexFile }) {
   useEffect(() => {
     if (replace) navigate({ pathname, search: cleanSearch }, { replace: true, preventScrollReset: true })
   }, [replace, cleanSearch, pathname, navigate])
+
+  // Remember the clean URL, so the back button of a detail page comes back
+  // to this list with the same sort, filters and search (decision 111).
+  useEffect(() => {
+    if (ready && !replace) rememberListSearch('solutions', cleanSearch)
+  }, [ready, replace, cleanSearch])
 
   const onNavigate = (next: string, mode: HistoryMode) =>
     navigate({ pathname, search: next }, { replace: mode === 'replace', preventScrollReset: true })

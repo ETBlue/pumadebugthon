@@ -1,6 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
-import { Breadcrumb } from '@/components/Breadcrumb'
+import { PageBand, PageBody, type BackTarget } from '@/components/PageBand'
 import { PageTabs } from '@/components/PageTabs'
 import { CellText } from '@/components/CellText'
 import { Field } from '@/components/Field'
@@ -22,13 +22,13 @@ import { CrossWantsTab, WantsTab } from '@/components/solution/WantsTab'
 import { TagBadge } from '@/components/TagBadge'
 import { useCrossIssue, useIndex, useIssue, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
+import { backListPath } from '@/lib/backLink'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { crossCoverageIssueNumbers, crossSolutionTabCounts, crossSolutionTitle, findCrossSolution } from '@/lib/crossIssue'
 import {
   crossSolutionPath, parseSolutionSlug, parseSolutionTab, SOLUTION_TABS, solutionPath, type SolutionTab,
 } from '@/lib/entityPaths'
 import { findIssue, tabPath } from '@/lib/issuePage'
-import { stripMarkdown } from '@/lib/markdown'
 import { findSolution, solutionTitle } from '@/lib/solutionPage'
 import { solutionTabCounts, solutionTabLabel } from '@/lib/tabCounts'
 import type { AvailableIssueSummary, CrossIssueFile, CrossSolution, IndexFile, IssueFile, Solution as SolutionType } from '@/types'
@@ -40,10 +40,14 @@ const tx = t.crossIssue
  * name 「相關或類似的政策與做法」. The page title uses the short tab name. */
 const tabHeading = (name: SolutionTab) => (name === 'policies' ? tp.policiesHeading : tp.tabs[name])
 
+/** The back button of the band (decision 111): the solution list, with the
+ * sort, filters and search the reader last used there in this session. */
+const backToSolutions = (): BackTarget => ({ to: backListPath('solutions'), label: t.backLink.solutions })
+
 /** The links shown when the issue or the solution is not found. */
 function NotFound({ title, body, issueNumber }: { title: string; body: string; issueNumber?: number }) {
   return (
-    <>
+    <PageBody>
       <PageTitle parts={[title]} />
       <h1 className="text-2xl font-bold">{title}</h1>
       <p className="mt-3">{body}</p>
@@ -55,7 +59,7 @@ function NotFound({ title, body, issueNumber }: { title: string; body: string; i
         {issueNumber === undefined && <li><Link to="/issues" className={targetLinkClass}>{tp.issuesLink}</Link></li>}
         <li><Link to="/" className={targetLinkClass}>{tp.backHome}</Link></li>
       </ul>
-    </>
+    </PageBody>
   )
 }
 
@@ -65,7 +69,7 @@ function NotFound({ title, body, issueNumber }: { title: string; body: string; i
 export default function Solution() {
   const index = useIndex()
   const { slug = '' } = useParams()
-  if (index.status !== 'ready') return <LoadState state={index} />
+  if (index.status !== 'ready') return <PageBody><LoadState state={index} /></PageBody>
   const parsed = parseSolutionSlug(slug)
   if (parsed === null) {
     return <NotFound title={tp.notFoundTitle} body={tp.slugNotFoundBody(slug)} />
@@ -82,7 +86,7 @@ export default function Solution() {
 
 function SolutionLoader({ index, summary, code }: { index: IndexFile; summary: AvailableIssueSummary; code: string }) {
   const issue = useIssue(summary.folder)
-  if (issue.status !== 'ready') return <LoadState state={issue} />
+  if (issue.status !== 'ready') return <PageBody><LoadState state={issue} /></PageBody>
   const solution = findSolution(issue.data, code)
   if (!solution) {
     return <NotFound title={tp.notFoundTitle} body={tp.notFoundBody(summary.number, code)} issueNumber={summary.number} />
@@ -101,54 +105,55 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
   return (
     <>
       <PageTitle parts={[solutionTitle(n, sol), tab && tab !== 'overview' ? tp.tabs[tab] : null, tp.titlePart]} />
-      <Breadcrumb
-        items={[
-          { name: t.breadcrumb.home, to: '/' },
-          { name: t.breadcrumb.solutions, to: '/solutions' },
-          { id: t.solutionId(n, sol.id), name: stripMarkdown(sol.name.text) },
-        ]}
-      />
-
-      <h1 className="mt-4 text-2xl font-bold md:text-3xl">
+      <PageBand back={backToSolutions()}>
         <span className="mr-1 font-mono">{t.solutionId(n, sol.id)}</span>{' '}
         <CellText cell={sol.name} />
-      </h1>
-      <p className="mt-2">
-        {tp.issueLine}
-        <Link to={{ pathname: tabPath(n, 'overview'), search }} className={linkClass}>{issueTitle}</Link>
-      </p>
-      <p className={`mt-3 leading-relaxed ${proseClass}`}><Markdown text={sol.summary} /></p>
-      <dl className="mt-3 space-y-1.5 text-sm">
-        {sol.spaces.length > 0 && (
-          <Field label={tp.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={sol.spaces} /></Field>
-        )}
-        <Field label={tp.added}><time dateTime={sol.added}>{sol.added}</time></Field>
-      </dl>
+      </PageBand>
 
-      <PageTabs
-        label={tp.tabsLabel}
-        tabs={SOLUTION_TABS}
-        current={tab}
-        nameOf={tabHeading}
-        labelOf={(name) => solutionTabLabel(name, counts)}
-        scrollOnPhone
-        pathOf={(name) => solutionPath(n, sol.id, name)}
-        notFound={tp.tabNotFound}
-        overviewPath={solutionPath(n, sol.id)}
-        overviewLink={tp.goToOverview}
-      >
-        {(name) => {
-          switch (name) {
-            case 'overview': return <OverviewTab issue={issue} solution={sol} />
-            case 'needs': return <NeedsTab issue={issue} solution={sol} stakeholders={index.stakeholders} />
-            case 'wants': return <WantsTab index={index} issue={issue} solution={sol} />
-            case 'stakeholders': return <StakeholdersTab index={index} issue={issue} solution={sol} />
-            case 'conflicts': return <ConflictsTab index={index} issue={issue} solution={sol} />
-            case 'measures': return <MeasuresTab solution={sol} />
-            case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={n} />
-          }
-        }}
-      </PageTabs>
+      <PageBody>
+        <PageTabs
+          label={tp.tabsLabel}
+          tabs={SOLUTION_TABS}
+          current={tab}
+          nameOf={tabHeading}
+          labelOf={(name) => solutionTabLabel(name, counts)}
+          scrollOnPhone
+          pathOf={(name) => solutionPath(n, sol.id, name)}
+          notFound={tp.tabNotFound}
+          overviewPath={solutionPath(n, sol.id)}
+          overviewLink={tp.goToOverview}
+        >
+          {(name) => {
+            switch (name) {
+              case 'overview':
+                return (
+                  <>
+                    {/* The metadata is at the top of 總覽 (decision 111). */}
+                    <SolutionMeta
+                      spaces={sol.spaces}
+                      added={sol.added}
+                      summary={sol.summary}
+                      index={index}
+                      issueLine={
+                        <>
+                          {tp.issueLine}
+                          <Link to={{ pathname: tabPath(n, 'overview'), search }} className={linkClass}>{issueTitle}</Link>
+                        </>
+                      }
+                    />
+                    <OverviewTab issue={issue} solution={sol} />
+                  </>
+                )
+              case 'needs': return <NeedsTab issue={issue} solution={sol} stakeholders={index.stakeholders} />
+              case 'wants': return <WantsTab index={index} issue={issue} solution={sol} />
+              case 'stakeholders': return <StakeholdersTab index={index} issue={issue} solution={sol} />
+              case 'conflicts': return <ConflictsTab index={index} issue={issue} solution={sol} />
+              case 'measures': return <MeasuresTab solution={sol} />
+              case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={n} />
+            }
+          }}
+        </PageTabs>
+      </PageBody>
     </>
   )
 }
@@ -158,7 +163,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
  * message. */
 function CrossSolutionLoader({ index, code }: { index: IndexFile; code: string }) {
   const cross = useCrossIssue()
-  if (cross.status !== 'ready') return <LoadState state={cross} />
+  if (cross.status !== 'ready') return <PageBody><LoadState state={cross} /></PageBody>
   const solution = findCrossSolution(cross.data, code)
   if (cross.data === null || solution === null) {
     return <NotFound title={tp.notFoundTitle} body={tx.notFoundBody(code)} />
@@ -178,7 +183,7 @@ function CrossIssueFilesLoader({ index, data, solution }: { index: IndexFile; da
     [index, data, solution],
   )
   const issues = useIssues(folders)
-  if (issues.status !== 'ready') return <LoadState state={issues} />
+  if (issues.status !== 'ready') return <PageBody><LoadState state={issues} /></PageBody>
   return <CrossSolutionContent index={index} data={data} issues={issues.data} solution={solution} />
 }
 
@@ -195,55 +200,79 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
   return (
     <>
       <PageTitle parts={[crossSolutionTitle(sol), tab && tab !== 'overview' ? tp.tabs[tab] : null, tp.titlePart]} />
-      <Breadcrumb
-        items={[
-          { name: t.breadcrumb.home, to: '/' },
-          { name: t.breadcrumb.solutions, to: '/solutions' },
-          { id: sol.code, name: sol.name },
-        ]}
-      />
-
-      <h1 className="mt-4 text-2xl font-bold md:text-3xl">
+      <PageBand back={backToSolutions()}>
         <span className="mr-1 font-mono">{sol.code}</span>{' '}
         {sol.tag && <TagBadge kind={sol.tag} className="mr-1.5" />}
         {sol.name}
-      </h1>
-      <p className="mt-2">
-        {tx.issueLine}
-        <CrossIssueLinks solution={sol} />
-      </p>
-      <p className={`mt-3 leading-relaxed ${proseClass}`}><Markdown text={sol.summary} /></p>
-      <dl className="mt-3 space-y-1.5 text-sm">
-        {sol.spaces.length > 0 && (
-          <Field label={tp.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={sol.spaces} /></Field>
-        )}
-        <Field label={tp.added}><time dateTime={sol.added}>{sol.added}</time></Field>
-      </dl>
+      </PageBand>
 
-      <PageTabs
-        label={tp.tabsLabel}
-        tabs={SOLUTION_TABS}
-        current={tab}
-        nameOf={tabHeading}
-        labelOf={(name) => solutionTabLabel(name, counts)}
-        scrollOnPhone
-        pathOf={(name) => crossSolutionPath(sol.code, name)}
-        notFound={tp.tabNotFound}
-        overviewPath={crossSolutionPath(sol.code)}
-        overviewLink={tp.goToOverview}
-      >
-        {(name) => {
-          switch (name) {
-            case 'overview': return <CrossOverviewTab {...common} />
-            case 'needs': return <CrossNeedsTab {...common} />
-            case 'wants': return <CrossWantsTab {...common} />
-            case 'stakeholders': return <CrossStakeholdersTab {...common} />
-            case 'conflicts': return <CrossConflictsTab {...common} />
-            case 'measures': return <CrossMeasuresTab solution={sol} />
-            case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={null} />
-          }
-        }}
-      </PageTabs>
+      <PageBody>
+        <PageTabs
+          label={tp.tabsLabel}
+          tabs={SOLUTION_TABS}
+          current={tab}
+          nameOf={tabHeading}
+          labelOf={(name) => solutionTabLabel(name, counts)}
+          scrollOnPhone
+          pathOf={(name) => crossSolutionPath(sol.code, name)}
+          notFound={tp.tabNotFound}
+          overviewPath={crossSolutionPath(sol.code)}
+          overviewLink={tp.goToOverview}
+        >
+          {(name) => {
+            switch (name) {
+              case 'overview':
+                return (
+                  <>
+                    {/* The metadata is at the top of 總覽 (decision 111). */}
+                    <SolutionMeta
+                      spaces={sol.spaces}
+                      added={sol.added}
+                      summary={sol.summary}
+                      index={index}
+                      issueLine={
+                        <>
+                          {tx.issueLine}
+                          <CrossIssueLinks solution={sol} />
+                        </>
+                      }
+                    />
+                    <CrossOverviewTab {...common} />
+                  </>
+                )
+              case 'needs': return <CrossNeedsTab {...common} />
+              case 'wants': return <CrossWantsTab {...common} />
+              case 'stakeholders': return <CrossStakeholdersTab {...common} />
+              case 'conflicts': return <CrossConflictsTab {...common} />
+              case 'measures': return <CrossMeasuresTab solution={sol} />
+              case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={null} />
+            }
+          }}
+        </PageTabs>
+      </PageBody>
     </>
+  )
+}
+
+/** The metadata of a solution at the top of the 總覽 tab (decision 111): the
+ * 議題 line, the summary, the space types and the date it was added. */
+function SolutionMeta({ issueLine, summary, spaces, added, index }: {
+  issueLine: ReactNode
+  summary: string
+  spaces: string[]
+  added: string
+  index: IndexFile
+}) {
+  return (
+    <div className="mb-8">
+      <p>{issueLine}</p>
+      <p className={`mt-3 leading-relaxed ${proseClass}`}><Markdown text={summary} /></p>
+      <dl className="mt-3 space-y-1.5 text-sm">
+        {spaces.length > 0 && (
+          <Field label={tp.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={spaces} /></Field>
+        )}
+        <Field label={tp.added}><time dateTime={added}>{added}</time></Field>
+      </dl>
+    </div>
   )
 }

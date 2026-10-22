@@ -15,7 +15,8 @@ export interface BreadcrumbItem {
   to?: To
 }
 
-/** The breadcrumb above the h1 (design 3.2, decision 99): a nav with an ol,
+/** The breadcrumb of the story page, in the band above the h1 (design 3.15,
+ * decisions 99 and 111; the other detail pages have a back button instead): a nav with an ol,
  * a 「›」 between the items, and the last item marked as the current page.
  * A long name wraps inside its item, so a 360 px screen has no sideways scroll. */
 export function Breadcrumb({ items }: { items: BreadcrumbItem[] }) {

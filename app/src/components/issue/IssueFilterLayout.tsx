@@ -10,8 +10,8 @@ import { useIssueSpecial } from './useIssueStakeholder'
 
 /** A tab of the issue page with the side menu in filter mode (design 3.21,
  * decision 75: the 特別關注 chips limit the menu and filter the content):
- * the menu first (left column from lg, a Collapsible above the content
- * below lg), then the tab content with the filter status line at the top.
+ * the menu first (a column next to the tab side menu from xl, a
+ * Collapsible above the content below xl; decision 111), then the tab content with the filter status line at the top.
  * current is the result of stakeholderFilterOf (useIssueStakeholder), never
  * the raw URL value. context gives the counts of the menu (issue-wants,
  * issue-needs or issue-solutions). shown is the end of the status line, for

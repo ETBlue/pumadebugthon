@@ -56,8 +56,10 @@ const MainIdContext = createContext<string | null>(null)
 /** The side menu (design 3.21): the skip link, the filters group 「篩選」, the
  * count line and the tree (StakeholderTree) in a <nav>. Put it in
  * StakeholderMenuLayout.
- * From lg it is always shown. Below lg the whole side bar is one
- * Collapsible, closed by default, closed again after a pick. */
+ * From xl it is always shown. Below xl the whole side bar is one
+ * Collapsible, closed by default, closed again after a pick. From md the
+ * tab side menu of PageTabs is a column on the left, so the stakeholder
+ * menu has room for its own column only from xl (decision 111). */
 export function StakeholderMenu(props: StakeholderMenuProps) {
   const { ids, stakeholders, pathLabels, context, counts, filters, current } = props
   const [params, setParams] = useSearchParams()
@@ -68,7 +70,7 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
 
   const tree = useMemo(() => sideMenuTree(ids, stakeholders, pathLabels), [ids, stakeholders, pathLabels])
 
-  // Below lg: the whole side bar. Closed by default on every page (Q17).
+  // Below xl: the whole side bar. Closed by default on every page (Q17).
   const [open, setOpen] = useState(false)
 
   const pageFilters = sideBarFiltersOf(params)
@@ -87,12 +89,12 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
 
   return (
     <Collapsible open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className="group flex min-h-6 w-full items-center gap-2 rounded-md border px-3 py-2 text-left text-sm font-medium hover:bg-muted lg:hidden">
+      <CollapsibleTrigger className="group flex min-h-6 w-full items-center gap-2 rounded-md border px-3 py-2 text-left text-sm font-medium hover:bg-muted xl:hidden">
         <ChevronRight aria-hidden="true" className="size-4 shrink-0 transition-transform group-data-[state=open]:rotate-90" />
         <span className="min-w-0 break-words">{tm.trigger(picked === null ? null : tm.item(picked.id, picked.name))}</span>
       </CollapsibleTrigger>
-      {/* forceMount: from lg the side bar is always shown, also when closed. */}
-      <CollapsibleContent forceMount className="mt-2 space-y-4 data-[state=closed]:hidden lg:mt-0 lg:data-[state=closed]:block">
+      {/* forceMount: from xl the side bar is always shown, also when closed. */}
+      <CollapsibleContent forceMount className="mt-2 space-y-4 data-[state=closed]:hidden xl:mt-0 xl:data-[state=closed]:block">
         {mainId !== null && (
           // With hash URLs, href="#id" would change the route. Move focus instead.
           <a
@@ -148,10 +150,12 @@ export function StakeholderMenu(props: StakeholderMenuProps) {
   )
 }
 
-/** The layout of a page with the side menu (design 3.21). From lg: the menu
- * in a left column (16rem, 18rem from xl), sticky at the top, with its own
- * scroll when it is taller than the window. The main block is on the right.
- * Below lg: the menu above the main block. The menu comes first in the
+/** The layout of a page with the side menu (design 3.21, decision 111).
+ * From xl: the menu in a column (16rem) between the tab side menu of
+ * PageTabs and the main block, sticky at the top, with its own scroll when
+ * it is taller than the window. The main block is on the right. Below xl:
+ * the menu above the main block (at md and lg the tab side menu already
+ * takes a column, so a second column would leave too little room). The menu comes first in the
  * keyboard order. The main block gets an id and tabIndex={-1}, so the skip
  * link of the menu can move focus to it. menu null: the main block only,
  * full width (for example the 總覽 tab of the issue page). */
@@ -163,10 +167,10 @@ export function StakeholderMenuLayout({ menu, className, children }: {
   const mainId = useId()
   if (menu === null) return <div className={className}>{children}</div>
   return (
-    <div className={cn('lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] xl:grid-cols-[18rem_minmax(0,1fr)] lg:items-start lg:gap-8', className)}>
+    <div className={cn('xl:grid xl:grid-cols-[16rem_minmax(0,1fr)] xl:items-start xl:gap-8', className)}>
       {/* The grid item itself is sticky. Its parent (the grid) is as tall as
           the content, so it can stay at the top while the page scrolls. */}
-      <div className="mb-4 lg:sticky lg:top-4 lg:mb-0 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:p-1">
+      <div className="mb-4 xl:sticky xl:top-4 xl:mb-0 xl:max-h-[calc(100vh-2rem)] xl:overflow-y-auto xl:p-1">
         <MainIdContext.Provider value={mainId}>{menu}</MainIdContext.Provider>
       </div>
       <div id={mainId} tabIndex={-1} className="min-w-0 focus:outline-none">{children}</div>

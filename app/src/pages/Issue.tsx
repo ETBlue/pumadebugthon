@@ -7,15 +7,16 @@ import { StakeholdersTab } from '@/components/issue/StakeholdersTab'
 import { SummaryTab } from '@/components/issue/SummaryTab'
 import { WantsTab } from '@/components/issue/WantsTab'
 import type { IssueTabProps } from '@/components/issue/types'
-import { Breadcrumb } from '@/components/Breadcrumb'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { SpaceLinks } from '@/components/SpaceLinks'
+import { PageBand, PageBody, type BackTarget } from '@/components/PageBand'
 import { PageTabs } from '@/components/PageTabs'
 import { linkClass } from '@/components/styles'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
+import { backListPath } from '@/lib/backLink'
 import { availableIssues } from '@/lib/issues'
 import {
   findIssue, ISSUE_TABS, isSummaryTab, parseTab, tabPath, type IssueTab, type SummaryTab as SummaryTabName,
@@ -62,19 +63,9 @@ function BackHome() {
   )
 }
 
-/** The breadcrumb above the h1 on every tab (design 3.2, decision 99):
- * 首頁 › 議題 › #8 無菸城市. 議題 links to the list with no params. */
-function IssueBreadcrumb({ number, title }: { number: number; title: string }) {
-  return (
-    <Breadcrumb
-      items={[
-        { name: t.breadcrumb.home, to: '/' },
-        { name: t.breadcrumb.issues, to: '/issues' },
-        { id: t.issueId(number), name: title },
-      ]}
-    />
-  )
-}
+/** The back button of the band (decision 111): the issue list, with the
+ * sort, filters and search the reader last used there in this session. */
+const backToIssues = (): BackTarget => ({ to: backListPath('issues'), label: t.backLink.issues })
 
 /** Issue page (design 3.2): #/issues/:number/:tab? with nine tabs: 總覽,
  * 訴求, 需求, 解法, four 分析摘要 topics (decision 102) and 利害關係人 with
@@ -82,27 +73,29 @@ function IssueBreadcrumb({ number, title }: { number: number; title: string }) {
 export default function Issue() {
   const index = useIndex()
   const { number } = useParams()
-  if (index.status !== 'ready') return <LoadState state={index} />
+  if (index.status !== 'ready') return <PageBody><LoadState state={index} /></PageBody>
 
   const found = findIssue(index.data, number)
   if (found.kind === 'notFound') {
     return (
-      <>
+      <PageBody>
         <PageTitle parts={[ti.notFoundTitle]} />
         <h1 className="text-2xl font-bold">{ti.notFoundTitle}</h1>
         <p className="mt-3">{ti.notFoundBody}</p>
         <BackHome />
-      </>
+      </PageBody>
     )
   }
   if (found.kind === 'unavailable') {
+    const title = t.issueCard.numberTitle(found.issue.number, found.issue.title)
     return (
       <>
-        <PageTitle parts={[t.issueCard.numberTitle(found.issue.number, found.issue.title)]} />
-        <IssueBreadcrumb number={found.issue.number} title={found.issue.title} />
-        <h1 className="mt-4 text-2xl font-bold">{t.issueCard.numberTitle(found.issue.number, found.issue.title)}</h1>
-        <p className="mt-3">{ti.unavailableBody}</p>
-        <BackHome />
+        <PageTitle parts={[title]} />
+        <PageBand back={backToIssues()}>{title}</PageBand>
+        <PageBody>
+          <p>{ti.unavailableBody}</p>
+          <BackHome />
+        </PageBody>
       </>
     )
   }
@@ -130,38 +123,54 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
       <PageTitle
         parts={[t.issueCard.numberTitle(summary.number, summary.title), tab && tab !== 'overview' ? ti.tabs[tab] : null]}
       />
-      <IssueBreadcrumb number={summary.number} title={summary.title} />
-      <h1 className="mt-4 text-2xl font-bold md:text-3xl">{t.issueCard.numberTitle(summary.number, summary.title)}</h1>
-      <dl className="mt-3 space-y-1.5 text-sm">
-        {summary.spaces.length > 0 && (
-          <Field label={ti.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={summary.spaces} /></Field>
-        )}
-        {summary.updated && (
-          <Field label={ti.updated}><time dateTime={summary.updated}>{summary.updated}</time></Field>
-        )}
-      </dl>
+      <PageBand back={backToIssues()}>{t.issueCard.numberTitle(summary.number, summary.title)}</PageBand>
 
-      <PageTabs
-        label={ti.tabsLabel}
-        tabs={ISSUE_TABS}
-        current={tab}
-        nameOf={(name) => (isSummaryTab(name) ? ti.summaryHeadings[name] : ti.tabs[name])}
-        labelOf={(name) => tabLabel(name, counts)}
-        pathOf={(name) => tabPath(summary.number, name)}
-        notFound={ti.tabNotFound}
-        overviewPath={tabPath(summary.number, 'overview')}
-        overviewLink={ti.goToOverview}
-        scrollOnPhone
-      >
-        {(name) => {
-          const Content = TAB_CONTENT[name]
-          return issue.status === 'ready' ? (
-            <Content index={index} summary={summary} issue={issue.data} available={available} />
-          ) : (
-            <LoadState state={issue} />
-          )
-        }}
-      </PageTabs>
+      <PageBody>
+        <PageTabs
+          label={ti.tabsLabel}
+          tabs={ISSUE_TABS}
+          current={tab}
+          nameOf={(name) => (isSummaryTab(name) ? ti.summaryHeadings[name] : ti.tabs[name])}
+          labelOf={(name) => tabLabel(name, counts)}
+          pathOf={(name) => tabPath(summary.number, name)}
+          notFound={ti.tabNotFound}
+          overviewPath={tabPath(summary.number, 'overview')}
+          overviewLink={ti.goToOverview}
+          scrollOnPhone
+        >
+          {(name) => {
+            const Content = TAB_CONTENT[name]
+            return (
+              <>
+                {/* The metadata is at the top of 總覽 (decision 111). It needs
+                    only index.json, so it shows while the issue loads. */}
+                {name === 'overview' && <IssueMeta index={index} summary={summary} />}
+                {issue.status === 'ready' ? (
+                  <Content index={index} summary={summary} issue={issue.data} available={available} />
+                ) : (
+                  <LoadState state={issue} />
+                )}
+              </>
+            )
+          }}
+        </PageTabs>
+      </PageBody>
     </>
+  )
+}
+
+/** The metadata of the issue at the top of the 總覽 tab (decision 111): the
+ * space types and the last update. Nothing when both are empty. */
+function IssueMeta({ index, summary }: { index: IndexFile; summary: AvailableIssueSummary }) {
+  if (summary.spaces.length === 0 && !summary.updated) return null
+  return (
+    <dl className="mb-6 space-y-1.5 text-sm">
+      {summary.spaces.length > 0 && (
+        <Field label={ti.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={summary.spaces} /></Field>
+      )}
+      {summary.updated && (
+        <Field label={ti.updated}><time dateTime={summary.updated}>{summary.updated}</time></Field>
+      )}
+    </dl>
   )
 }

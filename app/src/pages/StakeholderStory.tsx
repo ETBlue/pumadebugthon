@@ -5,6 +5,7 @@ import { CellText } from '@/components/CellText'
 import { ConflictView } from '@/components/ConflictView'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
+import { PageBand, PageBody } from '@/components/PageBand'
 import { PageTitle } from '@/components/PageTitle'
 import { PriorityLegend } from '@/components/PriorityCounts'
 import { SolutionCard } from '@/components/SolutionCard'
@@ -32,7 +33,7 @@ export default function StakeholderStory() {
   const index = useIndex()
   const { id = '', number = '', storyId = '' } = useParams()
   const location = useLocation()
-  if (index.status !== 'ready') return <LoadState state={index} />
+  if (index.status !== 'ready') return <PageBody><LoadState state={index} /></PageBody>
 
   const resolved = resolveId(index.data.stakeholders, id)
   if (resolved !== null && resolved !== id) {
@@ -57,7 +58,7 @@ function StoryLoader({ index, summary, stakeholder, id, storyId }: {
 }) {
   const issue = useIssue(summary.folder)
   const { search } = useLocation()
-  if (issue.status !== 'ready') return <LoadState state={issue} />
+  if (issue.status !== 'ready') return <PageBody><LoadState state={issue} /></PageBody>
   const result = findStory(issue.data, id, storyId)
   if (result.kind === 'redirect') {
     // The story belongs to another stakeholder. The target uses the
@@ -96,138 +97,153 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
   return (
     <>
       <PageTitle parts={[title, s.name]} />
-      {/* A story has no title, so its item is the ID only (decision 99). */}
-      <Breadcrumb
-        items={[
-          { name: t.breadcrumb.home, to: '/' },
-          { name: t.breadcrumb.stakeholders, to: '/stakeholders' },
-          { id: s.id, name: s.name, to: stakeholderTabPath(s.id, 'overview') },
-          { id: title },
-        ]}
-      />
-      <h1 className="mt-4 text-2xl font-bold md:text-3xl font-mono">{title}</h1>
-
-      <Section heading={ts.storyHeading}>
-        {/* Three labeled lines, so each tag stays next to its own text. */}
-        <dl className={`mt-2 space-y-2 rounded-lg border p-3 md:p-4 ${proseClass}`}>
-          <div className={row}>
-            <dt className={label}>{ts.asA}</dt>
-            <dd className="min-w-0">
-              <Link to={stakeholderTabPath(s.id, 'overview')} className={linkClass}>{s.name}</Link>
-              <span className="ml-1.5 font-mono text-sm text-muted-foreground">{s.id}</span>
-            </dd>
-          </div>
-          <div className={row}>
-            <dt className={label}>{ts.want}</dt>
-            <dd className="min-w-0"><CellText cell={story.want} /></dd>
-          </div>
-          <div className={row}>
-            <dt className={label}>{ts.soThat}</dt>
-            <dd className="min-w-0"><CellText cell={story.soThat} /></dd>
-          </div>
-        </dl>
-        <dl className="mt-3 space-y-2 text-sm">
-          {story.source !== null && (
+      {/* The band (decision 111): the breadcrumb on top, then the back
+          button to the stakeholder page and the h1. The story page keeps
+          its breadcrumb (decision 99, ETBlue asked to keep it here). A
+          story has no title, so its item is the ID only. */}
+      <PageBand
+        back={{
+          to: stakeholderTabPath(s.id, 'overview'),
+          label: t.backLink.stakeholder(s.id, s.name),
+          short: t.backLink.stakeholderShort(s.id),
+        }}
+        above={
+          <Breadcrumb
+            items={[
+              { name: t.breadcrumb.home, to: '/' },
+              { name: t.breadcrumb.stakeholders, to: '/stakeholders' },
+              { id: s.id, name: s.name, to: stakeholderTabPath(s.id, 'overview') },
+              { id: title },
+            ]}
+          />
+        }
+        titleClassName="font-mono"
+      >
+        {title}
+      </PageBand>
+      <PageBody className="pt-0">
+        <Section heading={ts.storyHeading}>
+          {/* Three labeled lines, so each tag stays next to its own text. */}
+          <dl className={`mt-2 space-y-2 rounded-lg border p-3 md:p-4 ${proseClass}`}>
             <div className={row}>
-              <dt className={label}>{ts.source}</dt>
-              {/* A long URL in the source can break anywhere, so a narrow screen never scrolls sideways. */}
-              <dd className="min-w-0 wrap-anywhere"><Markdown text={story.source} /></dd>
+              <dt className={label}>{ts.asA}</dt>
+              <dd className="min-w-0">
+                <Link to={stakeholderTabPath(s.id, 'overview')} className={linkClass}>{s.name}</Link>
+                <span className="ml-1.5 font-mono text-sm text-muted-foreground">{s.id}</span>
+              </dd>
             </div>
-          )}
-          <div className={row}>
-            <dt className={label}>{ts.priority}</dt>
-            <dd className="min-w-0">
-              <TagBadge kind={priority.tag} className="mr-1.5" />
-              {priorityLabel(priority.priority)}
-              <span className="mt-1 block text-muted-foreground">{ts.priorityNote}</span>
-              <span className="mt-1 block"><PriorityLegend /></span>
-            </dd>
-          </div>
-          <div className={row}>
-            <dt className={label}>{ts.issue}</dt>
-            <dd className="min-w-0">
-              <Link to={tabPath(n, 'overview')} className={linkClass}>{t.issueCard.numberTitle(n, summary.title)}</Link>
-            </dd>
-          </div>
-        </dl>
-      </Section>
+            <div className={row}>
+              <dt className={label}>{ts.want}</dt>
+              <dd className="min-w-0"><CellText cell={story.want} /></dd>
+            </div>
+            <div className={row}>
+              <dt className={label}>{ts.soThat}</dt>
+              <dd className="min-w-0"><CellText cell={story.soThat} /></dd>
+            </div>
+          </dl>
+          <dl className="mt-3 space-y-2 text-sm">
+            {story.source !== null && (
+              <div className={row}>
+                <dt className={label}>{ts.source}</dt>
+                {/* A long URL in the source can break anywhere, so a narrow screen never scrolls sideways. */}
+                <dd className="min-w-0 wrap-anywhere"><Markdown text={story.source} /></dd>
+              </div>
+            )}
+            <div className={row}>
+              <dt className={label}>{ts.priority}</dt>
+              <dd className="min-w-0">
+                <TagBadge kind={priority.tag} className="mr-1.5" />
+                {priorityLabel(priority.priority)}
+                <span className="mt-1 block text-muted-foreground">{ts.priorityNote}</span>
+                <span className="mt-1 block"><PriorityLegend /></span>
+              </dd>
+            </div>
+            <div className={row}>
+              <dt className={label}>{ts.issue}</dt>
+              <dd className="min-w-0">
+                <Link to={tabPath(n, 'overview')} className={linkClass}>{t.issueCard.numberTitle(n, summary.title)}</Link>
+              </dd>
+            </div>
+          </dl>
+        </Section>
 
-      <Section heading={ts.wantHeading}>
-        <p className="mt-2">
-          <Link to={wantFocusPath(n, view.wantKey)} className={linkClass}>{ts.wantLink(n, view.wantKey)}</Link>
-        </p>
-        <GroupPart
-          group={view.wantGroup}
-          groupLabel={ts.wantGroup}
-          othersLabel={ts.wantOthers}
-          othersNone={ts.wantOthersNone}
-          noGroup={ts.wantNoGroup}
-          tab="wants"
-          stakeholders={index.stakeholders}
-        />
-      </Section>
-
-      <Section heading={ts.needHeading}>
-        <p className="mt-2">
-          <Link to={needFocusPath(n, view.needKey)} className={linkClass}>{ts.needLink(n, view.needKey)}</Link>
-        </p>
-        <GroupPart
-          group={view.needGroup}
-          groupLabel={ts.needGroup}
-          othersLabel={ts.needOthers}
-          othersNone={ts.needOthersNone}
-          noGroup={ts.needNoGroup}
-          tab="needs"
-          stakeholders={index.stakeholders}
-        />
-      </Section>
-
-      <Section heading={ts.conflictsHeading}>
-        {view.conflicts.length === 0 ? (
-          <p className="mt-2 text-muted-foreground">{ts.conflictsNone}</p>
-        ) : (
-          <ul className="mt-2 space-y-4">
-            {view.conflicts.map((c) => (
-              <li key={c.view.conflict.id}>
-                <ConflictView
-                  view={c.view}
-                  issue={issue}
-                  stakeholders={index.stakeholders}
-                  headingLevel={3}
-                  otherStories={c.otherStories}
-                  focusTarget={false}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-      </Section>
-
-      <Section heading={ts.solutionsHeading}>
-        {view.solutions.length === 0 ? (
-          <p className="mt-2 text-muted-foreground">
-            {priority.priority === 'W' ? ts.solutionsWontDo : ts.solutionsNone}
+        <Section heading={ts.wantHeading}>
+          <p className="mt-2">
+            <Link to={wantFocusPath(n, view.wantKey)} className={linkClass}>{ts.wantLink(n, view.wantKey)}</Link>
           </p>
-        ) : (
-          <>
-            <p className="mt-2 text-sm text-muted-foreground">{ts.solutionsIntro}</p>
-            <ul className="mt-2 space-y-2">
-              {view.solutions.map((sol) => (
-                <li key={sol.id}><SolutionCard variant="compact" solution={sol} issueNumber={n} /></li>
+          <GroupPart
+            group={view.wantGroup}
+            groupLabel={ts.wantGroup}
+            othersLabel={ts.wantOthers}
+            othersNone={ts.wantOthersNone}
+            noGroup={ts.wantNoGroup}
+            tab="wants"
+            stakeholders={index.stakeholders}
+          />
+        </Section>
+
+        <Section heading={ts.needHeading}>
+          <p className="mt-2">
+            <Link to={needFocusPath(n, view.needKey)} className={linkClass}>{ts.needLink(n, view.needKey)}</Link>
+          </p>
+          <GroupPart
+            group={view.needGroup}
+            groupLabel={ts.needGroup}
+            othersLabel={ts.needOthers}
+            othersNone={ts.needOthersNone}
+            noGroup={ts.needNoGroup}
+            tab="needs"
+            stakeholders={index.stakeholders}
+          />
+        </Section>
+
+        <Section heading={ts.conflictsHeading}>
+          {view.conflicts.length === 0 ? (
+            <p className="mt-2 text-muted-foreground">{ts.conflictsNone}</p>
+          ) : (
+            <ul className="mt-2 space-y-4">
+              {view.conflicts.map((c) => (
+                <li key={c.view.conflict.id}>
+                  <ConflictView
+                    view={c.view}
+                    issue={issue}
+                    stakeholders={index.stakeholders}
+                    headingLevel={3}
+                    otherStories={c.otherStories}
+                    focusTarget={false}
+                  />
+                </li>
               ))}
             </ul>
-          </>
-        )}
-      </Section>
+          )}
+        </Section>
 
-      <Section heading={ts.moreHeading}>
-        <ul className="mt-2 space-y-1">
-          <li><Link to={opinionPickTo(n, view.wantKey, false)} className={linkClass}>{ts.pickLink(n)}</Link></li>
-          <li>
-            <Link to={stakeholderTabPath(s.id, 'overview')} className={linkClass}>{ts.stakeholderLink(s.id, s.name)}</Link>
-          </li>
-        </ul>
-      </Section>
+        <Section heading={ts.solutionsHeading}>
+          {view.solutions.length === 0 ? (
+            <p className="mt-2 text-muted-foreground">
+              {priority.priority === 'W' ? ts.solutionsWontDo : ts.solutionsNone}
+            </p>
+          ) : (
+            <>
+              <p className="mt-2 text-sm text-muted-foreground">{ts.solutionsIntro}</p>
+              <ul className="mt-2 space-y-2">
+                {view.solutions.map((sol) => (
+                  <li key={sol.id}><SolutionCard variant="compact" solution={sol} issueNumber={n} /></li>
+                ))}
+              </ul>
+            </>
+          )}
+        </Section>
+
+        <Section heading={ts.moreHeading}>
+          <ul className="mt-2 space-y-1">
+            <li><Link to={opinionPickTo(n, view.wantKey, false)} className={linkClass}>{ts.pickLink(n)}</Link></li>
+            <li>
+              <Link to={stakeholderTabPath(s.id, 'overview')} className={linkClass}>{ts.stakeholderLink(s.id, s.name)}</Link>
+            </li>
+          </ul>
+        </Section>
+      </PageBody>
     </>
   )
 }
@@ -294,7 +310,7 @@ function NotFound({ number, storyId, stakeholder, issue }: {
   issue?: AvailableIssueSummary
 }) {
   return (
-    <>
+    <PageBody>
       <PageTitle parts={[ts.notFoundTitle]} />
       <h1 className="text-2xl font-bold">{ts.notFoundTitle}</h1>
       <p className="mt-3">{ts.notFoundBody(number, storyId)}</p>
@@ -315,6 +331,6 @@ function NotFound({ number, storyId, stakeholder, issue }: {
         )}
         <li><Link to="/" className={linkClass}>{ts.backHome}</Link></li>
       </ul>
-    </>
+    </PageBody>
   )
 }

@@ -12,6 +12,7 @@ import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { evidenceShare, sharePercent, stakeholderCells, stakeholderSolutionCoverage } from '@/lib/coverage'
 import { stakeholderTabPath } from '@/lib/entityPaths'
+import { rememberListSearch } from '@/lib/backLink'
 import { availableIssues } from '@/lib/issues'
 import { filterStakeholders } from '@/lib/listFilter'
 import {
@@ -73,6 +74,12 @@ export default function Stakeholders() {
       navigate({ pathname, search: listUrlSearch(PAGE, parsed) }, { replace: true, preventScrollReset: true })
     }
   }, [parsed, pathname, navigate])
+
+  // Remember the clean URL, so the back button of a detail page comes back
+  // to this list with the same sort, filters, view and search (decision 111).
+  useEffect(() => {
+    if (parsed && !parsed.replace) rememberListSearch(PAGE, listUrlSearch(PAGE, parsed))
+  }, [parsed])
 
   function onNavigate(next: string, mode: HistoryMode) {
     navigate({ pathname, search: next }, { replace: mode === 'replace', preventScrollReset: true })

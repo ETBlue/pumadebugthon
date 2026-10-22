@@ -32,18 +32,21 @@ export const router = createHashRouter([
       // is a full-width band right under the header. The page puts the rest
       // in the page column (decision 106).
       { path: 'issues', element: <Issues />, handle: { fullWidth: true } },
-      { path: 'issues/:number/:tab?', element: <Issue /> },
+      // The detail pages are full width too: the band with the back button
+      // and the h1 is full width, and the page puts the rest in the page
+      // column (decision 111).
+      { path: 'issues/:number/:tab?', element: <Issue />, handle: { fullWidth: true } },
       // A moved stakeholder ID redirects on every sub-route (design 3.3).
       // There is no want or need page (decision 45). #/stakeholders and the
       // stakeholder page have no side bar, so they are plain routes
       // (decisions 87 and 94).
       { path: 'stakeholders', element: <Stakeholders />, handle: { fullWidth: true } },
-      { path: 'stakeholders/:id/stories/:number/:storyId', element: <StakeholderStory /> },
-      { path: 'stakeholders/:id/:tab?', element: <Stakeholder /> },
+      { path: 'stakeholders/:id/stories/:number/:storyId', element: <StakeholderStory />, handle: { fullWidth: true } },
+      { path: 'stakeholders/:id/:tab?', element: <Stakeholder />, handle: { fullWidth: true } },
       { path: 'solutions', element: <Solutions />, handle: { fullWidth: true } },
       // 2-A: a solution of an issue. X-A: a cross-issue solution (Task N11).
-      { path: 'solutions/:slug/:tab?', element: <Solution /> },
-      { path: 'spaces/:code', element: <Space /> },
+      { path: 'solutions/:slug/:tab?', element: <Solution />, handle: { fullWidth: true } },
+      { path: 'spaces/:code', element: <Space />, handle: { fullWidth: true } },
       { path: 'about', element: <About /> },
       // Unknown pages, also the removed #/wants and #/needs (design 3.7).
       { path: '*', element: <Placeholder /> },

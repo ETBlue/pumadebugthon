@@ -67,8 +67,9 @@ describe('the solution page tabs (decision 103)', () => {
       const html = render(`/solutions/2-A/${tab}`)
       expect(activeTab(html), tab).toBe(label)
       expect(titleOf(html), tab).toMatch(new RegExp(`^#2 A .+ · ${title} · 解法 · 市政提案小幫手$`))
-      // The same breadcrumb on every tab.
-      expect(html, tab).toContain('aria-label="頁面位置"')
+      // The same band on every tab: the back button, and no breadcrumb (decision 111).
+      expect(html, tab).toContain('href="/solutions"')
+      expect(html, tab).not.toContain('aria-label="頁面位置"')
     }
   })
 

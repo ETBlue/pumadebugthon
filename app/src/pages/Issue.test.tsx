@@ -3,12 +3,13 @@
 // so the page renders on the server with the fixtures.
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
+import { forgetListSearches, rememberListSearch } from '@/lib/backLink'
 import type { IndexFile, IssueFile } from '@/types'
 import Issue from './Issue'
 
@@ -51,6 +52,38 @@ function tabNames(html: string): string[] {
 
 const titleOf = (html: string) => /data-title="([^"]*)"/.exec(html)?.[1]
 const activeTab = (html: string) => /role="tab" aria-selected="true"[^>]*aria-label="([^"]+)"/.exec(html)?.[1]
+
+describe('the band, the side menu and the metadata (decision 111)', () => {
+  afterEach(() => forgetListSearches())
+
+  it('has the back button and the h1 in the band, and no breadcrumb', () => {
+    const html = render('/issues/1/wants')
+    expect(html).toMatch(/<a [^>]*href="\/issues"[^>]*>[\s\S]*?回到議題列表<\/span><\/a><h1[^>]*>#1 /)
+    expect(html).not.toContain('aria-label="頁面位置"')
+  })
+
+  it('the back button keeps the filters of the issue list the reader last saw', () => {
+    rememberListSearch('issues', '?sort=added&space=park')
+    expect(render('/issues/1')).toContain('href="/issues?sort=added&amp;space=park"')
+  })
+
+  it('has a side menu: a nav with the tab links, the current one marked', () => {
+    const html = render('/issues/1/needs?evidence=1&pick=W08')
+    const nav = /<nav aria-label="議題內容"[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? ''
+    const links = [...nav.matchAll(/<a ([^>]*)>/g)].map((m) => m[1])
+    expect(links).toHaveLength(9)
+    // The same URLs as the tabs: ?evidence= is kept, ?pick= is dropped.
+    expect(links[0]).toContain('href="/issues/1?evidence=1"')
+    expect(links[2]).toContain('href="/issues/1/needs?evidence=1"')
+    expect(links.filter((a) => a.includes('aria-current="page"'))).toEqual([links[2]])
+    expect(links[1]).toContain('aria-label="訴求 50・衝突 9"')
+  })
+
+  it('shows the metadata at the top of 總覽 only', () => {
+    expect(render('/issues/1')).toContain('更新日期')
+    expect(render('/issues/1/wants')).not.toContain('更新日期')
+  })
+})
 
 describe('old issue URLs (decision 110: no redirects)', () => {
   it('an old tab name shows 「找不到這個分頁」, like any unknown tab', () => {
@@ -134,10 +167,10 @@ describe('the issue page tabs', () => {
     expect(activeTab(html)).toBeUndefined()
   })
 
-  it('the tab list scrolls sideways below md and wraps from md', () => {
+  it('the tab list scrolls sideways below md, and the side menu takes its place from md', () => {
     const list = /role="tablist"[^>]*class="([^"]*)"|class="([^"]*)"[^>]*role="tablist"/.exec(render('/issues/1'))
     const cls = (list?.[1] ?? list?.[2] ?? '').split(' ')
-    expect(cls).toEqual(expect.arrayContaining(['flex-nowrap', 'overflow-x-auto', 'md:flex-wrap']))
+    expect(cls).toEqual(expect.arrayContaining(['flex-nowrap', 'overflow-x-auto', 'md:hidden']))
   })
 
   it('on a phone the scrolling tab list is as wide as the screen and never scrolls up and down', () => {
@@ -145,7 +178,7 @@ describe('the issue page tabs', () => {
     const list = /role="tablist"[^>]*class="([^"]*)"|class="([^"]*)"[^>]*role="tablist"/.exec(html)
     const cls = (list?.[1] ?? list?.[2] ?? '').split(' ')
     // -mx-4 cancels the px-4 of the page column; px-4 inside keeps the first tab in line.
-    expect(cls).toEqual(expect.arrayContaining(['-mx-4', 'w-[calc(100%+2rem)]', 'px-4', 'overflow-y-hidden', 'md:mx-0']))
+    expect(cls).toEqual(expect.arrayContaining(['-mx-4', 'w-[calc(100%+2rem)]', 'px-4', 'overflow-y-hidden']))
     // A label is one line in the scrolling list, so a tab is never taller than the others.
     const triggers = [...html.matchAll(/role="tab"[^>]*class="([^"]*)"/g)].map((m) => m[1])
     expect(triggers.every((c) => c.split(' ').includes('whitespace-nowrap'))).toBe(true)

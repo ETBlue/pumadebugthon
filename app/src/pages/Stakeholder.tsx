@@ -1,10 +1,10 @@
 import { useMemo, type ComponentType } from 'react'
 import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router'
-import { Breadcrumb } from '@/components/Breadcrumb'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { FilterStatus } from '@/components/FilterStatus'
 import { LoadState } from '@/components/LoadState'
+import { PageBand, PageBody, type BackTarget } from '@/components/PageBand'
 import { PageTabs } from '@/components/PageTabs'
 import { PageTitle } from '@/components/PageTitle'
 import type { StakeholderTabProps } from '@/components/stakeholder/IssueSection'
@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
+import { backListPath } from '@/lib/backLink'
 import { tabPath } from '@/lib/issuePage'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
@@ -26,7 +27,7 @@ import {
 import { hasNoIssue, resolveId } from '@/lib/stakeholders'
 import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
-import type { IndexFile, Stakeholder as StakeholderType } from '@/types'
+import type { AvailableIssueSummary, IndexFile, Stakeholder as StakeholderType } from '@/types'
 
 const tp = t.stakeholderPage
 
@@ -45,19 +46,19 @@ export default function Stakeholder() {
   const index = useIndex()
   const { id = '' } = useParams()
   const location = useLocation()
-  if (index.status !== 'ready') return <LoadState state={index} />
+  if (index.status !== 'ready') return <PageBody><LoadState state={index} /></PageBody>
 
   const resolved = resolveId(index.data.stakeholders, id)
   if (resolved === null) {
     return (
-      <>
+      <PageBody>
         <PageTitle parts={[tp.notFoundTitle]} />
         <h1 className="text-2xl font-bold">{tp.notFoundTitle}</h1>
         <p className="mt-3">{tp.notFoundBody(id)}</p>
         <p className="mt-3">
           <Link to="/" className={linkClass}>{tp.backHome}</Link>
         </p>
-      </>
+      </PageBody>
     )
   }
   if (resolved !== id) {
@@ -76,16 +77,31 @@ const TAB_CONTENT: Record<StakeholderTab, ComponentType<StakeholderTabProps>> = 
   solutions: SolutionsTab,
 }
 
-/** 首頁 › 利害關係人 › I06 身心障礙者（視障、輪椅使用者） (decisions 94 and 99). */
-function StakeholderBreadcrumb({ stakeholder: s }: { stakeholder: StakeholderType }) {
+/** The back button of the band (decision 111): the stakeholder list, with
+ * the sort, filters, view and search the reader last used there in this
+ * session. */
+const backToStakeholders = (): BackTarget => ({ to: backListPath('stakeholders'), label: t.backLink.stakeholders })
+
+/** The ID and the 分類路徑 of a stakeholder, at the top of 總覽 (decision
+ * 111), or under the band on the page of a stakeholder with no issue. */
+function IdAndPath({ index, stakeholder: s }: { index: IndexFile; stakeholder: StakeholderType }) {
+  const trail = pathTrail(s.path, index.pathLabels)
   return (
-    <Breadcrumb
-      items={[
-        { name: t.breadcrumb.home, to: '/' },
-        { name: t.breadcrumb.stakeholders, to: '/stakeholders' },
-        { id: s.id, name: s.name },
-      ]}
-    />
+    <>
+      <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>
+      {trail.length > 0 && (
+        <Field label={tp.path}>
+          <ol className="flex flex-wrap items-center gap-x-1">
+            {trail.map((step, i) => (
+              <li key={step.path} className="flex items-center gap-x-1">
+                {i > 0 && <span aria-hidden="true" className="text-muted-foreground">›</span>}
+                {step.label}
+              </li>
+            ))}
+          </ol>
+        </Field>
+      )}
+    </>
   )
 }
 
@@ -106,23 +122,20 @@ function FilterRow() {
 }
 
 /** The page of a stakeholder with no issue and no move target (decision 78):
- * the breadcrumb, the name, the ID, the path and a short note. No tabs,
+ * the band with the name, then the ID, the path and a short note. No tabs,
  * because there is nothing to show in them. This stakeholder is not in any
  * list or menu. */
 function NoIssueContent({ index, stakeholder: s }: { index: IndexFile; stakeholder: StakeholderType }) {
-  const trail = pathTrail(s.path, index.pathLabels)
   return (
     <>
       <PageTitle parts={[s.name]} />
-      <StakeholderBreadcrumb stakeholder={s} />
-      <h1 className="mt-4 text-2xl font-bold md:text-3xl">{s.name}</h1>
-      <dl className="mt-3 space-y-1.5 text-sm">
-        <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>
-        {trail.length > 0 && (
-          <Field label={tp.path}>{trail.map((step) => step.label).join(' › ')}</Field>
-        )}
-      </dl>
-      <p className="mt-6">{tp.noIssueNote}</p>
+      <PageBand back={backToStakeholders()}>{s.name}</PageBand>
+      <PageBody>
+        <dl className="space-y-1.5 text-sm">
+          <IdAndPath index={index} stakeholder={s} />
+        </dl>
+        <p className="mt-6">{tp.noIssueNote}</p>
+      </PageBody>
     </>
   )
 }
@@ -137,14 +150,13 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   }, [index, s])
   const folders = useMemo(() => shown.map((i) => i.folder), [shown])
   const issues = useIssues(folders)
-  const trail = pathTrail(s.path, index.pathLabels)
   const tab = parseStakeholderTab(useParams().tab)
   const counts = useMemo(
     () => (issues.status === 'ready' ? stakeholderTabCounts(issues.data, s.id) : null),
     [issues, s.id],
   )
 
-  const content = (name: StakeholderTab) => {
+  const body = (name: StakeholderTab) => {
     if (shown.length === 0) return <p>{tp.noIssues}</p>
     if (issues.status !== 'ready') return <LoadState state={issues} />
     const Content = TAB_CONTENT[name]
@@ -155,59 +167,26 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
       </>
     )
   }
+  // The metadata is at the top of 總覽 (decision 111). It needs only
+  // index.json, so it shows while the issues load.
+  const content = (name: StakeholderTab) => (
+    <>
+      {name === 'overview' && <StakeholderMeta index={index} stakeholder={s} shown={shown} />}
+      {body(name)}
+    </>
+  )
 
   return (
     <>
-      {from && (
-        <p role="status" className="mb-4 rounded-md border px-4 py-2 text-sm">
-          {tp.movedNote(from, s.id)}
-        </p>
-      )}
       <PageTitle parts={[s.name, tab && tab !== 'overview' ? tp.tabs[tab] : null]} />
-      <StakeholderBreadcrumb stakeholder={s} />
-      <h1 className="mt-4 text-2xl font-bold md:text-3xl">{s.name}</h1>
-      <dl className="mt-3 space-y-1.5 text-sm">
-        <Field label={tp.id}><span className="font-mono">{s.id}</span></Field>
-        {trail.length > 0 && (
-          <Field label={tp.path}>
-            <ol className="flex flex-wrap items-center gap-x-1">
-              {trail.map((step, i) => (
-                <li key={step.path} className="flex items-center gap-x-1">
-                  {i > 0 && <span aria-hidden="true" className="text-muted-foreground">›</span>}
-                  {step.label}
-                </li>
-              ))}
-            </ol>
-          </Field>
+      <PageBand back={backToStakeholders()}>{s.name}</PageBand>
+      <PageBody>
+        {from && (
+          <p role="status" className="mb-4 rounded-md border px-4 py-2 text-sm">
+            {tp.movedNote(from, s.id)}
+          </p>
         )}
-        {s.focus.length > 0 && (
-          <Field label={tp.focus}>
-            <ul className="flex flex-wrap gap-1">
-              {s.focus.map((f) => (
-                <li key={f}><Badge variant="secondary" className="rounded-sm">{f}</Badge></li>
-              ))}
-            </ul>
-          </Field>
-        )}
-        <Field label={tp.issues}>
-          {shown.length === 0 ? (
-            tp.noIssues
-          ) : (
-            <ul className="flex flex-wrap gap-x-3 gap-y-1">
-              {shown.map((i) => (
-                <li key={i.number}>
-                  <Link to={tabPath(i.number, 'overview')} className={linkClass}>
-                    {t.issueCard.numberTitle(i.number, i.title)}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Field>
-      </dl>
-
-      {/* No side bar (decision 94). The tab list comes after the metadata. */}
-      <div className="mt-6">
+        {/* No stakeholder side bar (decision 94). */}
         <PageTabs
           label={tp.tabsLabel}
           tabs={STAKEHOLDER_TABS}
@@ -221,7 +200,45 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
         >
           {content}
         </PageTabs>
-      </div>
+      </PageBody>
     </>
+  )
+}
+
+/** The metadata at the top of 總覽 (decision 111): the ID, 分類路徑,
+ * 特別關注 and the issues the stakeholder is in (links). */
+function StakeholderMeta({ index, stakeholder: s, shown }: {
+  index: IndexFile
+  stakeholder: StakeholderType
+  shown: AvailableIssueSummary[]
+}) {
+  return (
+    <dl className="mb-6 space-y-1.5 text-sm">
+      <IdAndPath index={index} stakeholder={s} />
+      {s.focus.length > 0 && (
+        <Field label={tp.focus}>
+          <ul className="flex flex-wrap gap-1">
+            {s.focus.map((f) => (
+              <li key={f}><Badge variant="secondary" className="rounded-sm">{f}</Badge></li>
+            ))}
+          </ul>
+        </Field>
+      )}
+      <Field label={tp.issues}>
+        {shown.length === 0 ? (
+          tp.noIssues
+        ) : (
+          <ul className="flex flex-wrap gap-x-3 gap-y-1">
+            {shown.map((i) => (
+              <li key={i.number}>
+                <Link to={tabPath(i.number, 'overview')} className={linkClass}>
+                  {t.issueCard.numberTitle(i.number, i.title)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Field>
+    </dl>
   )
 }

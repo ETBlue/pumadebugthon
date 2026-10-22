@@ -7,6 +7,7 @@ import { AlsoInLine } from '@/components/issue/AlsoIn'
 import { IssueCard } from '@/components/IssueCard'
 import { IssueTitleLinks } from '@/components/IssueTitleLinks'
 import { LoadState } from '@/components/LoadState'
+import { PageBand, PageBody } from '@/components/PageBand'
 import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { StakeholderCard } from '@/components/StakeholderCard'
@@ -14,6 +15,7 @@ import { linkClass, proseClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
+import { backListPath } from '@/lib/backLink'
 import { solutionCells, stakeholderCells } from '@/lib/coverage'
 import { availableIssues, sharedForCard } from '@/lib/issues'
 import {
@@ -25,23 +27,25 @@ import type { IndexFile, IssueFile, SpaceType } from '@/types'
 const tp = t.spacePage
 
 /** Space page (design 3.6): #/spaces/:code. City space is limited, so this
- * page lists what competes for the same space. */
+ * page lists what competes for the same space. The band has the back button
+ * to the issue list (decision 111): space types belong to issues, and the
+ * issue list can filter by space. */
 export default function Space() {
   const index = useIndex()
   const { code = '' } = useParams()
-  if (index.status !== 'ready') return <LoadState state={index} />
+  if (index.status !== 'ready') return <PageBody><LoadState state={index} /></PageBody>
 
   const space = findSpaceType(index.data.spaceTypes, code)
   if (!space) {
     return (
-      <>
+      <PageBody>
         <PageTitle parts={[tp.notFoundTitle]} />
         <h1 className="text-2xl font-bold">{tp.notFoundTitle}</h1>
         <p className="mt-3">{tp.notFoundBody(code)}</p>
         <p className="mt-3">
           <Link to="/" className={linkClass}>{tp.backHome}</Link>
         </p>
-      </>
+      </PageBody>
     )
   }
   return <SpaceContent key={code} index={index.data} space={space} />
@@ -55,40 +59,42 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
   return (
     <>
       <PageTitle parts={[space.name]} />
-      <h1 className="text-2xl font-bold md:text-3xl">{space.name}</h1>
-      <dl className="mt-3 space-y-1.5 text-sm">
-        <Field label={tp.group}>{space.group}</Field>
-        {space.description && <Field label={tp.description}>{space.description}</Field>}
-      </dl>
-      <p className={`mt-4 leading-relaxed ${proseClass}`}>{tp.intro}</p>
+      <PageBand back={{ to: backListPath('issues'), label: t.backLink.issues }}>{space.name}</PageBand>
+      <PageBody>
+        <dl className="space-y-1.5 text-sm">
+          <Field label={tp.group}>{space.group}</Field>
+          {space.description && <Field label={tp.description}>{space.description}</Field>}
+        </dl>
+        <p className={`mt-4 leading-relaxed ${proseClass}`}>{tp.intro}</p>
 
-      <div className="mt-8 space-y-10">
-        <section aria-labelledby="space-issues">
-          <h2 id="space-issues" className="text-xl font-bold">{tp.issuesHeading}</h2>
-          {summaries.length === 0 ? (
-            <p className="mt-2">{tp.issuesNone}</p>
-          ) : (
-            <>
-              <ul className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {summaries.map((i) => (
-                  <li key={i.number}>
-                    <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} shared={sharedForCard(index, i)} />
-                  </li>
-                ))}
-              </ul>
-              {/* The 資料根據 explanation, once under the list (decision 72). */}
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('議題')}</p>
-            </>
-          )}
-        </section>
+        <div className="mt-8 space-y-10">
+          <section aria-labelledby="space-issues">
+            <h2 id="space-issues" className="text-xl font-bold">{tp.issuesHeading}</h2>
+            {summaries.length === 0 ? (
+              <p className="mt-2">{tp.issuesNone}</p>
+            ) : (
+              <>
+                <ul className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {summaries.map((i) => (
+                    <li key={i.number}>
+                      <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} shared={sharedForCard(index, i)} />
+                    </li>
+                  ))}
+                </ul>
+                {/* The 資料根據 explanation, once under the list (decision 72). */}
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('議題')}</p>
+              </>
+            )}
+          </section>
 
-        {summaries.length > 0 &&
-          (issues.status === 'ready' ? (
-            <SpaceDetails index={index} code={space.code} issues={issues.data} />
-          ) : (
-            <LoadState state={issues} />
-          ))}
-      </div>
+          {summaries.length > 0 &&
+            (issues.status === 'ready' ? (
+              <SpaceDetails index={index} code={space.code} issues={issues.data} />
+            ) : (
+              <LoadState state={issues} />
+            ))}
+        </div>
+      </PageBody>
     </>
   )
 }

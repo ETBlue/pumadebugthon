@@ -9,6 +9,7 @@ import { ResultLine } from '@/components/ResultLine'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
 import { linkClass, listBodyClass, proseClass } from '@/components/styles'
 import { useIndex } from '@/data'
+import { rememberListSearch } from '@/lib/backLink'
 import { t } from '@/i18n/zh-TW'
 import { usedSpaceTypes } from '@/lib/issues'
 import { filterIssues } from '@/lib/listFilter'
@@ -67,6 +68,12 @@ export default function Issues() {
       navigate({ pathname, search: listUrlSearch(PAGE, parsed) }, { replace: true, preventScrollReset: true })
     }
   }, [parsed, pathname, navigate])
+
+  // Remember the clean URL, so the back button of a detail page comes back
+  // to this list with the same sort, filters and search (decision 111).
+  useEffect(() => {
+    if (parsed && !parsed.replace) rememberListSearch(PAGE, listUrlSearch(PAGE, parsed))
+  }, [parsed])
 
   function onNavigate(next: string, mode: HistoryMode) {
     navigate({ pathname, search: next }, { replace: mode === 'replace', preventScrollReset: true })

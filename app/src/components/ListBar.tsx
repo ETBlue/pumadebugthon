@@ -115,14 +115,16 @@ function ChoiceList({ filter, onPick }: {
 }
 
 /** The sort and filter bar of a list page (design 3.23.2, decisions 80, 97
- * and 98). Its name is 「搜尋、排序與篩選」.
+ * 98 and 114). Its name is 「搜尋、排序與篩選」.
  *
- * From md: one row (it wraps when it is too long) with the search box, the
- * sort <select>, the filters (popover buttons, toggles, slots) and the view
- * switch. Below md: the search box on its own full-width row, then the sort
- * <select>, the view switch and the 「篩選」 button, which opens a bottom
- * sheet (a Radix dialog) with the filters, the result line, 「清除篩選」 and
- * 「完成」. The search box is never in the sheet.
+ * From md: one row (it wraps when it is too long) with the sort <select>,
+ * the filters (popover buttons, toggles, slots), the view switch and then
+ * the search box at the right end of the row (decision 114). Below md: a row
+ * with the sort <select>, the view switch and the 「篩選」 button, which
+ * opens a bottom sheet (a Radix dialog) with the filters, the result line,
+ * 「清除篩選」 and 「完成」. The search box is its own full-width row under
+ * that row. It is never in the sheet. The DOM order is the same as the
+ * screen order, so the keyboard order is sort, filters, view switch, search.
  *
  * The bar is a full-width band right under the header. Its controls sit in
  * the page column (containerClass). The page route has handle.fullWidth, and
@@ -172,13 +174,6 @@ export function ListBar({ page, state, sorts, filters, viewSwitch = false, sortN
       {/* The band is full width. The controls use the page column, so they
           line up with the header content (decision 106). */}
       <div className={`${containerClass} flex flex-col gap-3 py-3 md:flex-row md:flex-wrap md:items-center md:gap-x-4`}>
-        <ListSearchBox
-          page={page}
-          q={state.q}
-          onSearch={(text, mode) => go({ ...state, q: cleanQuery(text) }, mode)}
-          className="w-full md:w-auto"
-        />
-
         {/* Below md this is one row. From md, md:contents puts its children
             straight into the bar row. */}
         <div className="flex items-center gap-2 md:contents">
@@ -269,6 +264,17 @@ export function ListBar({ page, state, sorts, filters, viewSwitch = false, sortN
             </Dialog>
           )}
         </div>
+
+        {/* The search box comes after the other controls, in the DOM and on
+            the screen (decision 114). Below md it is its own full-width row
+            under the sort row. From md it is a direct flex item of the bar
+            row, and md:ml-auto pushes it to the right end of the row. */}
+        <ListSearchBox
+          page={page}
+          q={state.q}
+          onSearch={(text, mode) => go({ ...state, q: cleanQuery(text) }, mode)}
+          className="w-full md:ml-auto md:w-auto"
+        />
 
         {tree && (
           <p id={treeNoteId} className="text-sm text-muted-foreground md:basis-full">{tb.treeSortNote}</p>

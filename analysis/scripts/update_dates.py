@@ -20,10 +20,11 @@ The content of each item (design 3.23.8):
   來源, 優先順序 and its tag, 相同訴求編號, 相同需求編號). A moved
   stakeholder (備註 starts with 已改為) has no row.
 - 解法: its 6.1 row (name, tag, summary, 空間類型), its 6.2 needs (in the
-  old format: its stories), its 6.3 rows, its step 7 section, its 總覽 row
-  and its 構想 rows.
+  old format: its stories), its 6.3 rows, its step 7 section, its 總覽 row,
+  its 構想 rows and its practices (the related policies and practices,
+  ETBlue 2026-10-22; only when the list is not empty).
 - 跨議題解法: its part of cross-issue-analysis.md (name, tag, summary,
-  parts, spaces, needs, measures, detail).
+  parts, spaces, needs, measures, detail, and practices when not empty).
 
 The rule for the 更新日期:
 - A new item (no row yet) gets its 新增日期.
@@ -106,12 +107,16 @@ def items(analysis_dir):
         out.append({"type": STAKEHOLDER, "id": sid, "added": r["新增日期"].strip(),
                     "fingerprint": common.fingerprint(content)})
     for s in (cross or {}).get("solutions", []):
-        content = without_pending({k: v for k, v in s.items() if k not in CROSS_SKIP})
+        content = without_pending({k: v for k, v in s.items() if k not in CROSS_SKIP and (k != "practices" or v)})
         out.append({"type": CROSS, "id": s["code"], "added": s["added"], "fingerprint": common.fingerprint(content)})
     for d in issues:
         for s in sorted(d["solutions"], key=lambda s: s["id"]):
             content = {k: s[k] for k in SOLUTION_KEYS}
             content["detail"] = old_detail(s["detail"])
+            # practices (2026-10-22): only when the list is not empty, so the
+            # new field alone does not change the date of a solution with none.
+            if s["practices"]:
+                content["practices"] = s["practices"]
             if s["needs"] is None:
                 content["stories"] = s["stories"]  # the old format maps solutions to stories
             out.append({"type": SOLUTION, "id": f"{d['number']}-{s['id']}", "added": s["added"],

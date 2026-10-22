@@ -51,6 +51,22 @@ Each solution also gets the fields for its own page in the app:
   本文件的處理 cell names the solution as 「解法 X」.
 - pending: the 【待補】 items of its step 7 section and of its 6.3 rows. The
   same items are also in the issue's pending list.
+- practices: the related policies and practices (相關或類似的政策與做法;
+  ETBlue, 2026-10-22), in this order:
+  1. source "practice": the rows of the 6.1 practice tables
+     (analysis_common.practice_tables) whose 本文件怎麼用 cell names the
+     solution (analysis_common.practice_refs: 「解法 X」, 「解法 C、D」 or
+     「7.n」). name is the 做法 cell after 「<place>：」, place is the place
+     (「美國紐約」, 「臺灣臺北市」), domestic is true when the place starts
+     with 「臺灣」. content is the 內容 Cell, use the 本文件怎麼用 Cell.
+  2. source "dependency": the rows of the 分析摘要 topic 「相依事項與現行政策
+     的關係」 whose 相關編號 names the solution (「解法 A」, not 「#8 解法
+     B」). They are domestic (ETBlue, 2026-10-22): {name: the 項目 cell,
+     place: null, domestic: true, content: the 說明 Cell, use: null}.
+  A 做法 cell without a place, or an unknown solution code, stops the script.
+  A practice row that names no solution is left out (check_analysis.py
+  reports it). A cross-issue solution gets only dependency rows: the
+  cross-issue file has no practice table.
 
 summary: the 「## 分析摘要」 section, one item per topic in
 analysis_common.SUMMARY_TOPICS, in that fixed order: {topic, items: [{item,
@@ -110,7 +126,7 @@ issueConflicts, sideA, sideB, needsA, needsB, wayOut, wayOutSolutions,
 method, result}], solutions [{code, name, tag, parts [{issue, code}],
 spaces, added, summary, updated, needs {must, shouldCould, crossIssue}, measures
 [{indicator, baseline, source, from [{issue, code}], isNew}], detail {owner,
-laws, privacy, risks}}], solutionFocus [{tag, solutions, note}], pending
+laws, privacy, risks}, practices (dependency rows only, see above)}], solutionFocus [{tag, solutions, note}], pending
 [{text, section}].
 """
 import csv, datetime, glob, json, os, re, subprocess, sys
@@ -462,6 +478,25 @@ def parse_summary(text, ids):
     return out, cross
 
 
+DEPENDENCY_TOPIC = "相依事項與現行政策的關係"
+
+
+def add_dependencies(summary, by_code, prefix=""):
+    """Add the rows of the 分析摘要 topic DEPENDENCY_TOPIC to the practices of
+    each solution that their refs name as 「解法 <prefix><code>」 (a local
+    reference; 「#8 解法 B」 is not one). These rows are domestic (ETBlue,
+    2026-10-22). by_code: solution code -> solution; prefix: "X-" for the
+    cross-issue file."""
+    topic = next((t for t in summary if t["topic"] == DEPENDENCY_TOPIC), None)
+    for item in (topic or {"items": []})["items"]:
+        for ref in item["refs"]:
+            m = re.fullmatch(rf"解法 ({re.escape(prefix)}[A-Z])", ref)
+            if m and m.group(1) in by_code:
+                by_code[m.group(1)]["practices"].append({
+                    "name": item["item"], "place": None, "domestic": True,
+                    "content": item["text"], "use": None, "source": "dependency"})
+
+
 def summary_range(lines):
     """(start, end) line indexes of the 分析摘要 section (heading included), or (0, 0)."""
     for i, l in enumerate(lines):
@@ -804,6 +839,29 @@ def parse_issue(text, space_codes):
     # 分析摘要: the topics and items. Cross-issue references are checked in build().
     summary, summary_cross = parse_summary(text, common.issue_ids(text))
 
+    # practices: the 6.1 practice tables, then the dependency rows of the summary.
+    for s in solutions:
+        s["practices"] = []
+    sections = common.step7_sections(text)
+    for h, rows in common.practice_tables(text):
+        for r in rows:
+            if len(r) != len(h):
+                raise ReadError("6.1", f"practice 「{r[0]}」 has {len(r)} cells, expected {len(h)}")
+            found = common.practice_place(r[0])
+            if found is None:
+                raise ReadError("6.1", f"practice 「{r[0]}」: 做法 must start with its place and 「：」, for example 「美國紐約：」")
+            place, name = found
+            codes, bad = common.practice_refs(r[2], sections)
+            if bad:
+                raise ReadError("6.1", f"practice 「{r[0]}」: {'、'.join(bad)} is not a step 7 section of a solution")
+            for code in codes:
+                if code not in by_sol:
+                    raise ReadError("6.1", f"practice 「{r[0]}」: 解法 {code} is not in 6.1")
+                by_sol[code]["practices"].append({
+                    "name": name, "place": place, "domestic": place.startswith(common.DOMESTIC),
+                    "content": cell(r[1], "6.1", r[0]), "use": cell(r[2], "6.1", r[0]), "source": "practice"})
+    add_dependencies(summary, by_sol)
+
     # every 【待補…】 item with the nearest heading. Items in backticks are
     # examples of the format (for example in the notice), not open items.
     # An item in a solution's 7.n section or in its 6.3 row is also listed
@@ -977,6 +1035,9 @@ def build_cross_issue(analysis_dir):
     dates = read_updated_dates(analysis_dir)
     for s in data["solutions"]:
         s["updated"] = dates.get(("跨議題解法", s["code"]))
+        s["practices"] = []
+    # The cross-issue file has no practice table: only the dependency rows.
+    add_dependencies(data["summary"], {s["code"]: s for s in data["solutions"]}, prefix="X-")
     return {"title": data["title"], "updated": git_updated(os.path.dirname(md)),
             **{k: v for k, v in data.items() if k != "title"}}
 

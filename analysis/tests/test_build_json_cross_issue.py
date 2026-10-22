@@ -98,6 +98,16 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertEqual(a["tag"], "AI模擬")
         self.assertEqual(a["detail"]["owner"]["tag"], "AI模擬")
 
+    def test_practices_are_the_dependency_rows(self):
+        # The cross-issue file has no practice table. A solution gets the rows of
+        # 相依事項與現行政策的關係 whose 相關編號 names it (「解法 X-A」). They are domestic.
+        a = self.solution("X-A")["practices"]
+        self.assertEqual([p["name"] for p in a], ["以各議題的解法為基礎", "現行的清潔箱做法"])
+        self.assertEqual({(p["place"], p["domestic"], p["use"], p["source"]) for p in a},
+                         {(None, True, None, "dependency")})
+        self.assertEqual(a[1]["content"]["tag"], "AI模擬")
+        self.assertEqual([p["name"] for p in self.solution("X-C")["practices"]], ["以各議題的解法為基礎"])
+
     def test_measures(self):
         measures = self.solution("X-B")["measures"]
         new = [m for m in measures if m["isNew"]]

@@ -206,7 +206,50 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_solution_keys(self):
         self.assertEqual(list(self.solution("A")),
                          ["id", "name", "summary", "spaces", "added", "updated", "stories", "needs",
-                          "measures", "detail", "overview", "ideas", "pending"])
+                          "measures", "detail", "overview", "ideas", "practices", "pending"])
+
+    def test_solution_practices(self):
+        # The 6.1 practice rows that name the solution, then the 相依事項與現行政策的關係
+        # rows that name it (domestic; ETBlue, 2026-10-22).
+        b = self.solution("B")
+        self.assertEqual([(p["place"], p["source"]) for p in b["practices"]],
+                         [("美國紐約", "practice"), ("美國費城", "practice"), ("美國費城", "practice")])
+        first = b["practices"][0]
+        self.assertEqual(list(first), ["name", "place", "domestic", "content", "use", "source"])
+        self.assertEqual(first["name"], "新設計的清潔箱（Better Bin）")
+        self.assertFalse(first["domestic"])
+        self.assertEqual(first["content"]["tag"], "實證")
+        self.assertEqual(first["use"]["tag"], "AI模擬")
+        self.assertTrue(first["use"]["text"].startswith("解法 B 在被丟家用垃圾的點"))
+        # 「（N04、7.2）」 names B through its step 7 section, and the row names no other solution.
+        self.assertTrue(b["practices"][2]["use"]["text"].endswith("（N04、7.2）"))
+        a = self.solution("A")
+        self.assertEqual([(p["place"], p["domestic"], p["source"]) for p in a["practices"]],
+                         [("美國費城", False, "practice"), ("韓國首爾", False, "practice"),
+                          (None, True, "dependency"), (None, True, "dependency")])
+        dep = a["practices"][2]
+        self.assertEqual(dep["name"], "現行的裁撤與復設做法")
+        self.assertEqual(dep["content"]["tag"], "AI模擬")
+        self.assertIsNone(dep["use"])
+        # 「#8 解法 B」 in the 和 #8 無菸城市 row is not a solution of this issue.
+        self.assertEqual([p["name"] for p in self.solution("E")["practices"]], ["家戶垃圾收運"])
+
+    def test_solution_practices_in_other_issues(self):
+        def load(folder):
+            with open(os.path.join(self.out, "issues", f"{folder}.json"), encoding="utf-8") as f:
+                return json.load(f)
+        trees, policy = load("1-trees"), load("9-policydiscovery")
+        a1 = [p for p in self.solution("A", trees)["practices"] if p["source"] == "practice"]
+        self.assertEqual([p["place"] for p in a1], ["新加坡"] * 4 + ["臺灣臺北市", "美國紐約"])
+        self.assertTrue(a1[4]["domestic"])
+        # 「7.2、7.5 的相關法規」 names B and E.
+        names = lambda code: [p["name"] for p in self.solution(code, trees)["practices"]]
+        self.assertIn("樹木保護區（Tree Conservation Areas）", names("B"))
+        self.assertIn("樹木保護區（Tree Conservation Areas）", names("E"))
+        c9 = self.solution("C", policy)["practices"]
+        self.assertEqual([(p["place"], p["domestic"]) for p in c9 if p["source"] == "practice"],
+                         [("臺灣", True), ("臺灣", True), ("臺灣臺北市", True)])
+        self.assertEqual(self.solution("E", policy)["practices"], [])
 
     def test_solution_fields_in_other_issues(self):
         with open(os.path.join(self.out, "issues", "1-trees.json"), encoding="utf-8") as f:
@@ -601,6 +644,21 @@ class BuildJsonErrorTest(unittest.TestCase):
         for n in needles:
             self.assertIn(n, out)
         self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
+
+    # ---------- 6.1 practice tables ----------
+    PRACTICE = "| 美國紐約：新設計的清潔箱（Better Bin） |"
+
+    def test_practice_without_place(self):
+        self.edit(self.PRACTICE, "| 新設計的清潔箱（Better Bin） |")
+        self.assertFails("2-trashcans: 6.1:", "「新設計的清潔箱（Better Bin）」", "must start with its place")
+
+    def test_practice_unknown_solution(self):
+        self.edit("| `[AI模擬]` 解法 B 在被丟家用垃圾的點", "| `[AI模擬]` 解法 Z 在被丟家用垃圾的點")
+        self.assertFails("2-trashcans: 6.1:", "解法 Z is not in 6.1")
+
+    def test_practice_step7_section_of_no_solution(self):
+        self.edit("（N04、7.2）", "（N04、7.6）")
+        self.assertFails("2-trashcans: 6.1:", "7.6 is not a step 7 section of a solution")
 
     # ---------- 分析摘要 ----------
     SUMMARY_ROW = ("| 選址討論的速度與代表性 | `[AI模擬]` 解法 D 的里民討論會讓設置變慢；常出席的人聲音比較大；"

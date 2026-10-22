@@ -899,3 +899,11 @@ ETBlue, 2026-10-22: the five 分析摘要 topics move from 總覽 to five tabs o
 | Task | Status |
 |---|---|
 | T1: tabs, counts, routes, tests, phone check | Done (2026-10-22). Checked with Playwright at 360, 768, 1024, 1280 and 1440 px on #1, #2, #8 and #9: no page-level sideways scroll; the current tab is visible in the scrolled list at 360 px; one row at 1280 and 1440 px |
+
+## Phase U: solution page tabs (design 3.12, decisions 103 and 105)
+
+ETBlue, 2026-10-22: the solution page gets seven tabs: 總覽, 需求, 訴求, 利害關係人, 衝突, 成效衡量 and 相關政策. The 「只看有資料根據」 filter now hides the `[AI模擬]` parts of the step 7 cells.
+
+| Task | Status |
+|---|---|
+| U1: tabs, counts, routes, the step 7 filter, tests, phone check | Done (2026-10-22). Issue solutions and cross-issue solutions have the same seven tabs |

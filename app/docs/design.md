@@ -42,7 +42,7 @@ Building the tool also tests the analysis format. Parts that are hard to read by
 
 URL: `#/`. The home page is short. It has a hero and three blocks. The full lists are on their own pages (section 3.9).
 
-**Hero.** A full-width band at the top of the page, under the header. It has the app name (h1), the subtitle 「在提案之前，先看見各方利害關係人的關注」, and two short paragraphs: what the app does, and who it is for (citizens, civil servants, civic tech communities). No disclaimer in the hero: it is in the footer (3.8). A short line under the hero says the lists are by date, not ranked by number.
+**Hero.** A full-width band at the top of the page, under the header. It has the app name (h1), the subtitle 「在提案之前，先看見各方利害關係人的關注」, and two short paragraphs: what the app does, and who it is for (citizens, civil servants, civic tech communities). No disclaimer in the hero: it is in the footer (3.8).
 
 The hero background is made only from colors and a simple pattern, with no photos or image files: a diagonal gradient and a dot pattern (CSS `linear-gradient` and `radial-gradient`, class `.hero-bg` in `index.css`). All colors are tokens, so the hero follows the theme:
 

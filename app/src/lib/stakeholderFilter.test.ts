@@ -6,7 +6,7 @@ import type { Stakeholder } from '@/types'
 import { compareIds } from './ids'
 import { isListed } from './stakeholders'
 import {
-  clearFiltersSearch, filterStatusParts, keptSearch, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
+  clearFiltersSearch, clearStakeholdersTabSearch, CROSS_PARAM, crossFilterOf, filterStatusParts, withCrossFilter, keptSearch, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
   issueSpecialOptions, specialStakeholderIds, specialOptions, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch,
   withSpecialFilter, withStakeholderFilter, type SideBarFilters,
 } from './stakeholderFilter'
@@ -291,5 +291,42 @@ describe('specialStakeholderIds', () => {
   it('is an empty set when no stakeholder of the issue has the group', () => {
     const trees = (treesJson as IssueFile).stakeholders.map((x) => x.id)
     expect(specialStakeholderIds(trees, index.stakeholders, ['外籍'])!.size).toBe(0)
+  })
+})
+
+describe('the 只看跨議題 param (decision 121)', () => {
+  it('is cross', () => {
+    expect(CROSS_PARAM).toBe('cross')
+  })
+
+  it('crossFilterOf: only cross=1 turns it on, and only with 2 or more issues', () => {
+    expect(crossFilterOf(new URLSearchParams('cross=1'), 4)).toBe(true)
+    expect(crossFilterOf(new URLSearchParams('cross=1'), 2)).toBe(true)
+    expect(crossFilterOf(new URLSearchParams('cross=1'), 1)).toBe(false)
+    expect(crossFilterOf(new URLSearchParams('cross=1'), 0)).toBe(false)
+    for (const q of ['', 'cross=', 'cross=0', 'cross=true', 'cross=yes']) {
+      expect(crossFilterOf(new URLSearchParams(q), 4), q).toBe(false)
+    }
+  })
+
+  it('withCrossFilter sets or removes cross and keeps the other values', () => {
+    expect(withCrossFilter(new URLSearchParams('special=高齡'), true).toString()).toBe('special=%E9%AB%98%E9%BD%A1&cross=1')
+    expect(withCrossFilter(new URLSearchParams('cross=1&evidence=1'), false).toString()).toBe('evidence=1')
+  })
+
+  it('clearStakeholdersTabSearch removes special, cross and evidence, and keeps the rest', () => {
+    expect(clearStakeholdersTabSearch(new URLSearchParams('special=高齡&special=外籍&cross=1&evidence=1'))).toBe('')
+    expect(clearStakeholdersTabSearch(new URLSearchParams('cross=1&stakeholder=I06&focus=stakeholders'))).toBe('?stakeholder=I06&focus=stakeholders')
+  })
+
+  it('keptSearch drops cross, because only the 利害關係人 tab uses it', () => {
+    expect(keptSearch(new URLSearchParams('cross=1&evidence=1'))).toBe('?evidence=1')
+  })
+
+  it('filterStatusParts adds 只看跨議題 last', () => {
+    expect(filterStatusParts({ dataBasedOnly: true, special: ['高齡'] }, null, true)).toEqual([
+      { kind: 'dataBased' }, { kind: 'special', groups: ['高齡'] }, { kind: 'crossIssue' },
+    ])
+    expect(filterStatusParts({ dataBasedOnly: false, special: [] }, null)).toEqual([])
   })
 })

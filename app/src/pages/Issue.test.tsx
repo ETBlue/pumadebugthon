@@ -11,6 +11,8 @@ import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { forgetListSearches, rememberListSearch } from '@/lib/backLink'
 import type { IndexFile, IssueFile } from '@/types'
+import { StakeholdersTab } from '@/components/issue/StakeholdersTab'
+import type { AvailableIssueSummary } from '@/types'
 import Issue from './Issue'
 
 const index = indexJson as IndexFile
@@ -432,5 +434,83 @@ describe('the stories on the 利害關係人 tab (decision 116)', () => {
     expect(html).not.toContain('id="stakeholders-root-O"')
     expect(html).toContain('class="grid gap-6 md:gap-8"')
     expect(html).not.toContain('md:grid-cols-2')
+  })
+})
+
+describe('the 利害關係人 tab filters in the URL (decision 121)', () => {
+  /** The stakeholder IDs of the cards in the tree, in page order. */
+  const cardIds = (html: string) => [...html.matchAll(/href="\/stakeholders\/([OI]\d+)"/g)].map((m) => m[1])
+  const status = (html: string) => /<p role="status"[^>]*>([\s\S]*?)<\/p>/.exec(html)?.[1] ?? null
+
+  it('?special= filters the tree on render and presses the toggle', () => {
+    const html = render('/issues/1/stakeholders?special=高齡')
+    expect(cardIds(html)).toEqual(['I05'])
+    expect(menuBar(html)).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*高齡<\/button>/)
+    // Two groups: a stakeholder with either group is kept.
+    expect(cardIds(render('/issues/1/stakeholders?special=高齡&special=經濟弱勢')).sort()).toEqual(['I05', 'I19'])
+  })
+
+  it('?cross=1 keeps only the stakeholders in 2 or more issues and presses the toggle', () => {
+    const html = render('/issues/1/stakeholders?cross=1')
+    const ids = cardIds(html)
+    expect(ids).toContain('O01')
+    expect(ids).toContain('I17')
+    expect(ids).not.toContain('O14')
+    expect(ids).not.toContain('I16')
+    expect(menuBar(html)).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*只看跨議題/)
+  })
+
+  it('the two filters work together', () => {
+    // I16 has 兒童與照顧者 but is only in #1; I07 is in 3 issues.
+    expect(cardIds(render('/issues/1/stakeholders?special=兒童與照顧者&cross=1'))).toEqual(['I07'])
+  })
+
+  it('ignores unknown values: the tree and the status line are the same as with no params', () => {
+    const plain = render('/issues/1/stakeholders')
+    for (const q of ['special=未知', 'cross=yes', 'cross=0', 'special=&cross=']) {
+      const html = render(`/issues/1/stakeholders?${q}`)
+      expect(cardIds(html), q).toEqual(cardIds(plain))
+      expect(status(html), q).toBe('')
+      expect(html, q).not.toContain('清除篩選')
+    }
+  })
+
+  it('shows the filter status line under the bar, with the filters and the number of stakeholders shown', () => {
+    const html = render('/issues/1/stakeholders?special=兒童與照顧者&cross=1')
+    expect(status(html)).toContain('篩選：特別關注：兒童與照顧者、只看跨議題。顯示 1 位利害關係人。')
+    expect(html.indexOf('data-slot="issue-menu-bar"')).toBeLessThan(html.indexOf('role="status"'))
+    // Only I07 is left, so only 個人 is shown.
+    expect(html.indexOf('role="status"')).toBeLessThan(html.indexOf('id="stakeholders-root-I"'))
+    expect(status(render('/issues/1/stakeholders?evidence=1'))).toMatch(/^篩選：只看有資料根據。顯示 \d+ 位利害關係人。/)
+  })
+
+  it('「清除篩選」 links to the URL without special, cross and evidence, and keeps the other values', () => {
+    const html = render('/issues/1/stakeholders?special=高齡&cross=1&evidence=1')
+    expect(html).toMatch(/href="\/issues\/1\/stakeholders"[^>]*>清除篩選<\/a>/)
+    // ?stakeholder= is not a filter of this tab, so it stays for the other tabs.
+    const kept = render('/issues/1/stakeholders?special=高齡&stakeholder=I06')
+    expect(kept).toMatch(/href="\/issues\/1\/stakeholders\?stakeholder=I06"[^>]*>清除篩選<\/a>/)
+    expect(status(kept)).toMatch(/^篩選：特別關注：高齡。顯示 1 位利害關係人。 <a /)
+  })
+
+  it('the tab links keep ?special= but drop ?cross=, which only this tab uses', () => {
+    const html = render('/issues/1/stakeholders?special=高齡&cross=1')
+    expect(html).toContain('href="/issues/1/wants?special=%E9%AB%98%E9%BD%A1"')
+    expect(html).not.toMatch(/href="\/issues\/1\/wants\?[^"]*cross/)
+  })
+
+  it('ignores ?cross=1 when fewer than 2 issues are available (the toggle is hidden)', () => {
+    const trees = treesJson as IssueFile
+    const summary = index.issues.find((i) => i.number === 1) as AvailableIssueSummary
+    const one = (search: string) => renderToStaticMarkup(
+      <MemoryRouter initialEntries={[`/issues/1/stakeholders${search}`]}>
+        <StakeholdersTab index={index} summary={summary} issue={trees} available={[1]} />
+      </MemoryRouter>,
+    )
+    const html = one('?cross=1')
+    expect(html).not.toContain('只看跨議題')
+    expect(cardIds(html)).toEqual(cardIds(one('')))
+    expect(cardIds(html)).toContain('O14')
+    expect(status(html)).toBe('')
   })
 })

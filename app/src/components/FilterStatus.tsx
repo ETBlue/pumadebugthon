@@ -15,6 +15,8 @@ function partText(part: FilterStatusPart): string {
       return tm.statusDataBased
     case 'special':
       return tm.statusSpecial(part.groups)
+    case 'crossIssue':
+      return tm.statusCrossIssue
   }
 }
 
@@ -29,15 +31,20 @@ function partText(part: FilterStatusPart): string {
  *
  * filters: from sideBarFiltersOf(params). stakeholder: the picked
  * stakeholder on the issue page; null on the stakeholder pages, where the
- * stakeholder of the page is not a filter. */
-export function FilterStatus({ filters, stakeholder, shown, className }: {
+ * stakeholder of the page is not a filter. crossIssueOnly: 只看跨議題 of
+ * the issue's 利害關係人 tab (decision 121). clearSearch: the search part
+ * of 「清除篩選」, when the page removes other values than
+ * clearFiltersSearch (the 利害關係人 tab uses clearStakeholdersTabSearch). */
+export function FilterStatus({ filters, stakeholder, crossIssueOnly = false, shown, clearSearch = clearFiltersSearch, className }: {
   filters: SideBarFilters
   stakeholder: Stakeholder | null
+  crossIssueOnly?: boolean
   shown?: string
+  clearSearch?: (params: URLSearchParams) => string
   className?: string
 }) {
   const { pathname, search } = useLocation()
-  const parts = filterStatusParts(filters, stakeholder)
+  const parts = filterStatusParts(filters, stakeholder, crossIssueOnly)
   const on = parts.length > 0
   return (
     <p role="status" className={cn('text-sm', on && 'mb-4', className)}>
@@ -47,7 +54,7 @@ export function FilterStatus({ filters, stakeholder, shown, className }: {
           {shown}
           {' '}
           <Link
-            to={{ pathname, search: clearFiltersSearch(new URLSearchParams(search)) }}
+            to={{ pathname, search: clearSearch(new URLSearchParams(search)) }}
             preventScrollReset
             className={linkClass}
           >

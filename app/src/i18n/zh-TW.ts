@@ -716,6 +716,10 @@ export const t = {
     shownWants: (wants: number, conflicts: number) => `顯示 ${wants} 個訴求、${conflicts} 個衝突。`,
     shownNeeds: (n: number) => `顯示 ${n} 個需求。`,
     shownSolutions: (n: number) => `顯示 ${n} 個解法。`,
+    /** 只看跨議題 in the status line of the 利害關係人 tab (decision 121). */
+    statusCrossIssue: '只看跨議題',
+    /** The end of the status line of the 利害關係人 tab (decision 121). */
+    shownStakeholders: (n: number) => `顯示 ${n} 位利害關係人。`,
     clear: '清除篩選',
   },
   /** The sort and filter bar of the list pages (ListBar, design 3.23.2) and

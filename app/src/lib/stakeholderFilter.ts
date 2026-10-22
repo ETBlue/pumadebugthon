@@ -14,6 +14,39 @@ export const STAKEHOLDER_PARAM = 'stakeholder'
  * name is not "focus", because ?focus= is the jump to an item (design 3.2). */
 export const SPECIAL_PARAM = 'special'
 
+/** 只看跨議題 on the issue's 利害關係人 tab (decision 121): ?cross=1. Only
+ * "1" turns it on. Only that tab reads it, so a tab change drops it
+ * (keptSearch). The old ?cross=1 of #/stakeholders is not read any more
+ * (decision 110), so the name is free on the issue page. */
+export const CROSS_PARAM = 'cross'
+
+/** 只看跨議題 in the URL (decision 121). On only with ?cross=1 and when 2 or
+ * more issues are available (issueCount), because the toggle is hidden
+ * with fewer. Any other value is ignored, as for ?evidence=. */
+export function crossFilterOf(params: URLSearchParams, issueCount: number): boolean {
+  return issueCount >= 2 && params.get(CROSS_PARAM) === '1'
+}
+
+/** A copy of params with 只看跨議題 on (cross=1) or off (no cross). Other
+ * values are kept. */
+export function withCrossFilter(params: URLSearchParams, on: boolean): URLSearchParams {
+  const next = new URLSearchParams(params)
+  if (on) next.set(CROSS_PARAM, '1')
+  else next.delete(CROSS_PARAM)
+  return next
+}
+
+/** The search part of 「清除篩選」 on the issue's 利害關係人 tab (decision
+ * 121): the three filters of the tab are removed (special, cross,
+ * evidence). Every other value is kept (also ?stakeholder=, which this tab
+ * does not use, but the other tabs do). "" when nothing is left. */
+export function clearStakeholdersTabSearch(params: URLSearchParams): string {
+  const next = new URLSearchParams(params)
+  for (const key of [SPECIAL_PARAM, CROSS_PARAM, FILTER_PARAM]) next.delete(key)
+  const s = next.toString()
+  return s ? `?${s}` : ''
+}
+
 /** The stakeholder picked in the URL. null when there is no value, or when
  * the ID is unknown, moved or not in issueIds (the filter is then off). A
  * moved ID is not changed to the new ID (decision 113). */
@@ -39,7 +72,8 @@ export function withStakeholderFilter(params: URLSearchParams, id: string | null
 
 /** The search part for a tab change and for a side bar link: only evidence,
  * stakeholder and special are kept (every special value). pick, focus and
- * any other value are dropped. "" when nothing is kept. */
+ * any other value are dropped. cross is dropped too, because only the
+ * 利害關係人 tab uses it (decision 121). "" when nothing is kept. */
 export function keptSearch(params: URLSearchParams): string {
   const next = new URLSearchParams()
   for (const key of [FILTER_PARAM, STAKEHOLDER_PARAM]) {
@@ -149,15 +183,18 @@ export type FilterStatusPart =
   | { kind: 'stakeholder'; id: string; name: string }
   | { kind: 'dataBased' }
   | { kind: 'special'; groups: string[] }
+  | { kind: 'crossIssue' }
 
 /** The filters that are on, for the filter status line (decision 68), in
  * this order: the stakeholder (pass null on the stakeholder page, where the
- * stakeholder is not a filter), 只看有資料根據, 特別關注. Empty
- * when no filter is on. The component adds what is shown. */
-export function filterStatusParts(filters: SideBarFilters, stakeholder: Stakeholder | null): FilterStatusPart[] {
+ * stakeholder is not a filter), 只看有資料根據, 特別關注, 只看跨議題 (only
+ * the issue's 利害關係人 tab has it, decision 121). Empty when no filter is
+ * on. The component adds what is shown. */
+export function filterStatusParts(filters: SideBarFilters, stakeholder: Stakeholder | null, crossIssueOnly = false): FilterStatusPart[] {
   const parts: FilterStatusPart[] = []
   if (stakeholder !== null) parts.push({ kind: 'stakeholder', id: stakeholder.id, name: stakeholder.name })
   if (filters.dataBasedOnly) parts.push({ kind: 'dataBased' })
   if (filters.special.length > 0) parts.push({ kind: 'special', groups: [...filters.special] })
+  if (crossIssueOnly) parts.push({ kind: 'crossIssue' })
   return parts
 }

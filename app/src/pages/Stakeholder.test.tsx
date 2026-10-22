@@ -259,3 +259,74 @@ describe('「尚未有解法涵蓋的需求」 of the 解法 tab (decision 124)'
     expect(html).not.toContain('跨議題解法</h2>')
   })
 })
+
+describe('the cross-issue solutions on the 需求 tab (decision 126)', () => {
+  // As in decision 124: a modified copy of #2 with no issue solution, and
+  // one fake cross-issue solution that covers only the need O12-US01 of O12
+  // in #2.
+  beforeEach(() => {
+    state.loading = false
+    state.cross = 'ready'
+    state.override = { '2-trashcans': { ...(trashcansJson as IssueFile), solutions: [] } }
+    state.crossFile = {
+      ...cross,
+      needGroups: [],
+      solutions: [{ ...cross.solutions[0], needs: { must: [{ issue: 2, id: 'O12-US01' }], shouldCould: [], crossIssue: [] } }],
+    }
+    return () => {
+      state.override = {}
+      state.crossFile = null
+    }
+  })
+
+  const code = cross.solutions[0].code
+
+  /** The <article> of one need of #2. */
+  function needOf2(html: string, key: string): string {
+    const link = html.indexOf(`href="/issues/2/needs?focus=${key}`)
+    expect(link).toBeGreaterThan(-1)
+    return html.slice(html.lastIndexOf('<article', link), html.indexOf('</article>', link))
+  }
+
+  /** The need keys of #2 on the tab. */
+  function needKeysOf2(html: string): string[] {
+    return [...html.matchAll(/href="\/issues\/2\/needs\?focus=([^"&]+)/g)].map((m) => m[1])
+  }
+
+  it('shows the cross-issue solution under the need as a link, not 「尚未有解法涵蓋」', () => {
+    const need = needOf2(renderPage('/stakeholders/O12/needs'), 'O12-US01')
+    expect(need).toContain(`href="/solutions/${code}"`)
+    expect(need).toContain(t.need.crossSolution)
+    expect(need).not.toContain(t.need.solutionsNone)
+  })
+
+  it('keeps 「尚未有解法涵蓋」 for the needs it does not cover', () => {
+    // I06 does not have the need O12-US01.
+    const html = renderPage('/stakeholders/I06/needs')
+    const others = needKeysOf2(html)
+    expect(others.length).toBeGreaterThan(0)
+    expect(others).not.toContain('O12-US01')
+    for (const key of others) {
+      const need = needOf2(html, key)
+      expect(need).not.toContain(t.need.crossSolution)
+      expect(need.includes(t.need.solutionsNone) || need.includes(t.need.solutionsWontDo)).toBe(true)
+    }
+  })
+
+  it('follows 「只看有資料根據」: the link shows only with its need', () => {
+    const html = renderPage('/stakeholders/O12/needs?evidence=1')
+    if (needKeysOf2(html).includes('O12-US01')) {
+      expect(html).toContain(`href="/solutions/${code}?evidence=1"`)
+    } else {
+      expect(html).not.toContain(`href="/solutions/${code}`)
+    }
+  })
+
+  it.each(['none', 'loading', 'error'] as const)('shows 「尚未有解法涵蓋」 when the cross-issue file is %s', (s) => {
+    state.cross = s
+    const need = needOf2(renderPage('/stakeholders/O12/needs'), 'O12-US01')
+    expect(need).toContain(t.need.solutionsNone)
+    expect(need).not.toContain(t.need.crossSolution)
+    expect(need).not.toContain('href="/solutions/X-')
+  })
+})

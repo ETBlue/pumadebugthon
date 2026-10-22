@@ -4,13 +4,15 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import crossJson from '@/test/fixtures/cross-issue.json'
 import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { forgetListSearches, rememberListSearch } from '@/lib/backLink'
-import type { IndexFile, IssueFile } from '@/types'
+import { t } from '@/i18n/zh-TW'
+import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import { StakeholdersTab } from '@/components/issue/StakeholdersTab'
 import type { AvailableIssueSummary } from '@/types'
 import Issue from './Issue'
@@ -23,10 +25,13 @@ const files: Record<string, IssueFile> = {
   [(policyJson as IssueFile).folder]: policyJson as IssueFile,
 }
 
+// A test can replace an issue file and set a cross-issue file.
+const state: { override: Record<string, IssueFile>; cross: CrossIssueFile | null } = { override: {}, cross: null }
+
 vi.mock('@/data', () => ({
   useIndex: () => ({ status: 'ready', data: index }),
-  useIssue: (folder: string) => ({ status: 'ready', data: files[folder] }),
-  useCrossIssueOrNull: () => null,
+  useIssue: (folder: string) => ({ status: 'ready', data: state.override[folder] ?? files[folder] }),
+  useCrossIssueOrNull: () => state.cross,
 }))
 
 // PageTitle sets document.title in an effect. Here it writes the title into
@@ -550,5 +555,35 @@ describe('the 利害關係人 tab filters in the URL (decision 121)', () => {
     expect(cardIds(html)).toEqual(cardIds(one('')))
     expect(cardIds(html)).toContain('O14')
     expect(status(html)).toBe('')
+  })
+})
+
+describe('the 需求 tab does not show cross-issue solutions (decision 126)', () => {
+  // The fixture of decision 126: a copy of #2 with no issue solution, and one
+  // fake cross-issue solution that covers only the need O12-US01.
+  const cross = crossJson as CrossIssueFile
+  const fake: CrossIssueFile = {
+    ...cross,
+    needGroups: [],
+    solutions: [{ ...cross.solutions[0], needs: { must: [{ issue: 2, id: 'O12-US01' }], shouldCould: [], crossIssue: [] } }],
+  }
+  const noSolutions = { '2-trashcans': { ...(trashcansJson as IssueFile), solutions: [] } }
+  afterEach(() => {
+    state.override = {}
+    state.cross = null
+  })
+
+  it('shows the same tab with or without the cross-issue file', () => {
+    state.override = noSolutions
+    const before = render('/issues/2/needs')
+    state.cross = fake
+    const after = render('/issues/2/needs')
+    expect(after).toBe(before)
+    const start = after.indexOf('id="focus-O12-US01"')
+    expect(start).toBeGreaterThan(-1)
+    const need = after.slice(start, after.indexOf('</article>', start))
+    expect(need).toContain(t.need.solutionsNone)
+    expect(need).not.toContain(t.need.crossSolution)
+    expect(need).not.toContain(`/solutions/${cross.solutions[0].code}`)
   })
 })

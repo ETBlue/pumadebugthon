@@ -10,12 +10,13 @@ import { shownNeedStories, type NeedItem as NeedData } from '@/lib/needs'
 import { priorityLabel } from '@/lib/priority'
 import { stakeholderName } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
-import type { Cell, Need, Stakeholder, Story } from '@/types'
+import type { Cell, CrossSolution, Need, Stakeholder, Story } from '@/types'
 import { CellText } from './CellText'
 import { Field } from './Field'
 import { focusTargetProps } from './FocusTarget'
 import { Heading, type HeadingLevel } from './Heading'
 import { SolutionTitleLink } from './SolutionCard'
+import { CrossSolutionLink } from './solution/CrossSolutionCard'
 import { focusTargetClass, linkClass, targetLinkClass, targetSizeClass } from './styles'
 import { TagBadge } from './TagBadge'
 import { ItemKey } from './ItemKey'
@@ -89,6 +90,12 @@ export interface NeedItemProps {
   /** solutions part: leave out this solution (by ID), and use the label
    * 「由其他解法涵蓋」 (the solution page). */
   otherSolutionsThan?: string
+  /** solutions part: the cross-issue solutions that cover this need
+   * (decision 126, the stakeholder page). They show after the issue
+   * solutions, each with the label 「跨議題解法」. Then 「尚未有解法涵蓋」
+   * shows only when neither covers the need. Leave it out where the page
+   * shows only the solutions of one issue (the issue page). */
+  crossSolutions?: CrossSolution[]
   /** Give the item the element ID focus-<need key> (design 3.16). Default
    * true. Set false where the same key can show twice on one page (the
    * stakeholder page has one list per issue). */
@@ -102,7 +109,7 @@ export interface NeedItemProps {
  * solutions in letter order, as NeedItem in src/lib/needs.ts gives them. */
 export function NeedItem({
   item, issueNumber, stakeholders, parts = ISSUE_NEED_PARTS, headingLevel = 4, summaryLink = false,
-  stakeholderLinks = true, others, ownStories, otherSolutionsThan, focusTarget = true, children,
+  stakeholderLinks = true, others, ownStories, otherSolutionsThan, crossSolutions = [], focusTarget = true, children,
 }: NeedItemProps) {
   const [params] = useSearchParams()
   const { need, summary } = item
@@ -175,7 +182,7 @@ export function NeedItem({
         )}
         {has('solutions') && (
           <Field label={otherSolutionsThan === undefined ? tn.solutions : tn.otherSolutions}>
-            {solutions.length === 0 ? (
+            {solutions.length === 0 && crossSolutions.length === 0 ? (
               <span className="text-muted-foreground">
                 {otherSolutionsThan !== undefined
                   ? tn.otherSolutionsNone
@@ -185,6 +192,12 @@ export function NeedItem({
               <ul className="space-y-1">
                 {solutions.map(({ solution }) => (
                   <li key={solution.id}><SolutionTitleLink solution={solution} issueNumber={issueNumber} /></li>
+                ))}
+                {crossSolutions.map((solution) => (
+                  <li key={solution.code}>
+                    <span className="mr-1.5 text-muted-foreground">{tn.crossSolution}</span>
+                    <CrossSolutionLink solution={solution} />
+                  </li>
                 ))}
               </ul>
             )}

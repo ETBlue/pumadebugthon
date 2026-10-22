@@ -831,6 +831,8 @@ export const t = {
     solutions: '涵蓋的解法',
     solutionsNone: '尚未有解法涵蓋',
     solutionsWontDo: '這次不做，所以沒有解法涵蓋',
+    /** The label before a cross-issue solution in the list (decision 126). */
+    crossSolution: '跨議題解法',
     /** On a solution page: the other solutions that cover a need. */
     otherSolutions: '由其他解法涵蓋',
     otherSolutionsNone: '沒有其他解法涵蓋',

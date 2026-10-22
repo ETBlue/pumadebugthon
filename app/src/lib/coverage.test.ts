@@ -8,7 +8,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { AvailableIssueSummary, CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import { basisTotal, evidencePercent } from './cellBasis'
 import {
-  compareShares, crossSolutionCells, evidenceShare, sharePercent, solutionCells, stakeholderCells,
+  compareShares, crossSolutionCells, crossSolutionsByNeed, evidenceShare, sharePercent, solutionCells, stakeholderCells,
   stakeholderCrossSolutions, stakeholderSolutionCount, stakeholderSolutionCoverage, stakeholderUncoveredNeeds,
 } from './coverage'
 import { stakeholderSolutionsView } from './stakeholderPage'
@@ -295,5 +295,37 @@ describe('compareShares', () => {
     expect(compareShares({ part: 0, total: 4 }, null)).toBeLessThan(0)
     expect(compareShares(null, { part: 0, total: 4 })).toBeGreaterThan(0)
     expect(compareShares(null, null)).toBe(0)
+  })
+})
+
+describe('crossSolutionsByNeed (decision 126)', () => {
+  it('agrees with stakeholderCrossSolutions for every stakeholder need', () => {
+    for (const s of index.stakeholders) {
+      const viaList = new Set(stakeholderCrossSolutions(files, cross, s.id)
+        .flatMap(({ solution, needs }) => needs.map((n) => `${solution.code} ${n.issueNumber}:${n.item.need.id}`)))
+      const viaMap = new Set<string>()
+      for (const issue of files) {
+        const map = crossSolutionsByNeed(cross, issue.number)
+        for (const [needId, solutions] of map) {
+          for (const sol of solutions) viaMap.add(`${sol.code} ${issue.number}:${needId}`)
+        }
+      }
+      for (const key of viaList) expect(viaMap.has(key)).toBe(true)
+    }
+  })
+
+  it('lists the solutions of one need in the order of the file', () => {
+    const fake: CrossIssueFile = {
+      ...cross,
+      needGroups: [],
+      solutions: cross.solutions.slice(0, 2).map((sol) => ({ ...sol, needs: { must: [{ issue: 2, id: 'O12-US01' }], shouldCould: [], crossIssue: [] } })),
+    }
+    const map = crossSolutionsByNeed(fake, 2)
+    expect(map.get('O12-US01')?.map((sol) => sol.code)).toEqual(cross.solutions.slice(0, 2).map((sol) => sol.code))
+    expect(crossSolutionsByNeed(fake, 1).size).toBe(0)
+  })
+
+  it('is empty without the cross-issue file', () => {
+    expect(crossSolutionsByNeed(null, 2).size).toBe(0)
   })
 })

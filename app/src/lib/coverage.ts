@@ -88,6 +88,25 @@ function crossSolutionNeedKeys(cross: CrossIssueFile, solution: CrossSolution): 
   return out
 }
 
+/** The cross-issue solutions that cover each need of one issue, by need
+ * ID, in the order of cross-issue.json (decision 126). It uses the rule of
+ * stakeholderSolutionCoverage (crossSolutionNeedKeys, decision 84). A need
+ * that no cross-issue solution covers is not in the map. Empty when cross
+ * is null (the file does not exist, is still loading or fails to load). */
+export function crossSolutionsByNeed(cross: CrossIssueFile | null, issueNumber: number): Map<string, CrossSolution[]> {
+  const out = new Map<string, CrossSolution[]>()
+  if (cross === null) return out
+  const prefix = `${issueNumber}:`
+  for (const solution of cross.solutions) {
+    for (const key of crossSolutionNeedKeys(cross, solution)) {
+      if (!key.startsWith(prefix)) continue
+      const needId = key.slice(prefix.length)
+      out.set(needId, [...(out.get(needId) ?? []), solution])
+    }
+  }
+  return out
+}
+
 /** 解法涵蓋比例 of a stakeholder (decision 84). total: its different needs
  * per issue, summed over the issues (the 需求 count of its tab label).
  * covered: the needs that an issue solution lists in needs.must or

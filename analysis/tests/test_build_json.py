@@ -420,7 +420,7 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_open_data(self):
         # open-data.csv becomes "openData" in index.json, in file order.
         rows = self.index["openData"]
-        self.assertEqual(len(rows), 8)
+        self.assertEqual(len(rows), 12)
         smoke = next(r for r in rows if r["url"] == "https://data.gov.tw/dataset/177504")
         self.assertEqual(smoke, {"name": "臺北市指定吸菸區", "url": "https://data.gov.tw/dataset/177504",
                                  "agency": "臺北市政府衛生局", "license": "政府資料開放授權條款第 1 版",
@@ -732,7 +732,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.1:", "solution D", "新增日期")
 
     def test_open_data_bad_issue_value(self):
-        self.edit("政府資料開放授權條款第 1 版,8\n", "政府資料開放授權條款第 1 版,8、2\n", "data/open-data.csv")
+        self.edit("臺北市政府衛生局,政府資料開放授權條款第 1 版,8\n", "臺北市政府衛生局,政府資料開放授權條款第 1 版,8、2\n", "data/open-data.csv")
         self.assertFails("open-data.csv:", "議題")
 
     def test_open_data_missing_file(self):

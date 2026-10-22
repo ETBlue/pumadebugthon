@@ -587,3 +587,111 @@ describe('the 需求 tab does not show cross-issue solutions (decision 126)', ()
     expect(need).not.toContain(`/solutions/${cross.solutions[0].code}`)
   })
 })
+
+describe('the 需求 tab filters: 優先順序 and 只看有衝突的需求 (decision 127)', () => {
+  const trees = treesJson as IssueFile
+  /** The need IDs on the tab, in page order. */
+  const needIds = (html: string) => [...html.matchAll(/<article id="focus-([^"]+)"/g)].map((m) => m[1])
+  /** The priority groups on the tab, in page order. */
+  const groups = (html: string) => [...html.matchAll(/aria-labelledby="needs-([MSCW])"/g)].map((m) => m[1])
+  const status = (html: string) => /<p role="status"[^>]*>([\s\S]*?)<\/p>/.exec(html)?.[1] ?? null
+  const inConflict = new Set(trees.conflicts.flatMap((c) => [...c.needsA, ...c.needsB]))
+  const priorityOf = (id: string) => trees.needs.find((n) => n.id === id)?.priority
+
+  it('only the 需求 tab has the 優先順序 group and 只看有衝突的需求 in the bar', () => {
+    const bar = menuBar(render('/issues/1/needs')) ?? ''
+    const labels = [...bar.matchAll(/<span id="[^"]*" class="text-sm font-medium">([^<]+)<\/span>/g)].map((m) => m[1])
+    expect(labels).toEqual(['特別關注', '優先順序', '篩選'])
+    // The 優先順序 toggles are a joined group in a box that scrolls sideways,
+    // in the fixed order. #1 has no 這次不做 need, so it has no toggle.
+    const box = joinedBox(bar.slice(bar.indexOf('>優先順序</span>')), 'joined-scroll')
+    expect(box).toMatch(/role="toolbar"[^>]*aria-label="優先順序"/)
+    expect(box).toMatch(/data-slot="toggle-group"[^>]*data-spacing="0"/)
+    const names = [...box.matchAll(/<button[^>]*aria-pressed="false"[^>]*>(?:(?!<\/button>)[\s\S])*?([^>]+)<\/button>/g)].map((m) => m[1])
+    expect(names).toEqual(['必須有', '應該有', '可以有'])
+    // 只看有衝突的需求 is before 只看有資料根據, in the 篩選 group.
+    expect(bar.indexOf('>篩選</span>')).toBeLessThan(bar.indexOf('只看有衝突的需求'))
+    expect(bar.indexOf('只看有衝突的需求')).toBeLessThan(bar.indexOf('只看有資料根據'))
+    // #2 has a 這次不做 need, so it has 4 toggles.
+    expect(menuBar(render('/issues/2/needs'))).toContain('這次不做</button>')
+    for (const tab of ['stakeholders', 'wants', 'solutions', 'decisions']) {
+      const other = menuBar(render(`/issues/1/${tab}?priority=M&conflict=1`)) ?? ''
+      expect(other, tab).not.toContain('優先順序')
+      expect(other, tab).not.toContain('只看有衝突的需求')
+    }
+  })
+
+  it('?priority= shows only the picked priority groups and presses the toggles', () => {
+    const html = render('/issues/1/needs?priority=M')
+    expect(groups(html)).toEqual(['M'])
+    const ids = needIds(html)
+    expect(ids).toContain('N01')
+    expect(ids.every((id) => priorityOf(id) === 'M')).toBe(true)
+    expect(ids).toHaveLength(trees.needs.filter((n) => n.priority === 'M').length)
+    expect(menuBar(html)).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*必須有<\/button>/)
+    // The order of the params does not change the fixed order of the groups.
+    expect(groups(render('/issues/1/needs?priority=C&priority=M'))).toEqual(['M', 'C'])
+  })
+
+  it('?conflict=1 shows only the needs in at least one conflict and presses the toggle', () => {
+    const html = render('/issues/1/needs?conflict=1')
+    const ids = needIds(html)
+    expect(ids.length).toBeGreaterThan(0)
+    expect(ids).toEqual(needIds(render('/issues/1/needs')).filter((id) => inConflict.has(id)))
+    expect(ids).toContain('N01')
+    expect(ids).not.toContain('N04')
+    expect(menuBar(html)).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*只看有衝突的需求/)
+  })
+
+  it('the two filters work together, and with ?stakeholder=', () => {
+    const both = needIds(render('/issues/1/needs?priority=M&conflict=1'))
+    expect(both).toEqual(needIds(render('/issues/1/needs?priority=M')).filter((id) => inConflict.has(id)))
+    expect(both).toContain('N01')
+    expect(both).not.toContain('N04')
+    // With a stakeholder, a need counts as in a conflict only when it still
+    // lists a conflict after the stakeholder filter (what NeedItem shows).
+    const own = needIds(render('/issues/1/needs?stakeholder=I20'))
+    const withAll = needIds(render('/issues/1/needs?stakeholder=I20&priority=M&priority=S&conflict=1'))
+    expect(withAll.length).toBeGreaterThan(0)
+    expect(withAll.length).toBeLessThan(own.length)
+    expect(withAll.every((id) => own.includes(id) && priorityOf(id) !== 'C' && inConflict.has(id))).toBe(true)
+  })
+
+  it('ignores unknown values: the list and the status line are the same as with no params', () => {
+    const plain = render('/issues/1/needs')
+    for (const q of ['priority=must', 'priority=x', 'priority=m', 'conflict=yes', 'conflict=0', 'priority=&conflict=']) {
+      const html = render(`/issues/1/needs?${q}`)
+      expect(needIds(html), q).toEqual(needIds(plain))
+      expect(status(html), q).toBe('')
+    }
+  })
+
+  it('the status line names the filters and the number shown; the tab count does not change', () => {
+    const html = render('/issues/1/needs?priority=M&priority=S&conflict=1')
+    const n = needIds(html).length
+    expect(status(html)).toContain(`篩選：優先順序：必須有、應該有、只看有衝突的需求。顯示 ${n} 個需求。`)
+    expect(tabNames(html)).toContain('需求 31')
+    expect(status(render('/issues/1/needs?stakeholder=I06&priority=C'))).toMatch(/^篩選：I06 [^。]+、優先順序：可以有。顯示 \d+ 個需求。/)
+  })
+
+  it('shows the filtered empty text when nothing is left', () => {
+    // #1 has no 這次不做 need.
+    const html = render('/issues/1/needs?priority=W')
+    expect(needIds(html)).toEqual([])
+    expect(html).toContain('沒有符合目前篩選的需求。')
+    expect(status(html)).toContain('優先順序：這次不做。顯示 0 個需求。')
+  })
+
+  it('「清除篩選」 removes priority and conflict with the other filters, and keeps other values', () => {
+    const html = render('/issues/1/needs?priority=M&conflict=1&stakeholder=I06&evidence=1&special=高齡')
+    expect(html).toMatch(/href="\/issues\/1\/needs"[^>]*>清除篩選<\/a>/)
+    expect(render('/issues/1/needs?priority=M&pick=W08')).toMatch(/href="\/issues\/1\/needs\?pick=W08"[^>]*>清除篩選<\/a>/)
+  })
+
+  it('the tab links drop ?priority= and ?conflict=, which only the 需求 tab uses', () => {
+    const html = render('/issues/1/needs?priority=M&conflict=1&evidence=1')
+    expect(html).toContain('href="/issues/1/wants?evidence=1"')
+    expect(html).toContain('href="/issues/1/needs?evidence=1"')
+    expect(html).not.toMatch(/href="\/issues\/1\/[a-z]*\?[^"]*(priority|conflict)/)
+  })
+})

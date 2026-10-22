@@ -1,6 +1,9 @@
 import { Link, useLocation } from 'react-router'
 import { t } from '@/i18n/zh-TW'
-import { clearFiltersSearch, filterStatusParts, type FilterStatusPart, type SideBarFilters } from '@/lib/stakeholderFilter'
+import { priorityLabel } from '@/lib/priority'
+import {
+  clearFiltersSearch, filterStatusParts, type FilterStatusPart, type NeedsTabFilters, type SideBarFilters,
+} from '@/lib/stakeholderFilter'
 import { cn } from '@/lib/utils'
 import type { Stakeholder } from '@/types'
 import { linkClass } from './styles'
@@ -17,6 +20,10 @@ function partText(part: FilterStatusPart): string {
       return tm.statusSpecial(part.groups)
     case 'crossIssue':
       return tm.statusCrossIssue
+    case 'priority':
+      return tm.statusPriority(part.priorities.map(priorityLabel))
+    case 'conflict':
+      return tm.conflictOnly
   }
 }
 
@@ -32,19 +39,24 @@ function partText(part: FilterStatusPart): string {
  * filters: from sideBarFiltersOf(params). stakeholder: the picked
  * stakeholder on the issue page; null on the stakeholder pages, where the
  * stakeholder of the page is not a filter. crossIssueOnly: 只看跨議題 of
- * the issue's 利害關係人 tab (decision 121). clearSearch: the search part
- * of 「清除篩選」, when the page removes other values than
- * clearFiltersSearch (the 利害關係人 tab uses clearStakeholdersTabSearch). */
-export function FilterStatus({ filters, stakeholder, crossIssueOnly = false, shown, clearSearch = clearFiltersSearch, className }: {
+ * the issue's 利害關係人 tab (decision 121). needs: 優先順序 and
+ * 只看有衝突的需求 of the issue's 需求 tab (decision 127). clearSearch: the
+ * search part of 「清除篩選」, when the page removes other values than
+ * clearFiltersSearch (the 利害關係人 tab uses clearStakeholdersTabSearch,
+ * the 需求 tab clearNeedsTabSearch). */
+export function FilterStatus({
+  filters, stakeholder, crossIssueOnly = false, needs = null, shown, clearSearch = clearFiltersSearch, className,
+}: {
   filters: SideBarFilters
   stakeholder: Stakeholder | null
   crossIssueOnly?: boolean
+  needs?: NeedsTabFilters | null
   shown?: string
   clearSearch?: (params: URLSearchParams) => string
   className?: string
 }) {
   const { pathname, search } = useLocation()
-  const parts = filterStatusParts(filters, stakeholder, crossIssueOnly)
+  const parts = filterStatusParts(filters, stakeholder, crossIssueOnly, needs)
   const on = parts.length > 0
   return (
     <p role="status" className={cn('text-sm', on && 'mb-4', className)}>

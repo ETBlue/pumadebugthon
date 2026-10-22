@@ -3,7 +3,7 @@
 // filter (?evidence=1, design 3.5).
 // Order is always the fixed priority order, the file order of step 5.2 or
 // letter order. Nothing here sorts by a count.
-import type { Conflict, IssueFile, Solution } from '@/types'
+import type { Conflict, IssueFile, Priority, Solution } from '@/types'
 import { dataBasedNeeds, issueNeeds, needsByPriority, needsForStakeholder, needsForStakeholderSet, type NeedPriorityGroup } from './needs'
 import { solutionNeedCoverage, type CoveredNeed } from './solutionPage'
 import { compareIds } from './ids'
@@ -31,12 +31,16 @@ export interface NeedsTabView {
  * special: the 特別關注 filter (decision 75), the stakeholders of the picked
  * groups. Keep a need only when it has a story of one of them. null: off.
  * With a stakeholder or special, each need's conflicts are only the ones
- * that the 訴求 tab shows with the same filters. */
+ * that the 訴求 tab shows with the same filters.
+ * needsFilters (decision 127): priorities keeps only the needs of these
+ * priorities (empty or missing: off). conflictOnly keeps only the needs that
+ * list at least one conflict, after the conflicts are filtered as above. */
 export function needsTabView(
   issue: IssueFile,
   stakeholder: string | null,
   dataBased: boolean,
   special: ReadonlySet<string> | null = null,
+  needsFilters: { priorities?: readonly Priority[]; conflictOnly?: boolean } = {},
 ): NeedsTabView {
   const oldFormat = issue.format === 'stories'
   let items = needsForStakeholderSet(needsForStakeholder(issueNeeds(issue), stakeholder), special)
@@ -48,6 +52,12 @@ export function needsTabView(
     const shown = new Set(shownConflicts(issue, stakeholder, special).map((c) => c.id))
     items = items.map((i) => ({ ...i, conflicts: i.conflicts.filter((c) => shown.has(c.id)) }))
   }
+  // Decision 127. 優先順序 keeps only the picked priority groups.
+  // 只看有衝突的需求 keeps a need only when it lists a conflict after the
+  // filters above, so it uses the same conflicts that NeedItem shows.
+  const priorities = needsFilters.priorities ?? []
+  if (priorities.length > 0) items = items.filter((i) => priorities.includes(i.need.priority))
+  if (needsFilters.conflictOnly) items = items.filter((i) => i.conflicts.length > 0)
   return { oldFormat, groups: needsByPriority(items), shown: items.length }
 }
 

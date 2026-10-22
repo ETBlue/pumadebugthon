@@ -2,10 +2,11 @@
 // (design 3.21, decisions 67 and 68). One stakeholder at a time, set in the
 // URL as ?stakeholder=<id>. The menu is in ID order. Nothing here sorts by a
 // count.
-import type { Stakeholder } from '@/types'
+import type { Priority, Stakeholder } from '@/types'
 import { FILTER_PARAM, isDataBasisFilterOn } from './dataBasis'
 import { compareIds } from './ids'
 import { FOCUS_ORDER } from './issues'
+import { PRIORITIES } from './priority'
 import { filterStakeholders, listedStakeholders } from './stakeholders'
 
 export const STAKEHOLDER_PARAM = 'stakeholder'
@@ -19,6 +20,61 @@ export const SPECIAL_PARAM = 'special'
  * (keptSearch). The old ?cross=1 of #/stakeholders is not read any more
  * (decision 110), so the name is free on the issue page. */
 export const CROSS_PARAM = 'cross'
+
+/** The 優先順序 filter of the issue's 需求 tab (decision 127):
+ * ?priority=<M|S|C|W>, once per picked priority. The values are the
+ * priority letters of the data (Priority). Only the 需求 tab reads it, so a
+ * tab change drops it (keptSearch). */
+export const PRIORITY_PARAM = 'priority'
+
+/** 只看有衝突的需求 on the issue's 需求 tab (decision 127): ?conflict=1.
+ * Only "1" turns it on. Only the 需求 tab reads it, so a tab change drops
+ * it (keptSearch). */
+export const CONFLICT_PARAM = 'conflict'
+
+/** The picked priorities in the URL (decision 127), in the fixed order M,
+ * S, C, W, each once. Unknown values are ignored, as for ?special=. */
+export function priorityFilterOf(params: URLSearchParams): Priority[] {
+  const picked = params.getAll(PRIORITY_PARAM)
+  return PRIORITIES.filter((p) => picked.includes(p))
+}
+
+/** A copy of params with these priorities (priority=, once per priority,
+ * in the order M, S, C, W). Unknown values are dropped. An empty list
+ * removes the value. Other values are kept. */
+export function withPriorityFilter(params: URLSearchParams, priorities: string[]): URLSearchParams {
+  const next = new URLSearchParams(params)
+  next.delete(PRIORITY_PARAM)
+  for (const p of PRIORITIES) if (priorities.includes(p)) next.append(PRIORITY_PARAM, p)
+  return next
+}
+
+/** 只看有衝突的需求 in the URL (decision 127). On only with ?conflict=1 and
+ * when the issue has a conflict (hasConflicts), because the toggle is
+ * hidden otherwise. Any other value is ignored, as for ?evidence=. */
+export function conflictFilterOf(params: URLSearchParams, hasConflicts: boolean): boolean {
+  return hasConflicts && params.get(CONFLICT_PARAM) === '1'
+}
+
+/** A copy of params with 只看有衝突的需求 on (conflict=1) or off (no
+ * conflict). Other values are kept. */
+export function withConflictFilter(params: URLSearchParams, on: boolean): URLSearchParams {
+  const next = new URLSearchParams(params)
+  if (on) next.set(CONFLICT_PARAM, '1')
+  else next.delete(CONFLICT_PARAM)
+  return next
+}
+
+/** The search part of 「清除篩選」 on the issue's 需求 tab (decision 127):
+ * the side bar filters (clearFiltersSearch) and the two filters of this
+ * tab (priority, conflict) are removed. Every other value is kept. "" when
+ * nothing is left. */
+export function clearNeedsTabSearch(params: URLSearchParams): string {
+  const next = new URLSearchParams(params)
+  for (const key of [STAKEHOLDER_PARAM, FILTER_PARAM, SPECIAL_PARAM, PRIORITY_PARAM, CONFLICT_PARAM]) next.delete(key)
+  const s = next.toString()
+  return s ? `?${s}` : ''
+}
 
 /** 只看跨議題 in the URL (decision 121). On only with ?cross=1 and when 2 or
  * more issues are available (issueCount), because the toggle is hidden
@@ -73,7 +129,9 @@ export function withStakeholderFilter(params: URLSearchParams, id: string | null
 /** The search part for a tab change and for a side bar link: only evidence,
  * stakeholder and special are kept (every special value). pick, focus and
  * any other value are dropped. cross is dropped too, because only the
- * 利害關係人 tab uses it (decision 121). "" when nothing is kept. */
+ * 利害關係人 tab uses it (decision 121). priority and conflict are dropped,
+ * because only the 需求 tab uses them (decision 127). "" when nothing is
+ * kept. */
 export function keptSearch(params: URLSearchParams): string {
   const next = new URLSearchParams()
   for (const key of [FILTER_PARAM, STAKEHOLDER_PARAM]) {
@@ -184,17 +242,35 @@ export type FilterStatusPart =
   | { kind: 'dataBased' }
   | { kind: 'special'; groups: string[] }
   | { kind: 'crossIssue' }
+  | { kind: 'priority'; priorities: Priority[] }
+  | { kind: 'conflict' }
+
+/** The two filters of the issue's 需求 tab (decision 127). */
+export interface NeedsTabFilters {
+  /** The picked priorities (?priority=), in the order M, S, C, W. Empty: off. */
+  priorities: Priority[]
+  /** 只看有衝突的需求 (?conflict=1). */
+  conflictOnly: boolean
+}
 
 /** The filters that are on, for the filter status line (decision 68), in
  * this order: the stakeholder (pass null on the stakeholder page, where the
  * stakeholder is not a filter), 只看有資料根據, 特別關注, 只看跨議題 (only
- * the issue's 利害關係人 tab has it, decision 121). Empty when no filter is
- * on. The component adds what is shown. */
-export function filterStatusParts(filters: SideBarFilters, stakeholder: Stakeholder | null, crossIssueOnly = false): FilterStatusPart[] {
+ * the issue's 利害關係人 tab has it, decision 121), then 優先順序 and
+ * 只看有衝突的需求 (only the issue's 需求 tab has them, decision 127). Empty
+ * when no filter is on. The component adds what is shown. */
+export function filterStatusParts(
+  filters: SideBarFilters,
+  stakeholder: Stakeholder | null,
+  crossIssueOnly = false,
+  needs: NeedsTabFilters | null = null,
+): FilterStatusPart[] {
   const parts: FilterStatusPart[] = []
   if (stakeholder !== null) parts.push({ kind: 'stakeholder', id: stakeholder.id, name: stakeholder.name })
   if (filters.dataBasedOnly) parts.push({ kind: 'dataBased' })
   if (filters.special.length > 0) parts.push({ kind: 'special', groups: [...filters.special] })
   if (crossIssueOnly) parts.push({ kind: 'crossIssue' })
+  if (needs !== null && needs.priorities.length > 0) parts.push({ kind: 'priority', priorities: [...needs.priorities] })
+  if (needs !== null && needs.conflictOnly) parts.push({ kind: 'conflict' })
   return parts
 }

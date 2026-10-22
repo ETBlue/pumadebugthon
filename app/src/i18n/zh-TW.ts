@@ -736,6 +736,15 @@ export const t = {
     statusCrossIssue: '只看跨議題',
     /** The end of the status line of the 利害關係人 tab (decision 121). */
     shownStakeholders: (n: number) => `顯示 ${n} 位利害關係人。`,
+    /** The 優先順序 group in the menu bar of the 需求 tab (decision 127). */
+    priorityGroup: '優先順序',
+    /** The group with 只看有衝突的需求 and 只看有資料根據 in the menu bar of
+     * the 需求 tab (decision 127), like the 篩選 group of the 利害關係人 tab. */
+    needsFilterGroup: '篩選',
+    /** The toggle on the 需求 tab (decision 127), also its status line text. */
+    conflictOnly: '只看有衝突的需求',
+    /** 優先順序 in the status line of the 需求 tab (decision 127). */
+    statusPriority: (labels: string[]) => `優先順序：${labels.join('、')}`,
     clear: '清除篩選',
   },
   /** The sort and filter bar of the list pages (ListBar, design 3.23.2) and

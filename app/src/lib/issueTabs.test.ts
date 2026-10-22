@@ -229,3 +229,30 @@ describe('the 需求 and 解法 tabs with 特別關注 (special)', () => {
     expect(solutionsTabView(trashcans, null, true, null)).toEqual(solutionsTabView(trashcans, null, true))
   })
 })
+
+describe('needsTabView with 優先順序 and 只看有衝突的需求 (decision 127)', () => {
+  const all = needsTabView(trashcans, null, false)
+  const allItems = all.groups.flatMap((g) => g.items)
+
+  it('priorities keeps only the picked groups, in the fixed order', () => {
+    const view = needsTabView(trashcans, null, false, null, { priorities: ['W', 'M'] })
+    expect(view.groups.map((g) => [g.priority, g.items.length])).toEqual([['M', 8], ['W', 1]])
+    expect(view.shown).toBe(9)
+    expect(needsTabView(trashcans, null, false, null, { priorities: [] })).toEqual(all)
+  })
+
+  it('conflictOnly keeps only the needs that list a conflict', () => {
+    const view = needsTabView(trashcans, null, false, null, { conflictOnly: true })
+    const items = view.groups.flatMap((g) => g.items)
+    expect(needIds(items)).toEqual(needIds(allItems.filter((i) => i.conflicts.length > 0)))
+    expect(view.shown).toBe(15)
+    expect(items.every((i) => i.conflicts.length > 0)).toBe(true)
+  })
+
+  it('conflictOnly uses the conflicts after the stakeholder filter', () => {
+    const own = needsTabView(trashcans, 'I01', false).groups.flatMap((g) => g.items)
+    const view = needsTabView(trashcans, 'I01', false, null, { conflictOnly: true, priorities: ['M', 'S'] })
+    const items = view.groups.flatMap((g) => g.items)
+    expect(needIds(items)).toEqual(needIds(own.filter((i) => i.conflicts.length > 0 && i.need.priority !== 'C' && i.need.priority !== 'W')))
+  })
+})

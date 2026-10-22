@@ -6,18 +6,32 @@ import { IssueMenuBar, JoinedScroll, MenuBarGroup } from '@/components/IssueMenu
 import { StakeholderPicker } from '@/components/StakeholderPicker'
 import { toggleOnClass } from '@/components/styles'
 import { ToggleCheck } from '@/components/ToggleCheck'
+import { Toggle } from '@/components/ui/toggle'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { t } from '@/i18n/zh-TW'
+import { priorityLabel } from '@/lib/priority'
 import { sideMenuCounts, type SideMenuContext } from '@/lib/sideMenu'
 import {
-  issueSpecialOptions, menuIdsFor, sideBarFiltersOf, stakeholderMenuSearch, withSpecialFilter,
+  clearFiltersSearch, clearNeedsTabSearch, issueSpecialOptions, menuIdsFor, sideBarFiltersOf, stakeholderMenuSearch,
+  withConflictFilter, withPriorityFilter, withSpecialFilter, type NeedsTabFilters,
 } from '@/lib/stakeholderFilter'
 import { findStakeholder } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
-import type { IndexFile, IssueFile } from '@/types'
+import type { IndexFile, IssueFile, Priority } from '@/types'
 import { useIssueSpecial } from './useIssueStakeholder'
 
 const tm = t.sideMenu
+
+/** The two extra filters of the 需求 tab (decision 127). */
+export interface NeedsBarFilters {
+  /** The 優先順序 toggles: the priorities that the needs of the issue use,
+   * in the fixed order M, S, C, W. No group when empty. */
+  priorityOptions: Priority[]
+  /** Show 只看有衝突的需求: the issue has at least one conflict. */
+  showConflict: boolean
+  /** The values from the URL (priorityFilterOf, conflictFilterOf). */
+  value: NeedsTabFilters
+}
 
 /** A tab of the issue page with the stakeholder filter (the 訴求, 需求 and
  * 解法 tabs; design 3.2, decision 116). From top to bottom:
@@ -31,13 +45,19 @@ const tm = t.sideMenu
  * tabs. current is the result of stakeholderFilterOf (useIssueStakeholder),
  * never the raw URL value. context gives the counts of the picker
  * (issue-wants, issue-needs or issue-solutions). shown is the end of the
- * status line, for example t.sideMenu.shownNeeds(4). */
-export function IssueFilterLayout({ index, issue, current, context, shown, children }: {
+ * status line, for example t.sideMenu.shownNeeds(4).
+ * needs: only on the 需求 tab (decision 127). The bar then also has the
+ * 優先順序 toggles (?priority=, a joined group like 特別關注) and a 篩選
+ * group with 只看有衝突的需求 (?conflict=1) and 只看有資料根據, like the 篩選
+ * group of the 利害關係人 tab. The status line names them, and
+ * 「清除篩選」 removes them too (clearNeedsTabSearch). */
+export function IssueFilterLayout({ index, issue, current, context, shown, needs, children }: {
   index: IndexFile
   issue: IssueFile
   current: string | null
   context: SideMenuContext
   shown?: string
+  needs?: NeedsBarFilters
   children: ReactNode
 }) {
   const [params, setParams] = useSearchParams()
@@ -59,6 +79,10 @@ export function IssueFilterLayout({ index, issue, current, context, shown, child
   )
   const setSpecial = (groups: string[]) =>
     setParams((prev) => withSpecialFilter(prev, groups), { replace: true, preventScrollReset: true })
+  const setPriorities = (priorities: string[]) =>
+    setParams((prev) => withPriorityFilter(prev, priorities), { replace: true, preventScrollReset: true })
+  const setConflictOnly = (on: boolean) =>
+    setParams((prev) => withConflictFilter(prev, on), { replace: true, preventScrollReset: true })
 
   return (
     <div>
@@ -95,11 +119,51 @@ export function IssueFilterLayout({ index, issue, current, context, shown, child
             </JoinedScroll>
           </MenuBarGroup>
         )}
-        <DataBasisToggle variant="bar" />
+        {needs && needs.priorityOptions.length > 0 && (
+          <MenuBarGroup label={tm.priorityGroup}>
+            <JoinedScroll>
+              <ToggleGroup
+                type="multiple"
+                variant="outline"
+                spacing={0}
+                value={needs.value.priorities}
+                onValueChange={setPriorities}
+                aria-label={tm.priorityGroup}
+              >
+                {needs.priorityOptions.map((p) => (
+                  <ToggleGroupItem key={p} value={p} className={cn(toggleOnClass, 'bg-background')}>
+                    <ToggleCheck />
+                    {priorityLabel(p)}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </JoinedScroll>
+          </MenuBarGroup>
+        )}
+        {needs ? (
+          <MenuBarGroup label={tm.needsFilterGroup}>
+            {needs.showConflict && (
+              <Toggle
+                variant="outline"
+                pressed={needs.value.conflictOnly}
+                onPressedChange={setConflictOnly}
+                className={cn(toggleOnClass, 'shrink-0 bg-background')}
+              >
+                <ToggleCheck />
+                {tm.conflictOnly}
+              </Toggle>
+            )}
+            <DataBasisToggle variant="bar" />
+          </MenuBarGroup>
+        ) : (
+          <DataBasisToggle variant="bar" />
+        )}
       </IssueMenuBar>
       <FilterStatus
         filters={filters}
         stakeholder={current === null ? null : findStakeholder(index.stakeholders, current)}
+        needs={needs?.value ?? null}
+        clearSearch={needs ? clearNeedsTabSearch : clearFiltersSearch}
         shown={shown}
         className="mt-3"
       />

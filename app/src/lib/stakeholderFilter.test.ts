@@ -9,6 +9,7 @@ import {
   clearFiltersSearch, clearStakeholdersTabSearch, CROSS_PARAM, crossFilterOf, filterStatusParts, withCrossFilter, keptSearch, menuIdsFor, sideBarFiltersOf, SPECIAL_PARAM,
   issueSpecialOptions, specialStakeholderIds, specialOptions, STAKEHOLDER_PARAM, stakeholderFilterOf, stakeholderMenuSearch,
   withSpecialFilter, withStakeholderFilter, type SideBarFilters,
+  clearNeedsTabSearch, conflictFilterOf, priorityFilterOf, withConflictFilter, withPriorityFilter, PRIORITY_PARAM,
 } from './stakeholderFilter'
 import { FOCUS_ORDER } from './issues'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
@@ -328,5 +329,48 @@ describe('the 只看跨議題 param (decision 121)', () => {
       { kind: 'dataBased' }, { kind: 'special', groups: ['高齡'] }, { kind: 'crossIssue' },
     ])
     expect(filterStatusParts({ dataBasedOnly: false, special: [] }, null)).toEqual([])
+  })
+})
+
+describe('the 需求 tab filters in the URL (decision 127)', () => {
+  it('priorityFilterOf keeps M, S, C, W in that order, each once, and ignores other values', () => {
+    expect(priorityFilterOf(new URLSearchParams('priority=W&priority=M&priority=M&priority=must&priority=s'))).toEqual(['M', 'W'])
+    expect(priorityFilterOf(new URLSearchParams(''))).toEqual([])
+  })
+
+  it('withPriorityFilter writes the priorities in order, drops unknown ones, and keeps other values', () => {
+    const next = withPriorityFilter(new URLSearchParams('priority=C&evidence=1'), ['S', 'M', 'x'])
+    expect(next.getAll(PRIORITY_PARAM)).toEqual(['M', 'S'])
+    expect(next.get('evidence')).toBe('1')
+    expect(withPriorityFilter(new URLSearchParams('priority=C&evidence=1'), []).toString()).toBe('evidence=1')
+  })
+
+  it('conflictFilterOf is on only with conflict=1 and when the issue has a conflict', () => {
+    expect(conflictFilterOf(new URLSearchParams('conflict=1'), true)).toBe(true)
+    expect(conflictFilterOf(new URLSearchParams('conflict=1'), false)).toBe(false)
+    for (const q of ['conflict=0', 'conflict=yes', 'conflict=', '']) expect(conflictFilterOf(new URLSearchParams(q), true), q).toBe(false)
+  })
+
+  it('withConflictFilter sets or removes conflict=1 and keeps other values', () => {
+    expect(withConflictFilter(new URLSearchParams('stakeholder=I06'), true).toString()).toBe('stakeholder=I06&conflict=1')
+    expect(withConflictFilter(new URLSearchParams('conflict=1&stakeholder=I06'), false).toString()).toBe('stakeholder=I06')
+  })
+
+  it('keptSearch drops priority and conflict on a tab change', () => {
+    expect(keptSearch(new URLSearchParams('priority=M&conflict=1&evidence=1&special=高齡'))).toBe('?evidence=1&special=%E9%AB%98%E9%BD%A1')
+    expect(keptSearch(new URLSearchParams('priority=M&conflict=1'))).toBe('')
+  })
+
+  it('clearNeedsTabSearch removes every filter of the 需求 tab and keeps other values', () => {
+    expect(clearNeedsTabSearch(new URLSearchParams('priority=M&conflict=1&stakeholder=I06&evidence=1&special=高齡&pick=W08'))).toBe('?pick=W08')
+    expect(clearNeedsTabSearch(new URLSearchParams('priority=M'))).toBe('')
+  })
+
+  it('filterStatusParts adds 優先順序 and 只看有衝突的需求 after the other filters', () => {
+    const filters = { dataBasedOnly: true, special: [] }
+    expect(filterStatusParts(filters, null, false, { priorities: ['M', 'S'], conflictOnly: true })).toEqual([
+      { kind: 'dataBased' }, { kind: 'priority', priorities: ['M', 'S'] }, { kind: 'conflict' },
+    ])
+    expect(filterStatusParts(filters, null, false, { priorities: [], conflictOnly: false })).toEqual([{ kind: 'dataBased' }])
   })
 })

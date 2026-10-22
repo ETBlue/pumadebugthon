@@ -15,7 +15,7 @@ import { SolutionsTab } from '@/components/stakeholder/SolutionsTab'
 import { WantsTab } from '@/components/stakeholder/WantsTab'
 import { linkClass } from '@/components/styles'
 import { Badge } from '@/components/ui/badge'
-import { useIndex, useIssues } from '@/data'
+import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { backListPath } from '@/lib/backLink'
@@ -151,9 +151,14 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   const folders = useMemo(() => shown.map((i) => i.folder), [shown])
   const issues = useIssues(folders)
   const tab = parseStakeholderTab(useParams().tab)
+  // The labels wait for cross-issue.json too. A file that fails to load is
+  // left out, as in the 解法 tab (decision 119).
+  const cross = useCrossIssue()
   const counts = useMemo(
-    () => (issues.status === 'ready' ? stakeholderTabCounts(issues.data, s.id) : null),
-    [issues, s.id],
+    () => (issues.status === 'ready' && cross.status !== 'loading'
+      ? stakeholderTabCounts(issues.data, cross.status === 'ready' ? cross.data : null, s.id)
+      : null),
+    [issues, cross, s.id],
   )
   // 資料根據 of the metadata: null while the issue files load or fail.
   const cells = useMemo(

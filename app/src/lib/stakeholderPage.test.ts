@@ -120,7 +120,7 @@ describe('stakeholderConflictViews', () => {
     const list = stakeholderConflictViews(issue, 'I06')
     expect(list.map((c) => [c.view.conflict.id, c.otherStories])).toEqual([['CY', []]])
     for (const i of [trees, trashcans, smokefree, policy]) {
-      expect(stakeholderConflictViews(i, 'I06').length).toBe(stakeholderTabCounts([i], 'I06').conflicts)
+      expect(stakeholderConflictViews(i, 'I06').length).toBe(stakeholderTabCounts([i], null, 'I06').conflicts)
     }
   })
 })
@@ -140,7 +140,7 @@ describe('stakeholderSolutionsView', () => {
   it('has as many solutions as the tab count', () => {
     for (const i of [trees, trashcans, smokefree, policy]) {
       for (const id of ['I06', 'I01', 'O09']) {
-        expect(stakeholderSolutionsView(i, id).solutions.length).toBe(stakeholderTabCounts([i], id).solutions)
+        expect(stakeholderSolutionsView(i, id).solutions.length).toBe(stakeholderTabCounts([i], null, id).solutions)
       }
     }
   })

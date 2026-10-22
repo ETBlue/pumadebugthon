@@ -3,8 +3,10 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
+import crossJson from '@/test/fixtures/cross-issue.json'
 import indexJson from '@/test/fixtures/index.json'
-import type { IndexFile, IssueFile, Solution } from '@/types'
+import type { CrossIssueFile, IndexFile, IssueFile, Solution } from '@/types'
+import { stakeholderSolutionCount } from './coverage'
 import {
   issueStakeholderTabCounts, issueTabCounts, solutionTabCounts, solutionTabLabel, stakeholderTabCounts,
 } from './tabCounts'
@@ -54,22 +56,42 @@ describe('stakeholderTabCounts', () => {
   it('sums the counts over the issues (I06: 訴求 5・衝突 4, 需求 4, 解法 4)', () => {
     // #1: W06, W08 / C1, C7 / N08 / D. #2: W08, W11 / C6 / N07, N08 / A, C.
     // #8: W07 / C3 / I06-US01 / A. Design 3.3.
-    expect(stakeholderTabCounts(issues, 'I06')).toEqual({ wants: 5, conflicts: 4, needs: 4, solutions: 4 })
+    expect(stakeholderTabCounts(issues, null, 'I06')).toEqual({ wants: 5, conflicts: 4, needs: 4, solutions: 4 })
   })
 
   it('counts one issue on its own', () => {
-    expect(stakeholderTabCounts([trashcans], 'I06')).toEqual({ wants: 2, conflicts: 1, needs: 2, solutions: 2 })
+    expect(stakeholderTabCounts([trashcans], null, 'I06')).toEqual({ wants: 2, conflicts: 1, needs: 2, solutions: 2 })
   })
 
   it('counts an N group once, however many stories of the stakeholder it has', () => {
     // I01 in #2 has 5 stories in N01, plus N04, N06 and I01-US09.
-    expect(stakeholderTabCounts([trashcans], 'I01').needs).toBe(4)
+    expect(stakeholderTabCounts([trashcans], null, 'I01').needs).toBe(4)
   })
 
   it('gives zeros for an unknown stakeholder or no issues', () => {
     const zero = { wants: 0, conflicts: 0, needs: 0, solutions: 0 }
-    expect(stakeholderTabCounts(issues, 'I99')).toEqual(zero)
-    expect(stakeholderTabCounts([], 'I06')).toEqual(zero)
+    expect(stakeholderTabCounts(issues, null, 'I99')).toEqual(zero)
+    expect(stakeholderTabCounts([], null, 'I06')).toEqual(zero)
+  })
+
+  // 解法 has one source, stakeholderSolutionCount (decision 119).
+  describe('解法 with cross-issue.json', () => {
+    const cross = crossJson as CrossIssueFile
+    const all = [trees, trashcans, smokefree, policyJson as IssueFile]
+
+    it('adds the cross-issue solutions: I06 解法 7, I01 解法 16', () => {
+      expect(stakeholderTabCounts(all, cross, 'I06').solutions).toBe(7)
+      expect(stakeholderTabCounts(all, cross, 'I01').solutions).toBe(16)
+    })
+
+    it('is stakeholderSolutionCount for every stakeholder, with and without the file', () => {
+      const index = indexJson as IndexFile
+      for (const s of index.stakeholders) {
+        for (const c of [cross, null]) {
+          expect(stakeholderTabCounts(all, c, s.id).solutions).toBe(stakeholderSolutionCount(all, c, s.id))
+        }
+      }
+    })
   })
 })
 

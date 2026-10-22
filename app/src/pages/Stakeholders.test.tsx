@@ -12,6 +12,7 @@ import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { t } from '@/i18n/zh-TW'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
+import { stakeholderTabCounts } from '@/lib/tabCounts'
 import Stakeholders from './Stakeholders'
 
 const index = indexJson as IndexFile
@@ -71,6 +72,16 @@ describe('the tree view counts', () => {
     const html = render('?view=tree')
     expect(link(html, 'I06')).toContain('>議題 4</span>')
     expect(html).not.toContain('・解法')
+  })
+
+  it('shows the same 解法 number as the 解法 tab label of the stakeholder page (decision 119)', () => {
+    const html = render('?view=tree')
+    for (const id of ['I06', 'I01', 'O09']) {
+      const s = index.stakeholders.find((x) => x.id === id)!
+      const files = issueFiles.filter((i) => s.issues.includes(i.number))
+      const solutions = stakeholderTabCounts(files, crossJson as CrossIssueFile, id).solutions
+      expect(link(html, id)).toContain(`・解法 ${solutions}</span>`)
+    }
   })
 
   it('does not show the counts in the card view', () => {

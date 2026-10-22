@@ -6,7 +6,8 @@
 import type { CellCounts, CrossIssueFile, CrossSolution, IssueFile, Solution, Story } from '@/types'
 import { basisTotal, roundedPercent, storyCells } from './cellBasis'
 import { crossNeedCoverage, crossNeedGroupsOf } from './crossIssue'
-import { needsOfStakeholder } from './needs'
+import { dataBasedNeeds, needsOfStakeholder, type StakeholderNeedItem } from './needs'
+import { stakeholderSolutionsView } from './stakeholderPage'
 
 /** A plain share: part of total. total is always more than 0. */
 export interface Share {
@@ -110,27 +111,53 @@ export function stakeholderSolutionCoverage(
   return { covered, total }
 }
 
-/** The number of solutions of a stakeholder (the tree view of
- * #/stakeholders, decision 117): the solutions that cover at least one of
- * its needs. Issue solutions are counted as in the 解法 tab label of the
- * stakeholder page (stakeholderTabCounts): the different solutions per
- * issue, summed over the issues. Then each cross-issue solution that covers
- * at least one of its needs in the given issues adds 1, with the coverage
- * rule of stakeholderSolutionCoverage. cross is null when cross-issue.json
- * does not exist. A plain count, not a share. */
+/** One cross-issue solution on the stakeholder page's 解法 tab (decision
+ * 119), with the needs of the stakeholder that it covers. */
+export interface StakeholderCrossSolution {
+  solution: CrossSolution
+  /** Its covered needs of the stakeholder, by issue order, then in the
+   * order of step 5.2. */
+  needs: { issueNumber: number; item: StakeholderNeedItem }[]
+}
+
+/** The cross-issue solutions that cover at least one need of a stakeholder
+ * in the given issues, in the order of cross-issue.json. The coverage rule
+ * is the rule of stakeholderSolutionCoverage (decision 84). dataBased: the
+ * 「只看有資料根據」 filter. It keeps only the needs with a data-based
+ * 以便… cell (dataBasedNeeds), and leaves out a solution with no need
+ * left. Empty when cross is null (the file does not exist or fails to
+ * load). */
+export function stakeholderCrossSolutions(
+  issues: IssueFile[],
+  cross: CrossIssueFile | null,
+  id: string,
+  dataBased = false,
+): StakeholderCrossSolution[] {
+  if (cross === null) return []
+  const needs = issues.flatMap((issue) => {
+    const all = needsOfStakeholder(issue, id)
+    return (dataBased ? dataBasedNeeds(all) : all).map((item) => ({ issueNumber: issue.number, item }))
+  })
+  return cross.solutions
+    .map((solution) => {
+      const keys = crossSolutionNeedKeys(cross, solution)
+      return { solution, needs: needs.filter((n) => keys.has(`${n.issueNumber}:${n.item.need.id}`)) }
+    })
+    .filter((s) => s.needs.length > 0)
+}
+
+/** The number of solutions of a stakeholder (decisions 117 and 119). It is
+ * the one source for the tree view of #/stakeholders and for the 解法 tab
+ * label of the stakeholder page, so the two always show the same number.
+ * It counts the solutions that the 解法 tab lists: the issue solutions of
+ * each issue (stakeholderSolutionsView, summed over the issues), plus the
+ * cross-issue solutions (stakeholderCrossSolutions). cross is null when
+ * cross-issue.json does not exist or fails to load. A plain count, not a
+ * share. */
 export function stakeholderSolutionCount(issues: IssueFile[], cross: CrossIssueFile | null, id: string): number {
   let count = 0
-  const needKeys = new Set<string>()
-  for (const issue of issues) {
-    const needs = needsOfStakeholder(issue, id)
-    count += new Set(needs.flatMap((n) => n.solutions.map((s) => s.solution.id))).size
-    for (const n of needs) needKeys.add(`${issue.number}:${n.need.id}`)
-  }
-  if (cross === null) return count
-  for (const solution of cross.solutions) {
-    if ([...crossSolutionNeedKeys(cross, solution)].some((key) => needKeys.has(key))) count += 1
-  }
-  return count
+  for (const issue of issues) count += stakeholderSolutionsView(issue, id).solutions.length
+  return count + stakeholderCrossSolutions(issues, cross, id).length
 }
 
 /** The share as a whole percent, with the rounding of evidencePercent. */

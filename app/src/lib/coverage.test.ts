@@ -9,8 +9,9 @@ import type { AvailableIssueSummary, CrossIssueFile, IndexFile, IssueFile } from
 import { basisTotal, evidencePercent } from './cellBasis'
 import {
   compareShares, crossSolutionCells, evidenceShare, sharePercent, solutionCells, stakeholderCells,
-  stakeholderSolutionCount, stakeholderSolutionCoverage,
+  stakeholderCrossSolutions, stakeholderSolutionCount, stakeholderSolutionCoverage,
 } from './coverage'
+import { stakeholderSolutionsView } from './stakeholderPage'
 import { findCrossSolution } from './crossIssue'
 import { stakeholderTabCounts } from './tabCounts'
 
@@ -147,12 +148,25 @@ describe('stakeholderSolutionCoverage', () => {
 })
 
 describe('stakeholderSolutionCount', () => {
-  it('counts the issue solutions as the 解法 tab of the stakeholder page', () => {
-    // With no cross-issue file, it is the 解法 tab count.
+  it('is the 解法 tab count of the stakeholder page, with and without the cross-issue file', () => {
+    // One source for both numbers (decision 119).
     for (const id of ['I06', 'O09', 'O12', 'I01']) {
-      expect(stakeholderSolutionCount(files, null, id)).toBe(stakeholderTabCounts(files, id).solutions)
+      for (const c of [cross, null]) {
+        expect(stakeholderSolutionCount(files, c, id)).toBe(stakeholderTabCounts(files, c, id).solutions)
+      }
     }
     expect(stakeholderSolutionCount(files, null, 'I06')).toBe(5)
+    expect(stakeholderSolutionCount(files, cross, 'I01')).toBe(16)
+  })
+
+  it('counts what the 解法 tab lists: the per-issue solutions plus stakeholderCrossSolutions', () => {
+    for (const id of ['I06', 'O09', 'O12', 'I01']) {
+      for (const c of [cross, null]) {
+        const listed = files.reduce((n, i) => n + stakeholderSolutionsView(i, id).solutions.length, 0)
+          + stakeholderCrossSolutions(files, c, id).length
+        expect(stakeholderSolutionCount(files, c, id)).toBe(listed)
+      }
+    }
   })
 
   it('adds each cross-issue solution that covers one of its needs once', () => {
@@ -183,6 +197,33 @@ describe('stakeholderSolutionCount', () => {
 
   it('gives 0 for a stakeholder with no need', () => {
     expect(stakeholderSolutionCount(files, cross, 'I999')).toBe(0)
+  })
+})
+
+describe('stakeholderCrossSolutions', () => {
+  const view = (id: string, c: CrossIssueFile | null, dataBased = false) =>
+    stakeholderCrossSolutions(files, c, id, dataBased).map((s) => [
+      s.solution.code,
+      s.needs.map((n) => `${n.issueNumber}:${n.item.need.id}`),
+    ])
+
+  it('lists the cross-issue solutions that cover its needs, with those needs (decision 119)', () => {
+    expect(view('I06', cross)).toEqual([
+      ['X-B', ['1:N08', '2:N07', '8:I06-US01']],
+      ['X-D', ['2:N08']],
+    ])
+    expect(view('I01', cross).map(([code]) => code)).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
+  })
+
+  it('is empty without the cross-issue file', () => {
+    expect(view('I06', null)).toEqual([])
+  })
+
+  it('keeps only the data-based needs with the 「只看有資料根據」 filter', () => {
+    // No need of I06 has a data-based 以便… cell, so nothing is left.
+    expect(view('I06', cross, true)).toEqual([])
+    // Every listed need of I01 is data-based.
+    expect(view('I01', cross, true)).toEqual(view('I01', cross))
   })
 })
 

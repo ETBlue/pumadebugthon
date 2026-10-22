@@ -1,8 +1,13 @@
+import { useMemo } from 'react'
 import { DataBasisEmpty, useDataBasisFilter } from '@/components/DataBasisToggle'
+import { LabelledSection } from '@/components/LabelledSection'
 import { NeedItem, NeedSummaryLink } from '@/components/NeedItem'
 import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
+import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
+import { useCrossIssueOrNull, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { solutionCells } from '@/lib/coverage'
+import { crossSolutionCells, solutionCells, stakeholderCrossSolutions, type StakeholderCrossSolution } from '@/lib/coverage'
+import { availableIssues } from '@/lib/issues'
 import { needsOfStakeholder } from '@/lib/needs'
 import { stakeholderSolutionsView } from '@/lib/stakeholderPage'
 import { Empty, IssueSection, Part, type StakeholderTabProps } from './IssueSection'
@@ -11,11 +16,19 @@ const tp = t.stakeholderPage
 
 /** 解法 (design 3.3). Per issue: the solutions that cover at least one of
  * its needs, each with the needs it covers, then 「尚未有解法涵蓋的需求」.
+ * Then 「跨議題解法」: the cross-issue solutions that cover at least one of
+ * its needs (decision 119). The tab label counts the same solutions
+ * (stakeholderSolutionCount). Without cross-issue.json, or while it loads or
+ * when it fails to load, the cross-issue part is left out.
  * The same need key can show under two issues, so the items get no focus ID. */
 export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
   const [dataBasedOnly] = useDataBasisFilter()
+  const cross = useCrossIssueOrNull()
+  const allCross = stakeholderCrossSolutions(issues, cross, id)
+  const shownCross = dataBasedOnly ? stakeholderCrossSolutions(issues, cross, id, true) : allCross
   // The 資料根據 note is shown once, when some issue shows a solution card.
-  const anySolution = issues.some((issue) => stakeholderSolutionsView(issue, id, dataBasedOnly).solutions.length > 0)
+  const anySolution = shownCross.length > 0
+    || issues.some((issue) => stakeholderSolutionsView(issue, id, dataBasedOnly).solutions.length > 0)
   return (
     <div className="space-y-10">
       {issues.map((issue) => {
@@ -90,8 +103,63 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
           </IssueSection>
         )
       })}
+      {allCross.length > 0 && <CrossSolutionsSection index={index} shown={shownCross} />}
       {/* The 資料根據 explanation, once under the lists (decision 112). */}
       {anySolution && <p className="text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>}
     </div>
+  )
+}
+
+/** 「跨議題解法」 of the 解法 tab (decision 119): the cross-issue solution
+ * cards as on the home page, each with 「涵蓋需求的資料根據」 and the needs
+ * of this stakeholder that it covers. The 資料根據 cells count every need
+ * the solution covers in every analyzed issue, as on the home page, so they
+ * wait for all the issue files. shown is empty when the 「只看有資料根據」
+ * filter leaves nothing. */
+function CrossSolutionsSection({ index, shown }: { index: StakeholderTabProps['index']; shown: StakeholderCrossSolution[] }) {
+  const cross = useCrossIssueOrNull()
+  const folders = useMemo(() => availableIssues(index).map((i) => i.folder), [index])
+  const allIssues = useIssues(folders)
+  const headingId = 'stakeholder-solutions-cross'
+  return (
+    <LabelledSection headingId={headingId} className="space-y-6 border-t pt-6">
+      <h2 id={headingId} className="text-xl font-bold">{tp.crossSolutionsHeading}</h2>
+      {shown.length === 0 ? (
+        <DataBasisEmpty />
+      ) : (
+        <div>
+          <p className="text-sm text-muted-foreground">{tp.crossSolutionsIntro}</p>
+          <ul className="mt-3 space-y-3">
+            {shown.map(({ solution, needs }) => {
+              const cells = cross !== null && allIssues.status === 'ready'
+                ? crossSolutionCells(cross, solution, allIssues.data)
+                : null
+              return (
+                <li key={solution.code}>
+                  <CrossSolutionCard solution={solution} issueTitles={index.issues}>
+                    {cells && (
+                      <dl className="mt-2 text-sm">
+                        <CoveredBasisField basis={{ cells, percent: null }} />
+                      </dl>
+                    )}
+                    <div className="mt-2 text-sm">
+                      <p className="text-muted-foreground">{tp.coveredNeeds}</p>
+                      <ul className="mt-1 space-y-1">
+                        {needs.map(({ issueNumber, item }) => (
+                          <li key={`${issueNumber}:${item.need.id}`}>
+                            <span className="mr-1.5 text-muted-foreground">{t.crossIssue.issueLink(issueNumber)}</span>
+                            <NeedSummaryLink summary={item.summary} issueNumber={issueNumber} needKey={item.need.id} />
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CrossSolutionCard>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      )}
+    </LabelledSection>
   )
 }

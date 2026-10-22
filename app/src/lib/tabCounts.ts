@@ -2,7 +2,8 @@
 // number, not a score. The counts are the totals: they do not change when a
 // filter is on (decision 49). Nothing here sorts.
 import { t } from '@/i18n/zh-TW'
-import type { IssueFile, Solution, SolutionPractice, Stakeholder } from '@/types'
+import type { CrossIssueFile, IssueFile, Solution, SolutionPractice, Stakeholder } from '@/types'
+import { stakeholderSolutionCount } from './coverage'
 import { needCount, wantCount } from './counts'
 import type { SolutionTab } from './entityPaths'
 import { needsOfStakeholder } from './needs'
@@ -49,16 +50,16 @@ export function issueStakeholderTabCounts(
 
 /** The tab counts of the stakeholder page, summed over the issues
  * (decision 48). Per issue: its different want keys, the conflicts with one
- * of its stories on a side (decision 44), its different need keys, and the
- * solutions that cover at least one of its needs. */
-export function stakeholderTabCounts(issues: IssueFile[], id: string): TabCounts {
-  const out: TabCounts = { wants: 0, conflicts: 0, needs: 0, solutions: 0 }
+ * of its stories on a side (decision 44) and its different need keys. 解法
+ * is stakeholderSolutionCount (decision 119): the issue solutions that
+ * cover at least one of its needs, plus the cross-issue solutions that do.
+ * cross is null when cross-issue.json does not exist or fails to load. */
+export function stakeholderTabCounts(issues: IssueFile[], cross: CrossIssueFile | null, id: string): TabCounts {
+  const out: TabCounts = { wants: 0, conflicts: 0, needs: 0, solutions: stakeholderSolutionCount(issues, cross, id) }
   for (const issue of issues) {
-    const needs = needsOfStakeholder(issue, id)
     out.wants += wantsOfStakeholder(issue, id).length
     out.conflicts += conflictsForStakeholder(issue, id).length
-    out.needs += needs.length
-    out.solutions += new Set(needs.flatMap((n) => n.solutions.map((s) => s.solution.id))).size
+    out.needs += needsOfStakeholder(issue, id).length
   }
   return out
 }

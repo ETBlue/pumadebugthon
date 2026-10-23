@@ -4,6 +4,7 @@
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
 import { describe, expect, it } from 'vitest'
+import { ConcernsTab } from '@/components/solution/ConcernsTab'
 import { OverviewTab } from '@/components/solution/OverviewTab'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import type { Cell, IssueFile, Solution } from '@/types'
@@ -73,48 +74,46 @@ describe('CellParts with the 只看有資料根據 filter (decision 105)', () =>
   })
 })
 
-describe('the step 7 table on the solution page', () => {
+describe('a step 7 cell on the solution page (decision 140)', () => {
   const base = trashcans.solutions.find((s) => s.id === 'A') as Solution
   const sol: Solution = {
     ...base,
     evaluation: { ...base.evaluation, privacy: mixed },
   }
 
-  function render(search: string): string {
+  // 隱私 is on the 可能爭議 tab now; the 概覽 block stays on 總覽.
+  function render(search: string, tab: 'overview' | 'controversies'): string {
     return renderToStaticMarkup(
       <MemoryRouter initialEntries={[`/solutions/2-A${search}`]}>
-        <OverviewTab issue={trashcans} solution={sol} />
+        {tab === 'overview' ? (
+          <OverviewTab issue={trashcans} solution={sol} />
+        ) : (
+          <ConcernsTab tab="controversies" solution={sol} targetOf={() => null} step7Source="來源" />
+        )}
       </MemoryRouter>,
     )
   }
 
   it('shows every part of a mixed cell with its badge', () => {
-    const html = render('')
+    const html = render('', 'controversies')
     for (const p of mixed) expect(html).toContain(p.text)
   })
 
   it('follows the 只看有資料根據 filter in the URL: the [AI模擬] part is hidden', () => {
-    const on = render('?evidence=1')
-    const off = render('')
-    // The step 7 section has the toggle, pressed when the filter is on.
+    const on = render('?evidence=1', 'controversies')
+    const off = render('', 'controversies')
+    // The tab has the toggle, pressed when the filter is on.
     expect(on).toContain('只看有資料根據')
     expect(on).toMatch(/aria-pressed="true"/)
     expect(off).toMatch(/aria-pressed="false"/)
-    // The list of step 7 rows: the <dl> after the 總覽 box of the section.
-    const section = (html: string) => {
-      const start = html.indexOf('<dl class="mt-4 space-y-4">', html.indexOf('id="solution-detail"'))
-      expect(start).toBeGreaterThan(-1)
-      return html.slice(start, html.indexOf('</dl>', start))
-    }
-    expect(section(off)).toContain('推想的部分')
-    expect(section(on)).not.toContain('推想的部分')
-    expect(section(on)).toContain('官方資料的部分')
-    expect(section(on)).toContain('新聞的部分')
-    // The other rows of #2 A are all [AI模擬], so they show the note.
-    expect(section(on)).toContain('這一格只有標記 [AI模擬] 的內容。')
-    // The 總覽 box of step 7 (成本, 可行性, 主要風險, 主責單位) follows it too.
-    const box = (html: string) => html.slice(html.indexOf('id="solution-overview"'), html.indexOf('<dl class="mt-4 space-y-4">'))
-    expect(box(on)).toContain('這一格只有標記 [AI模擬] 的內容。')
-    expect(box(off)).not.toContain('這一格只有')
+    expect(off).toContain('推想的部分')
+    expect(on).not.toContain('推想的部分')
+    expect(on).toContain('官方資料的部分')
+    expect(on).toContain('新聞的部分')
+    // The 概覽 block of 總覽 (成本, 可行性, 主要風險, 主責單位) follows it too:
+    // the cells of #2 A are all [AI模擬], so they show the note.
+    const box = (html: string) => html.slice(html.indexOf('id="solution-overview"'), html.indexOf('</dl>'))
+    expect(box(render('?evidence=1', 'overview'))).toContain('這一格只有標記 [AI模擬] 的內容。')
+    expect(box(render('', 'overview'))).not.toContain('這一格只有')
   })
 })

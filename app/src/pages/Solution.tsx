@@ -12,11 +12,13 @@ import { SpaceLinks } from '@/components/SpaceLinks'
 import { linkClass, targetLinkClass } from '@/components/styles'
 import { CrossIssueLinks } from '@/components/solution/CrossSolutionCard'
 import { CrossOverviewTab } from '@/components/solution/CrossOverviewTab'
+import { ConcernsTab } from '@/components/solution/ConcernsTab'
 import { ConflictsTab, CrossConflictsTab } from '@/components/solution/ConflictsTab'
 import { CrossNeedsTab, CrossStakeholdersTab } from '@/components/solution/CrossTabs'
 import { CrossMeasuresTab, MeasuresTab } from '@/components/solution/MeasuresTab'
 import { NeedsTab } from '@/components/solution/NeedsTab'
 import { OverviewTab } from '@/components/solution/OverviewTab'
+import { PlanTab } from '@/components/solution/PlanTab'
 import { PoliciesTab } from '@/components/solution/PoliciesTab'
 import { StakeholdersTab } from '@/components/solution/StakeholdersTab'
 import { CrossWantsTab, WantsTab } from '@/components/solution/WantsTab'
@@ -31,6 +33,7 @@ import {
 } from '@/lib/entityPaths'
 import { findIssue, tabPath } from '@/lib/issuePage'
 import { findSolution, solutionTitle } from '@/lib/solutionPage'
+import { crossSummaryRefTo, summaryRefTo } from '@/lib/summary'
 import { solutionTabCounts, solutionTabLabel } from '@/lib/tabCounts'
 import type { AvailableIssueSummary, CrossIssueFile, CrossSolution, IndexFile, IssueFile, Solution as SolutionType } from '@/types'
 
@@ -102,6 +105,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
   const issueTitle = t.issueCard.numberTitle(n, issue.title)
   const tab = parseSolutionTab(useParams().tab)
   const counts = useMemo(() => solutionTabCounts(issue, sol), [issue, sol])
+  const refTarget = (ref: string, dataBasedOnly: boolean) => summaryRefTo(ref, n, issue, dataBasedOnly)
 
   return (
     <>
@@ -150,8 +154,12 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
               case 'wants': return <WantsTab index={index} issue={issue} solution={sol} />
               case 'stakeholders': return <StakeholdersTab index={index} issue={issue} solution={sol} />
               case 'conflicts': return <ConflictsTab index={index} issue={issue} solution={sol} />
+              case 'controversies':
+              case 'legal':
+                return <ConcernsTab tab={name} solution={sol} targetOf={refTarget} step7Source={tp.step7Source} />
+              case 'plan': return <PlanTab solution={sol} />
               case 'measures': return <MeasuresTab solution={sol} />
-              case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={n} />
+              case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={n} targetOf={refTarget} />
             }
           }}
         </PageTabs>
@@ -198,6 +206,8 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
   const tab = parseSolutionTab(useParams().tab)
   const counts = useMemo(() => crossSolutionTabCounts(data, sol, issues), [data, sol, issues])
   const common = { data, index, issues, solution: sol }
+  const stakeholderIds = useMemo(() => new Set(index.stakeholders.map((s) => s.id)), [index])
+  const refTarget = (ref: string, dataBasedOnly: boolean) => crossSummaryRefTo(ref, stakeholderIds, dataBasedOnly)
 
   return (
     <>
@@ -247,8 +257,12 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
               case 'wants': return <CrossWantsTab {...common} />
               case 'stakeholders': return <CrossStakeholdersTab {...common} />
               case 'conflicts': return <CrossConflictsTab {...common} />
+              case 'controversies':
+              case 'legal':
+                return <ConcernsTab tab={name} solution={sol} targetOf={refTarget} step7Source={tp.crossStep7Source} />
+              case 'plan': return <PlanTab solution={sol} />
               case 'measures': return <CrossMeasuresTab solution={sol} />
-              case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={null} />
+              case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={null} targetOf={refTarget} />
             }
           }}
         </PageTabs>

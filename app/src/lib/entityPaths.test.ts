@@ -110,7 +110,9 @@ describe('parseSolutionTab', () => {
   })
 
   it('accepts every tab name', () => {
-    expect(SOLUTION_TABS).toEqual(['overview', 'needs', 'wants', 'stakeholders', 'conflicts', 'measures', 'policies'])
+    expect(SOLUTION_TABS).toEqual([
+      'overview', 'needs', 'wants', 'stakeholders', 'conflicts', 'controversies', 'legal', 'plan', 'measures', 'policies',
+    ])
     for (const tab of SOLUTION_TABS) expect(parseSolutionTab(tab)).toBe(tab)
   })
 

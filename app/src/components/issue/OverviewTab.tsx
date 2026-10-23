@@ -1,5 +1,7 @@
 import { Link } from 'react-router'
 import { CellBasis } from '@/components/CellBasis'
+import { CellText } from '@/components/CellText'
+import { useDataBasisFilter } from '@/components/DataBasisToggle'
 import { METHOD_URL } from '@/components/links'
 import { Markdown } from '@/components/Markdown'
 import { TagBadge, type TagKind } from '@/components/TagBadge'
@@ -7,22 +9,28 @@ import { t } from '@/i18n/zh-TW'
 import { spaceTypeNames } from '@/lib/issues'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
 import { sameSpaceIssues } from '@/lib/spaces'
+import { unlinkedSummaryTopics } from '@/lib/summary'
 import { linkClass } from '@/components/styles'
+import { SummaryRefs } from './SummaryTab'
 import type { IssueTabProps } from './types'
 
 const to = t.overview
 const TAG_KINDS: TagKind[] = ['實證', 'AI整理', 'AI模擬', 'pending']
 
-/** 總覽 (design 3.2): 資料根據, tag legend, 使用相同空間的議題 and 待補清單.
- * The counts are in the tab labels, the 分析摘要 topics have their own tabs
- * (decision 102), and 特別關注族群 and 利害關係人 are on the 利害關係人 tab
- * (decision 109). */
+/** 總覽 (design 3.2): 資料根據, tag legend, 使用相同空間的議題, 沒有對應解法的
+ * 分析摘要 (decision 140) and 待補清單. The counts are in the tab labels,
+ * 難以取捨 has its own tab (decision 102), and 特別關注族群 and 利害關係人
+ * are on the 利害關係人 tab (decision 109). */
 export function OverviewTab({ index, summary, issue }: IssueTabProps) {
   const c = summary.counts
   const n = summary.number
   const sameSpace = sameSpaceIssues(index, n)
   const titles = new Map(index.issues.map((i) => [i.number, i.title]))
   const pending = pendingBySection(issue.pending)
+  const unlinked = unlinkedSummaryTopics(issue)
+  // 總覽 has no filter, but the reference links keep ?evidence=1 when the
+  // reader came with it, as on the other tabs.
+  const [dataBasedOnly] = useDataBasisFilter()
 
   return (
     <div className="space-y-8">
@@ -74,6 +82,33 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      {/* The 分析摘要 rows that name no solution (decision 140). Article
+          style, as the 分析摘要 tabs (decision 134). No filter here. */}
+      <section aria-labelledby="unlinked-heading">
+        <h3 id="unlinked-heading" className="text-lg font-semibold">{to.unlinkedHeading}</h3>
+        {unlinked.length === 0 ? (
+          <p className="mt-2">{to.unlinkedNone}</p>
+        ) : (
+          <>
+            <p className="mt-2 text-sm text-muted-foreground">{to.unlinkedIntro}</p>
+            {unlinked.map((topic) => (
+              <section key={topic.key} aria-labelledby={`unlinked-${topic.key}`} className="mt-4">
+                <h4 id={`unlinked-${topic.key}`} className="font-medium">{topic.topic}</h4>
+                <ul aria-label={topic.topic} className="mt-2 space-y-4">
+                  {topic.items.map((item) => (
+                    <li key={item.item} className={item.text.pending ? 'min-w-0 text-muted-foreground' : 'min-w-0'}>
+                      <h5 className="font-semibold text-foreground">{item.item}</h5>
+                      <p className="mt-1 leading-relaxed"><CellText cell={item.text} /></p>
+                      <SummaryRefs refs={item.refs} issueNumber={n} issue={issue} dataBasedOnly={dataBasedOnly} className="mt-1 text-sm" />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </>
         )}
       </section>
 

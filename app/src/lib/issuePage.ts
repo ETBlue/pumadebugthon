@@ -2,20 +2,21 @@
 // Order is always the order of the issue file. Nothing here sorts by a count.
 import type { IndexFile, IssueSummary, Pending } from '@/types'
 
-/** The tabs that show one 分析摘要 topic, in the fixed topic order (design
- * 3.2, decision 102): 難以取捨的決定, 可能的爭議, 法規上的障礙,
- * 相依事項與現行政策的關係. summaryTopicOf in summary.ts gives the topic of
- * each tab. The rows of 受影響較大的弱勢族群 are on the 利害關係人 tab
- * (`stakeholders`, decision 109), not on a topic tab. */
-export const SUMMARY_TABS = ['decisions', 'controversies', 'legal', 'dependencies'] as const
+/** The tabs that show one 分析摘要 topic (design 3.2, decisions 102 and
+ * 140): only 難以取捨的決定 now. summaryTopicOf in summary.ts gives the topic
+ * of each tab. The rows of 受影響較大的弱勢族群 are on the 利害關係人 tab
+ * (`stakeholders`, decision 109). The rows of 可能的爭議, 法規上的障礙 and
+ * 相依事項與現行政策的關係 are on the solution pages when they name a
+ * solution, and on the issue 總覽 tab when they name none (decision 140). */
+export const SUMMARY_TABS = ['decisions'] as const
 
 export type SummaryTab = (typeof SUMMARY_TABS)[number]
 
 /** The tabs of the issue page, in display order (design 3.2). The first one
- * is the default. 利害關係人 is second, right after 總覽 (decision 116). */
-export const ISSUE_TABS = [
-  'overview', 'stakeholders', 'wants', 'needs', 'solutions', 'decisions', 'controversies', 'legal', 'dependencies',
-] as const
+ * is the default. 利害關係人 is second, right after 總覽 (decision 116).
+ * 難以取捨 is before 解法 (decision 140). The old tabs controversies, legal
+ * and dependencies are gone: their URLs show 「找不到這個分頁」. */
+export const ISSUE_TABS = ['overview', 'stakeholders', 'wants', 'needs', 'decisions', 'solutions'] as const
 
 export type IssueTab = (typeof ISSUE_TABS)[number]
 

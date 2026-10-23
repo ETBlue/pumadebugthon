@@ -9,7 +9,7 @@ import type {
 import { compareIds } from './ids'
 import { issueNeeds, needsOfStakeholder, type NeedItem } from './needs'
 import { wantsOfCoverage, type CoveredNeed, type NeedCoverage, type StakeholderEntry, type WantCoverage } from './solutionPage'
-import { practiceCounts, type SolutionTabCounts } from './tabCounts'
+import { concernCounts, practiceCounts, type SolutionTabCounts } from './tabCounts'
 
 /** The cross-issue solution for the code in the URL, for example "X-A".
  * null for an unknown code, or when the file does not exist. */
@@ -238,6 +238,7 @@ export function crossSolutionTabCounts(data: CrossIssueFile, solution: CrossSolu
       wayOut: crossWayOutConflicts(data, solution.code).length,
       related: crossRelatedConflicts(data, solution, issues).length,
     },
+    ...concernCounts(solution),
     measures: solution.measures.length,
     policies: practiceCounts(solution.practices),
   }

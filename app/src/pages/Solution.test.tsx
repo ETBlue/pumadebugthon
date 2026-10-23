@@ -1,5 +1,5 @@
-// The solution page with its seven tabs (ETBlue, 2026-10-22; design 3.12,
-// decision 103). The data hooks and the page title are mocked, so the page
+// The solution page with its ten tabs (ETBlue, 2026-10-22 and 2026-10-23;
+// design 3.12, decisions 103 and 140). The data hooks and the page title are mocked, so the page
 // renders on the server with the fixtures.
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router'
@@ -9,6 +9,7 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { t } from '@/i18n/zh-TW'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import Solution from './Solution'
@@ -50,10 +51,10 @@ const titleOf = (html: string) => /data-title="([^"]*)"/.exec(html)?.[1]
 const activeTab = (html: string) => /role="tab" aria-selected="true"[^>]*aria-label="([^"]+)"/.exec(html)?.[1]
 
 describe('the solution page tabs (decision 103)', () => {
-  it('has seven tabs in order, with their counts (#2 A)', () => {
+  it('has ten tabs in order, with their counts (#2 A)', () => {
     expect(tabNames(render('/solutions/2-A'))).toEqual([
       '總覽', '需求　涵蓋 9・未涵蓋 13', '訴求　涵蓋 28・未涵蓋 25', '利害關係人　涵蓋 14・未涵蓋 13',
-      '衝突　解開 5・相關 3', '成效衡量 4', '相關政策　國內 2・國外 2',
+      '衝突　解開 5・相關 3', '可能爭議 4', '法規障礙 2', '執行計畫', '成效衡量 4', '相關政策　國內 2・國外 2',
     ])
   })
 
@@ -61,6 +62,9 @@ describe('the solution page tabs (decision 103)', () => {
     const cases: [string, string, string][] = [
       ['wants', '訴求　涵蓋 28・未涵蓋 25', '訴求'],
       ['conflicts', '衝突　解開 5・相關 3', '衝突'],
+      ['controversies', '可能爭議 4', '可能爭議'],
+      ['legal', '法規障礙 2', '法規障礙'],
+      ['plan', '執行計畫', '執行計畫'],
       ['measures', '成效衡量 4', '成效衡量'],
       ['policies', '相關政策　國內 2・國外 2', '相關政策'],
     ]
@@ -86,9 +90,18 @@ describe('the solution page tabs (decision 103)', () => {
     expect(cls).toEqual(expect.arrayContaining(['flex-nowrap', 'overflow-x-auto']))
   })
 
-  it('總覽 keeps step 7, but not the conflicts, the groups or the measures', () => {
+  it('總覽 keeps the 概覽 block, but not the other step 7 rows, the conflicts, the groups or the measures', () => {
     const html = render('/solutions/2-A')
-    expect(html).toContain('資源、法規、隱私與風險')
+    expect(html).toContain('>概覽</h3>')
+    for (const label of ['成本', '可行性', '主要風險', '主責單位']) expect(html, label).toContain(`>${label}</dt>`)
+    // The rest of step 7 moved to 可能爭議, 法規障礙 and 執行計畫 (decision 140).
+    expect(html).not.toContain('資源、法規、隱私與風險')
+    // (相關法規 can still be the context of a 待補 item.)
+    for (const label of ['相關法規', '隱私', '其他顧慮與風險', '災害風險', '需要的資料／API／資源', '執行步驟']) {
+      expect(html, label).not.toContain(`>${label}</dt>`)
+      expect(html, label).not.toContain(`>${label}</h3>`)
+      expect(html, label).not.toContain(`>${label}</h4>`)
+    }
     expect(html).not.toContain('id="solution-way-out"')
     expect(html).not.toContain('id="solution-conflicts"')
     expect(html).not.toContain('id="solution-groups"')
@@ -140,11 +153,18 @@ describe('the solution page tabs (decision 103)', () => {
 })
 
 describe('the cross-issue solution page tabs (decision 103)', () => {
-  it('has the same seven tabs (X-A)', () => {
+  it('has the same ten tabs (X-A)', () => {
     expect(tabNames(render('/solutions/X-A'))).toEqual([
       '總覽', '需求　涵蓋 17・未涵蓋 60', '訴求　涵蓋 44・未涵蓋 123', '利害關係人　涵蓋 21・未涵蓋 30',
-      '衝突　解開 1・相關 1', '成效衡量 4', '相關政策　國內 2・國外 0',
+      '衝突　解開 1・相關 1', '可能爭議 4', '法規障礙 2', '執行計畫', '成效衡量 4', '相關政策　國內 2・國外 0',
     ])
+  })
+
+  it('總覽 has no step 7 block any more: it moved to the new tabs (decision 140)', () => {
+    const html = render('/solutions/X-A')
+    expect(html).not.toContain('id="cross-detail"')
+    expect(html).not.toContain('主責單位、法規、隱私與風險')
+    expect(html).not.toContain('>相關法規<')
   })
 
   it('moves 解開的衝突 and 成效衡量 out of 總覽', () => {
@@ -205,7 +225,9 @@ describe('items that are not entities are in article style (decision 137)', () =
 
   it('總覽: the 概覽 block and the ideas have no card box (#2 B has 2 ideas)', () => {
     const html = render('/solutions/2-B')
-    expect(html).toContain('aria-labelledby="solution-overview" class="mt-6"')
+    const overview = html.slice(html.indexOf('id="solution-overview"'), html.indexOf('id="solution-ideas"'))
+    expect(overview).toContain('>概覽</h3>')
+    expect(overview).not.toContain(CARD)
     const ideas = files['2-trashcans'].solutions.find((s) => s.id === 'B')!.ideas
     expect(ideas).toHaveLength(2)
     const items = listItems(html, 'id="solution-ideas"').slice(0, 2)
@@ -216,7 +238,7 @@ describe('items that are not entities are in article style (decision 137)', () =
 
   it('cross-issue 總覽: the 特別關注族群 rows have no card box; the merged solutions keep their cards', () => {
     const html = render('/solutions/X-A')
-    const focus = html.slice(html.indexOf('id="cross-focus"'), html.indexOf('id="cross-detail"'))
+    const focus = html.slice(html.indexOf('id="cross-focus"'), html.indexOf('id="cross-more"'))
     expect(focus).not.toContain(CARD)
     const parts = html.slice(html.indexOf('id="cross-parts"'), html.indexOf('id="cross-focus"'))
     expect(parts).toContain(CARD)
@@ -311,5 +333,123 @@ describe('the plain card lists of the solution tabs (decision 139)', () => {
 
   it('cross-issue 總覽: the merged solutions are a grid', () => {
     expect(render('/solutions/X-A').split('id="cross-parts"')[1]).toMatch(GRID)
+  })
+})
+
+/** The headings of the items of a concern or plan tab, in order. */
+const itemHeadings = (html: string) => {
+  const list = /<ul aria-label="[^"]*" class="mt-6 space-y-6">([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? ''
+  return [...list.matchAll(/<h3 [^>]*>([^<]+)<\/h3>/g)].map((m) => m[1])
+}
+
+describe('the 可能爭議 and 法規障礙 tabs (decision 140)', () => {
+  it('可能爭議: the 分析摘要 rows that name the solution, then 隱私, 其他顧慮與風險 and 災害風險 (#2 B)', () => {
+    const html = render('/solutions/2-B/controversies')
+    expect(itemHeadings(html)).toEqual(['試點的採購與資料', '清潔隊員的手機回報', '隱私', '其他顧慮與風險', '災害風險'])
+    expect(html).toContain('<h2 class="sr-only">可能爭議</h2>')
+  })
+
+  it('法規障礙: the 分析摘要 rows that name the solution, then 相關法規 (#2 B)', () => {
+    expect(itemHeadings(render('/solutions/2-B/legal'))).toEqual(['感測器的採購與認證', '照片與定位的個資', '相關法規'])
+  })
+
+  it('a solution that no 分析摘要 row names still shows its step 7 rows (#2 C)', () => {
+    expect(itemHeadings(render('/solutions/2-C/controversies'))).toEqual(['隱私', '其他顧慮與風險', '災害風險'])
+    expect(tabNames(render('/solutions/2-C'))).toEqual(expect.arrayContaining(['可能爭議 3', '法規障礙 1']))
+  })
+
+  it('is in article style: one column, an h3 each, no card box; 「相關：」 on a 分析摘要 row and a source line on a step 7 row', () => {
+    const html = render('/solutions/2-A/controversies')
+    expect(html).not.toContain('rounded-md border p-3')
+    expect(html).not.toMatch(/<ul aria-label="可能爭議" class="[^"]*grid/)
+    expect(html).toContain('相關：')
+    expect(html).toContain('href="/issues/2/wants?focus=C1"')
+    expect(html).toContain('來源：議題分析步驟 7 這個解法的評估表。')
+  })
+
+  it('has the 「只看有資料根據」 toggle; with it on, the [AI模擬] items are hidden and the links keep ?evidence=1', () => {
+    const on = render('/solutions/2-A/legal?evidence=1')
+    expect(on).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*只看有資料根據/)
+    // Every item of #2 A is [AI模擬], so the tab says so.
+    expect(itemHeadings(on)).toEqual([])
+    expect(on).toContain('這裡沒有標記 [實證] 或 [AI整理] 的項目。')
+    // The tab count is the total (decision 49).
+    expect(tabNames(on)).toEqual(tabNames(render('/solutions/2-A/legal')))
+  })
+
+  it('with the filter on keeps an item with a [實證] part, and hides its [AI模擬] parts (#9 B)', () => {
+    // 行政院的生成式 AI 參考指引 (法規上的障礙, names 解法 B) is tagged [實證].
+    const policy = policyJson as IssueFile
+    files[policy.folder] = policy
+    try {
+      const html = render('/solutions/9-B/legal?evidence=1')
+      expect(itemHeadings(html)).toContain('行政院的生成式 AI 參考指引')
+      expect(itemHeadings(html).length).toBeLessThan(itemHeadings(render('/solutions/9-B/legal')).length)
+      expect(html).toContain('href="/solutions/9-B?evidence=1"')
+    } finally {
+      delete files[policy.folder]
+    }
+  })
+
+  it('cross-issue: the same items, with cross-issue links and the cross-issue source line (X-A)', () => {
+    const html = render('/solutions/X-A/controversies')
+    expect(itemHeadings(html)).toEqual(['合併的選址討論', '隱私', '其他顧慮與風險', '災害風險'])
+    // 「解法 X-A」 links to the page, 「#8 I25-US01」 to the story page, X-N01 is plain text.
+    expect(html).toContain('href="/solutions/X-A"')
+    expect(html).toContain('href="/stakeholders/I25/stories/8/I25-US01"')
+    expect(html).toContain('<span>X-N01</span>')
+    expect(html).toContain('來源：跨議題分析 4.5 這個解法的評估表。')
+    expect(itemHeadings(render('/solutions/X-A/legal'))).toEqual(['合併辦理的權責', '相關法規'])
+    expect(render('/solutions/X-A/legal')).toContain('href="/solutions/1-C"')
+  })
+})
+
+describe('the 執行計畫 tab (decision 140)', () => {
+  it('has 主責單位, 需要的資料／API／資源, 成本, 可行性 and 執行步驟, in article style', () => {
+    for (const path of ['/solutions/2-A/plan', '/solutions/X-A/plan']) {
+      const html = render(path)
+      expect(itemHeadings(html), path).toEqual(['主責單位', '需要的資料／API／資源', '成本', '可行性', '執行步驟'])
+      expect(html, path).not.toContain('rounded-md border p-3')
+      expect(html, path).toContain('只看有資料根據')
+    }
+  })
+
+  it('shows a 【待補】 執行步驟 as muted text, not as a list', () => {
+    const html = render('/solutions/2-A/plan')
+    expect(html).toMatch(/<li class="min-w-0 text-muted-foreground"><h3 id="plan-steps"[^>]*>執行步驟<\/h3>/)
+    expect(html).toContain('【待補：執行步驟】')
+    expect(html).not.toContain('<ol')
+  })
+
+  it('shows the phases of 執行步驟 as a numbered list when the cell splits cleanly at 「；」', () => {
+    const steps = { text: '第一階段：在兩個區試辦；第二階段：檢討後擴大；第一步：找出試辦地點', tag: 'AI模擬' as const, pending: false }
+    const trashcans = files['2-trashcans']
+    const patched: IssueFile = {
+      ...trashcans,
+      solutions: trashcans.solutions.map((s) => (s.id === 'A' ? { ...s, plan: { ...s.plan, steps: [steps] } } : s)),
+    }
+    files['2-trashcans'] = patched
+    try {
+      const html = render('/solutions/2-A/plan')
+      const list = /<ol class="[^"]*">([\s\S]*?)<\/ol>/.exec(html)?.[1] ?? ''
+      expect([...list.matchAll(/<li>([\s\S]*?)<\/li>/g)].map((m) => m[1].replace(/<[^>]+>/g, '')))
+        .toEqual(['第一階段：在兩個區試辦', '第二階段：檢討後擴大', '第一步：找出試辦地點'])
+      // With the filter on, the [AI模擬] cell is hidden and the note shows.
+      const on = render('/solutions/2-A/plan?evidence=1')
+      expect(on).not.toContain('<ol')
+      expect(on).toContain('這一格只有標記 [AI模擬] 的內容。')
+    } finally {
+      files['2-trashcans'] = trashcans
+    }
+  })
+})
+
+describe('相關政策: the dependency rows have the 「相關：」 line (decision 140)', () => {
+  it('links the references of a dependency row, issue and cross-issue', () => {
+    const html = render('/solutions/2-A/policies')
+    expect(html).toContain('相關：')
+    const cross = render('/solutions/X-A/policies?evidence=1')
+    expect(cross).toContain('href="/solutions/X-B?evidence=1"')
+    expect(cross).toContain('href="/stakeholders/O04/stories/2/O04-US04"')
   })
 })

@@ -14,22 +14,22 @@ describe('parseTab', () => {
     expect(parseTab(undefined)).toBe('overview')
   })
 
-  it('accepts every tab name, with 利害關係人 right after 總覽 (decision 116)', () => {
-    expect(ISSUE_TABS).toEqual([
-      'overview', 'stakeholders', 'wants', 'needs', 'solutions',
-      'decisions', 'controversies', 'legal', 'dependencies',
-    ])
+  it('accepts every tab name: six tabs, 利害關係人 right after 總覽 (decision 116), 難以取捨 before 解法 (decision 140)', () => {
+    expect(ISSUE_TABS).toEqual(['overview', 'stakeholders', 'wants', 'needs', 'decisions', 'solutions'])
     for (const tab of ISSUE_TABS) expect(parseTab(tab)).toBe(tab)
   })
 
-  it('four 分析摘要 tabs come after 解法 (decision 102); 利害關係人 is not one (decision 109)', () => {
-    expect(ISSUE_TABS.filter(isSummaryTab)).toEqual(['decisions', 'controversies', 'legal', 'dependencies'])
+  it('難以取捨 is the only 分析摘要 tab (decisions 102 and 140); 利害關係人 is not one (decision 109)', () => {
+    expect(ISSUE_TABS.filter(isSummaryTab)).toEqual(['decisions'])
     expect(isSummaryTab('stakeholders')).toBe(false)
     expect(tabPath(1, 'stakeholders')).toBe('/issues/1/stakeholders')
     expect(isSummaryTab('overview')).toBe(false)
     expect(isSummaryTab('solutions')).toBe(false)
-    expect(tabPath(2, 'legal')).toBe('/issues/2/legal')
-    expect(tabPath(9, 'dependencies')).toBe('/issues/9/dependencies')
+    expect(tabPath(2, 'decisions')).toBe('/issues/2/decisions')
+  })
+
+  it('the removed tabs 可能爭議, 法規障礙 and 相關解法與政策 are not tabs (decision 140)', () => {
+    for (const tab of ['controversies', 'legal', 'dependencies']) expect(parseTab(tab), tab).toBeNull()
   })
 
   it('returns null for an unknown tab', () => {

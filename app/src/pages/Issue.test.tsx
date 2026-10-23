@@ -79,7 +79,7 @@ describe('the band, the side menu and the metadata (decision 111)', () => {
     const html = render('/issues/1/needs?evidence=1&pick=W08')
     const nav = /<nav aria-label="議題內容"[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? ''
     const links = [...nav.matchAll(/<a ([^>]*)>/g)].map((m) => m[1])
-    expect(links).toHaveLength(9)
+    expect(links).toHaveLength(6)
     // The same URLs as the tabs: ?evidence= is kept, ?pick= is dropped.
     expect(links[0]).toContain('href="/issues/1?evidence=1"')
     expect(links[3]).toContain('href="/issues/1/needs?evidence=1"')
@@ -111,16 +111,24 @@ describe('old issue URLs (decision 110: no redirects)', () => {
     }
   })
 
+  it('the removed tabs 可能爭議, 法規障礙 and 相關解法與政策 show 「找不到這個分頁」 with a link to 總覽 (decision 140)', () => {
+    for (const tab of ['controversies', 'legal', 'dependencies']) {
+      const html = render(`/issues/2/${tab}?evidence=1`)
+      expect(html, tab).toContain('找不到這個分頁。')
+      expect(html, tab).toMatch(/href="\/issues\/2\?evidence=1"[^>]*>回到總覽<\/a>/)
+      expect(activeTab(html), tab).toBeUndefined()
+    }
+  })
+
   it('總覽 with ?focus=stakeholders stays on 總覽', () => {
     expect(activeTab(render('/issues/1?focus=stakeholders'))).toBe('總覽')
   })
 })
 
 describe('the issue page tabs', () => {
-  it('has nine tabs: 利害關係人 right after 總覽 (decision 116), then four 分析摘要 topics after 解法, with their counts (#1)', () => {
+  it('has six tabs: 利害關係人 right after 總覽 (decision 116), 難以取捨 before 解法 (decision 140), with their counts (#1)', () => {
     expect(tabNames(render('/issues/1'))).toEqual([
-      '總覽', '利害關係人 28・弱勢 4', '訴求 50・衝突 9', '需求 31', '解法 5',
-      '難以取捨 5', '可能爭議 5', '法規障礙 5', '相關解法與政策 0',
+      '總覽', '利害關係人 28・弱勢 4', '訴求 50・衝突 9', '需求 31', '難以取捨 5', '解法 5',
     ])
   })
 
@@ -137,25 +145,27 @@ describe('the issue page tabs', () => {
     expect(html).toMatch(/弱勢 4<\/span>/)
   })
 
-  it('opens a topic tab from its URL, with the tab name in the page title', () => {
-    const html = render('/issues/1/legal')
-    expect(activeTab(html)).toBe('法規障礙 5')
-    expect(titleOf(html)).toContain('法規障礙')
+  it('opens the 難以取捨 tab from its URL, with the tab name in the page title', () => {
+    const html = render('/issues/1/decisions')
+    expect(activeTab(html)).toBe('難以取捨 5')
+    expect(titleOf(html)).toContain('難以取捨')
     // The hidden h2 of the tab keeps the full name of the topic.
-    expect(html).toContain('<h2 class="sr-only">法規上的障礙</h2>')
+    expect(html).toContain('<h2 class="sr-only">難以取捨的決定</h2>')
     expect(titleOf(html)).toContain('#1')
   })
 
   it('a reference link keeps 「只看有資料根據」 (?evidence=1)', () => {
-    // 行政院的生成式 AI 參考指引 is tagged [實證], so the filter keeps it.
-    expect(render('/issues/9/legal?evidence=1')).toContain('href="/solutions/9-B?evidence=1"')
-    expect(render('/issues/9/legal')).toContain('href="/solutions/9-B"')
-    expect(render('/issues/2/controversies')).toContain('href="/issues/2/wants?focus=C9"')
+    state.override = { [(policyJson as IssueFile).folder]: policyWithEvidenceRow() }
+    expect(render('/issues/9/decisions?evidence=1')).toContain('href="/solutions/9-A?evidence=1"')
+    expect(render('/issues/9/decisions')).toContain('href="/solutions/9-A"')
+    state.override = {}
+    expect(render('/issues/2/decisions')).toContain('href="/issues/2/wants?focus=C6"')
   })
 
-  it('總覽 no longer shows the 分析摘要', () => {
+  it('總覽 does not show 難以取捨 or the 弱勢 rows', () => {
     const html = render('/issues/1')
-    expect(html).not.toContain('分析摘要')
+    expect(html).not.toContain('難以取捨的決定')
+    expect(html).not.toContain('補植地區的先後')
     expect(html).not.toContain('呼吸道疾病（尚未納入）')
     expect(titleOf(html)).not.toContain('難以取捨')
   })
@@ -167,7 +177,7 @@ describe('the issue page tabs', () => {
     expect(html).not.toContain('>特別關注族群</h3>')
     expect(html).not.toContain('id="focus-stakeholders"')
     expect(html).not.toContain('受影響較大的弱勢族群')
-    for (const h of ['資料根據', '標記說明', '使用相同空間的議題', '待補清單']) expect(html, h).toContain(`>${h}</h3>`)
+    for (const h of ['資料根據', '標記說明', '使用相同空間的議題', '沒有對應解法的分析摘要', '待補清單']) expect(html, h).toContain(`>${h}</h3>`)
   })
 
   it('an unknown tab shows 「找不到這個分頁。」', () => {
@@ -276,7 +286,22 @@ describe('the 利害關係人 tab (decision 115)', () => {
   })
 })
 
-describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', () => {
+/** #9 with one 難以取捨 row tagged [實證], for the filter tests. All the
+ * 難以取捨 rows of the fixtures are [AI模擬]. */
+function policyWithEvidenceRow(): IssueFile {
+  const policy = policyJson as IssueFile
+  return {
+    ...policy,
+    summary: policy.summary.map((t) => t.topic !== '難以取捨的決定' ? t : {
+      ...t,
+      items: t.items.map((i, n) => (n === 1 ? { ...i, text: { ...i.text, tag: '實證' as const } } : i)),
+    }),
+  }
+}
+
+describe('「只看有資料根據」 on the 難以取捨 tab (decision 108)', () => {
+  afterEach(() => { state.override = {} })
+
   it('has the toggle above the rows, with the same label and hint, off by default', () => {
     const html = render('/issues/2/decisions')
     expect(html).toContain('只看有資料根據')
@@ -287,7 +312,7 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
   })
 
   it('shows the rows as an article: one column, a heading each, no card box (decision 134)', () => {
-    const html = render('/issues/8/legal')
+    const html = render('/issues/8/decisions')
     const list = /<ul aria-label="[^"]*" class="([^"]*)"[^>]*>([\s\S]*?)<\/ul>/.exec(html)
     expect(list?.[1]).not.toMatch(/grid/)
     expect(list?.[2]).not.toMatch(/rounded-md border/)
@@ -295,26 +320,27 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
   })
 
   it('shows every row when the filter is off', () => {
-    // #8 keeps 2 rows that name no solution (ETBlue, 2026-10-23).
-    expect(rowNames(render('/issues/8/dependencies'))).toHaveLength(2)
-    expect(rowNames(render('/issues/8/legal'))).toHaveLength(6)
+    expect(rowNames(render('/issues/8/decisions'))).toHaveLength(4)
+    expect(rowNames(render('/issues/9/decisions'))).toHaveLength(6)
   })
 
   it('hides the [AI模擬] rows and keeps the [實證] and [AI整理] rows', () => {
-    const html = render('/issues/9/legal?evidence=1')
+    state.override = { [(policyJson as IssueFile).folder]: policyWithEvidenceRow() }
+    const html = render('/issues/9/decisions?evidence=1')
     expect(html).toMatch(/aria-pressed="true"/)
     // A [實證] row next to [AI模擬] rows.
-    expect(rowNames(html)).toEqual(['行政院的生成式 AI 參考指引'])
+    expect(rowNames(html)).toEqual(['統一格式或選用'])
   })
 
   it('shows the status line with the shown rows and 「清除篩選」', () => {
-    const html = render('/issues/9/legal?evidence=1')
+    state.override = { [(policyJson as IssueFile).folder]: policyWithEvidenceRow() }
+    const html = render('/issues/9/decisions?evidence=1')
     expect(html).toContain('篩選：只看有資料根據。顯示 1 項。')
-    expect(html).toMatch(/href="\/issues\/9\/legal"[^>]*>清除篩選<\/a>/)
+    expect(html).toMatch(/href="\/issues\/9\/decisions"[^>]*>清除篩選<\/a>/)
   })
 
   it('shows a short note when the filter hides every row', () => {
-    for (const path of ['/issues/2/decisions?evidence=1', '/issues/1/legal?evidence=1']) {
+    for (const path of ['/issues/2/decisions?evidence=1', '/issues/1/decisions?evidence=1']) {
       const html = render(path)
       expect(html, path).toContain('這裡沒有說明標記 [實證] 或 [AI整理] 的項目。')
       expect(rowNames(html), path).toEqual([])
@@ -323,7 +349,7 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
   })
 
   it('does not change the tab counts (they are totals, decision 49)', () => {
-    expect(tabNames(render('/issues/1/legal?evidence=1'))).toEqual(tabNames(render('/issues/1/legal')))
+    expect(tabNames(render('/issues/1/decisions?evidence=1'))).toEqual(tabNames(render('/issues/1/decisions')))
     expect(tabNames(render('/issues/2/decisions?evidence=1'))).toContain('難以取捨 4')
   })
 })
@@ -340,7 +366,7 @@ function menuBar(html: string): string | null {
 
 describe('the menu bar of the issue tabs (decision 116)', () => {
   it('every tab with a filter has the menu bar; 總覽 has none', () => {
-    for (const tab of ['stakeholders', 'wants', 'needs', 'solutions', 'decisions', 'controversies', 'legal', 'dependencies']) {
+    for (const tab of ['stakeholders', 'wants', 'needs', 'decisions', 'solutions']) {
       const html = render(`/issues/1/${tab}`)
       expect(html.match(/data-slot="issue-menu-bar"/g), tab).toHaveLength(1)
       expect(menuBar(html), tab).toContain('只看有資料根據')
@@ -389,12 +415,10 @@ describe('the menu bar of the issue tabs (decision 116)', () => {
     expect(html).toContain('特別關注：高齡')
   })
 
-  it('the 分析摘要 tabs have 「只看有資料根據」 in the bar, above the status line and the rows', () => {
-    for (const tab of ['decisions', 'controversies', 'legal', 'dependencies']) {
-      const html = render(`/issues/9/${tab}?evidence=1`)
-      expect(menuBar(html), tab).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*只看有資料根據/)
-      expect(html.indexOf('data-slot="issue-menu-bar"'), tab).toBeLessThan(html.indexOf('篩選：只看有資料根據'))
-    }
+  it('the 難以取捨 tab has 「只看有資料根據」 in the bar, above the status line and the rows', () => {
+    const html = render('/issues/9/decisions?evidence=1')
+    expect(menuBar(html)).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*只看有資料根據/)
+    expect(html.indexOf('data-slot="issue-menu-bar"')).toBeLessThan(html.indexOf('篩選：只看有資料根據'))
   })
 
   it('the 利害關係人 bar has three groups: 特別關注, 篩選 (只看跨議題, 只看有資料根據) and 分類層級', () => {
@@ -725,5 +749,51 @@ describe('the card grids of the 需求 and 解法 tabs (decisions 130 and 139)',
     const html = render('/issues/2/solutions')
     expect(html).toMatch(GRID)
     expect(html).not.toContain('xl:grid-cols-3')
+  })
+})
+
+/** The HTML of the 總覽 section 「沒有對應解法的分析摘要」 (decision 140). */
+function unlinkedSection(html: string): string {
+  const start = html.indexOf('aria-labelledby="unlinked-heading"')
+  return start === -1 ? '' : html.slice(start, html.indexOf('aria-labelledby="pending-heading"'))
+}
+
+describe('the 分析摘要 rows with no solution on 總覽 (decision 140)', () => {
+  it('shows the 法規上的障礙 and 相依事項 rows of #8 that name no solution, by topic, in file order', () => {
+    const section = unlinkedSection(render('/issues/8'))
+    const topics = [...section.matchAll(/<h4 [^>]*>([^<]+)<\/h4>/g)].map((m) => m[1])
+    expect(topics).toEqual(['法規上的障礙', '相依事項與現行政策的關係'])
+    const rows = [...section.matchAll(/<h5 [^>]*>([^<]+)<\/h5>/g)].map((m) => m[1])
+    expect(rows).toEqual(['允許電子煙需要修改國家的法律', '政策的階段', '和 #1、#2 共用人行道'])
+  })
+
+  it('does not show a row that names a solution: it is on the solution page', () => {
+    const section = unlinkedSection(render('/issues/2'))
+    expect(section).toContain('和 #1、#8 共用人行道')
+    expect(section).not.toContain('建議清單公布時')
+    expect(section).not.toContain('道路上設置物件')
+  })
+
+  it('is in article style: no card box, the 「相關：」 line with links that keep ?evidence=1', () => {
+    const on = unlinkedSection(render('/issues/8?evidence=1'))
+    expect(on).not.toContain('rounded-md border')
+    expect(on).toContain('相關：')
+    expect(on).toContain('href="/issues/8/wants?focus=C3&amp;evidence=1"')
+    expect(on).toContain('href="/issues/1/wants?focus=C7&amp;evidence=1"')
+    // 總覽 has no filter: every row shows, also with ?evidence=1.
+    expect([...on.matchAll(/<h5 /g)]).toHaveLength(3)
+    expect(render('/issues/8')).not.toContain('data-slot="issue-menu-bar"')
+  })
+
+  it('says so when every row names a solution (#1)', () => {
+    const section = unlinkedSection(render('/issues/1'))
+    expect(section).toContain('都已對應到解法')
+    expect(section).not.toContain('<h5')
+  })
+
+  it('comes after 使用相同空間的議題 and before 待補清單', () => {
+    const html = render('/issues/8')
+    expect(html.indexOf('same-space-heading')).toBeLessThan(html.indexOf('unlinked-heading'))
+    expect(html.indexOf('unlinked-heading')).toBeLessThan(html.indexOf('pending-heading'))
   })
 })

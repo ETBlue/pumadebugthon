@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
-import type { IssueFile, Solution } from '@/types'
+import crossJson from '@/test/fixtures/cross-issue.json'
+import type { Cell, CrossIssueFile, IssueFile, Solution, SummaryItem } from '@/types'
 import {
   findSolution,
   solutionConflicts,
@@ -17,6 +18,10 @@ import {
   stakeholderEntries,
   practiceSides,
   solutionWantCoverage,
+  concernCount,
+  concernItems,
+  concernItemsShown,
+  planPhases,
 } from './solutionPage'
 
 const trees = treesJson as IssueFile
@@ -280,5 +285,80 @@ describe('practiceSides (decision 104)', () => {
         expect(practiceSides(s.practices).foreign.some((p) => p.source === 'dependency')).toBe(false)
       }
     }
+  })
+})
+
+// The 可能爭議, 法規障礙 and 執行計畫 tabs (ETBlue, 2026-10-23; decision 140).
+describe('concernItems', () => {
+  const trashcansA = (trashcansJson as IssueFile).solutions.find((s) => s.id === 'A')!
+  const label = (c: ReturnType<typeof concernItems>[number]) => (c.kind === 'summary' ? c.item.item : c.key)
+
+  it('可能爭議: the 分析摘要 rows that name the solution, then 隱私, 其他顧慮與風險 and 災害風險', () => {
+    expect(concernItems(trashcansA, 'controversies').map(label)).toEqual(['建議清單公布時', 'privacy', 'risks', 'disasters'])
+  })
+
+  it('法規障礙: the 分析摘要 rows that name the solution, then 相關法規', () => {
+    expect(concernItems(trashcansA, 'legal').map(label)).toEqual(['道路上設置物件', 'laws'])
+  })
+
+  it('works the same for a cross-issue solution (X-A)', () => {
+    const xa = (crossJson as CrossIssueFile).solutions.find((s) => s.code === 'X-A')!
+    expect(concernItems(xa, 'controversies').map(label)).toEqual(['合併的選址討論', 'privacy', 'risks', 'disasters'])
+    expect(concernItems(xa, 'legal').map(label)).toEqual(['合併辦理的權責', 'laws'])
+  })
+
+  it('a solution with no 分析摘要 row still has its step 7 rows (#2 C)', () => {
+    const c = (trashcansJson as IssueFile).solutions.find((s) => s.id === 'C')!
+    expect(c.controversies).toEqual([])
+    expect(concernItems(c, 'controversies').map(label)).toEqual(['privacy', 'risks', 'disasters'])
+  })
+})
+
+describe('concernCount and concernItemsShown', () => {
+  const cell = (tag: Cell['tag'], text = '說明'): Cell => ({ text, tag, pending: tag === null })
+  const row = (item: string, tag: Cell['tag']): SummaryItem => ({ item, text: cell(tag), refs: [], solutions: ['A'] })
+  const sol = {
+    evaluation: {
+      laws: [cell(null, '【待補：法規】')],
+      privacy: [cell('AI模擬'), cell('實證')],
+      risks: [cell('AI模擬')],
+      disasters: [cell(null, '【待補：災害】')],
+      feasibility: [cell('AI模擬')],
+    },
+    controversies: [row('甲', 'AI整理'), row('乙', null)],
+    legal: [],
+  }
+
+  it('counts the items that are not only 【待補】', () => {
+    // 甲, 隱私 and 其他顧慮與風險 count; 乙 and 災害風險 are 【待補】.
+    expect(concernCount(concernItems(sol, 'controversies'))).toBe(3)
+    // Only 相關法規, and it is 【待補】.
+    expect(concernCount(concernItems(sol, 'legal'))).toBe(0)
+  })
+
+  it('with the filter on keeps the items with a [實證] or [AI整理] part', () => {
+    const items = concernItems(sol, 'controversies')
+    expect(concernItemsShown(items, false)).toEqual(items)
+    const shown = concernItemsShown(items, true).map((c) => (c.kind === 'summary' ? c.item.item : c.key))
+    expect(shown).toEqual(['甲', 'privacy'])
+  })
+})
+
+describe('planPhases', () => {
+  const one = (text: string, tag: Cell['tag'] = 'AI模擬'): Cell[] => [{ text, tag, pending: tag === null }]
+
+  it('splits a cell with one tag at 「；」', () => {
+    expect(planPhases(one('第一階段：試點；第二階段：擴大； 第三階段：檢討'))).toEqual(['第一階段：試點', '第二階段：擴大', '第三階段：檢討'])
+  })
+
+  it('gives null when the cell does not split cleanly', () => {
+    expect(planPhases(one('【待補：執行步驟】', null))).toBeNull()
+    expect(planPhases(one('只有一步'))).toBeNull()
+    expect(planPhases(one('甲；；乙'))).toBeNull()
+    expect(planPhases(one('甲；'))).toBeNull()
+    // A 「；」 inside brackets.
+    expect(planPhases(one('甲（乙；丙）'))).toBeNull()
+    // More than one part.
+    expect(planPhases([...one('甲；乙'), ...one('丙', '實證')])).toBeNull()
   })
 })

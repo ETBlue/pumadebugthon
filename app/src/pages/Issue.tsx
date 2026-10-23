@@ -38,10 +38,7 @@ const TAB_CONTENT: Record<IssueTab, (props: IssueTabProps) => ReactNode> = {
   needs: NeedsTab,
   solutions: SolutionsTab,
   decisions: summaryTab('decisions'),
-  controversies: summaryTab('controversies'),
   stakeholders: StakeholdersTab,
-  legal: summaryTab('legal'),
-  dependencies: summaryTab('dependencies'),
 }
 
 /** All the counts of the tab labels. */
@@ -68,10 +65,10 @@ function BackHome() {
  * sort, filters and search the reader last used there in this session. */
 const backToIssues = (): BackTarget => ({ to: backListPath('issues'), label: t.backLink.issues })
 
-/** Issue page (design 3.2): #/issues/:number/:tab? with nine tabs: 總覽,
- * 利害關係人 (decisions 109, 115 and 116), 訴求, 需求, 解法 and four
- * 分析摘要 topics (decision 102). Every tab but 總覽 has a menu bar with its
- * filters (IssueMenuBar, decision 116). */
+/** Issue page (design 3.2): #/issues/:number/:tab? with six tabs: 總覽,
+ * 利害關係人 (decisions 109, 115 and 116), 訴求, 需求, 難以取捨 (a 分析摘要
+ * topic, decision 102) and 解法 (decision 140). Every tab but 總覽 has a menu
+ * bar with its filters (IssueMenuBar, decision 116). */
 export default function Issue() {
   const index = useIndex()
   const { number } = useParams()

@@ -7,7 +7,7 @@ import type { IssueFile, SummaryItem } from '@/types'
 import { SUMMARY_TABS } from './issuePage'
 import {
   SUMMARY_TOPIC_KEYS, SUMMARY_TOPICS, parseSummaryRef, summaryGroupTag, summaryItemsOf, summaryItemsShown, summaryRefTo,
-  summaryTabCount, summaryTabCounts, summaryTopicOf,
+  summaryTabCount, summaryTabCounts, summaryTopicOf, crossSummaryRefTo, unlinkedSummaryTopics,
 } from './summary'
 
 const trees = treesJson as IssueFile
@@ -145,7 +145,7 @@ describe('summaryTopicOf', () => {
     expect(summaryTopicOf('disadvantaged')).toBe('受影響較大的弱勢族群')
   })
 
-  it('the four topic tabs are keys too (the fifth topic is on the 利害關係人 tab, decision 109)', () => {
+  it('the topic tab 難以取捨 is a key too (the other topics are not tabs, decisions 109 and 140)', () => {
     expect(SUMMARY_TABS.every((tab) => (SUMMARY_TOPIC_KEYS as readonly string[]).includes(tab))).toBe(true)
     expect(SUMMARY_TABS).not.toContain('disadvantaged')
   })
@@ -216,5 +216,48 @@ describe('summaryItemsShown', () => {
     for (const issue of [trees, trashcans]) {
       for (const key of SUMMARY_TOPIC_KEYS) expect(summaryItemsShown(summaryItemsOf(issue, key), true)).toEqual([])
     }
+  })
+})
+
+// The 分析摘要 rows that name no solution go to the issue 總覽 (ETBlue, 2026-10-23; decision 140).
+describe('unlinkedSummaryTopics', () => {
+  it('gives the rows of 可能的爭議, 法規上的障礙 and 相依事項 that name no solution, in topic order (#8)', () => {
+    const topics = unlinkedSummaryTopics(smokefree)
+    expect(topics.map((t) => t.key)).toEqual(['legal', 'dependencies'])
+    expect(topics.map((t) => t.topic)).toEqual(['法規上的障礙', '相依事項與現行政策的關係'])
+    expect(topics[0].items.map((i) => i.item)).toEqual(['允許電子煙需要修改國家的法律'])
+    expect(topics[1].items.map((i) => i.item)).toEqual(['政策的階段', '和 #1、#2 共用人行道'])
+    for (const t of topics) for (const i of t.items) expect(i.solutions).toEqual([])
+  })
+
+  it('leaves out 難以取捨 and 受影響較大的弱勢族群, also when their rows name no solution (#2)', () => {
+    // #2 has a 難以取捨 row and six 弱勢 rows with no solution; they stay on their tabs.
+    expect(summaryItemsOf(trashcans, 'decisions').some((i) => i.solutions.length === 0)).toBe(true)
+    expect(summaryItemsOf(trashcans, 'disadvantaged').every((i) => i.solutions.length === 0)).toBe(true)
+    expect(unlinkedSummaryTopics(trashcans).map((t) => t.key)).toEqual(['dependencies'])
+  })
+
+  it('gives nothing when every row names a solution (#1)', () => {
+    expect(unlinkedSummaryTopics(trees)).toEqual([])
+  })
+})
+
+describe('crossSummaryRefTo (decision 140)', () => {
+  const ids = new Set(['I05', 'O28'])
+
+  it('links a cross-issue solution and keeps ?evidence=1', () => {
+    expect(crossSummaryRefTo('解法 X-A', ids, false)).toEqual({ pathname: '/solutions/X-A', search: '' })
+    expect(crossSummaryRefTo('解法 X-A', ids, true)).toEqual({ pathname: '/solutions/X-A', search: '?evidence=1' })
+  })
+
+  it('links an ID of one issue the same way as the issue page', () => {
+    expect(crossSummaryRefTo('#1 解法 C', ids, false)).toEqual({ pathname: '/solutions/1-C', search: '' })
+    expect(crossSummaryRefTo('#8 I25-US01', ids, false)?.pathname).toBe('/stakeholders/I25/stories/8/I25-US01')
+    expect(crossSummaryRefTo('#2 C6', ids, true)).toEqual(summaryRefTo('#2 C6', 1, trees, true))
+  })
+
+  it('links a known stakeholder; an X-N group, an X-C conflict or an unknown ID stays plain text', () => {
+    expect(crossSummaryRefTo('O28', ids, false)).toEqual({ pathname: '/stakeholders/O28', search: '' })
+    for (const ref of ['I99', 'X-N01', 'X-C1', 'C6', '解法 A', 'nonsense']) expect(crossSummaryRefTo(ref, ids, false), ref).toBeNull()
   })
 })

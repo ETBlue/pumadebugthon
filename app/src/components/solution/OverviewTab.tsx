@@ -10,19 +10,18 @@ import { t } from '@/i18n/zh-TW'
 import { crossSolutionsOfSolution } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
-import { step7Rows } from '@/lib/solutionPage'
 import type { IssueFile, Solution } from '@/types'
 import { CrossSolutionLink } from './CrossSolutionCard'
 import { PartEmpty, SolutionPart } from './Parts'
-import { Step7Tables } from './Step7Tables'
 
 const tp = t.solutionPage
 
-/** The 總覽 tab of an issue solution (design 3.12, decision 103), in this
- * order: 資源、法規、隱私與風險, 題目或研究中的構想, 跨議題解法 (only when the
- * solution is in the parts of a cross-issue solution, design 3.18), 待補,
- * 更多. The conflicts, the groups and the measures have their own tabs.
- * The step 7 cells follow the 「只看有資料根據」 filter (decision 105). */
+/** The 總覽 tab of an issue solution (design 3.12, decisions 103 and 140),
+ * in this order: 概覽 (the step 7 總覽 row), 題目或研究中的構想, 跨議題解法
+ * (only when the solution is in the parts of a cross-issue solution, design
+ * 3.18), 待補, 更多. The conflicts, the groups, the measures and the step 7
+ * tables have their own tabs. The 概覽 cells follow the 「只看有資料根據」
+ * filter (decision 105). */
 export function OverviewTab({ issue, solution: sol }: { issue: IssueFile; solution: Solution }) {
   const n = issue.number
   const [params] = useSearchParams()
@@ -33,20 +32,17 @@ export function OverviewTab({ issue, solution: sol }: { issue: IssueFile; soluti
 
   return (
     <div className="space-y-10">
-      <SolutionPart id="solution-detail" title={tp.detailHeading}>
+      {/* Not an entity, so no card box (decision 137). The rest of step 7 is
+          on the 可能爭議, 法規障礙 and 執行計畫 tabs (decision 140). */}
+      <SolutionPart id="solution-overview" title={tp.overviewHeading}>
         <p className="text-sm text-muted-foreground">{tp.detailIntro}</p>
         <DataBasisToggle className="mt-3" />
-        {/* Not an entity, so no card box (decision 137). */}
-        <section aria-labelledby="solution-overview" className="mt-6">
-          <h4 id="solution-overview" className="text-lg font-semibold">{tp.overviewHeading}</h4>
-          <dl className="mt-2 space-y-1.5">
-            <Field label={tp.cost}><CellParts parts={[sol.overview.cost]} dataBasedOnly={dataBasedOnly} /></Field>
-            <Field label={tp.feasibility}><CellParts parts={[sol.overview.feasibility]} dataBasedOnly={dataBasedOnly} /></Field>
-            <Field label={tp.risk}><CellParts parts={[sol.overview.risk]} dataBasedOnly={dataBasedOnly} /></Field>
-            <Field label={tp.owner}><CellParts parts={[sol.overview.owner]} dataBasedOnly={dataBasedOnly} /></Field>
-          </dl>
-        </section>
-        <Step7Tables rows={step7Rows(sol, { evaluation: tp.evaluationLabels, plan: tp.planLabels })} dataBasedOnly={dataBasedOnly} />
+        <dl className="mt-4 space-y-1.5">
+          <Field label={tp.cost}><CellParts parts={[sol.overview.cost]} dataBasedOnly={dataBasedOnly} /></Field>
+          <Field label={tp.feasibility}><CellParts parts={[sol.overview.feasibility]} dataBasedOnly={dataBasedOnly} /></Field>
+          <Field label={tp.risk}><CellParts parts={[sol.overview.risk]} dataBasedOnly={dataBasedOnly} /></Field>
+          <Field label={tp.owner}><CellParts parts={[sol.overview.owner]} dataBasedOnly={dataBasedOnly} /></Field>
+        </dl>
       </SolutionPart>
 
       {sol.ideas.length > 0 && (

@@ -214,23 +214,18 @@ export const t = {
       wants: '訴求',
       needs: '需求',
       solutions: '解法',
-      // The 分析摘要 topics (decision 102), with short names so the tab list
-      // is shorter on a phone (ETBlue, 2026-10-22). The full names are in
-      // summaryHeadings.
+      // The 分析摘要 topic 難以取捨的決定 (decision 102), with a short name
+      // so the tab list is shorter on a phone (ETBlue, 2026-10-22). The full
+      // name is in summaryHeadings. The tabs 可能爭議, 法規障礙 and
+      // 相關解法與政策 are removed (decision 140).
       decisions: '難以取捨',
-      controversies: '可能爭議',
       // The stakeholders and the 受影響較大的弱勢族群 rows (decision 109).
       stakeholders: '利害關係人',
-      legal: '法規障礙',
-      dependencies: '相關解法與政策',
     },
     /** The full names of the 分析摘要 topics, for the hidden h2 of each topic
      * tab (decision 102). The tab list and the page title use the short names. */
     summaryHeadings: {
       decisions: '難以取捨的決定',
-      controversies: '可能的爭議',
-      legal: '法規上的障礙',
-      dependencies: '相依事項與現行政策的關係',
     },
     /** The tab labels with the counts of the issue (issueTabCounts and
      * summaryTabCounts). A count is a plain number, not a score. */
@@ -283,6 +278,10 @@ export const t = {
     pendingIntro: '這些地方還需要真人提供資訊。',
     pendingNone: '這個議題沒有待補的項目。',
     noSection: '其他',
+    /** The 分析摘要 rows that name no solution (decision 140). */
+    unlinkedHeading: '沒有對應解法的分析摘要',
+    unlinkedIntro: '這些分析摘要的項目沒有對應到特定的解法。對應到解法的項目在各解法頁：可能的爭議在「可能爭議」分頁，法規上的障礙在「法規障礙」分頁，相依事項在「相關政策」分頁。',
+    unlinkedNone: '可能的爭議、法規上的障礙與相依事項，都已對應到解法。請看各解法頁。',
   },
   /** 資料根據 (design 3.2, 3.9): the story cells (我想要… and 以便…) by tag. */
   basis: {
@@ -506,6 +505,9 @@ export const t = {
       wants: '訴求',
       stakeholders: '利害關係人',
       conflicts: '衝突',
+      controversies: '可能爭議',
+      legal: '法規障礙',
+      plan: '執行計畫',
       measures: '成效衡量',
       policies: '相關政策',
     },
@@ -524,6 +526,9 @@ export const t = {
       conflicts: (wayOut: number, related: number): TabLabel => ({
         main: '衝突', sep: '　', sub: `解開 ${wayOut}・相關 ${related}`,
       }),
+      /** 可能爭議 and 法規障礙 (decision 140): the items that are not only 【待補】. */
+      controversies: (n: number): TabLabel => ({ main: `可能爭議 ${n}` }),
+      legal: (n: number): TabLabel => ({ main: `法規障礙 ${n}` }),
       measures: (n: number): TabLabel => ({ main: `成效衡量 ${n}` }),
       policies: (domestic: number, foreign: number): TabLabel => ({
         main: '相關政策', sep: '　', sub: `國內 ${domestic}・國外 ${foreign}`,
@@ -592,8 +597,18 @@ export const t = {
     measuresNone: '分析裡沒有這個解法的成效指標。',
     baseline: '目前數值（基準值）',
     source: '資料來源',
-    detailHeading: '資源、法規、隱私與風險',
-    detailIntro: '這部分由 AI 整理，可以作為討論的起點。成本與法條適用需由專業人士確認。',
+    detailIntro: '這部分由 AI 整理，可以作為討論的起點。成本需由專業人士確認。詳細的內容在「可能爭議」、「法規障礙」與「執行計畫」分頁。',
+    /** The 可能爭議 and 法規障礙 tabs (decision 140). */
+    concernsIntro: {
+      controversies: '這個解法可能引起的爭議與風險：分析摘要「可能的爭議」中提到這個解法的項目，以及步驟 7 的隱私、其他顧慮與風險、災害風險。大部分是 AI 的判斷。',
+      legal: '這個解法可能遇到的法規障礙：分析摘要「法規上的障礙」中提到這個解法的項目，以及步驟 7 的相關法規。法條適用需由專業人士確認。',
+    },
+    concernsDataEmpty: '這裡沒有標記 [實證] 或 [AI整理] 的項目。',
+    /** The source line of a step 7 row on the 可能爭議 and 法規障礙 tabs. */
+    step7Source: '來源：議題分析步驟 7 這個解法的評估表。',
+    crossStep7Source: '來源：跨議題分析 4.5 這個解法的評估表。',
+    /** The 執行計畫 tab (decision 140). */
+    planIntro: '這個解法怎麼執行：由誰主責、需要什麼資源、要花多少、可不可行，以及執行步驟。這部分由 AI 整理，可以作為討論的起點。成本與可行性需由專業人士確認。',
     /** The rows of the step 7 evaluation table (ETBlue, 2026-10-23), in file order. */
     evaluationLabels: {
       laws: '相關法規',
@@ -603,7 +618,6 @@ export const t = {
       feasibility: '可行性',
     },
     /** The step 7 執行計畫 table and its rows, in file order. */
-    planHeading: '執行計畫',
     planLabels: {
       owner: '主責單位',
       resources: '需要的資料／API／資源',
@@ -631,7 +645,8 @@ export const t = {
     dependencySource: '來源：議題分析步驟 7 這個解法的「相依事項與現行政策的關係」',
     /** A cross-issue solution: the topic is in the cross-issue file, which has no page. */
     crossDependencySource: '來源：跨議題分析 4.5 這個解法的「相依事項與現行政策的關係」。',
-    overviewHeading: '總覽',
+    /** The 概覽 block on 總覽 (decision 137): the step 7 總覽 row. */
+    overviewHeading: '概覽',
     cost: '成本',
     feasibility: '可行性',
     risk: '主要風險',
@@ -910,7 +925,6 @@ export const t = {
     focusNone: '分析裡沒有針對這個解法的特別關注族群說明。',
     measureFrom: '來自',
     measureNew: '新指標',
-    detailHeading: '主責單位、法規、隱私與風險',
     /** The 需求 tab. */
     groupsHeading: '跨議題的共同需求',
     groupsIntro: '同一個需求出現在幾個議題。這個解法涵蓋這些群組，所以群組裡各議題的需求都算被涵蓋。',

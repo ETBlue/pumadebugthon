@@ -225,6 +225,9 @@ describe('crossSolutionTabCounts', () => {
       wants: { covered: 44, notCovered: 123 },
       stakeholders: { covered: 21, notCovered: 30 },
       conflicts: { wayOut: 1, related: 1 },
+      // 1 分析摘要 row + 隱私, 其他顧慮與風險, 災害風險; 1 row + 相關法規 (decision 140).
+      controversies: 4,
+      legal: 2,
       measures: 4,
       policies: { domestic: 2, foreign: 0 },
     })

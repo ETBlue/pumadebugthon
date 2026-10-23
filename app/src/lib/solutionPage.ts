@@ -1,7 +1,10 @@
 // Lookups for the solution page #/solutions/<n>-<code> (design 3.12).
 // The paths are in entityPaths.ts (solutionPath).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
-import type { Conflict, Group, IssueFile, Solution, SolutionEvaluation, SolutionPlan, SolutionPractice, Step7Cell, Story } from '@/types'
+import type {
+  Conflict, Group, IssueFile, Solution, SolutionEvaluation, SolutionPractice, Step7Cell, Story, SummaryItem,
+} from '@/types'
+import { DATA_BASED_TAGS } from './dataBasis'
 import { compareIds } from './ids'
 import { stripMarkdown } from './markdown'
 import {
@@ -250,22 +253,78 @@ export function practiceSides(practices: SolutionPractice[]): PracticeSides {
   }
 }
 
-/** One row of a step 7 table, with its label. */
-export interface Step7Row {
-  key: string
-  label: string
-  parts: Step7Cell
+// ---------- 可能爭議, 法規障礙 and 執行計畫 tabs (decision 140) ----------
+
+/** The two tabs with the concerns of a solution. */
+export type ConcernTab = 'controversies' | 'legal'
+
+/** The step 7 evaluation rows of each concern tab, in file order:
+ * 可能爭議 gets 隱私, 其他顧慮與風險 and 災害風險; 法規障礙 gets 相關法規
+ * (ETBlue, 2026-10-23). The 可行性 row is on the 執行計畫 tab. */
+export const CONCERN_STEP7_ROWS: Record<ConcernTab, (keyof SolutionEvaluation)[]> = {
+  controversies: ['privacy', 'risks', 'disasters'],
+  legal: ['laws'],
 }
 
-/** The rows of the step 7 evaluation table and of the 執行計畫 table of a
- * solution (an issue solution or a cross-issue solution), in file order,
- * with the labels of the file (ETBlue, 2026-10-23). labels: the
- * evaluationLabels and planLabels of the i18n file. */
-export function step7Rows(
-  sol: { evaluation: SolutionEvaluation; plan: SolutionPlan },
-  labels: { evaluation: Record<keyof SolutionEvaluation, string>; plan: Record<keyof SolutionPlan, string> },
-): { evaluation: Step7Row[]; plan: Step7Row[] } {
-  const rows = <T extends object>(table: T, names: Record<keyof T, string>): Step7Row[] =>
-    (Object.keys(names) as (keyof T & string)[]).map((key) => ({ key, label: names[key], parts: table[key] as Step7Cell }))
-  return { evaluation: rows(sol.evaluation, labels.evaluation), plan: rows(sol.plan, labels.plan) }
+/** One item of a concern tab: a 分析摘要 row that names the solution, or a
+ * step 7 evaluation row. */
+export type ConcernItem =
+  | { kind: 'summary'; item: SummaryItem }
+  | { kind: 'step7'; key: keyof SolutionEvaluation; parts: Step7Cell }
+
+/** The items of a concern tab: first the 分析摘要 rows of the topic that
+ * name the solution (`controversies` or `legal`, file order), then the step 7
+ * rows (CONCERN_STEP7_ROWS). The same for an issue solution and a
+ * cross-issue solution. */
+export function concernItems(
+  sol: { evaluation: SolutionEvaluation; controversies: SummaryItem[]; legal: SummaryItem[] },
+  tab: ConcernTab,
+): ConcernItem[] {
+  return [
+    ...sol[tab].map((item): ConcernItem => ({ kind: 'summary', item })),
+    ...CONCERN_STEP7_ROWS[tab].map((key): ConcernItem => ({ kind: 'step7', key, parts: sol.evaluation[key] })),
+  ]
+}
+
+/** True when the item has nothing but 【待補】: a 分析摘要 row whose 說明 is
+ * 【待補】, or a step 7 row whose parts are all 【待補】. */
+export function concernPending(c: ConcernItem): boolean {
+  return c.kind === 'summary' ? c.item.text.pending : c.parts.every((p) => p.pending)
+}
+
+/** The count in the tab label (decision 140): the number of items that are
+ * not only 【待補】 (concernPending), the same rule as 「弱勢 M」 (decision
+ * 109). The count does not change with a filter (decision 49). */
+export function concernCount(items: ConcernItem[]): number {
+  return items.filter((c) => !concernPending(c)).length
+}
+
+/** The items shown with 「只看有資料根據」 (decision 140). With the filter on,
+ * an item stays when it has a part tagged [實證] or [AI整理]. So [AI模擬]
+ * items and 【待補】 items are hidden, as on the old 分析摘要 tabs
+ * (decision 108). Keeps the order. */
+export function concernItemsShown(items: ConcernItem[], dataBasedOnly: boolean): ConcernItem[] {
+  if (!dataBasedOnly) return items
+  return items.filter((c) =>
+    c.kind === 'summary' ? DATA_BASED_TAGS.includes(c.item.text.tag) : c.parts.some((p) => DATA_BASED_TAGS.includes(p.tag)))
+}
+
+/** Each pair of brackets is closed inside the text. */
+function balanced(text: string): boolean {
+  for (const [open, close] of [['（', '）'], ['「', '」'], ['(', ')'], ['【', '】']]) {
+    if (text.split(open).length !== text.split(close).length) return false
+  }
+  return true
+}
+
+/** The phases of a 執行步驟 cell, for a list (decision 140): the cell split
+ * at 「；」. null when the cell does not split cleanly, so it is shown as
+ * text: a cell with more than one part (more than one tag), a 【待補】 cell,
+ * fewer than 2 pieces, an empty piece, or a piece with an open bracket (a
+ * 「；」 inside brackets). */
+export function planPhases(cell: Step7Cell): string[] | null {
+  if (cell.length !== 1 || cell[0].pending) return null
+  const pieces = cell[0].text.split('；').map((p) => p.trim())
+  if (pieces.length < 2 || pieces.some((p) => p === '' || !balanced(p))) return null
+  return pieces
 }

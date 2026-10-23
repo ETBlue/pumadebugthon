@@ -2,13 +2,14 @@
 // number, not a score. The counts are the totals: they do not change when a
 // filter is on (decision 49). Nothing here sorts.
 import { t } from '@/i18n/zh-TW'
-import type { CrossIssueFile, IssueFile, Solution, SolutionPractice, Stakeholder } from '@/types'
+import type { CrossIssueFile, IssueFile, Solution, SolutionEvaluation, SolutionPractice, Stakeholder, SummaryItem } from '@/types'
 import { stakeholderSolutionCount } from './coverage'
 import { needCount, wantCount } from './counts'
 import type { SolutionTab } from './entityPaths'
 import { needsOfStakeholder } from './needs'
 import {
-  practiceSides, solutionNeedCoverage, solutionRelatedConflicts, solutionStakeholderCoverage, solutionWantCoverage,
+  concernCount, concernItems, practiceSides, solutionNeedCoverage, solutionRelatedConflicts, solutionStakeholderCoverage,
+  solutionWantCoverage,
 } from './solutionPage'
 import { issueStakeholders } from './stakeholders'
 import { summaryTabCount } from './summary'
@@ -80,10 +81,25 @@ export interface SolutionTabCounts {
   stakeholders: CoverageCount
   /** wayOut: 解開的衝突. related: 相關的衝突 (the others with a covered story). */
   conflicts: { wayOut: number; related: number }
+  /** 可能爭議 and 法規障礙 (decision 140): the items of the tab that are
+   * not only 【待補】 (concernCount). */
+  controversies: number
+  legal: number
   /** The rows of 成效衡量. */
   measures: number
   /** 相關或類似的政策與做法: 國內 and 國外 items. */
   policies: { domestic: number; foreign: number }
+}
+
+/** The counts of the 可能爭議 and 法規障礙 tab labels (decision 140), for an
+ * issue solution and a cross-issue solution. */
+export function concernCounts(
+  sol: { evaluation: SolutionEvaluation; controversies: SummaryItem[]; legal: SummaryItem[] },
+): Pick<SolutionTabCounts, 'controversies' | 'legal'> {
+  return {
+    controversies: concernCount(concernItems(sol, 'controversies')),
+    legal: concernCount(concernItems(sol, 'legal')),
+  }
 }
 
 /** The 國內 and 國外 counts of the 相關政策 tab label. */
@@ -104,6 +120,7 @@ export function solutionTabCounts(issue: IssueFile, solution: Solution): Solutio
       wayOut: issue.conflicts.filter((c) => c.wayOutSolutions.includes(solution.id)).length,
       related: solutionRelatedConflicts(issue, solution).length,
     },
+    ...concernCounts(solution),
     measures: solution.measures.length,
     policies: practiceCounts(solution.practices),
   }
@@ -119,6 +136,10 @@ export function solutionTabLabel(tab: SolutionTab, c: SolutionTabCounts): TabLab
     case 'wants': return l.wants(c.wants.covered, c.wants.notCovered)
     case 'stakeholders': return l.stakeholders(c.stakeholders.covered, c.stakeholders.notCovered)
     case 'conflicts': return l.conflicts(c.conflicts.wayOut, c.conflicts.related)
+    case 'controversies': return l.controversies(c.controversies)
+    case 'legal': return l.legal(c.legal)
+    // 執行計畫 has no count: its rows are the same for every solution.
+    case 'plan': return { main: t.solutionPage.tabs.plan }
     case 'measures': return l.measures(c.measures)
     case 'policies': return l.policies(c.policies.domestic, c.policies.foreign)
   }

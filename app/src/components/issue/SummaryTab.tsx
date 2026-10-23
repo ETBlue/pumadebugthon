@@ -1,9 +1,8 @@
-import { Link } from 'react-router'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { CellText } from '@/components/CellText'
 import { FilterStatus } from '@/components/FilterStatus'
 import { IssueMenuBar } from '@/components/IssueMenuBar'
-import { linkClass } from '@/components/styles'
+import { RefLine } from '@/components/RefLine'
 import { t } from '@/i18n/zh-TW'
 import type { SummaryTab as SummaryTabName } from '@/lib/issuePage'
 import { summaryItemsOf, summaryItemsShown, summaryRefTo } from '@/lib/summary'
@@ -12,8 +11,8 @@ import type { IssueTabProps } from './types'
 
 const ts = t.issue.summaryTab
 
-/** A 分析摘要 topic tab of the issue page (design 3.2, decisions 102, 108
- * and 116): one short line, the menu bar (IssueMenuBar) with the
+/** A 分析摘要 topic tab of the issue page (design 3.2, decisions 102, 108,
+ * 116 and 140; only 難以取捨 is left): one short line, the menu bar (IssueMenuBar) with the
  * 「只看有資料根據」 toggle, the filter status line, then the rows of the
  * topic in file order. The rows are not entities (they have no ID or page),
  * so they are shown as an article: one column, a heading and a paragraph
@@ -60,9 +59,9 @@ export function SummaryTab({ tab, issue, summary }: IssueTabProps & { tab: Summa
   )
 }
 
-/** The 「相關：」 line of a 分析摘要 row: each reference as a link
- * (summaryRefTo), or plain text when it cannot be read. Nothing when the row
- * has no reference. */
+/** The 「相關：」 line of a 分析摘要 row of an issue: each reference as a
+ * link (summaryRefTo), or plain text when it cannot be read. Nothing when
+ * the row has no reference. */
 export function SummaryRefs({ refs, issueNumber, issue, dataBasedOnly, className = '' }: {
   refs: string[]
   issueNumber: number
@@ -70,19 +69,11 @@ export function SummaryRefs({ refs, issueNumber, issue, dataBasedOnly, className
   dataBasedOnly: boolean
   className?: string
 }) {
-  if (refs.length === 0) return null
   return (
-    <p className={`text-muted-foreground ${className}`}>
-      {t.overview.summaryRefs}
-      {refs.map((ref, i) => {
-        const target = summaryRefTo(ref, issueNumber, issue, dataBasedOnly)
-        return (
-          <span key={ref}>
-            {target ? <Link to={target} className={linkClass}>{ref}</Link> : <span>{ref}</span>}
-            {i < refs.length - 1 && t.listSeparator}
-          </span>
-        )
-      })}
-    </p>
+    <RefLine
+      refs={refs}
+      targetOf={(ref) => summaryRefTo(ref, issueNumber, issue, dataBasedOnly)}
+      className={className}
+    />
   )
 }

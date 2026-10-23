@@ -1,6 +1,5 @@
 import { Link, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
-import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Markdown } from '@/components/Markdown'
 import { SolutionTitleLink } from '@/components/SolutionCard'
 import { cardGridClass, targetLinkClass } from '@/components/styles'
@@ -8,20 +7,18 @@ import { t } from '@/i18n/zh-TW'
 import { crossSolutionFocus } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { solutionPath } from '@/lib/entityPaths'
-import { step7Rows } from '@/lib/solutionPage'
 import { cn } from '@/lib/utils'
 import type { CrossIssueFile, CrossSolution, IndexFile, IssueFile } from '@/types'
 import { PartEmpty, SolutionPart } from './Parts'
-import { Step7Tables } from './Step7Tables'
 
 const tp = t.solutionPage
 const tx = t.crossIssue
 
-/** The 總覽 tab of a cross-issue solution (design 3.18, decision 103), in
- * this order: 合併的解法, 特別關注族群, 主責單位、法規、隱私與風險, 更多.
- * 解開的衝突 and 成效衡量 have their own tabs. The 主責單位、法規、隱私與風險
- * cells follow the 「只看有資料根據」 filter, as the step 7 cells of an issue
- * solution do (decision 105). issues are the files of the issues in parts. */
+/** The 總覽 tab of a cross-issue solution (design 3.18, decisions 103 and
+ * 140), in this order: 合併的解法, 特別關注族群, 更多. 解開的衝突, 成效衡量
+ * and the step 7 tables (可能爭議, 法規障礙, 執行計畫) have their own tabs.
+ * A cross-issue solution has no step 7 總覽 row, so it has no 概覽 block.
+ * issues are the files of the issues in parts. */
 export function CrossOverviewTab({ data, issues, solution: sol }: {
   data: CrossIssueFile
   /** Not used here; the tabs share one set of props. */
@@ -31,7 +28,6 @@ export function CrossOverviewTab({ data, issues, solution: sol }: {
 }) {
   const [params] = useSearchParams()
   const search = dataBasisFilterSearch(params)
-  const [dataBasedOnly] = useDataBasisFilter()
   const focus = crossSolutionFocus(data, sol.code)
   const issueSolution = (n: number, code: string) => issues.find((i) => i.number === n)?.solutions.find((s) => s.id === code)
   const partLink = (n: number, code: string) => {
@@ -74,12 +70,6 @@ export function CrossOverviewTab({ data, issues, solution: sol }: {
             ))}
           </dl>
         )}
-      </SolutionPart>
-
-      <SolutionPart id="cross-detail" title={tx.detailHeading}>
-        <p className="text-sm text-muted-foreground">{tp.detailIntro}</p>
-        <DataBasisToggle className="mt-3" />
-        <Step7Tables rows={step7Rows(sol, { evaluation: tp.evaluationLabels, plan: tp.planLabels })} dataBasedOnly={dataBasedOnly} />
       </SolutionPart>
 
       <nav aria-labelledby="cross-more" className="border-t pt-6">

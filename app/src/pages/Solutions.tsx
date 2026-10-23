@@ -8,7 +8,7 @@ import { ResultLine } from '@/components/ResultLine'
 import { SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
-import { linkClass, listBodyClass, proseClass } from '@/components/styles'
+import { linkClass, listBodyClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { evidenceShare, sharePercent } from '@/lib/coverage'
@@ -128,7 +128,7 @@ function SolutionsBody({ index }: { index: IndexFile }) {
         {/* The sort note while 資料根據比例 is on (design 3.23.9). The
             資料根據 explanation is on #/about (decision 128). */}
         {shareOn && (
-          <p id={noteId} className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+          <p id={noteId} className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {tb.sortNotes.evidence}
           </p>
         )}

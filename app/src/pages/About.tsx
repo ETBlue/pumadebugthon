@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { AUTHOR_POSTS, CONTENT_LICENSE_URL, EVENT_URL, LICENSE_URL, METHOD_URL, REPO_URL } from '@/components/links'
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
-import { linkClass, proseClass } from '@/components/styles'
+import { linkClass } from '@/components/styles'
 import { TagBadge, type TagKind } from '@/components/TagBadge'
 import { useCrossIssueOrNull, useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
@@ -16,7 +16,7 @@ function Part({ id, title, children }: { id: string; title: string; children: Re
   return (
     <section aria-labelledby={id}>
       <h2 id={id} className="text-xl font-bold">{title}</h2>
-      <div className={`mt-2 leading-relaxed ${proseClass}`}>{children}</div>
+      <div className="mt-2 leading-relaxed">{children}</div>
     </section>
   )
 }
@@ -61,7 +61,7 @@ export default function About() {
     <>
       <PageTitle parts={[ta.title]} />
       <h1 className="text-2xl font-bold md:text-3xl">{ta.title}</h1>
-      <p className={`mt-2 leading-relaxed ${proseClass}`}>{ta.intro}</p>
+      <p className="mt-2 leading-relaxed">{ta.intro}</p>
       <div className="mt-8 space-y-10">
         <Part id="about-links" title={ta.linksHeading}>
           <ul className="space-y-1">

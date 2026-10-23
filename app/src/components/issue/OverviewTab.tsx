@@ -7,7 +7,7 @@ import { t } from '@/i18n/zh-TW'
 import { spaceTypeNames } from '@/lib/issues'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
 import { sameSpaceIssues } from '@/lib/spaces'
-import { linkClass, proseClass } from '@/components/styles'
+import { linkClass } from '@/components/styles'
 import type { IssueTabProps } from './types'
 
 const to = t.overview
@@ -83,7 +83,7 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
           <p className="mt-2">{to.pendingNone}</p>
         ) : (
           <>
-            <p className={`mt-2 text-muted-foreground ${proseClass}`}>{to.pendingIntro}</p>
+            <p className="mt-2 text-muted-foreground">{to.pendingIntro}</p>
             {pending.map((g) => (
               <div key={g.section ?? ''} className="mt-4">
                 <h4 className="font-medium">{g.section ?? to.noSection}</h4>

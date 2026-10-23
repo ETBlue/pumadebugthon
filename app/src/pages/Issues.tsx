@@ -7,7 +7,7 @@ import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { ResultLine } from '@/components/ResultLine'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
-import { linkClass, listBodyClass, proseClass } from '@/components/styles'
+import { linkClass, listBodyClass } from '@/components/styles'
 import { useIndex } from '@/data'
 import { rememberListSearch } from '@/lib/backLink'
 import { t } from '@/i18n/zh-TW'
@@ -114,7 +114,7 @@ export default function Issues() {
         {/* The sort note while the share sort is on (design 3.23.1). The
             資料根據 explanation is on #/about (decision 128). */}
         {evidenceSort && (
-          <p id={noteId} className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+          <p id={noteId} className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {tb.sortNotes.evidence}
           </p>
         )}

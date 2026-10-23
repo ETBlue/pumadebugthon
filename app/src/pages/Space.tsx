@@ -13,7 +13,7 @@ import { PageTabs } from '@/components/PageTabs'
 import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { StakeholderCard } from '@/components/StakeholderCard'
-import { linkClass, proseClass } from '@/components/styles'
+import { linkClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
@@ -143,7 +143,7 @@ function SpaceOverview({ space }: { space: SpaceType }) {
         {/* The dates of the space type itself (decision 131). */}
         <DateFields added={space.added} updated={space.updated} />
       </dl>
-      <p className={`mt-4 leading-relaxed ${proseClass}`}>{tp.intro}</p>
+      <p className="mt-4 leading-relaxed">{tp.intro}</p>
     </>
   )
 }

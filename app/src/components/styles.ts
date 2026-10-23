@@ -33,11 +33,6 @@ export const containerClass = 'mx-auto w-full max-w-[90rem] px-4 md:px-8'
  * the bottom space that main has on other pages (decision 106). */
 export const listBodyClass = `${containerClass} pb-6`
 
-/** Long text (intro lines, paragraphs, summaries, story text) is at most
- * 48rem wide, so a line is not too long to read (design 3.22). Cards,
- * tables and grids do not use it. They use the full width. */
-export const proseClass = 'max-w-3xl'
-
 /** The card list of the issue tabs 需求, 解法 and the four 分析摘要 tabs
  * (decision 130): 1 column on a phone, 2 from `lg`, 3 from `xl`. The tab
  * menu takes 10 to 11rem on the left, so the second column starts at `lg`,

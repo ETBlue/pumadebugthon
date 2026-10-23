@@ -8,7 +8,6 @@ import { StakeholderCard } from '@/components/StakeholderCard'
 import { StoryCard } from '@/components/StoryCard'
 import { WantItem } from '@/components/WantItem'
 import { Input } from '@/components/ui/input'
-import { proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { solutionCells, stakeholderCells } from '@/lib/coverage'
 import { dataBasedCount, isDataBasisFilterOn } from '@/lib/dataBasis'
@@ -122,7 +121,7 @@ export function OpinionTab(props: IssueTabProps & { wants: WantData[]; filtered:
 
       {picked && (
         <section aria-labelledby="opinion-result" className="space-y-8 border-t pt-6">
-          <h4 id="opinion-result" ref={resultHeading} tabIndex={-1} className={`text-lg font-semibold outline-none ${proseClass}`}>
+          <h4 id="opinion-result" ref={resultHeading} tabIndex={-1} className="text-lg font-semibold outline-none">
             {to.resultHeading}
             <span className="mt-1 block text-base font-normal">
               {to.picked}

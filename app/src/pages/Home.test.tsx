@@ -70,9 +70,9 @@ describe('the home page hero (decision 128)', () => {
     const description = hero.indexOf(t.home.description)
     expect(title).toBeLessThan(slogan)
     expect(slogan).toBeLessThan(description)
-    // Centered: the text, and the narrow description block itself.
+    // Centered text. No width limit on the description (decision 135).
     expect(hero).toContain('text-center')
-    expect(hero).toMatch(/<p class="mx-auto [^"]*max-w-3xl/)
+    expect(hero).not.toContain('max-w-3xl')
   })
 })
 

@@ -10,7 +10,7 @@ import { IssueTitleLinks } from '@/components/IssueTitleLinks'
 import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
 import { StakeholderCard } from '@/components/StakeholderCard'
-import { containerClass, linkClass, proseClass } from '@/components/styles'
+import { containerClass, linkClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { crossSolutionCells, solutionCells, stakeholderCells } from '@/lib/coverage'
@@ -39,7 +39,7 @@ export default function Home() {
         <div className={`${containerClass} py-10 text-center md:py-16`}>
           <h1 className="text-3xl font-bold md:text-4xl">{t.appTitle}</h1>
           <p className="mt-2 text-lg font-medium md:text-xl">{t.slogan}</p>
-          <p className={`mx-auto mt-5 leading-relaxed ${proseClass}`}>{th.description}</p>
+          <p className="mt-5 leading-relaxed">{th.description}</p>
         </div>
       </div>
       <div className={`${containerClass} py-8`}>

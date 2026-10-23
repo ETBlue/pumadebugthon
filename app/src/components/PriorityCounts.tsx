@@ -1,11 +1,10 @@
 import { t } from '@/i18n/zh-TW'
-import { proseClass } from './styles'
 import { priorityLabel, type TagPriorityCounts } from '@/lib/priority'
 import { TagBadge } from './TagBadge'
 
 /** The MoSCoW legend (design 3.4). Show it once per page, next to the first counts. */
 export function PriorityLegend() {
-  return <p className={`text-sm text-muted-foreground ${proseClass}`}>{t.priorityCounts.legend}</p>
+  return <p className="text-sm text-muted-foreground">{t.priorityCounts.legend}</p>
 }
 
 /** Priority counts of one stakeholder in one issue, one part per tag, for

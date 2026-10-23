@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { useDataBasisFilter } from '@/components/DataBasisToggle'
 import { NeedItem } from '@/components/NeedItem'
-import { cardGridClass, proseClass } from '@/components/styles'
+import { cardGridClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { needsTabView } from '@/lib/issueTabs'
 import { issueNeeds } from '@/lib/needs'
@@ -54,7 +54,7 @@ export function NeedsTab({ index, issue }: IssueTabProps) {
       shown={tm.shownNeeds(view.shown)}
       needs={{ priorityOptions, showConflict: hasConflicts, value }}
     >
-      <p className={`mb-6 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{tn.intro}</p>
+      <p className="mb-6 text-sm leading-relaxed text-muted-foreground">{tn.intro}</p>
       {view.shown === 0 && (
         <p className="text-muted-foreground">
           {special !== null || extraOn ? tn.noneFiltered : dataBasedOnly ? tn.dataEmpty : stakeholder !== null ? tn.noneForStakeholder : tn.none}

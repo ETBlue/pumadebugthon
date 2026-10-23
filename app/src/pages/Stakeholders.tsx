@@ -7,7 +7,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { ResultLine } from '@/components/ResultLine'
 import { FocusBadges, StakeholderCard, type StakeholderListFields } from '@/components/StakeholderCard'
 import { StakeholderTree } from '@/components/StakeholderTree'
-import { linkClass, listBodyClass, proseClass } from '@/components/styles'
+import { linkClass, listBodyClass } from '@/components/styles'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import {
@@ -125,7 +125,7 @@ export default function Stakeholders() {
         {/* The sort note while a share sort is on (design 3.23.1). The
             資料根據 explanation is on #/about (decision 128). */}
         {shareSort !== null && (
-          <p id={noteId} className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+          <p id={noteId} className="mt-2 text-sm leading-relaxed text-muted-foreground">
             {tb.sortNotes[shareSort]}
           </p>
         )}

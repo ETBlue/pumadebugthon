@@ -9,7 +9,7 @@ import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
 import { PageTitle } from '@/components/PageTitle'
 import { SpaceLinks } from '@/components/SpaceLinks'
-import { linkClass, proseClass, targetLinkClass } from '@/components/styles'
+import { linkClass, targetLinkClass } from '@/components/styles'
 import { CrossIssueLinks } from '@/components/solution/CrossSolutionCard'
 import { CrossOverviewTab } from '@/components/solution/CrossOverviewTab'
 import { ConflictsTab, CrossConflictsTab } from '@/components/solution/ConflictsTab'
@@ -271,7 +271,7 @@ function SolutionMeta({ issueLine, summary, spaces, added, updated, index }: {
   return (
     <div className="mb-8">
       <p>{issueLine}</p>
-      <p className={`mt-3 leading-relaxed ${proseClass}`}><Markdown text={summary} /></p>
+      <p className="mt-3 leading-relaxed"><Markdown text={summary} /></p>
       <dl className="mt-3 space-y-1.5 text-sm">
         {spaces.length > 0 && (
           <Field label={tp.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={spaces} /></Field>

@@ -3,7 +3,7 @@ import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggl
 import { CellText } from '@/components/CellText'
 import { FilterStatus } from '@/components/FilterStatus'
 import { IssueMenuBar } from '@/components/IssueMenuBar'
-import { linkClass, proseClass } from '@/components/styles'
+import { linkClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import type { SummaryTab as SummaryTabName } from '@/lib/issuePage'
 import { summaryItemsOf, summaryItemsShown, summaryRefTo } from '@/lib/summary'
@@ -29,7 +29,7 @@ export function SummaryTab({ tab, issue, summary }: IssueTabProps & { tab: Summa
 
   return (
     <div>
-      <p className={`text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{ts.intro}</p>
+      <p className="text-sm leading-relaxed text-muted-foreground">{ts.intro}</p>
       <IssueMenuBar label={t.sideMenu.filters} className="mt-4">
         <DataBasisToggle variant="bar" />
       </IssueMenuBar>
@@ -46,7 +46,7 @@ export function SummaryTab({ tab, issue, summary }: IssueTabProps & { tab: Summa
       ) : shown.length === 0 ? (
         <p className="mt-4 text-muted-foreground">{ts.dataEmpty}</p>
       ) : (
-        <ul aria-label={t.issue.tabs[tab]} className={`mt-6 space-y-6 ${proseClass}`}>
+        <ul aria-label={t.issue.tabs[tab]} className="mt-6 space-y-6">
           {shown.map((item) => (
             <li key={item.item} className={item.text.pending ? 'min-w-0 text-muted-foreground' : 'min-w-0'}>
               <h3 className="text-lg font-semibold text-foreground">{item.item}</h3>

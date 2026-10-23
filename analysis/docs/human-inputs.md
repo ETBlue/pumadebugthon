@@ -65,7 +65,15 @@ step 6 brainstorm solutions based on raw ideas and prioritized user needs
 * each solution should include the user needs it maps to and the methods for success measure. for each measure, add the current value (baseline) and the data source
 * ideas from 沈伯洋 go straight into this step, with the source cited
 step 7 evaluate solutions
-* calculate required data/api/resources, related laws, privacy issues, other possible concerns and the owner department for each solution to evaluate cost, feasibility and risks
+* for each solution, calculate
+  * related laws
+  * privacy issues
+  * other possible concerns and risks
+  * feasibility
+  * execution plans
+    * the owner department for each solution
+    * required data/api/resources
+    * cost
 * for risk evaluation, include disasters related to the issue. e.g.
   * natural disasters like earthquake, typhoon, landslide, flood, wildfire, drought, heat/cold wave... etc.
   * man-made disasters like fire, gas explosion, traffic accident, cyber attack, infiltration and subversion from China, military invasion from China... etc.

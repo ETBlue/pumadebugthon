@@ -82,11 +82,8 @@ information architecture:
     * stakeholders with count / disadvantaged count
     * 訴求 with count and conflicting count
     * 需求 with count
-    * solutions with count
     * hard decisions with count
-    * potential controversies with count
-    * legal blockers with count
-    * related policies with count
+    * solutions with count
   * if there are filters, place filters in a menu bar in the content column
 * the stakeholder page should include
   * a full width container with background color, containing
@@ -107,6 +104,9 @@ information architecture:
     * user wants with covered / not covered count
     * stakeholders with covered / not covered count
     * conflicts with resolved / related count
+    * potential controversies with count
+    * legal blockers with count
+    * execution plans
     * result evaluation methods with count
     * related or similar policies / solutions with "from domestic country" / "from foreign country" count
 

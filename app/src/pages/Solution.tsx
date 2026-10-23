@@ -154,11 +154,12 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
               case 'wants': return <WantsTab index={index} issue={issue} solution={sol} />
               case 'stakeholders': return <StakeholdersTab index={index} issue={issue} solution={sol} />
               case 'conflicts': return <ConflictsTab index={index} issue={issue} solution={sol} />
+              case 'plan': return <PlanTab solution={sol} />
+              case 'measures': return <MeasuresTab solution={sol} />
+              case 'risks':
               case 'controversies':
               case 'legal':
                 return <ConcernsTab tab={name} solution={sol} targetOf={refTarget} step7Source={tp.step7Source} />
-              case 'plan': return <PlanTab solution={sol} />
-              case 'measures': return <MeasuresTab solution={sol} />
               case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={n} targetOf={refTarget} />
             }
           }}
@@ -257,11 +258,12 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
               case 'wants': return <CrossWantsTab {...common} />
               case 'stakeholders': return <CrossStakeholdersTab {...common} />
               case 'conflicts': return <CrossConflictsTab {...common} />
+              case 'plan': return <PlanTab solution={sol} />
+              case 'measures': return <CrossMeasuresTab solution={sol} />
+              case 'risks':
               case 'controversies':
               case 'legal':
                 return <ConcernsTab tab={name} solution={sol} targetOf={refTarget} step7Source={tp.crossStep7Source} />
-              case 'plan': return <PlanTab solution={sol} />
-              case 'measures': return <CrossMeasuresTab solution={sol} />
               case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={null} targetOf={refTarget} />
             }
           }}

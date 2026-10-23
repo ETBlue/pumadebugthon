@@ -16,7 +16,7 @@ const tx = t.crossIssue
 
 /** The 總覽 tab of a cross-issue solution (design 3.18, decisions 103 and
  * 140), in this order: 合併的解法, 特別關注族群, 更多. 解開的衝突, 成效衡量
- * and the step 7 tables (可能爭議, 法規障礙, 執行計畫) have their own tabs.
+ * and the step 7 tables (執行計畫, 潛在風險, 可能爭議, 法規障礙) have their own tabs.
  * A cross-issue solution has no step 7 總覽 row, so it has no 概覽 block.
  * issues are the files of the issues in parts. */
 export function CrossOverviewTab({ data, issues, solution: sol }: {

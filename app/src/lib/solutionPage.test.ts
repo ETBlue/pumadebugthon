@@ -288,13 +288,18 @@ describe('practiceSides (decision 104)', () => {
   })
 })
 
-// The 可能爭議, 法規障礙 and 執行計畫 tabs (ETBlue, 2026-10-23; decision 140).
+// The 潛在風險, 可能爭議, 法規障礙 and 執行計畫 tabs (ETBlue, 2026-10-23;
+// decisions 140 and 143).
 describe('concernItems', () => {
   const trashcansA = (trashcansJson as IssueFile).solutions.find((s) => s.id === 'A')!
   const label = (c: ReturnType<typeof concernItems>[number]) => (c.kind === 'summary' ? c.item.item : c.key)
 
-  it('可能爭議: the 分析摘要 rows that name the solution, then 隱私, 其他顧慮與風險 and 災害風險', () => {
-    expect(concernItems(trashcansA, 'controversies').map(label)).toEqual(['建議清單公布時', 'privacy', 'risks', 'disasters'])
+  it('潛在風險: only 其他顧慮與風險 and 災害風險, no 分析摘要 row (decision 143)', () => {
+    expect(concernItems(trashcansA, 'risks').map(label)).toEqual(['risks', 'disasters'])
+  })
+
+  it('可能爭議: the 分析摘要 rows that name the solution, then 隱私 (decision 143)', () => {
+    expect(concernItems(trashcansA, 'controversies').map(label)).toEqual(['建議清單公布時', 'privacy'])
   })
 
   it('法規障礙: the 分析摘要 rows that name the solution, then 相關法規', () => {
@@ -303,14 +308,16 @@ describe('concernItems', () => {
 
   it('works the same for a cross-issue solution (X-A)', () => {
     const xa = (crossJson as CrossIssueFile).solutions.find((s) => s.code === 'X-A')!
-    expect(concernItems(xa, 'controversies').map(label)).toEqual(['合併的選址討論', 'privacy', 'risks', 'disasters'])
+    expect(concernItems(xa, 'risks').map(label)).toEqual(['risks', 'disasters'])
+    expect(concernItems(xa, 'controversies').map(label)).toEqual(['合併的選址討論', 'privacy'])
     expect(concernItems(xa, 'legal').map(label)).toEqual(['合併辦理的權責', 'laws'])
   })
 
   it('a solution with no 分析摘要 row still has its step 7 rows (#2 C)', () => {
     const c = (trashcansJson as IssueFile).solutions.find((s) => s.id === 'C')!
     expect(c.controversies).toEqual([])
-    expect(concernItems(c, 'controversies').map(label)).toEqual(['privacy', 'risks', 'disasters'])
+    expect(concernItems(c, 'controversies').map(label)).toEqual(['privacy'])
+    expect(concernItems(c, 'risks').map(label)).toEqual(['risks', 'disasters'])
   })
 })
 
@@ -330,8 +337,10 @@ describe('concernCount and concernItemsShown', () => {
   }
 
   it('counts the items that are not only 【待補】', () => {
-    // 甲, 隱私 and 其他顧慮與風險 count; 乙 and 災害風險 are 【待補】.
-    expect(concernCount(concernItems(sol, 'controversies'))).toBe(3)
+    // 甲 and 隱私 count; 乙 is 【待補】.
+    expect(concernCount(concernItems(sol, 'controversies'))).toBe(2)
+    // 其他顧慮與風險 counts; 災害風險 is 【待補】.
+    expect(concernCount(concernItems(sol, 'risks'))).toBe(1)
     // Only 相關法規, and it is 【待補】.
     expect(concernCount(concernItems(sol, 'legal'))).toBe(0)
   })
@@ -341,6 +350,8 @@ describe('concernCount and concernItemsShown', () => {
     expect(concernItemsShown(items, false)).toEqual(items)
     const shown = concernItemsShown(items, true).map((c) => (c.kind === 'summary' ? c.item.item : c.key))
     expect(shown).toEqual(['甲', 'privacy'])
+    // 其他顧慮與風險 has only [AI模擬]; 災害風險 is 【待補】.
+    expect(concernItemsShown(concernItems(sol, 'risks'), true)).toEqual([])
   })
 })
 

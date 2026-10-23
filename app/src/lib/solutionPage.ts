@@ -253,16 +253,17 @@ export function practiceSides(practices: SolutionPractice[]): PracticeSides {
   }
 }
 
-// ---------- 可能爭議, 法規障礙 and 執行計畫 tabs (decision 140) ----------
+// ---------- 潛在風險, 可能爭議, 法規障礙 and 執行計畫 tabs (decisions 140 and 143) ----------
 
-/** The two tabs with the concerns of a solution. */
-export type ConcernTab = 'controversies' | 'legal'
+/** The three tabs with the concerns of a solution (decision 143). */
+export type ConcernTab = 'risks' | 'controversies' | 'legal'
 
 /** The step 7 evaluation rows of each concern tab, in file order:
- * 可能爭議 gets 隱私, 其他顧慮與風險 and 災害風險; 法規障礙 gets 相關法規
- * (ETBlue, 2026-10-23). The 可行性 row is on the 執行計畫 tab. */
+ * 潛在風險 gets 其他顧慮與風險 and 災害風險; 可能爭議 gets 隱私; 法規障礙
+ * gets 相關法規 (decision 143). The 可行性 row is on the 執行計畫 tab. */
 export const CONCERN_STEP7_ROWS: Record<ConcernTab, (keyof SolutionEvaluation)[]> = {
-  controversies: ['privacy', 'risks', 'disasters'],
+  risks: ['risks', 'disasters'],
+  controversies: ['privacy'],
   legal: ['laws'],
 }
 
@@ -274,14 +275,14 @@ export type ConcernItem =
 
 /** The items of a concern tab: first the 分析摘要 rows of the topic that
  * name the solution (`controversies` or `legal`, file order), then the step 7
- * rows (CONCERN_STEP7_ROWS). The same for an issue solution and a
- * cross-issue solution. */
+ * rows (CONCERN_STEP7_ROWS). 潛在風險 has no 分析摘要 topic, so it has only
+ * step 7 rows. The same for an issue solution and a cross-issue solution. */
 export function concernItems(
   sol: { evaluation: SolutionEvaluation; controversies: SummaryItem[]; legal: SummaryItem[] },
   tab: ConcernTab,
 ): ConcernItem[] {
   return [
-    ...sol[tab].map((item): ConcernItem => ({ kind: 'summary', item })),
+    ...(tab === 'risks' ? [] : sol[tab]).map((item): ConcernItem => ({ kind: 'summary', item })),
     ...CONCERN_STEP7_ROWS[tab].map((key): ConcernItem => ({ kind: 'step7', key, parts: sol.evaluation[key] })),
   ]
 }

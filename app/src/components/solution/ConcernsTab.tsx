@@ -13,10 +13,10 @@ const tp = t.solutionPage
 /** The heading of an item: the 項目 of a 分析摘要 row, or the label of a step 7 row. */
 const itemTitle = (c: ConcernItem) => (c.kind === 'summary' ? c.item.item : tp.evaluationLabels[c.key])
 
-/** The 可能爭議 or 法規障礙 tab of a solution (decision 140), for an issue
- * solution and a cross-issue solution. One intro line, the 「只看有資料根據」
- * toggle, then the items (concernItems): the 分析摘要 rows that name the
- * solution, then the step 7 rows. The items are not entities, so they are in
+/** The 潛在風險, 可能爭議 or 法規障礙 tab of a solution (decisions 140 and
+ * 143), for an issue solution and a cross-issue solution. One intro line, the
+ * 「只看有資料根據」 toggle, then the items (concernItems): the 分析摘要 rows
+ * that name the solution (none on 潛在風險), then the step 7 rows. The items are not entities, so they are in
  * article style (decisions 134 and 137): one column, an h3 and a paragraph
  * each, no card box. A 分析摘要 row has the 「相關：」 line; a step 7 row has
  * a source line. A 【待補】 item is in muted text. With the filter on, an

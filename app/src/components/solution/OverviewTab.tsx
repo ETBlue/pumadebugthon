@@ -33,7 +33,7 @@ export function OverviewTab({ issue, solution: sol }: { issue: IssueFile; soluti
   return (
     <div className="space-y-10">
       {/* Not an entity, so no card box (decision 137). The rest of step 7 is
-          on the 可能爭議, 法規障礙 and 執行計畫 tabs (decision 140). */}
+          on the 執行計畫, 潛在風險, 可能爭議 and 法規障礙 tabs (decisions 140 and 143). */}
       <SolutionPart id="solution-overview" title={tp.overviewHeading}>
         <p className="text-sm text-muted-foreground">{tp.detailIntro}</p>
         <DataBasisToggle className="mt-3" />

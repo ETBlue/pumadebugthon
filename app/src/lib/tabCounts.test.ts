@@ -102,8 +102,10 @@ describe('solutionTabCounts', () => {
       wants: { covered: 28, notCovered: 25 },
       stakeholders: { covered: 14, notCovered: 13 },
       conflicts: { wayOut: 5, related: 3 },
-      // 1 分析摘要 row + 隱私, 其他顧慮與風險, 災害風險; 1 row + 相關法規 (decision 140).
-      controversies: 4,
+      // 其他顧慮與風險, 災害風險; 1 分析摘要 row + 隱私; 1 row + 相關法規
+      // (decisions 140 and 143).
+      risks: 2,
+      controversies: 2,
       legal: 2,
       measures: 4,
       policies: { domestic: 2, foreign: 2 },

@@ -1,5 +1,5 @@
-// The solution page with its ten tabs (ETBlue, 2026-10-22 and 2026-10-23;
-// design 3.12, decisions 103 and 140). The data hooks and the page title are mocked, so the page
+// The solution page with its eleven tabs (ETBlue, 2026-10-22 to 2026-10-24;
+// design 3.12, decisions 103, 140 and 143). The data hooks and the page title are mocked, so the page
 // renders on the server with the fixtures.
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter, Route, Routes } from 'react-router'
@@ -51,10 +51,10 @@ const titleOf = (html: string) => /data-title="([^"]*)"/.exec(html)?.[1]
 const activeTab = (html: string) => /role="tab" aria-selected="true"[^>]*aria-label="([^"]+)"/.exec(html)?.[1]
 
 describe('the solution page tabs (decision 103)', () => {
-  it('has ten tabs in order, with their counts (#2 A); 利害關係人, 訴求, 需求, 衝突 in the order of the issue page (decision 142)', () => {
+  it('has eleven tabs in order, with their counts (#2 A); 利害關係人, 訴求, 需求, 衝突 in the order of the issue page (decision 142); 潛在風險 after 成效衡量 (decision 143)', () => {
     expect(tabNames(render('/solutions/2-A'))).toEqual([
       '總覽', '利害關係人　涵蓋 14・未涵蓋 13', '訴求　涵蓋 28・未涵蓋 25', '需求　滿足 9・未滿足 13',
-      '衝突　解開 5・相關 3', '可能爭議 4', '法規障礙 2', '執行計畫', '成效衡量 4', '相關政策　國內 2・國外 2',
+      '衝突　解開 5・相關 3', '執行計畫', '成效衡量 4', '潛在風險 2', '可能爭議 2', '法規障礙 2', '相關政策　國內 2・國外 2',
     ])
   })
 
@@ -62,7 +62,8 @@ describe('the solution page tabs (decision 103)', () => {
     const cases: [string, string, string][] = [
       ['wants', '訴求　涵蓋 28・未涵蓋 25', '訴求'],
       ['conflicts', '衝突　解開 5・相關 3', '衝突'],
-      ['controversies', '可能爭議 4', '可能爭議'],
+      ['risks', '潛在風險 2', '潛在風險'],
+      ['controversies', '可能爭議 2', '可能爭議'],
       ['legal', '法規障礙 2', '法規障礙'],
       ['plan', '執行計畫', '執行計畫'],
       ['measures', '成效衡量 4', '成效衡量'],
@@ -94,7 +95,8 @@ describe('the solution page tabs (decision 103)', () => {
     const html = render('/solutions/2-A')
     expect(html).toContain('>概覽</h3>')
     for (const label of ['成本', '可行性', '主要風險', '主責單位']) expect(html, label).toContain(`>${label}</dt>`)
-    // The rest of step 7 moved to 可能爭議, 法規障礙 and 執行計畫 (decision 140).
+    // The rest of step 7 moved to 執行計畫, 潛在風險, 可能爭議 and 法規障礙
+    // (decisions 140 and 143).
     expect(html).not.toContain('資源、法規、隱私與風險')
     // (相關法規 can still be the context of a 待補 item.)
     for (const label of ['相關法規', '隱私', '其他顧慮與風險', '災害風險', '需要的資料／API／資源', '執行步驟']) {
@@ -153,10 +155,10 @@ describe('the solution page tabs (decision 103)', () => {
 })
 
 describe('the cross-issue solution page tabs (decision 103)', () => {
-  it('has the same ten tabs (X-A)', () => {
+  it('has the same eleven tabs (X-A)', () => {
     expect(tabNames(render('/solutions/X-A'))).toEqual([
       '總覽', '利害關係人　涵蓋 21・未涵蓋 30', '訴求　涵蓋 44・未涵蓋 123', '需求　滿足 17・未滿足 60',
-      '衝突　解開 1・相關 1', '可能爭議 4', '法規障礙 2', '執行計畫', '成效衡量 4', '相關政策　國內 2・國外 0',
+      '衝突　解開 1・相關 1', '執行計畫', '成效衡量 4', '潛在風險 2', '可能爭議 2', '法規障礙 2', '相關政策　國內 2・國外 0',
     ])
   })
 
@@ -352,11 +354,21 @@ const itemHeadings = (html: string) => {
   return [...list.matchAll(/<h3 [^>]*>([^<]+)<\/h3>/g)].map((m) => m[1])
 }
 
-describe('the 可能爭議 and 法規障礙 tabs (decision 140)', () => {
-  it('可能爭議: the 分析摘要 rows that name the solution, then 隱私, 其他顧慮與風險 and 災害風險 (#2 B)', () => {
+describe('the 潛在風險, 可能爭議 and 法規障礙 tabs (decisions 140 and 143)', () => {
+  it('潛在風險: 其他顧慮與風險 and 災害風險, with its own intro line (#2 B)', () => {
+    const html = render('/solutions/2-B/risks')
+    expect(itemHeadings(html)).toEqual(['其他顧慮與風險', '災害風險'])
+    expect(html).toContain('<h2 class="sr-only">潛在風險</h2>')
+    expect(html).toContain('這個解法可能帶來的風險')
+    expect(html).toContain('來源：議題分析步驟 7 這個解法的評估表。')
+  })
+
+  it('可能爭議: the 分析摘要 rows that name the solution, then 隱私; no longer 其他顧慮與風險 or 災害風險 (#2 B)', () => {
     const html = render('/solutions/2-B/controversies')
-    expect(itemHeadings(html)).toEqual(['試點的採購與資料', '清潔隊員的手機回報', '隱私', '其他顧慮與風險', '災害風險'])
+    expect(itemHeadings(html)).toEqual(['試點的採購與資料', '清潔隊員的手機回報', '隱私'])
     expect(html).toContain('<h2 class="sr-only">可能爭議</h2>')
+    expect(html).not.toContain('>其他顧慮與風險</h3>')
+    expect(html).not.toContain('>災害風險</h3>')
   })
 
   it('法規障礙: the 分析摘要 rows that name the solution, then 相關法規 (#2 B)', () => {
@@ -364,8 +376,9 @@ describe('the 可能爭議 and 法規障礙 tabs (decision 140)', () => {
   })
 
   it('a solution that no 分析摘要 row names still shows its step 7 rows (#2 C)', () => {
-    expect(itemHeadings(render('/solutions/2-C/controversies'))).toEqual(['隱私', '其他顧慮與風險', '災害風險'])
-    expect(tabNames(render('/solutions/2-C'))).toEqual(expect.arrayContaining(['可能爭議 3', '法規障礙 1']))
+    expect(itemHeadings(render('/solutions/2-C/controversies'))).toEqual(['隱私'])
+    expect(itemHeadings(render('/solutions/2-C/risks'))).toEqual(['其他顧慮與風險', '災害風險'])
+    expect(tabNames(render('/solutions/2-C'))).toEqual(expect.arrayContaining(['潛在風險 2', '可能爭議 1', '法規障礙 1']))
   })
 
   it('is in article style: one column, an h3 each, no card box; 「相關：」 on a 分析摘要 row and a source line on a step 7 row', () => {
@@ -403,7 +416,8 @@ describe('the 可能爭議 and 法規障礙 tabs (decision 140)', () => {
 
   it('cross-issue: the same items, with cross-issue links and the cross-issue source line (X-A)', () => {
     const html = render('/solutions/X-A/controversies')
-    expect(itemHeadings(html)).toEqual(['合併的選址討論', '隱私', '其他顧慮與風險', '災害風險'])
+    expect(itemHeadings(html)).toEqual(['合併的選址討論', '隱私'])
+    expect(itemHeadings(render('/solutions/X-A/risks'))).toEqual(['其他顧慮與風險', '災害風險'])
     // 「解法 X-A」 links to the page, 「#8 I25-US01」 to the story page, X-N01 is plain text.
     expect(html).toContain('href="/solutions/X-A"')
     expect(html).toContain('href="/stakeholders/I25/stories/8/I25-US01"')

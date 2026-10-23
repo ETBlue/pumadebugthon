@@ -81,8 +81,9 @@ export interface SolutionTabCounts {
   stakeholders: CoverageCount
   /** wayOut: 解開的衝突. related: 相關的衝突 (the others with a covered story). */
   conflicts: { wayOut: number; related: number }
-  /** 可能爭議 and 法規障礙 (decision 140): the items of the tab that are
-   * not only 【待補】 (concernCount). */
+  /** 潛在風險, 可能爭議 and 法規障礙 (decisions 140 and 143): the items of
+   * the tab that are not only 【待補】 (concernCount). */
+  risks: number
   controversies: number
   legal: number
   /** The rows of 成效衡量. */
@@ -91,12 +92,13 @@ export interface SolutionTabCounts {
   policies: { domestic: number; foreign: number }
 }
 
-/** The counts of the 可能爭議 and 法規障礙 tab labels (decision 140), for an
- * issue solution and a cross-issue solution. */
+/** The counts of the 潛在風險, 可能爭議 and 法規障礙 tab labels (decisions
+ * 140 and 143), for an issue solution and a cross-issue solution. */
 export function concernCounts(
   sol: { evaluation: SolutionEvaluation; controversies: SummaryItem[]; legal: SummaryItem[] },
-): Pick<SolutionTabCounts, 'controversies' | 'legal'> {
+): Pick<SolutionTabCounts, 'risks' | 'controversies' | 'legal'> {
   return {
+    risks: concernCount(concernItems(sol, 'risks')),
     controversies: concernCount(concernItems(sol, 'controversies')),
     legal: concernCount(concernItems(sol, 'legal')),
   }
@@ -136,11 +138,12 @@ export function solutionTabLabel(tab: SolutionTab, c: SolutionTabCounts): TabLab
     case 'wants': return l.wants(c.wants.covered, c.wants.notCovered)
     case 'stakeholders': return l.stakeholders(c.stakeholders.covered, c.stakeholders.notCovered)
     case 'conflicts': return l.conflicts(c.conflicts.wayOut, c.conflicts.related)
-    case 'controversies': return l.controversies(c.controversies)
-    case 'legal': return l.legal(c.legal)
     // 執行計畫 has no count: its rows are the same for every solution.
     case 'plan': return { main: t.solutionPage.tabs.plan }
     case 'measures': return l.measures(c.measures)
+    case 'risks': return l.risks(c.risks)
+    case 'controversies': return l.controversies(c.controversies)
+    case 'legal': return l.legal(c.legal)
     case 'policies': return l.policies(c.policies.domestic, c.policies.foreign)
   }
 }

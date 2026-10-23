@@ -533,10 +533,11 @@ export const t = {
       wants: '訴求',
       stakeholders: '利害關係人',
       conflicts: '衝突',
-      controversies: '可能爭議',
-      legal: '法規障礙',
       plan: '執行計畫',
       measures: '成效衡量',
+      risks: '潛在風險',
+      controversies: '可能爭議',
+      legal: '法規障礙',
       policies: '相關政策',
     },
     /** The tab labels with the counts (solutionTabCounts). Plain numbers:
@@ -554,10 +555,12 @@ export const t = {
       conflicts: (wayOut: number, related: number): TabLabel => ({
         main: '衝突', sep: '　', sub: `解開 ${wayOut}・相關 ${related}`,
       }),
-      /** 可能爭議 and 法規障礙 (decision 140): the items that are not only 【待補】. */
+      measures: (n: number): TabLabel => ({ main: `成效衡量 ${n}` }),
+      /** 潛在風險, 可能爭議 and 法規障礙 (decisions 140 and 143): the items
+       * that are not only 【待補】. */
+      risks: (n: number): TabLabel => ({ main: `潛在風險 ${n}` }),
       controversies: (n: number): TabLabel => ({ main: `可能爭議 ${n}` }),
       legal: (n: number): TabLabel => ({ main: `法規障礙 ${n}` }),
-      measures: (n: number): TabLabel => ({ main: `成效衡量 ${n}` }),
       policies: (domestic: number, foreign: number): TabLabel => ({
         main: '相關政策', sep: '　', sub: `國內 ${domestic}・國外 ${foreign}`,
       }),
@@ -625,14 +628,15 @@ export const t = {
     measuresNone: '分析裡沒有這個解法的成效指標。',
     baseline: '目前數值（基準值）',
     source: '資料來源',
-    detailIntro: '這部分由 AI 整理，可以作為討論的起點。成本需由專業人士確認。詳細的內容在「可能爭議」、「法規障礙」與「執行計畫」分頁。',
-    /** The 可能爭議 and 法規障礙 tabs (decision 140). */
+    detailIntro: '這部分由 AI 整理，可以作為討論的起點。成本需由專業人士確認。詳細的內容在「執行計畫」、「潛在風險」、「可能爭議」與「法規障礙」分頁。',
+    /** The 潛在風險, 可能爭議 and 法規障礙 tabs (decisions 140 and 143). */
     concernsIntro: {
-      controversies: '這個解法可能引起的爭議與風險：分析摘要「可能的爭議」中提到這個解法的項目，以及步驟 7 的隱私、其他顧慮與風險、災害風險。大部分是 AI 的判斷。',
+      risks: '這個解法可能帶來的風險：步驟 7 的其他顧慮與風險、災害風險。大部分是 AI 的判斷。',
+      controversies: '這個解法可能引起的爭議：分析摘要「可能的爭議」中提到這個解法的項目，以及步驟 7 的隱私。大部分是 AI 的判斷。',
       legal: '這個解法可能遇到的法規障礙：分析摘要「法規上的障礙」中提到這個解法的項目，以及步驟 7 的相關法規。法條適用需由專業人士確認。',
     },
     concernsDataEmpty: '這裡沒有標記 [實證] 或 [AI整理] 的項目。',
-    /** The source line of a step 7 row on the 可能爭議 and 法規障礙 tabs. */
+    /** The source line of a step 7 row on the 潛在風險, 可能爭議 and 法規障礙 tabs. */
     step7Source: '來源：議題分析步驟 7 這個解法的評估表。',
     crossStep7Source: '來源：跨議題分析 4.5 這個解法的評估表。',
     /** The 執行計畫 tab (decision 140). */

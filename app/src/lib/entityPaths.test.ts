@@ -113,8 +113,10 @@ describe('parseSolutionTab', () => {
 
   it('accepts every tab name', () => {
     // Decision 142: 利害關係人, 訴求, 需求, 衝突, in the order of the issue page.
+    // Decision 143: 執行計畫 and 成效衡量, then 潛在風險, 可能爭議 and 法規障礙.
     expect(SOLUTION_TABS).toEqual([
-      'overview', 'stakeholders', 'wants', 'needs', 'conflicts', 'controversies', 'legal', 'plan', 'measures', 'policies',
+      'overview', 'stakeholders', 'wants', 'needs', 'conflicts', 'plan', 'measures', 'risks', 'controversies', 'legal',
+      'policies',
     ])
     for (const tab of SOLUTION_TABS) expect(parseSolutionTab(tab)).toBe(tab)
   })

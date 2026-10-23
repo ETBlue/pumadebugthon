@@ -32,7 +32,7 @@ function CrossIssueBox({ issueNumber }: { issueNumber: number }) {
   const list = crossSolutionsOfIssue(cross, issueNumber)
   if (list.length === 0) return null
   return (
-    <aside aria-labelledby="issue-cross-solutions" className="mb-6 rounded-lg border bg-muted/40 p-3 md:p-4">
+    <aside aria-labelledby="issue-cross-solutions" className="mb-6">
       <h3 id="issue-cross-solutions" className="font-semibold">{tx.issueBoxHeading}</h3>
       <ul className="mt-2 space-y-2 text-sm">
         {list.map((sol) => (

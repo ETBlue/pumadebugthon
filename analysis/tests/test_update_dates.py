@@ -177,15 +177,6 @@ class ItemsTest(unittest.TestCase):
         after = self.prints()
         self.assertEqual({k for k in before if before[k] != after[k]}, {("解法", "2-A")})
 
-    def test_one_part_cell_has_the_old_fingerprint(self):
-        # A step 7 cell with one part counts as one Cell, the same as before
-        # the list shape, so the new JSON shape alone changes no date.
-        cell = {"text": "x", "tag": "AI模擬", "pending": False}
-        mod = load("update_dates")
-        self.assertEqual(mod.old_detail([{"item": "隱私", "content": [cell]}]), [{"item": "隱私", "content": cell}])
-        two = [cell, {**cell, "tag": "實證"}]
-        self.assertEqual(mod.old_detail([{"item": "隱私", "content": two}]), [{"item": "隱私", "content": two}])
-
     def test_solution_added_date_is_not_content(self):
         before = self.prints()
         edit(self.md, "| `sidewalk`、`mrt-exit` | 2026-10-16 | 結合清潔箱位置", "| `sidewalk`、`mrt-exit` | 2026-10-17 | 結合清潔箱位置")

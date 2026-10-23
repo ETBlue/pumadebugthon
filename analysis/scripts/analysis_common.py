@@ -60,6 +60,12 @@ Rules:
   (practice_refs): 「解法 A」, a list 「解法 C、D」, or a step 7 section
   「7.1」, which means the solution of the heading 「### 7.1 解法 A：…」. A
   reference to another issue (「#8 解法 B」) is not a solution of this issue.
+- Step 7 「評估解法」 (ETBlue, 2026-10-23): each 「### 7.n 解法 X：…」 section
+  has an evaluation table (項目 | 內容: STEP7_ROWS), a plan table (執行計畫 |
+  內容: PLAN_ROWS) and, when the solution has some, a dependency table
+  (DEPENDENCY_HEADER). step7_tables() finds them by header. A dependency
+  row is a row of the 分析摘要 topic 相依事項與現行政策的關係 that names the
+  solution; the 分析摘要 keeps only the rows that name no solution.
 - Content fingerprint (fingerprint): the first 12 hex characters of the
   SHA-256 of the content as canonical JSON (keys sorted, no spaces, UTF-8).
   update_dates.py and check_analysis.py use it to see whether the content of
@@ -140,6 +146,31 @@ PRACTICE_SOLUTIONS = re.compile(r"(?<!#\d )(?<!#\d\d )解法 ?([A-Z](?![A-Za-z0-
                                 r"|(?<![0-9.])7\.(\d+)(?![0-9]|\.[0-9])")
 # A step 7 heading for one solution: 「### 7.1 解法 A：…」.
 STEP7_HEADING = re.compile(r"^### 7\.(\d+) 解法 ([A-Z])：")
+
+# Step 7 「評估解法」 (ETBlue, 2026-10-23; method.md, 步驟 7). Each solution
+# section has up to three tables, found by their header (step7_tables):
+# - the evaluation table (STEP7_HEADER) with the rows STEP7_ROWS, in this order;
+# - the plan table (PLAN_HEADER, 執行計畫) with the rows PLAN_ROWS, in this order;
+# - optional: the dependency table (DEPENDENCY_HEADER), the rows of
+#   相依事項與現行政策的關係 that name this solution. A row that names several
+#   solutions is written under each of them, with the same text.
+# The cross-issue file uses the same tables in its 「### 4.5.n 解法 X-A：…」 sections.
+STEP7_HEADER = ["項目", "內容"]
+STEP7_ROWS = ("相關法規", "隱私", "其他顧慮與風險", "災害風險", "可行性")
+PLAN_HEADER = ["執行計畫", "內容"]
+PLAN_ROWS = ("主責單位", "需要的資料／API／資源", "成本", "執行步驟")
+DEPENDENCY_TOPIC = "相依事項與現行政策的關係"
+DEPENDENCY_HEADER = [DEPENDENCY_TOPIC, "說明", "相關編號"]
+# The JSON keys of the rows (build_json.py and check_cross_issue.py).
+EVALUATION_KEYS = dict(zip(STEP7_ROWS, ("laws", "privacy", "risks", "disasters", "feasibility")))
+PLAN_KEYS = dict(zip(PLAN_ROWS, ("owner", "resources", "cost", "steps")))
+# The 災害風險 cell when no disaster changes the solution.
+NO_DISASTER = "無明顯相關災害風險"
+# A cell that is only one 【待補：…】 item, with no tag (for example the
+# 執行步驟 placeholder 「【待補：執行步驟】」).
+PENDING_ONLY = re.compile(r"【待補：[^】]+】")
+# The 4.5 heading of one combined solution in the cross-issue file.
+CROSS_STEP7_HEADING = re.compile(r"^### 4\.5\.(\d+) 解法 (X-[A-Z])：")
 
 SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
 HEADING = re.compile(r"^(#{2,3}) (.+)$")
@@ -345,6 +376,31 @@ def practice_place(name):
 def step7_sections(text):
     """{section number "1": solution code "A"} from the 「### 7.n 解法 X：」 headings."""
     return {m.group(1): m.group(2) for m in map(STEP7_HEADING.match, text.splitlines()) if m}
+
+
+def step7_tables(lines):
+    """The tables of one step 7 solution section, by kind: {"evaluation",
+    "plan", "dependencies", "other"} -> list of (header cells, rows of cells).
+    A table belongs to a kind by its exact header (STEP7_HEADER, PLAN_HEADER,
+    DEPENDENCY_HEADER); any other table is "other"."""
+    out = {"evaluation": [], "plan": [], "dependencies": [], "other": []}
+    for h, rows in tables(lines):
+        kind = {tuple(STEP7_HEADER): "evaluation", tuple(PLAN_HEADER): "plan",
+                tuple(DEPENDENCY_HEADER): "dependencies"}.get(tuple(h), "other")
+        out[kind].append((h, rows))
+    return out
+
+
+def ref_solutions(refs, prefix=""):
+    """The solution codes that a list of references names as 「解法 <prefix>X」,
+    in order, without repeats. 「#8 解法 B」 (another issue) is not one.
+    prefix is "X-" in the cross-issue file: 「解法 X-A」 -> "X-A"."""
+    out = []
+    for r in refs:
+        m = re.fullmatch(rf"解法 ({re.escape(prefix)}[A-Z])", r.strip())
+        if m and m.group(1) not in out:
+            out.append(m.group(1))
+    return out
 
 
 def practice_refs(use, sections):

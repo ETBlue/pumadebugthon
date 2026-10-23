@@ -43,11 +43,18 @@ In other text it stays as written; check_analysis.py checks that it exists.
 Each solution also gets the fields for its own page in the app:
 - measures: the 6.3 rows whose 解法 cell lists its code (a cell can list
   several, separated by 「、」, for example 「A、D」).
-- detail: the 項目 | 內容 rows of its step 7 section, in file order:
-  {item, content}. content is a list of parts, one Cell per tag
-  (parse_parts). Only these cells may hold more than one tag (ETBlue,
-  2026-10-22). A cell with one tag is a list of one Cell. Every other cell
-  in the JSON is one Cell with at most one tag.
+- evaluation and plan: the two tables of its step 7 section (ETBlue,
+  2026-10-23; solution_tables). evaluation {laws, privacy, risks,
+  disasters, feasibility} is the 項目 | 內容 table (相關法規, 隱私,
+  其他顧慮與風險, 災害風險, 可行性). plan {owner, resources, cost, steps} is
+  the 執行計畫 | 內容 table (主責單位, 需要的資料／API／資源, 成本, 執行步驟).
+  Each value is a list of parts, one Cell per tag (parse_parts). Only these
+  cells may hold more than one tag (ETBlue, 2026-10-22). A cell with one
+  tag, or a 【待補】 cell such as 「【待補：執行步驟】」, is a list of one
+  Cell. Every other cell in the JSON is one Cell with at most one tag.
+- controversies and legal: the 分析摘要 rows of 可能的爭議 and 法規上的障礙
+  whose 相關編號 names the solution (「解法 A」, not 「#8 解法 B」), in file
+  order. Each item is the same object as in summary.
 - overview: its row of the 總覽 table (成本, 可行性, 主要風險, 主責單位). The
   row is found by its 代號 cell (the code only). The 解法 cell holds the row
   tag and a short name; every field gets the row tag.
@@ -63,20 +70,27 @@ Each solution also gets the fields for its own page in the app:
      「7.n」). name is the 做法 cell after 「<place>：」, place is the place
      (「美國紐約」, 「臺灣臺北市」), domestic is true when the place starts
      with 「臺灣」. content is the 內容 Cell, use the 本文件怎麼用 Cell.
-  2. source "dependency": the rows of the 分析摘要 topic 「相依事項與現行政策
-     的關係」 whose 相關編號 names the solution (「解法 A」, not 「#8 解法
-     B」). They are domestic (ETBlue, 2026-10-22): {name: the 項目 cell,
-     place: null, domestic: true, content: the 說明 Cell, use: null}.
+  2. source "dependency": the rows of the 相依事項與現行政策的關係 table of
+     its step 7 section (moved there from the 分析摘要, ETBlue 2026-10-23).
+     Each row's 相關編號 names the solution. They are domestic (ETBlue,
+     2026-10-22): {name: the 項目 cell, place: null, domestic: true,
+     content: the 說明 Cell, use: null, refs: the 相關編號 as written}.
+  Every practice has refs ([] for source "practice").
   A 做法 cell without a place, or an unknown solution code, stops the script.
   A practice row that names no solution is left out (check_analysis.py
-  reports it). A cross-issue solution gets only dependency rows: the
-  cross-issue file has no practice table.
+  reports it). A cross-issue solution gets only dependency rows (from its
+  4.5.n section): the cross-issue file has no practice table.
 
 summary: the 「## 分析摘要」 section, one item per topic in
 analysis_common.SUMMARY_TOPICS, in that fixed order: {topic, items: [{item,
-text, refs}]}. text is the 說明 Cell (a tag, or a 【待補】 cell). refs are the
+text, refs, solutions}]}. text is the 說明 Cell (a tag, or a 【待補】 cell). refs are the
 references of the 相關編號 cell as written, for example "C5", "解法 A" or
-"#8 解法 B". Each one must exist: in this issue, or in issue #n. A 【待補】
+"#8 解法 B". Each one must exist: in this issue, or in issue #n. solutions
+are the codes of this issue's solutions that refs names (「解法 A」 -> "A";
+「#8 解法 B」 is not one); [] means the row names no solution (ETBlue,
+2026-10-23: the app shows those rows on the issue 總覽). The topic
+相依事項與現行政策的關係 has only rows with solutions [] (the others are
+in step 7), and it may have no rows. A 【待補】
 item in the summary that is also elsewhere in the file is not listed again
 in pending.
 
@@ -129,8 +143,12 @@ differ), priorityTag, prioritiesDiffer, reason}], conflicts [{id, text,
 issueConflicts, sideA, sideB, needsA, needsB, wayOut, wayOutSolutions,
 method, result}], solutions [{code, name, tag, parts [{issue, code}],
 spaces, added, summary, updated, needs {must, shouldCould, crossIssue}, measures
-[{indicator, baseline, source, from [{issue, code}], isNew}], detail {owner,
-laws, privacy, risks}, practices (dependency rows only, see above)}], solutionFocus [{tag, solutions, note}], pending
+[{indicator, baseline, source, from [{issue, code}], isNew}], evaluation
+{laws, privacy, risks, disasters, feasibility}, plan {owner, resources, cost,
+steps} (the tables of its 「### 4.5.n 解法 X-A：…」 section, the same shape
+as for an issue solution), controversies, legal (as for an issue solution;
+summary items have solutions with X codes, for example "X-A"), practices
+(dependency rows only, see above)}], solutionFocus [{tag, solutions, note}], pending
 [{text, section}].
 """
 import csv, datetime, glob, json, os, re, subprocess, sys
@@ -460,6 +478,11 @@ def parse_summary(text, ids):
                                  f"found {'、'.join(names)}")
     out, cross = [], []
     for name, body in topics:
+        # The 相依事項與現行政策的關係 topic keeps only the rows that name no
+        # solution; it has no table when every row moved to step 7.
+        if name == common.DEPENDENCY_TOPIC and not common.tables(body):
+            out.append({"topic": name, "items": []})
+            continue
         try:
             rows = table_rows(common.tables(body), SUMMARY, common.SUMMARY_HEADER)
         except ReadError as e:
@@ -485,28 +508,79 @@ def parse_summary(text, ids):
                         raise ReadError(SUMMARY, f"{where}: {ref} is not in this issue")
                 else:
                     cross.append((num, kind, rid, ref, where))
-            items.append({"item": r["項目"], "text": text_cell, "refs": refs})
+            solutions = common.ref_solutions(refs)
+            if name == common.DEPENDENCY_TOPIC and solutions:
+                raise ReadError(SUMMARY, f"{where}: names {'、'.join('解法 ' + c for c in solutions)}; "
+                                         f"the row belongs in the {common.DEPENDENCY_TOPIC} table of step 7")
+            items.append({"item": r["項目"], "text": text_cell, "refs": refs, "solutions": solutions})
         out.append({"topic": name, "items": items})
     return out, cross
 
 
-DEPENDENCY_TOPIC = "相依事項與現行政策的關係"
+# The 分析摘要 topics whose rows are also listed on the page of each solution
+# they name (ETBlue, 2026-10-23): JSON key -> topic.
+SOLUTION_SUMMARY_TOPICS = {"controversies": "可能的爭議", "legal": "法規上的障礙"}
 
 
-def add_dependencies(summary, by_code, prefix=""):
-    """Add the rows of the 分析摘要 topic DEPENDENCY_TOPIC to the practices of
-    each solution that their refs name as 「解法 <prefix><code>」 (a local
-    reference; 「#8 解法 B」 is not one). These rows are domestic (ETBlue,
-    2026-10-22). by_code: solution code -> solution; prefix: "X-" for the
-    cross-issue file."""
-    topic = next((t for t in summary if t["topic"] == DEPENDENCY_TOPIC), None)
-    for item in (topic or {"items": []})["items"]:
-        for ref in item["refs"]:
-            m = re.fullmatch(rf"解法 ({re.escape(prefix)}[A-Z])", ref)
-            if m and m.group(1) in by_code:
-                by_code[m.group(1)]["practices"].append({
-                    "name": item["item"], "place": None, "domestic": True,
-                    "content": item["text"], "use": None, "source": "dependency"})
+def add_summary_rows(summary, by_code):
+    """Give each solution the rows of SOLUTION_SUMMARY_TOPICS whose
+    相關編號 names it (item["solutions"]), in file order. by_code: solution
+    code -> solution."""
+    for s in by_code.values():
+        for key in SOLUTION_SUMMARY_TOPICS:
+            s[key] = []
+    for key, topic in SOLUTION_SUMMARY_TOPICS.items():
+        t = next((t for t in summary if t["topic"] == topic), {"items": []})
+        for item in t["items"]:
+            for code in item["solutions"]:
+                if code in by_code:
+                    by_code[code][key].append(item)
+
+
+def dependency_practice(row):
+    """A row of a step 7 dependency table -> a practice of source
+    "dependency". These rows are domestic (ETBlue, 2026-10-22)."""
+    return {"name": row["name"], "place": None, "domestic": True, "content": row["content"],
+            "use": None, "source": "dependency", "refs": row["refs"]}
+
+
+def solution_tables(lines, name, code, prefix=""):
+    """One step 7 solution section (or a 4.5.n section of the cross-issue
+    file) -> (evaluation, plan, dependencies). evaluation: {key: [Cell]} for
+    common.STEP7_ROWS; plan: {key: [Cell]} for common.PLAN_ROWS (keys in
+    common.EVALUATION_KEYS and common.PLAN_KEYS). A cell is a list of parts
+    (parse_parts). dependencies: [{"name", "content", "refs"}]; each row's
+    相關編號 must name the solution. Rows are found by name; a missing row
+    or an unknown table stops the script (check_analysis.py says more)."""
+    found = common.step7_tables(lines)
+    if found["other"]:
+        raise ReadError(name, f"unknown table 「{' | '.join(found['other'][0][0])}」")
+    out = []
+    for kind, header, keys in (("evaluation", common.STEP7_HEADER, common.EVALUATION_KEYS),
+                               ("plan", common.PLAN_HEADER, common.PLAN_KEYS)):
+        rows = table_rows(found[kind], name, header)
+        got = {}
+        for r in rows:
+            item = r[header[0]]
+            if item not in keys:
+                raise ReadError(name, f"unknown row 「{item}」 in the table {' | '.join(header)}")
+            if keys[item] in got:
+                raise ReadError(name, f"two 「{item}」 rows")
+            got[keys[item]] = cell_parts(r["內容"], name, item)
+        for item, key in keys.items():
+            if key not in got:
+                raise ReadError(name, f"no 「{item}」 row")
+        out.append({key: got[key] for key in keys.values()})
+    deps = []
+    if len(found["dependencies"]) > 1:
+        raise ReadError(name, f"two tables with the header {' | '.join(common.DEPENDENCY_HEADER)}")
+    for r in (table_rows(found["dependencies"], name, common.DEPENDENCY_HEADER) if found["dependencies"] else []):
+        item = r[common.DEPENDENCY_TOPIC]
+        refs = common.split_refs(r["相關編號"])
+        if code not in common.ref_solutions(refs, prefix):
+            raise ReadError(name, f"{common.DEPENDENCY_TOPIC} 「{item}」: 相關編號 does not name 解法 {code}")
+        deps.append({"name": item, "content": cell(r["說明"], name, item), "refs": refs})
+    return out[0], out[1], deps
 
 
 def summary_range(lines):
@@ -810,8 +884,7 @@ def parse_issue(text, space_codes):
         if head is None:
             raise ReadError("步驟 7", f"solution {s['id']} has no section 「### 7.n 解法 {s['id']}：…」")
         name = head[4:].replace("`", "").strip()
-        s["detail"] = [{"item": r["項目"], "content": cell_parts(r["內容"], name, r["項目"])}
-                       for r in table_rows(common.tables(common.section(text, head)), name, ["項目", "內容"])]
+        s["evaluation"], s["plan"], s["dependencies"] = solution_tables(common.section(text, head), name, s["id"])
 
     # 總覽 (### 7.n 總覽): one row per solution. The 代號 cell is the code only
     # (「A」). The 解法 cell is the row tag and a short name (「`[AI模擬]` 佈建建議地圖」).
@@ -850,6 +923,22 @@ def parse_issue(text, space_codes):
 
     # 分析摘要: the topics and items. Cross-issue references are checked in build().
     summary, summary_cross = parse_summary(text, common.issue_ids(text))
+    add_summary_rows(summary, by_sol)
+    # The references of the step 7 dependency rows: a local one must exist; one
+    # to another issue is checked in build(), as for the 分析摘要.
+    own = common.issue_ids(text)
+    for s in solutions:
+        for d in s["dependencies"]:
+            where = f"步驟 7 解法 {s['id']} {common.DEPENDENCY_TOPIC} 「{d['name']}」"
+            for ref in d["refs"]:
+                parsed = common.parse_ref(ref)
+                if parsed is None:
+                    raise ReadError("步驟 7", f"{where}: 「{ref}」 is not a reference")
+                num, kind, rid = parsed
+                if num is None and rid not in own[kind]:
+                    raise ReadError("步驟 7", f"{where}: {ref} is not in this issue")
+                if num is not None:
+                    summary_cross.append((num, kind, rid, ref, where))
 
     # practices: the 6.1 practice tables, then the dependency rows of the summary.
     for s in solutions:
@@ -871,8 +960,10 @@ def parse_issue(text, space_codes):
                     raise ReadError("6.1", f"practice 「{r[0]}」: 解法 {code} is not in 6.1")
                 by_sol[code]["practices"].append({
                     "name": name, "place": place, "domestic": place.startswith(common.DOMESTIC),
-                    "content": cell(r[1], "6.1", r[0]), "use": cell(r[2], "6.1", r[0]), "source": "practice"})
-    add_dependencies(summary, by_sol)
+                    "content": cell(r[1], "6.1", r[0]), "use": cell(r[2], "6.1", r[0]), "source": "practice", "refs": []})
+    # Then the rows of its step 7 dependency table (moved there from the 分析摘要, ETBlue 2026-10-23).
+    for s in solutions:
+        s["practices"] += [dependency_practice(d) for d in s.pop("dependencies")]
 
     # every 【待補…】 item with the nearest heading. Items in backticks are
     # examples of the format (for example in the notice), not open items.
@@ -1051,9 +1142,10 @@ def build_cross_issue(analysis_dir):
     dates = read_updated_dates(analysis_dir)
     for s in data["solutions"]:
         s["updated"] = dates_of(dates, "跨議題解法", s["code"])["updated"]
-        s["practices"] = []
-    # The cross-issue file has no practice table: only the dependency rows.
-    add_dependencies(data["summary"], {s["code"]: s for s in data["solutions"]}, prefix="X-")
+        # The cross-issue file has no practice table: only the rows of the
+        # dependency table of its 4.5.n section.
+        s["practices"] = [dependency_practice(d) for d in s.pop("dependencies")]
+    add_summary_rows(data["summary"], {s["code"]: s for s in data["solutions"]})
     return {"title": data["title"], "updated": git_updated(os.path.dirname(md)),
             **{k: v for k, v in data.items() if k != "title"}}
 

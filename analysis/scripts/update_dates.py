@@ -25,11 +25,13 @@ The content of each item (design 3.23.8):
   來源, 優先順序 and its tag, 相同訴求編號, 相同需求編號). A moved
   stakeholder (備註 starts with 已改為) has no row.
 - 解法: its 6.1 row (name, tag, summary, 空間類型), its 6.2 needs (in the
-  old format: its stories), its 6.3 rows, its step 7 section, its 總覽 row,
+  old format: its stories), its 6.3 rows, its step 7 section (evaluation,
+  plan, and its dependency rows in practices), its 總覽 row,
   its 構想 rows and its practices (the related policies and practices,
   ETBlue 2026-10-22; only when the list is not empty).
 - 跨議題解法: its part of cross-issue-analysis.md (name, tag, summary,
-  parts, spaces, needs, measures, detail, and practices when not empty).
+  parts, spaces, needs, measures, evaluation, plan, and practices when not
+  empty). Not its controversies and legal rows: they are 分析摘要 rows.
 - 使用者故事: its row in the step 4 table (我想要…, 以便…, their tags, 來源,
   優先順序 and its tag, 相同訴求編號, 相同需求編號). The same fields as in
   the stakeholder's content.
@@ -77,9 +79,9 @@ STAKE_COLS = ("利害關係人", "分類路徑", "特別關注", "議題", "備�
 # The fields of a story that are the stakeholder's content.
 STORY_KEYS = ("id", "want", "soThat", "source", "priority", "priorityTag", "group", "needGroup")
 # The fields of an issue solution that are its content.
-SOLUTION_KEYS = ("name", "summary", "spaces", "needs", "measures", "detail", "overview", "ideas")
+SOLUTION_KEYS = ("name", "summary", "spaces", "needs", "measures", "evaluation", "plan", "overview", "ideas")
 # The fields of a cross-issue solution that are not content.
-CROSS_SKIP = ("code", "added", "updated")
+CROSS_SKIP = ("code", "added", "updated", "controversies", "legal")
 MOVED = "已改為"
 RUN = "請執行 update_dates.py"
 
@@ -92,14 +94,6 @@ def without_pending(x):
     if isinstance(x, list):
         return [without_pending(v) for v in x]
     return x
-
-
-def old_detail(detail):
-    """The step 7 rows in the fingerprint. Since 2026-10-22 a step 7 cell is
-    a list of parts (build_json.parse_parts). A cell with one part counts as
-    that one Cell, the same as before, so the new JSON shape alone does not
-    change any date. A cell with several parts counts as the list."""
-    return [{**r, "content": r["content"][0] if len(r["content"]) == 1 else r["content"]} for r in detail]
 
 
 def stakeholder_order(sid):
@@ -132,7 +126,6 @@ def items(analysis_dir):
     for d in issues:
         for s in sorted(d["solutions"], key=lambda s: s["id"]):
             content = {k: s[k] for k in SOLUTION_KEYS}
-            content["detail"] = old_detail(s["detail"])
             # practices (2026-10-22): only when the list is not empty, so the
             # new field alone does not change the date of a solution with none.
             if s["practices"]:

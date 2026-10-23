@@ -42,7 +42,15 @@ Rules checked (see method.md, 跨議題分析):
   the issue's 6.2, in the column of its issue priority. Every X-N group is
   covered by at least one combined solution.
 - 4.3: 「來自」 is 「新指標」 or a part of the combined solution.
-- 4.5: one row per combined solution; every cell has a tag.
+- 4.5: one section 「### 4.5.n 解法 X-A：…」 per combined solution, with the
+  same tables as a step 7 solution section of an issue file (ETBlue,
+  2026-10-23; analysis_common.step7_tables): the evaluation table, the plan
+  table (執行計畫) and, if needed, the dependency table (相依事項與現行政策的
+  關係). A cell has one tag and text, or is one 【待補：…】 item. The
+  災害風險 cell is not empty. Each dependency row names the solution of its
+  section; a row that names several solutions is under each, with the same
+  text. The 分析摘要 topic 相依事項與現行政策的關係 has no row that names a
+  combined solution.
 """
 import csv, datetime, os, re, sys, unicodedata
 
@@ -78,8 +86,6 @@ XS_HEADER = ["代號", "解法", "合併的議題解法", "空間類型", "新�
 XMAP_HEADER = ["代號", "解法", "涵蓋的 Must 需求", "涵蓋的 Should / Could 需求", "涵蓋的跨議題共同需求"]
 XM_HEADER = ["解法", "指標", "目前數值（基準值）", "資料來源", "來自"]
 XF_HEADER = ["特別關注", "相關的合併解法", "說明"]
-XR_HEADER = ["代號", "主責與協作單位", "相關法規", "隱私", "主要風險"]
-XR_KEYS = {"主責與協作單位": "owner", "相關法規": "laws", "隱私": "privacy", "主要風險": "risks"}
 # The 跨議題的優先順序 cell when the issue priorities are not the same.
 PRIORITY_DIFFERENT = "各議題不同"
 # The 來自 cell of a measure that no issue has.
@@ -87,7 +93,7 @@ NEW_MEASURE = "新指標"
 
 SECTIONS = {"shared": "### 1.1", "repeat": "### 1.2", "focus": "### 1.3", "needs": "### 2.1", "priority": "### 2.2",
             "conflicts": "## 3", "solutions": "### 4.1", "map": "### 4.2", "measures": "### 4.3",
-            "solutionFocus": "### 4.4", "risks": "### 4.5"}
+            "solutionFocus": "### 4.4", "evaluation": "### 4.5"}
 
 
 # ---------- one issue file ----------
@@ -386,6 +392,10 @@ def read_cross_issue(text, ctx):
                 err(f"分析摘要: the topics must be {'、'.join(common.SUMMARY_TOPICS)}; found {'、'.join(got)}")
         for name, body in topics:
             found = [rows for h, rows in common.tables(body) if h == common.SUMMARY_HEADER]
+            # The 相依事項與現行政策的關係 topic keeps only the rows that name no
+            # combined solution; it has no table when every row moved to 4.5.
+            if name == common.DEPENDENCY_TOPIC and not common.tables(body):
+                summary.append({"topic": name, "items": []}); continue
             if len(found) != 1:
                 err(f"分析摘要 {name}: expected one table with the header {' | '.join(common.SUMMARY_HEADER)}"); continue
             items = []
@@ -404,7 +414,11 @@ def read_cross_issue(text, ctx):
                     if re.fullmatch(r"[OI]\d\d", ref):
                         continue  # a global stakeholder ID, checked on the whole text
                     err(f"{where}: 「{ref}」 is not a reference (write 「#n ID」 for an ID of an issue, or X-N01, X-C1, 解法 X-A, or a stakeholder ID)")
-                items.append({"item": item, "text": parse_cell(note), "refs": refs})
+                codes_ = common.ref_solutions(refs, "X-")
+                if name == common.DEPENDENCY_TOPIC and codes_:
+                    err(f"{where}: names {'、'.join('解法 ' + c for c in codes_)}; move the row to the "
+                        f"{common.DEPENDENCY_TOPIC} table of 4.5")
+                items.append({"item": item, "text": parse_cell(note), "refs": refs, "solutions": codes_})
             summary.append({"topic": name, "items": items})
 
     # ----- 1.1 shared stakeholders -----
@@ -651,7 +665,7 @@ def read_cross_issue(text, ctx):
                           "parts": [{"issue": n, "code": c} for n, c in parts], "spaces": spaces,
                           "added": r["新增日期"], "summary": r["一句話說明"],
                           "needs": {"must": [], "shouldCould": [], "crossIssue": []},
-                          "measures": [], "detail": None})
+                          "measures": [], "evaluation": None, "plan": None, "dependencies": []})
     sol_by_code = {s["code"]: s for s in solutions}
 
     # ----- 4.2 needs -----
@@ -734,22 +748,67 @@ def read_cross_issue(text, ctx):
         return {"tag": g, "solutions": codes, "note": parse_cell(note)}
     solution_focus = focus_table(SECTIONS["solutionFocus"], XF_HEADER, "4.4 特別關注族群檢查", check_solution_focus_row)
 
-    # ----- 4.5 resources, laws, privacy and risks -----
-    seen_r = []
-    for r in one_table(text, SECTIONS["risks"], XR_HEADER, err, "資源、法規、隱私與風險"):
-        code, where = r["代號"], f"4.5 {r['代號']}"
+    # ----- 4.5 evaluation: one section per combined solution -----
+    if common.section(text, SECTIONS["evaluation"]) is None:
+        err(f"4.5: no heading 「{SECTIONS['evaluation']}」")
+    seen_r, dep_copies = [], {}
+    for line in lines:
+        m = common.CROSS_STEP7_HEADING.match(line)
+        if not m: continue
+        code, where = m.group(2), f"4.5 {m.group(2)}"
         if code not in sol_by_code: err(f"{where}: is not in 4.1"); continue
-        if code in seen_r: err(f"{where}: has two rows"); continue
+        if code in seen_r: err(f"{where}: has two sections"); continue
         seen_r.append(code)
-        for col in XR_HEADER[1:]:
-            if not TAGGED.match(r[col]): err(f"{where}: {col} must start with a tag")
-        # 主要風險 has the disaster risks of the parts, written as
-        # 「災害風險：…（#n 解法 X）」 (ETBlue, 2026-10-22; method.md, step 7).
-        if not re.search(r"災害風險：\s*[^\s|]", r["主要風險"]):
-            err(f"{where}: 主要風險 has no 「災害風險：」 with text after it (sum up the 災害風險 rows of its parts, see method.md step 7)")
-        sol_by_code[code]["detail"] = {XR_KEYS[c]: parse_cell(r[c]) for c in XR_HEADER[1:]}
+        found = common.step7_tables(common.section(text, line) or [])
+        for h, _ in found["other"]:
+            err(f"{where}: unknown table 「{' | '.join(h)}」")
+        parsed = []
+        for kind, header, keys in (("evaluation", common.STEP7_HEADER, common.EVALUATION_KEYS),
+                                   ("plan", common.PLAN_HEADER, common.PLAN_KEYS)):
+            if len(found[kind]) != 1:
+                err(f"{where}: expected one table with the header {' | '.join(header)}, found {len(found[kind])}")
+                parsed.append(None); continue
+            rows = found[kind][0][1]
+            names = [r[0] for r in rows]
+            if names != list(keys):
+                err(f"{where}: the rows of the table {' | '.join(header)} must be {'、'.join(keys)}, in this order; found {'、'.join(names)}")
+            got = {}
+            for r in rows:
+                if len(r) != 2 or r[0] not in keys: continue
+                value = r[1]
+                if not TAGGED.match(value) and not PENDING_ITEM.match(value):
+                    err(f"{where}: the 「{r[0]}」 cell must start with a tag and text, or be one 【待補：…】 item")
+                got[keys[r[0]]] = [parse_cell(value)]
+            parsed.append(got if len(got) == len(keys) else None)
+        sol_by_code[code]["evaluation"], sol_by_code[code]["plan"] = parsed
+        if len(found["dependencies"]) > 1: err(f"{where}: two tables with the header {' | '.join(common.DEPENDENCY_HEADER)}")
+        for _, rows in found["dependencies"][:1]:
+            for c in rows:
+                if len(c) != 3: err(f"{where}: {common.DEPENDENCY_TOPIC} row 「{c[0]}」 has {len(c)} cells"); continue
+                item, note, refs_cell = c
+                rw = f"{where} {common.DEPENDENCY_TOPIC} 「{item}」"
+                tagged = TAGGED.match(note) is not None
+                if not tagged and not PENDING_ITEM.match(note):
+                    err(f"{rw}: 說明 must start with a tag, or be one 【待補：…】 item")
+                refs = common.split_refs(refs_cell)
+                if tagged and not refs: err(f"{rw}: 相關編號 is empty")
+                named = common.ref_solutions(refs, "X-")
+                if code not in named: err(f"{rw}: 相關編號 must name 解法 {code} (the solution of this section)")
+                dep_copies.setdefault(item, []).append((code, note, refs_cell, named))
+                sol_by_code[code]["dependencies"].append({"name": item, "content": parse_cell(note), "refs": refs})
     for code in xs_codes:
-        if code not in seen_r: err(f"4.5: {code} has no row")
+        if code not in seen_r: err(f"4.5: {code} has no section 「### 4.5.n 解法 {code}：…」")
+    for item, copies in dep_copies.items():
+        codes_here = [x[0] for x in copies]
+        if len({(n, r) for _, n, r, _ in copies}) > 1:
+            err(f"4.5: the copies of {common.DEPENDENCY_TOPIC} 「{item}」 are not the same; write the same 說明 and 相關編號 under each solution")
+        for code in copies[0][3]:
+            if code in sol_by_code and code not in codes_here:
+                err(f"4.5 {code}: {common.DEPENDENCY_TOPIC} 「{item}」 names 解法 {code}, so it must be in the {common.DEPENDENCY_TOPIC} table of {code} too")
+    for s_ in solutions:
+        ev = s_["evaluation"]
+        if ev is not None and not "".join(c["text"] for c in ev["disasters"]).strip():
+            err(f"4.5 {s_['code']}: the 災害風險 cell is empty (sum up the 災害風險 rows of its parts, see method.md step 7)")
 
     # ----- links -----
     heads = {slug(m) for m in re.findall(r"^#{1,6} (.+)$", text, re.M)}

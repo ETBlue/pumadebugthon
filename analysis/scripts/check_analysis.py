@@ -8,9 +8,9 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              NEED_ID, NEED_MAP_HEADER, NEED_PRIORITY_HEADER, NO_SPACE_CELL, NO_SPACE_LINE, PRACTICE_HEADER, SEPARATOR, SUMMARY_HEADER, SUMMARY_HEADING,
                              SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, WAY_OUT_NONE, conflict_heading, cross_refs,
                              focus_tables, issue_ids, needs_format, parse_ref, practice_place, practice_refs, section, split_cells as cells, split_focus,
-                             split_refs, step1_tables, step7_sections, summary_lines, summary_topics, tables, without_cross_refs)
-
-NO_DISASTER = "無明顯相關災害風險"  # the 災害風險 cell when no disaster changes the solution
+                             split_refs, step1_tables, step7_sections, summary_lines, summary_topics, tables, without_cross_refs,
+                             DEPENDENCY_HEADER, DEPENDENCY_TOPIC, NO_DISASTER, PENDING_ONLY, PLAN_HEADER, PLAN_ROWS, STEP7_HEADER,
+                             STEP7_ROWS, ref_solutions, step7_tables)
 STEP7_TAG = re.compile(rf"`\[(?:{TAG_NAMES})\]`")  # a tag in a step 7 cell (16b-2)
 STEP7_SOLUTION = re.compile(r"^### 7\.\d+ 解法 ([A-Z])：")  # the heading of a step 7 solution table
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
@@ -358,14 +358,19 @@ def main(md_path, csv_path):
         if re.search(r"`\[AI整理\]`\s*新聞報導", line) and "【待補：查證" not in line:
             err(f"line {n}: an [AI整理] cell mentions 新聞 (新聞報導) but its row has no 【待補：查證…】 item: {line[:50]!r}")
 
-    # 0e. a table cell holds at most one tag. Only the cells of the step 7
-    # solution tables (「### 7.n 解法 X：…」) may hold more (ETBlue,
-    # 2026-10-22; method.md, 標記); 16b-2 checks them.
-    in_step7 = False
+    # 0e. a table cell holds at most one tag. Only the cells of the
+    # evaluation table and the plan table of a step 7 solution section
+    # (「### 7.n 解法 X：…」) may hold more (ETBlue, 2026-10-22; method.md,
+    # 標記); 16b-2 checks them. The dependency table there keeps one tag.
+    in_step7, header, prev = False, None, ""
     for n, line in enumerate(text.splitlines(), 1):
         if line.startswith("#"):
             in_step7 = STEP7_SOLUTION.match(line) is not None
-        if in_step7 or not line.startswith("|"): continue
+        if line.startswith("|") and not prev.startswith("|"):
+            header = cells(line)
+        prev = line
+        if not line.startswith("|"): continue
+        if in_step7 and header in (STEP7_HEADER, PLAN_HEADER): continue
         for c in cells(line):
             k = len(STEP7_TAG.findall(c))
             if k > 1: err(f"line {n}: a cell has {k} tags; only the cells of the step 7 solution tables may have more than one: {c[:40]!r}")
@@ -665,33 +670,36 @@ def main(md_path, csv_path):
                 overview_codes.append(c[0])
                 if not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", c[1]):
                     err(f"總覽 row {c[0]}: the 解法 cell must start with the row tag and a short name: {c[1]!r}")
-    # 16b-2. each step 7 solution table has these 7 rows, once each, in this
-    # order, and no other rows (ETBlue, 2026-10-22; see method.md, step 7).
-    # Every cell starts with a tag and has text after the tag. A cell with only
-    # a tag counts as empty. These cells may hold more than one tag (ETBlue,
-    # 2026-10-22; method.md, 標記): each part starts with its own tag, and
-    # each tag has text after it. The 「災害風險」 cell is a list of
-    # disasters, or exactly 「無明顯相關災害風險」 with one tag. The check
-    # does not look at which disasters are listed.
-    STEP7_ROWS = ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "災害風險", "主責單位", "成本／可行性／風險"]
+    # 16b-2. each step 7 solution section (ETBlue, 2026-10-23; method.md,
+    # step 7) has:
+    # - one evaluation table (項目 | 內容) with the rows STEP7_ROWS, once each,
+    #   in this order, and no other rows;
+    # - one plan table (執行計畫 | 內容) with the rows PLAN_ROWS, the same way;
+    # - at most one dependency table (DEPENDENCY_HEADER), checked in 21b;
+    # - no other table.
+    # A cell of the first two tables starts with a tag and has text after the
+    # tag; a cell with only a tag counts as empty. It may hold more than one
+    # tag (ETBlue, 2026-10-22; method.md, 標記): each part starts with its own
+    # tag, and each tag has text after it. A cell may also be one 【待補：…】
+    # item with no tag, for example 「【待補：執行步驟】」. The 「災害風險」 cell
+    # is a list of disasters, or exactly 「無明顯相關災害風險」 with one tag.
+    # The check does not look at which disasters are listed.
     disaster_hint = f" (write the disasters that change this solution, or 「{NO_DISASTER}」)"
     own_folder_name = os.path.basename(os.path.dirname(os.path.abspath(md_path)))
     issue_label = f"#{folder_num[own_folder_name]}" if own_folder_name in folder_num else own_folder_name
-    for line in text.splitlines():
-        m = re.match(r"^### 7\.\d+ 解法 ([A-Z])：", line)
-        if not m: continue
-        where = f"步驟 7 {issue_label} 解法 {m.group(1)}"
-        rows = [c for h, rs in tables(section(text, line) or []) if h[:2] == ["項目", "內容"] for c in rs]
-        if not rows: err(f"{where}: no table with the header 項目 | 內容"); continue
+    step7_dependencies = []  # (code, where, row cells) for 21b
+
+    def check_step7_rows(where, label, rows, wanted):
         names = [c[0] for c in rows if c]
         for name in names:
-            if name not in STEP7_ROWS: err(f"{where}: unknown row 「{name}」 (the rows are: {'、'.join(STEP7_ROWS)})")
-        for name in STEP7_ROWS:
+            if name not in wanted: err(f"{where}: unknown row 「{name}」 in the {label} table (the rows are: {'、'.join(wanted)})")
+        for name in wanted:
             hint = disaster_hint if name == "災害風險" else ""
             found = [c for c in rows if c and c[0] == name]
             if not found: err(f"{where}: no 「{name}」 row{hint}"); continue
             if len(found) > 1: err(f"{where}: two 「{name}」 rows")
             value = found[0][1].strip() if len(found[0]) > 1 else ""
+            if PENDING_ONLY.fullmatch(value): continue
             marks = list(STEP7_TAG.finditer(value))
             starts = bool(marks) and marks[0].start() == 0
             # The text after each tag, up to the next tag.
@@ -699,14 +707,31 @@ def main(md_path, csv_path):
             body = "".join(bodies) if starts else value
             example = NO_DISASTER if name == "災害風險" else "…"
             if not STEP7_TAG.sub("", value).strip(): err(f"{where}: the 「{name}」 cell is empty{hint}")
-            elif not starts: err(f"{where}: the 「{name}」 cell must start with a tag, for example 「`[AI模擬]` {example}」: {value[:30]!r}")
+            elif not starts: err(f"{where}: the 「{name}」 cell must start with a tag, for example 「`[AI模擬]` {example}」, or be one 【待補：…】 item: {value[:30]!r}")
             elif not all(bodies): err(f"{where}: the 「{name}」 cell has a tag with no text after it; each tag needs its own text: {value[:30]!r}")
             elif name == "災害風險" and NO_DISASTER in value and bodies != [NO_DISASTER]:
                 err(f"{where}: write 「{NO_DISASTER}」 alone, with one tag, or list the disasters without it: {body[:30]!r}")
         # The order is checked only when each row is there once and there are
         # no other rows. Otherwise the messages above already say what is wrong.
-        if sorted(names) == sorted(STEP7_ROWS) and names != STEP7_ROWS:
-            err(f"{where}: the rows must be in this order: {'、'.join(STEP7_ROWS)}")
+        if sorted(names) == sorted(wanted) and names != list(wanted):
+            err(f"{where}: the rows of the {label} table must be in this order: {'、'.join(wanted)}")
+
+    for line in text.splitlines():
+        m = re.match(r"^### 7\.\d+ 解法 ([A-Z])：", line)
+        if not m: continue
+        code = m.group(1)
+        where = f"步驟 7 {issue_label} 解法 {code}"
+        found7 = step7_tables(section(text, line) or [])
+        for h, _ in found7["other"]:
+            err(f"{where}: unknown table 「{' | '.join(h)}」 (the tables are: {' | '.join(STEP7_HEADER)}; {' | '.join(PLAN_HEADER)}; and, if needed, {' | '.join(DEPENDENCY_HEADER)})")
+        for kind, header, wanted, label in (("evaluation", STEP7_HEADER, STEP7_ROWS, "evaluation"), ("plan", PLAN_HEADER, PLAN_ROWS, "執行計畫")):
+            if not found7[kind]: err(f"{where}: no table with the header {' | '.join(header)}"); continue
+            if len(found7[kind]) > 1: err(f"{where}: two tables with the header {' | '.join(header)}")
+            check_step7_rows(where, label, found7[kind][0][1], wanted)
+        if len(found7["dependencies"]) > 1: err(f"{where}: two tables with the header {' | '.join(DEPENDENCY_HEADER)}")
+        for _, rows in found7["dependencies"][:1]:
+            if not rows: err(f"{where}: the {DEPENDENCY_TOPIC} table has no rows; remove the table")
+            for c in rows: step7_dependencies.append((code, where, c))
     for code in codes_61:
         if code not in step7_codes: err(f"步驟 7: solution {code} from 6.1 has no section 「### 7.n 解法 {code}：…」")
         if overview is not None and code not in overview_codes: err(f"總覽: solution {code} from 6.1 has no row")
@@ -904,6 +929,29 @@ def main(md_path, csv_path):
     KIND_WHERE = {"story": "step 4", "stakeholder": "step 1", "conflict": conflict_heading(text)[4:], "group": "相同訴求群組",
                   "need": "相同需求群組", "solution": "6.1"}
     own_ids = issue_ids(text)
+
+    def check_ref_row(rw, note, refs_cell):
+        """One row of a table with 說明 and 相關編號 (分析摘要, or a step 7
+        dependency table). 說明 starts with a tag, or is one 【待補：…】 item.
+        A row with a tag has at least one reference. Every reference exists."""
+        tagged = re.match(rf"`\[(?:{TAG_NAMES})\]` \S", note) is not None
+        if not tagged and not re.fullmatch(r"【待補：[^】]+】", note):
+            err(f"{rw}: 說明 must start with a tag in backticks, or be one 【待補：…】 item: {note[:30]!r}")
+        refs_s = split_refs(refs_cell)
+        if tagged and not refs_s:
+            err(f"{rw}: 相關編號 is empty; list the stories, conflicts or solutions the item comes from")
+        for ref in refs_s:
+            p_ = parse_ref(ref)
+            if p_ is None:
+                err(f"{rw}: 「{ref}」 is not a reference (write IDs like I01-US01, I05, C3, W01, N01 or 解法 A, separated by 「、」; 「#n 」 before an ID of another issue)"); continue
+            num, kind, rid = p_
+            if num is None:
+                if rid not in own_ids[kind]: err(f"{rw}: {ref} is not in {KIND_WHERE[kind]} of this issue")
+            else:
+                ids_other = other_issue(ref, num, rid)
+                if ids_other is not None and rid not in ids_other[kind]:
+                    err(f"{rw}: {ref} is not in issue #{num} ({KIND_WHERE[kind]})")
+
     s_lines = summary_lines(text)
     if s_lines is None:
         err(f"{SW}: no heading 「{SUMMARY_HEADING}」")
@@ -924,6 +972,10 @@ def main(md_path, csv_path):
         for name, body in topics:
             where = f"{SW} {name}"
             found = tables(body)
+            # The 相依事項與現行政策的關係 topic keeps only the rows that name
+            # no solution of this issue (ETBlue, 2026-10-23). It may have no
+            # table when every row moved to step 7.
+            if name == DEPENDENCY_TOPIC and not found: continue
             if [h for h, _ in found] != [SUMMARY_HEADER]:
                 err(f"{where}: expected one table with the header {' | '.join(SUMMARY_HEADER)}, found {[' | '.join(h) for h, _ in found]}")
                 continue
@@ -932,25 +984,37 @@ def main(md_path, csv_path):
             for c in rows_s:
                 if len(c) != len(SUMMARY_HEADER): err(f"{where}: row 「{c[0]}」 has {len(c)} cells, expected {len(SUMMARY_HEADER)}"); continue
                 item, note, refs_cell = c
-                rw = f"{where} 「{item}」"
                 if not item: err(f"{where}: a row has an empty 項目")
-                tagged = re.match(rf"`\[(?:{TAG_NAMES})\]` \S", note) is not None
-                if not tagged and not re.fullmatch(r"【待補：[^】]+】", note):
-                    err(f"{rw}: 說明 must start with a tag in backticks, or be one 【待補：…】 item: {note[:30]!r}")
-                refs_s = split_refs(refs_cell)
-                if tagged and not refs_s:
-                    err(f"{rw}: 相關編號 is empty; list the stories, conflicts or solutions the item comes from")
-                for ref in refs_s:
-                    p_ = parse_ref(ref)
-                    if p_ is None:
-                        err(f"{rw}: 「{ref}」 is not a reference (write IDs like I01-US01, I05, C3, W01, N01 or 解法 A, separated by 「、」; 「#n 」 before an ID of another issue)"); continue
-                    num, kind, rid = p_
-                    if num is None:
-                        if rid not in own_ids[kind]: err(f"{rw}: {ref} is not in {KIND_WHERE[kind]} of this issue")
-                    else:
-                        ids_other = other_issue(ref, num, rid)
-                        if ids_other is not None and rid not in ids_other[kind]:
-                            err(f"{rw}: {ref} is not in issue #{num} ({KIND_WHERE[kind]})")
+                check_ref_row(f"{where} 「{item}」", note, refs_cell)
+                codes_s = ref_solutions(split_refs(refs_cell))
+                if name == DEPENDENCY_TOPIC and codes_s:
+                    err(f"{where} 「{item}」: names {'、'.join('解法 ' + x for x in codes_s)}; move the row to the "
+                        f"{DEPENDENCY_TOPIC} table of {'each of these solutions' if len(codes_s) > 1 else 'this solution'} in step 7")
+
+    # 21b. the dependency tables of the step 7 solution sections (16b-2).
+    # Each row is a former 分析摘要 row: 項目, 說明 (one tag, or one 【待補：…】
+    # item) and 相關編號 (references that exist). Its 相關編號 names the
+    # solution of its section. A row that names several solutions is under
+    # each of them, with the same 說明 and 相關編號 (ETBlue, 2026-10-23).
+    dep_copies = defaultdict(list)
+    for code, where, c in step7_dependencies:
+        if len(c) != len(DEPENDENCY_HEADER): err(f"{where}: {DEPENDENCY_TOPIC} row 「{c[0]}」 has {len(c)} cells, expected {len(DEPENDENCY_HEADER)}"); continue
+        item, note, refs_cell = c
+        rw = f"{where} {DEPENDENCY_TOPIC} 「{item}」"
+        if not item: err(f"{where}: a {DEPENDENCY_TOPIC} row has an empty 項目"); continue
+        check_ref_row(rw, note, refs_cell)
+        named = ref_solutions(split_refs(refs_cell))
+        if code not in named: err(f"{rw}: 相關編號 must name 解法 {code} (the solution of this section)")
+        dep_copies[item].append((code, note, refs_cell, named))
+    for item, copies in dep_copies.items():
+        codes_here = [x[0] for x in copies]
+        for code in sorted({x for x in codes_here if codes_here.count(x) > 1}):
+            err(f"步驟 7 {issue_label} 解法 {code}: {DEPENDENCY_TOPIC} 「{item}」 is listed twice")
+        if len({(n, r) for _, n, r, _ in copies}) > 1:
+            err(f"步驟 7 {issue_label}: the copies of {DEPENDENCY_TOPIC} 「{item}」 under {'、'.join('解法 ' + x for x in codes_here)} are not the same; write the same 說明 and 相關編號 under each solution")
+        for code in copies[0][3]:
+            if code in codes_61 and code not in codes_here:
+                err(f"步驟 7 {issue_label} 解法 {code}: {DEPENDENCY_TOPIC} 「{item}」 names 解法 {code}, so it must be in the {DEPENDENCY_TOPIC} table of 解法 {code} too")
 
     # 19. dates (design 3.23.8). issues.csv: an issue with an analysis has a
     # 新增日期 (YYYY-MM-DD, not after today). updated-dates.csv: one row per

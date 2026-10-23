@@ -57,6 +57,25 @@ beforeEach(() => {
   state.issuesReady = true
 })
 
+describe('the home page hero (decision 128)', () => {
+  it('shows the title, the slogan and the description, centered', () => {
+    const html = render()
+    const hero = html.slice(html.indexOf('hero-bg'), html.indexOf('recent-issues'))
+    expect(hero).toContain(`>${t.appTitle}</h1>`)
+    expect(hero).toContain('看見各方利害關係人，打造更體貼周到的市政規劃')
+    expect(hero).toContain('本站整理台北市政策的前期分析，從利害關係人盤點出發，找出市民的需求、訴求、衝突以及可能解法。')
+    // The order: title, slogan, description.
+    const title = hero.indexOf(t.appTitle)
+    const slogan = hero.indexOf(t.slogan)
+    const description = hero.indexOf(t.home.description)
+    expect(title).toBeLessThan(slogan)
+    expect(slogan).toBeLessThan(description)
+    // Centered: the text, and the narrow description block itself.
+    expect(hero).toContain('text-center')
+    expect(hero).toMatch(/<p class="mx-auto [^"]*max-w-3xl/)
+  })
+})
+
 describe('the home page 資料根據', () => {
   it('shows 資料根據 (counts and bar) on each issue card', () => {
     const issues = cards(block(render(), 'recent-issues'))
@@ -83,11 +102,9 @@ describe('the home page 資料根據', () => {
     })
   })
 
-  it('shows the 資料根據 explanation once under each of the two lists', () => {
+  it('does not show the 資料根據 explanation: it is on #/about (decision 128)', () => {
     const html = render()
-    expect(block(html, 'recent-issues')).toContain(t.basis.listNote('議題'))
-    expect(block(html, 'recent-stakeholders')).toContain(t.basis.listNote('利害關係人'))
-    expect(html.split(t.basis.listNote('利害關係人')).length - 1).toBe(1)
+    expect(html).not.toContain(t.about.basisNote)
   })
 
   it('keeps an invisible row in place of the bar while the issue files load', () => {
@@ -97,9 +114,8 @@ describe('the home page 資料根據', () => {
       expect(card).not.toContain(BAR)
       expect(card).toContain('aria-hidden="true" class="invisible')
     }
-    // The cards and the explanation are already there.
+    // The cards are already there.
     expect(cards(html)).toHaveLength(recentStakeholders(index.stakeholders, 5).length)
-    expect(html).toContain(t.basis.listNote('利害關係人'))
   })
 })
 
@@ -161,6 +177,5 @@ describe('the home page solution cards 資料根據 (decision 112)', () => {
       // No share: the summary text may have a 「%」, so look for the share text.
       expect(lis[i]).not.toContain('實證＋AI整理')
     })
-    expect(html).toContain(t.basis.listNote('解法'))
   })
 })

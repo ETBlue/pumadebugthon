@@ -31,9 +31,6 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
   const cross = useCrossIssueOrNull()
   const allCross = stakeholderCrossSolutions(issues, cross, id)
   const shownCross = dataBasedOnly ? stakeholderCrossSolutions(issues, cross, id, true) : allCross
-  // The 資料根據 note is shown once, when some issue shows a solution card.
-  const anySolution = shownCross.length > 0
-    || issues.some((issue) => stakeholderSolutionsView(issue, id, dataBasedOnly).solutions.length > 0)
   return (
     <div className="space-y-10">
       {issues.map((issue) => {
@@ -114,8 +111,6 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
         )
       })}
       {allCross.length > 0 && <CrossSolutionsSection index={index} shown={shownCross} />}
-      {/* The 資料根據 explanation, once under the lists (decision 112). */}
-      {anySolution && <p className="text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>}
     </div>
   )
 }

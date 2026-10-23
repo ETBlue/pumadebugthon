@@ -125,13 +125,12 @@ function SolutionsBody({ index }: { index: IndexFile }) {
       />
       <div className={listBodyClass}>
         <ResultLine {...resultProps} className="mt-3" />
-        {/* The sort note while 資料根據比例 is on. The 資料根據 explanation
-            is part of it, as on #/stakeholders (design 3.23.9). */}
+        {/* The sort note while 資料根據比例 is on (design 3.23.9). The
+            資料根據 explanation is on #/about (decision 128). */}
         {shareOn && (
-          <div id={noteId} className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
-            <p>{tb.sortNotes.evidence}</p>
-            <p>{t.basis.listNote('解法')}</p>
-          </div>
+          <p id={noteId} className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+            {tb.sortNotes.evidence}
+          </p>
         )}
 
         <div className="mt-4">

@@ -73,17 +73,13 @@ function SpaceContent({ index, space }: { index: IndexFile; space: SpaceType }) 
             {summaries.length === 0 ? (
               <p className="mt-2">{tp.issuesNone}</p>
             ) : (
-              <>
-                <ul className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {summaries.map((i) => (
-                    <li key={i.number}>
-                      <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} shared={sharedForCard(index, i)} />
-                    </li>
-                  ))}
-                </ul>
-                {/* The 資料根據 explanation, once under the list (decision 72). */}
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('議題')}</p>
-              </>
+              <ul className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {summaries.map((i) => (
+                  <li key={i.number}>
+                    <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} shared={sharedForCard(index, i)} />
+                  </li>
+                ))}
+              </ul>
             )}
           </section>
 
@@ -148,10 +144,6 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
               </LabelledSection>
             ))
         )}
-        {/* The 資料根據 explanation, once under the list (decision 112). */}
-        {solutions.length > 0 && (
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>
-        )}
       </LabelledSection>
 
       <LabelledSection headingId="space-stakeholders">
@@ -206,8 +198,6 @@ function SpaceDetails({ index, code, issues }: { index: IndexFile; code: string;
                 </ul>
               </LabelledSection>
             ))}
-            {/* The 資料根據 explanation, once under the lists (decision 112). */}
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('利害關係人')}</p>
           </>
         )}
       </LabelledSection>

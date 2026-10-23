@@ -4,8 +4,9 @@ import type { TabLabel } from '@/lib/tabLabel'
 
 export const t = {
   appTitle: '市政提案小幫手',
-  /** Shown under the h1 on the home page, and in the index.html meta description. */
-  appSubtitle: '在提案之前，先看見各方利害關係人的關注',
+  /** The slogan: shown under the h1 on the home page, and in the index.html
+   * meta description (decision 128). */
+  slogan: '看見各方利害關係人，打造更體貼周到的市政規劃',
   /** Between the parts of the page <title>. */
   titleSeparator: ' · ',
   /** Between the items of a short inline list, for example 「#1、#2、#8」. */
@@ -49,6 +50,11 @@ export const t = {
     content: '作者製作的內容：',
     ccBy: '創用 CC 姓名標示 4.0（CC BY 4.0）',
     exceptions: '主辦單位的內容依主辦單位的規定使用。開放資料依各資料集的授權使用。',
+    /** The one 資料根據 explanation of the app (decision 128). The list
+     * pages and the issue tabs do not repeat it. */
+    basisHeading: '資料根據',
+    basisNote: '「資料根據」是分析內容的資料來源組成，不代表議題、利害關係人或解法的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。',
+    basisTags: '「資料根據」依標記把內容分成四種：',
     dataHeading: '下載資料',
     dataIntro: '本站使用的資料，歡迎在授權範圍內再利用。',
     json: 'JSON（本站讀取的檔案）',
@@ -124,8 +130,8 @@ export const t = {
   solutionId: (issueNumber: number, id: string) => `#${issueNumber} ${id}`,
   /** The home page (design 3.1): the hero and three blocks. */
   home: {
-    intro: '這個網站整理臺北市政議題的分析：每個議題有哪些利害關係人、他們想要什麼、彼此有哪些衝突，以及可能的解法。',
-    audience: '想參與政策討論的市民，可以在提出意見之前，先看見其他人的關注。公務員和公民科技社群，也可以依利害關係人或空間，查找以前的分析再利用。',
+    /** The hero text under the slogan (decision 128). */
+    description: '本站整理台北市政策的前期分析，從利害關係人盤點出發，找出市民的需求、訴求、衝突以及可能解法。',
     issuesHeading: '最近更新的議題',
     /** The visible text of the 3 links next to the block headings. */
     all: '看全部',
@@ -284,14 +290,6 @@ export const t = {
     separator: '・',
     totals: (cells: number, stories: number) => `（共 ${cells} 格，來自 ${stories} 則故事）`,
     evidencePercent: (p: number) => `實證 ${p}%`,
-    /** Shown once on the overview tab. */
-    note: '這是分析內容的資料來源組成，不代表議題的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。',
-    /** Shown once on a list page, not on each card. subject: what the list
-     * shows. The home page, the space page and #/issues list issues
-     * (議題); #/stakeholders and #/solutions name their own items
-     * (decision 100). */
-    listNote: (subject: '議題' | '利害關係人' | '解法') =>
-      `「資料根據」是分析內容的資料來源組成，不代表${subject}的重要性或好壞。組織的使用者故事在真人訪談前都標記 [AI模擬]，所以不會到 100%。`,
   },
   /** The 「只看有資料根據」 filter (design 3.5). It keeps [實證] and [AI整理]. */
   dataBasisFilter: {

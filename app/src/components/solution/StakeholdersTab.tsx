@@ -161,10 +161,6 @@ export function StakeholderCoverageParts({
         tp.coveredStakeholdersNone, covered)}
       {part('solution-stakeholders-not-covered', tp.notCoveredStakeholdersHeading, tp.notCoveredStakeholdersIntro,
         tp.notCoveredStakeholdersNone, notCovered)}
-      {/* The 資料根據 explanation, once under the lists (decision 112). */}
-      {covered.length + notCovered.length > 0 && (
-        <p className="text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('利害關係人')}</p>
-      )}
     </div>
   )
 }

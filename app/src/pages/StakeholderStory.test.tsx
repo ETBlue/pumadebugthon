@@ -36,13 +36,14 @@ describe('the story page', () => {
     expect(html).toContain('href="/stakeholders/I06"')
   })
 
-  it('shows 資料根據 on each solution card, and the explanation once under the list', () => {
-    // Only the 解法 section: from its intro line to the explanation line.
-    const part = html.slice(html.indexOf(t.storyPage.solutionsIntro), html.indexOf(t.basis.listNote('解法')))
+  it('shows 資料根據 on each solution card, and no explanation under the list', () => {
+    // Only the 解法 section: from its intro line to the next heading 更多.
+    const part = html.slice(html.indexOf(t.storyPage.solutionsIntro), html.indexOf(t.storyPage.moreHeading))
     // A compact SolutionCard is a div with these classes.
     const cards = part.split('class="rounded-md border p-3"').length - 1
     expect(cards).toBeGreaterThan(0)
     expect(part.split(t.solutionsList.basis).length - 1).toBe(cards)
-    expect(html.split(t.basis.listNote('解法')).length - 1).toBe(1)
+    // The 資料根據 explanation is on #/about only (decision 128).
+    expect(html).not.toContain(t.about.basisNote)
   })
 })

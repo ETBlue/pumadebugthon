@@ -111,12 +111,13 @@ export default function Issues() {
       />
       <div className={listBodyClass}>
         {resultLine(true, 'mt-3')}
-        {/* The notes (design 3.23.1): the sort note while the share sort is
-            on, and the 資料根據 note, once on the page, not on each card. */}
-        <div className={`mt-2 space-y-1 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
-          {evidenceSort && <p id={noteId}>{tb.sortNotes.evidence}</p>}
-          <p>{t.basis.listNote('議題')}</p>
-        </div>
+        {/* The sort note while the share sort is on (design 3.23.1). The
+            資料根據 explanation is on #/about (decision 128). */}
+        {evidenceSort && (
+          <p id={noteId} className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>
+            {tb.sortNotes.evidence}
+          </p>
+        )}
         <div className="mt-4">
           {index.status !== 'ready' ? (
             <LoadState state={index} />

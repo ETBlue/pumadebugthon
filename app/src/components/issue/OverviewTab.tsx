@@ -31,7 +31,6 @@ export function OverviewTab({ index, summary, issue }: IssueTabProps) {
         <div className="mt-2">
           <CellBasis cells={c.cells} stories={c.stories} />
         </div>
-        <p className={`mt-2 text-sm leading-relaxed text-muted-foreground ${proseClass}`}>{t.basis.note}</p>
       </section>
 
       <section aria-labelledby="legend-heading">

@@ -201,22 +201,18 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
         {result.solutions.length === 0 ? (
           <p className="mt-2">{to.solutionsNone}</p>
         ) : (
-          <>
-            <ul className="mt-2 space-y-3">
-              {result.solutions.map((sol) => (
-                <li key={sol.id}>
-                  <SolutionCard variant="compact" solution={sol} issueNumber={n}>
-                    {/* The cells of the needs it covers (decision 112). */}
-                    <dl className="mt-2 text-sm">
-                      <CoveredBasisField basis={{ cells: solutionCells(issue, sol), percent: null }} />
-                    </dl>
-                  </SolutionCard>
-                </li>
-              ))}
-            </ul>
-            {/* The 資料根據 explanation, once under the list (decision 112). */}
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>
-          </>
+          <ul className="mt-2 space-y-3">
+            {result.solutions.map((sol) => (
+              <li key={sol.id}>
+                <SolutionCard variant="compact" solution={sol} issueNumber={n}>
+                  {/* The cells of the needs it covers (decision 112). */}
+                  <dl className="mt-2 text-sm">
+                    <CoveredBasisField basis={{ cells: solutionCells(issue, sol), percent: null }} />
+                  </dl>
+                </SolutionCard>
+              </li>
+            ))}
+          </ul>
         )}
       </section>
 
@@ -240,8 +236,6 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
                 </li>
               ))}
             </ul>
-            {/* The 資料根據 explanation, once under the list (decision 112). */}
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('利害關係人')}</p>
           </>
         )}
       </section>

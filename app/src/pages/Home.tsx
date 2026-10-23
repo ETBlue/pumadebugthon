@@ -33,15 +33,12 @@ export default function Home() {
     <>
       <PageTitle />
       {/* The hero colors are tokens in index.css (.hero-bg). No disclaimer
-          here: it is in the footer. */}
+          here: it is in the footer. The hero is centered (decision 128). */}
       <div className="hero-bg border-b">
-        <div className={`${containerClass} py-10 md:py-16`}>
+        <div className={`${containerClass} py-10 text-center md:py-16`}>
           <h1 className="text-3xl font-bold md:text-4xl">{t.appTitle}</h1>
-          <p className="mt-2 text-lg font-medium md:text-xl">{t.appSubtitle}</p>
-          <div className={`mt-5 space-y-2 leading-relaxed ${proseClass}`}>
-            <p>{th.intro}</p>
-            <p>{th.audience}</p>
-          </div>
+          <p className="mt-2 text-lg font-medium md:text-xl">{t.slogan}</p>
+          <p className={`mx-auto mt-5 leading-relaxed ${proseClass}`}>{th.description}</p>
         </div>
       </div>
       <div className={`${containerClass} py-8`}>
@@ -86,17 +83,13 @@ function HomeBlocks({ index }: { index: IndexFile }) {
           {issues.length === 0 ? (
             <p>{th.issuesNone}</p>
           ) : (
-            <>
-              <ul className="space-y-3">
-                {issues.map((issue) => (
-                  <li key={issue.number}>
-                    <IssueCard variant="compact" issue={issue} spaceTypes={index.spaceTypes} shared={sharedForCard(index, issue)} />
-                  </li>
-                ))}
-              </ul>
-              {/* The 資料根據 explanation, once under the list (decision 72). */}
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('議題')}</p>
-            </>
+            <ul className="space-y-3">
+              {issues.map((issue) => (
+                <li key={issue.number}>
+                  <IssueCard variant="compact" issue={issue} spaceTypes={index.spaceTypes} shared={sharedForCard(index, issue)} />
+                </li>
+              ))}
+            </ul>
           )}
         </Block>
 
@@ -104,34 +97,30 @@ function HomeBlocks({ index }: { index: IndexFile }) {
           {stakeholders.length === 0 ? (
             <p>{th.stakeholdersNone}</p>
           ) : (
-            <>
-              <ul className="space-y-3">
-                {stakeholders.map((s) => (
-                  <li key={s.id}>
-                    <StakeholderCard variant="compact" stakeholder={s}>
-                      <dl className="mt-1 space-y-1 text-sm">
-                        {s.issues.length > 0 && (
-                          <Field label={th.issues}>
-                            {/* With the titles, one per line (decision 112). */}
-                            <IssueTitleLinks numbers={s.issues} titles={index.issues} to={(n) => `/issues/${n}`} />
-                          </Field>
-                        )}
-                        {/* 資料根據 needs the issue files (decision 107). The bar
-                            counts every analyzed issue, so the label says so,
-                            as on #/stakeholders (ETBlue, 2026-10-22). */}
-                        <BasisField
-                          cells={issueFiles.status === 'ready' ? stakeholderCells(issueFiles.data, s.id) : null}
-                          label={t.stakeholdersList.basis}
-                        />
-                        <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
-                      </dl>
-                    </StakeholderCard>
-                  </li>
-                ))}
-              </ul>
-              {/* The 資料根據 explanation, once under the list (decision 107). */}
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('利害關係人')}</p>
-            </>
+            <ul className="space-y-3">
+              {stakeholders.map((s) => (
+                <li key={s.id}>
+                  <StakeholderCard variant="compact" stakeholder={s}>
+                    <dl className="mt-1 space-y-1 text-sm">
+                      {s.issues.length > 0 && (
+                        <Field label={th.issues}>
+                          {/* With the titles, one per line (decision 112). */}
+                          <IssueTitleLinks numbers={s.issues} titles={index.issues} to={(n) => `/issues/${n}`} />
+                        </Field>
+                      )}
+                      {/* 資料根據 needs the issue files (decision 107). The bar
+                          counts every analyzed issue, so the label says so,
+                          as on #/stakeholders (ETBlue, 2026-10-22). */}
+                      <BasisField
+                        cells={issueFiles.status === 'ready' ? stakeholderCells(issueFiles.data, s.id) : null}
+                        label={t.stakeholdersList.basis}
+                      />
+                      <Field label={th.added}><time dateTime={s.added}>{s.added}</time></Field>
+                    </dl>
+                  </StakeholderCard>
+                </li>
+              ))}
+            </ul>
           )}
         </Block>
 
@@ -168,42 +157,38 @@ function RecentSolutionList({ index, issues, cross }: {
   if (solutions.length === 0) return <p>{th.solutionsNone}</p>
   const added = (date: string) => <Field label={th.solutionAdded}><time dateTime={date}>{date}</time></Field>
   return (
-    <>
-      <ul className="space-y-3">
-        {solutions.map((item) => {
-          if (item.kind === 'cross') {
-            const cells = cross === null ? null : crossSolutionCells(cross, item.solution, issues)
-            return (
-              <li key={item.solution.code}>
-                <CrossSolutionCard solution={item.solution} issueTitles={index.issues}>
-                  <dl className="mt-1 space-y-1 text-sm">
-                    {cells && <CoveredBasisField basis={{ cells, percent: null }} />}
-                    {added(item.solution.added)}
-                  </dl>
-                </CrossSolutionCard>
-              </li>
-            )
-          }
-          const issue = issues.find((i) => i.number === item.issueNumber)
+    <ul className="space-y-3">
+      {solutions.map((item) => {
+        if (item.kind === 'cross') {
+          const cells = cross === null ? null : crossSolutionCells(cross, item.solution, issues)
           return (
-            <li key={`${item.issueNumber}-${item.solution.id}`}>
-              <SolutionCard variant="compact" solution={item.solution} issueNumber={item.issueNumber} showIssue>
-                <dl className="mt-2 space-y-1 text-sm">
-                  <Field label={th.solutionIssue}>
-                    <Link to={tabPath(item.issueNumber, 'overview')} className={linkClass}>
-                      {issueNumberTitle(index.issues, item.issueNumber)}
-                    </Link>
-                  </Field>
-                  {issue && <CoveredBasisField basis={{ cells: solutionCells(issue, item.solution), percent: null }} />}
+            <li key={item.solution.code}>
+              <CrossSolutionCard solution={item.solution} issueTitles={index.issues}>
+                <dl className="mt-1 space-y-1 text-sm">
+                  {cells && <CoveredBasisField basis={{ cells, percent: null }} />}
                   {added(item.solution.added)}
                 </dl>
-              </SolutionCard>
+              </CrossSolutionCard>
             </li>
           )
-        })}
-      </ul>
-      {/* The 資料根據 explanation, once under the list (decision 112). */}
-      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>
-    </>
+        }
+        const issue = issues.find((i) => i.number === item.issueNumber)
+        return (
+          <li key={`${item.issueNumber}-${item.solution.id}`}>
+            <SolutionCard variant="compact" solution={item.solution} issueNumber={item.issueNumber} showIssue>
+              <dl className="mt-2 space-y-1 text-sm">
+                <Field label={th.solutionIssue}>
+                  <Link to={tabPath(item.issueNumber, 'overview')} className={linkClass}>
+                    {issueNumberTitle(index.issues, item.issueNumber)}
+                  </Link>
+                </Field>
+                {issue && <CoveredBasisField basis={{ cells: solutionCells(issue, item.solution), percent: null }} />}
+                {added(item.solution.added)}
+              </dl>
+            </SolutionCard>
+          </li>
+        )
+      })}
+    </ul>
   )
 }

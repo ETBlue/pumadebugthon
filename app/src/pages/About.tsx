@@ -3,12 +3,14 @@ import { AUTHOR_POSTS, CONTENT_LICENSE_URL, EVENT_URL, LICENSE_URL, METHOD_URL, 
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { linkClass, proseClass } from '@/components/styles'
+import { TagBadge, type TagKind } from '@/components/TagBadge'
 import { useCrossIssueOrNull, useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { dataFileLinks, type DataFileLink } from '@/lib/dataFiles'
 
 const ta = t.about
 const external = { rel: 'noopener noreferrer' }
+const TAG_KINDS: TagKind[] = ['實證', 'AI整理', 'AI模擬', 'pending']
 
 function Part({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
@@ -52,8 +54,8 @@ function DataFiles() {
 }
 
 /** #/about: 關於本站 (design 3.13). The event page, the source code, the
- * licenses, the data files and the author's related posts. The header has
- * no link here; the footer has. */
+ * licenses, the 資料根據 explanation (decision 128), the data files and the
+ * author's related posts. The header has no link here; the footer has. */
 export default function About() {
   return (
     <>
@@ -86,6 +88,21 @@ export default function About() {
             </li>
             <li>{ta.exceptions}</li>
           </ul>
+        </Part>
+
+        {/* The one 資料根據 explanation of the app (decision 128). The tag
+            meanings are the same strings as the legend on the 總覽 tab. */}
+        <Part id="about-basis" title={ta.basisHeading}>
+          <p>{ta.basisNote}</p>
+          <p className="mt-3">{ta.basisTags}</p>
+          <dl className="mt-2 space-y-2">
+            {TAG_KINDS.map((kind) => (
+              <div key={kind} className="flex flex-col gap-1 md:flex-row md:items-baseline md:gap-3">
+                <dt className="shrink-0 md:w-20"><TagBadge kind={kind} /></dt>
+                <dd>{t.overview.legend[kind]}</dd>
+              </div>
+            ))}
+          </dl>
         </Part>
 
         <Part id="about-data" title={ta.dataHeading}>

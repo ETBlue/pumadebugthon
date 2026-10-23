@@ -224,8 +224,6 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
                   </li>
                 ))}
               </ul>
-              {/* The 資料根據 explanation, once under the list (decisions 72 and 112). */}
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t.basis.listNote('解法')}</p>
             </>
           )}
         </Section>

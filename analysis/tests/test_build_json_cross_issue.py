@@ -113,10 +113,12 @@ class CrossIssueJsonTest(unittest.TestCase):
                          [{"text": "分開設置後，清潔箱或吸菸區可能離人多的地方遠一些；菸蒂收集設備需要維護（#8）",
                            "tag": "AI模擬", "pending": False}])
         self.assertTrue(e["evaluation"]["disasters"][0]["text"].startswith("負壓式吸菸區停電時無法排氣"))
-        # The issue files do not give these for a combined solution yet.
+        # 可行性 lists the 可行性 of each part (#2 解法 A, #2 解法 B, #8 解法 B).
         self.assertEqual(e["evaluation"]["feasibility"],
-                         [{"text": "【待補：整理組成解法的可行性】", "tag": None, "pending": True}])
-        self.assertEqual(e["plan"]["steps"], [{"text": "【待補：執行步驟】", "tag": None, "pending": True}])
+                         [{"text": "#2 解法 A：可行性高；#2 解法 B：QR 回報可行性高，感測器試點可行性中；#8 解法 B：可行性中",
+                           "tag": "AI模擬", "pending": False}])
+        self.assertEqual(e["plan"]["steps"][0]["tag"], "AI模擬")
+        self.assertTrue(e["plan"]["steps"][0]["text"].startswith("第一步："))
 
     def test_summary_rows_of_a_solution(self):
         # The 可能的爭議 and 法規上的障礙 rows whose 相關編號 names 「解法 X-A」.

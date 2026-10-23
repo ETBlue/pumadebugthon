@@ -251,8 +251,15 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("4.5 X-E: the 「災害風險」 cell must start with a tag and text")
 
     def test_plan_row_order(self):
-        self.edit("| 成本 | 【待補：整理組成解法的成本】 |\n| 執行步驟 | 【待補：執行步驟】 |\n\n| 相依事項與現行政策的關係 | 說明 | 相關編號 |\n|---|---|---|\n| 以各議題的解法為基礎 | `[AI模擬]` 合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。 | 解法 X-A、解法 X-B、解法 X-C、解法 X-D、解法 X-E、解法 X-F、解法 X-G、解法 X-H、解法 X-I、解法 X-J、解法 X-K |\n\n### 4.5.6",
-                  "| 執行步驟 | 【待補：執行步驟】 |\n| 成本 | 【待補：整理組成解法的成本】 |\n\n| 相依事項與現行政策的關係 | 說明 | 相關編號 |\n|---|---|---|\n| 以各議題的解法為基礎 | `[AI模擬]` 合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。 | 解法 X-A、解法 X-B、解法 X-C、解法 X-D、解法 X-E、解法 X-F、解法 X-G、解法 X-H、解法 X-I、解法 X-J、解法 X-K |\n\n### 4.5.6")
+        # Swap the 成本 and 執行步驟 rows of X-E.
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        start = text.index("### 4.5.5 解法 X-E：")
+        end = text.index("### 4.5.6", start)
+        lines = text[start:end].split("\n")
+        cost = next(l for l in lines if l.startswith("| 成本 | "))
+        steps = next(l for l in lines if l.startswith("| 執行步驟 | "))
+        self.edit(cost + "\n" + steps + "\n", steps + "\n" + cost + "\n")
         self.assertFails("4.5 X-E: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本、執行步驟")
 
     def test_dependency_copy_missing(self):

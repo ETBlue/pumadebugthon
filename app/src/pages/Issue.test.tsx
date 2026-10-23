@@ -197,7 +197,7 @@ describe('the issue page tabs', () => {
 /** The row names of a topic tab, in order. */
 function rowNames(html: string): string[] {
   const list = /<ul aria-label="[^"]*"[^>]*>([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? ''
-  return [...list.matchAll(/<p class="font-medium">([^<]*)<\/p>/g)].map((m) => m[1])
+  return [...list.matchAll(/<h3 class="[^"]*">([^<]*)<\/h3>/g)].map((m) => m[1])
 }
 
 /** The HTML of the menu box of the 利害關係人 tab (decision 115). */
@@ -284,6 +284,14 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
     expect(html).toMatch(/aria-pressed="false"/)
     expect(html.indexOf('只看有資料根據')).toBeLessThan(html.indexOf('<ul aria-label='))
     expect(html).not.toContain('清除篩選')
+  })
+
+  it('shows the rows as an article: one column, a heading each, no card box (decision 134)', () => {
+    const html = render('/issues/8/legal')
+    const list = /<ul aria-label="[^"]*" class="([^"]*)"[^>]*>([\s\S]*?)<\/ul>/.exec(html)
+    expect(list?.[1]).not.toMatch(/grid/)
+    expect(list?.[2]).not.toMatch(/rounded-md border/)
+    expect(rowNames(html).length).toBeGreaterThan(0)
   })
 
   it('shows every row when the filter is off', () => {

@@ -59,7 +59,7 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.out, "issues", "2-trashcans.json")))
 
     def test_top_level_fields(self):
-        self.assertEqual(self.data["issues"], [1, 2, 8, 9])
+        self.assertEqual(self.data["issues"], [1, 2, 3, 4, 5, 6, 8, 9])
         for key in ("title", "updated", "spaces", "summary", "sharedStakeholders", "repeatedNeeds", "focusGroups",
                     "needGroups", "conflicts", "solutions", "solutionFocus", "pending"):
             self.assertIn(key, self.data)
@@ -68,18 +68,22 @@ class CrossIssueJsonTest(unittest.TestCase):
 
     def test_shared_stakeholders(self):
         shared = self.data["sharedStakeholders"]
-        self.assertEqual(len(shared), 18)
+        self.assertEqual(len(shared), 39)
         o03 = next(s for s in shared if s["id"] == "O03")
-        self.assertEqual(o03["issues"], [2, 8])
+        self.assertEqual(o03["issues"], [2, 3, 8])
         self.assertIn({"issue": 8, "id": "O03-US01"}, o03["stories"])
-        # I04 is shared by #2 and #9 only.
+        self.assertIn({"issue": 3, "id": "O03-US02"}, o03["stories"])
+        # I04 is in #2, #4, #5, #6 and #9 (one story in each).
         i04 = next(s for s in shared if s["id"] == "I04")
-        self.assertEqual(i04["issues"], [2, 9])
-        self.assertEqual(i04["stories"], [{"issue": 2, "id": "I04-US01"}, {"issue": 9, "id": "I04-US01"}])
-        # I27 is shared by #8 and #9 (#9 added it for the 呼吸道疾病 group, 2026-10-20).
+        self.assertEqual(i04["issues"], [2, 4, 5, 6, 9])
+        self.assertEqual(i04["stories"], [{"issue": n, "id": "I04-US01"} for n in (2, 4, 5, 6, 9)])
+        # I27 is in #3, #4, #8 and #9 (#9 added it for the 呼吸道疾病 group, 2026-10-20).
         i27 = next(s for s in shared if s["id"] == "I27")
-        self.assertEqual(i27["issues"], [8, 9])
+        self.assertEqual(i27["issues"], [3, 4, 8, 9])
         self.assertIn({"issue": 9, "id": "I27-US02"}, i27["stories"])
+        # I37 is shared by #3 and #6 only (added with #3–#6 on 2026-10-23).
+        i37 = next(s for s in shared if s["id"] == "I37")
+        self.assertEqual(i37["issues"], [3, 6])
 
     def test_issue_9_part_has_no_space(self):
         # #9 uses no city space. X-D gets its spaces from its other parts.

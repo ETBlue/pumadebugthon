@@ -53,7 +53,9 @@ interface CommonProps {
  *   解法涵蓋 and 更新日期 (design 3.23.9).
  * - compact: short lists (home page, solution page, space page, opinion
  *   check). A small card, so it shows no date (decision 132).
- * The detailed variants show 更新日期 and never 新增日期 (decision 131). */
+ * Only the detailed card with listFields shows 更新日期 (decision 131). The
+ * card with entries (the issue page) and the compact card show no date
+ * (decision 132). */
 export type StakeholderCardProps =
   | (CommonProps & {
       variant: 'detailed'
@@ -95,11 +97,6 @@ export function StakeholderCard(props: StakeholderCardProps) {
         <ListFields stakeholder={s} fields={props.listFields} />
       )}
       {children}
-      {/* The detailed card with entries shows 更新日期 last, after children
-          (decision 131). The compact card is small and shows no date (decision 132). */}
-      {props.variant === 'detailed' && props.entries !== undefined && s.updated && (
-        <dl className="mt-1 text-sm"><UpdatedField updated={s.updated} /></dl>
-      )}
     </article>
   )
 }

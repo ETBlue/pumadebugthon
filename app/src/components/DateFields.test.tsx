@@ -83,10 +83,10 @@ describe('the full-size cards show only 更新日期 (decision 131), the small c
     ))
   })
 
-  it('StakeholderCard: the detailed variants show 更新日期, the compact one no date', () => {
+  it('StakeholderCard: only the listFields variant shows 更新日期', () => {
     expectNoDate(html(<StakeholderCard variant="compact" stakeholder={stakeholder} />))
     expectNoDate(html(<StakeholderCard variant="compact" stakeholder={stakeholder}><p>CHILD</p></StakeholderCard>))
-    expectUpdatedOnly(html(<StakeholderCard variant="detailed" stakeholder={stakeholder} entries={[]} />))
+    expectNoDate(html(<StakeholderCard variant="detailed" stakeholder={stakeholder} entries={[]} />))
     const listFields = {
       path: '', issues: [], issueTitles: index.issues, cells: { evidence: 0, aiSummary: 0, aiSimulated: 0, pending: 0 },
       evidencePercent: null, needs: { covered: 0, total: 0 }, solutionsPercent: null,
@@ -97,9 +97,8 @@ describe('the full-size cards show only 更新日期 (decision 131), the small c
     expect(card.split(t.dates.updated).length - 1).toBe(1)
   })
 
-  it('StakeholderCard with entries shows 更新日期 after children', () => {
-    const card = html(<StakeholderCard variant="detailed" stakeholder={stakeholder} entries={[]}><p>CHILD</p></StakeholderCard>)
-    expect(card.indexOf('CHILD')).toBeLessThan(card.indexOf(t.dates.updated))
+  it('StakeholderCard with entries and children shows no date (issue page)', () => {
+    expectNoDate(html(<StakeholderCard variant="detailed" stakeholder={stakeholder} entries={[]}><p>CHILD</p></StakeholderCard>))
   })
 
   it('SolutionCard: the detailed variant shows 更新日期, the compact one no date', () => {

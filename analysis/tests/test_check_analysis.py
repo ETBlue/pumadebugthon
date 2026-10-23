@@ -99,7 +99,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("solution D", "parking")
 
     def test_wrong_issue_value(self):
-        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 3 4 8 9,", "I05,高齡者,res,高齡,2,")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 3 4 5 8 9,", "I05,高齡者,res,高齡,2,")
         self.assertFails("I05", "議題")
 
     def test_moved_id_must_have_empty_issue_value(self):
@@ -457,11 +457,11 @@ class CheckAnalysisTest(unittest.TestCase):
         for wrong in ("2026/10/18", "", "2026-13-01"):
             with self.subTest(wrong=wrong):
                 self.tearDown(); self.setUp()
-                self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 3 4 8 9,,2026-10-18", f"I05,高齡者,res,高齡,1 2 3 4 8 9,,{wrong}")
+                self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 3 4 5 8 9,,2026-10-18", f"I05,高齡者,res,高齡,1 2 3 4 5 8 9,,{wrong}")
                 self.assertFails("stakeholders.csv: I05 新增日期")
 
     def test_stakeholders_csv_future_date_fails(self):
-        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 3 4 8 9,,2026-10-18", "I05,高齡者,res,高齡,1 2 3 4 8 9,,2999-01-01")
+        self.edit("data/stakeholders.csv", "I05,高齡者,res,高齡,1 2 3 4 5 8 9,,2026-10-18", "I05,高齡者,res,高齡,1 2 3 4 5 8 9,,2999-01-01")
         self.assertFails("stakeholders.csv: I05 新增日期 2999-01-01", "future")
 
     def test_solution_date_passes(self):
@@ -681,10 +681,10 @@ class CheckAnalysisTest(unittest.TestCase):
     # open-data.csv lists every open dataset (data.gov.tw, data.taipei) cited in
     # an appendix, and each row lists the issues whose appendix cites it.
     SMOKE_ROW = "臺北市指定吸菸區,https://data.gov.tw/dataset/177504,臺北市政府衛生局,政府資料開放授權條款第 1 版,8\n"
-    PETITION_ROW = "https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf,臺北市政府研究發展考核委員會,政府資料開放授權條款第 1 版,2 3 4 8\n"
+    PETITION_ROW = "https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf,臺北市政府研究發展考核委員會,政府資料開放授權條款第 1 版,2 3 4 5 8\n"
 
     def test_open_data_passes_for_each_issue(self):
-        for folder in ("1-trees", "2-trashcans", "3-mice", "4-neihutraffic", "8-smokefree"):
+        for folder in ("1-trees", "2-trashcans", "3-mice", "4-neihutraffic", "5-busroutes", "8-smokefree"):
             with self.subTest(folder=folder):
                 code, out = self.run_check(folder)
                 self.assertEqual(code, 0, out)
@@ -694,7 +694,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("open-data.csv", "https://data.gov.tw/dataset/177504", folder="8-smokefree")
 
     def test_open_data_row_missing_an_issue(self):
-        self.edit("data/open-data.csv", self.PETITION_ROW, self.PETITION_ROW.replace(",2 3 4 8\n", ",2 3 4\n"))
+        self.edit("data/open-data.csv", self.PETITION_ROW, self.PETITION_ROW.replace(",2 3 4 5 8\n", ",2 3 4 5\n"))
         self.assertFails("open-data.csv", "cb423c17", folder="8-smokefree")
 
     def test_open_data_row_not_in_appendix(self):

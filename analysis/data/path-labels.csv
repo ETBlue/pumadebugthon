@@ -20,6 +20,7 @@ gov-local-taipei-ded,產業發展局
 gov-local-taipei-ded-market,市場處
 gov-local-taipei-doh,衛生局
 gov-local-taipei-doit,資訊局
+gov-local-taipei-dol,勞動局
 gov-local-taipei-dorts,捷運工程局
 gov-local-taipei-dot,交通局
 gov-local-taipei-dot-parking,停車管理工程處
@@ -45,6 +46,7 @@ gov-local-taipei-rdec-rd,研究發展組
 gov-local-taipei-udd,都市發展局
 ind,產業
 ind-assoc,產業團體
+ind-bus,公車客運業
 ind-construction,營造業
 ind-events,活動產業
 ind-food,餐飲業
@@ -59,6 +61,7 @@ mov,用路人
 ngo,公民團體
 ngo-animal,動物保護與生態保育團體
 ngo-environment,環保團體
+ngo-labor,勞工團體
 res,居民
 soe,公營事業
 soe-taipei,臺北市

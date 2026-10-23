@@ -107,7 +107,7 @@ export type SolutionCardProps =
 export function SolutionCard(props: SolutionCardProps) {
   const { solution: sol, issueNumber, showIssue = false, children } = props
   return (
-    <div className="rounded-md border p-3">
+    <div className="h-full rounded-md border p-3">
       <p className="font-medium">
         <SolutionTitleLink solution={sol} issueNumber={issueNumber} showIssue={showIssue} />
       </p>

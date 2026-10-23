@@ -40,7 +40,7 @@ describe('the story page', () => {
     // Only the 解法 section: from its intro line to the next heading 更多.
     const part = html.slice(html.indexOf(t.storyPage.solutionsIntro), html.indexOf(t.storyPage.moreHeading))
     // A compact SolutionCard is a div with these classes.
-    const cards = part.split('class="rounded-md border p-3"').length - 1
+    const cards = part.split('class="h-full rounded-md border p-3"').length - 1
     expect(cards).toBeGreaterThan(0)
     expect(part.split(t.solutionsList.basis).length - 1).toBe(cards)
     // The 資料根據 explanation is on #/about only (decision 128).

@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react'
+import { useId, useMemo, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { BasisField } from '@/components/BasisField'
 import { DateFields } from '@/components/DateFields'
@@ -7,13 +7,17 @@ import { LabelledSection } from '@/components/LabelledSection'
 import { AlsoInLine } from '@/components/issue/AlsoIn'
 import { IssueCard } from '@/components/IssueCard'
 import { IssueTitleLinks } from '@/components/IssueTitleLinks'
+import type { ListBarFilter } from '@/components/ListBar'
 import { LoadState } from '@/components/LoadState'
 import { PageBand, PageBody } from '@/components/PageBand'
 import { PageTabs } from '@/components/PageTabs'
 import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
+import { SpaceTabMenu, useSpaceTabState } from '@/components/SpaceTabMenu'
+import { ResultLine } from '@/components/ResultLine'
+import { StakeholderPicker } from '@/components/StakeholderPicker'
 import { StakeholderCard } from '@/components/StakeholderCard'
-import { linkClass } from '@/components/styles'
+import { cardGridClass, linkClass } from '@/components/styles'
 import { useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { PageTitle } from '@/components/PageTitle'
@@ -23,9 +27,14 @@ import { parseSpaceTab, SPACE_TABS, spaceTabPath, type SpaceTab } from '@/lib/en
 import { availableIssues, sharedForCard } from '@/lib/issues'
 import {
   findSpaceType, issuesBySpace, otherSpaces, solutionsBySpace, spaceStakeholderCount, stakeholdersBySpace,
-  stakeholdersInSeveralIssues,
 } from '@/lib/spaces'
+import type { ListState } from '@/lib/listParams'
+import {
+  groupByIssue, spaceSolutionIssues, spaceSolutionItems, spaceSolutionsView, spaceStakeholderIssues,
+  spaceStakeholdersView, spaceTabFiltered,
+} from '@/lib/spaceTabs'
 import { findStakeholder } from '@/lib/stakeholders'
+import { cn } from '@/lib/utils'
 import type { TabLabel } from '@/lib/tabLabel'
 import type { AvailableIssueSummary, IndexFile, IssueFile, SpaceType } from '@/types'
 
@@ -148,11 +157,12 @@ function SpaceOverview({ space }: { space: SpaceType }) {
   )
 }
 
-/** The 議題 tab: the issues that use the space, as compact cards. */
+/** The 議題 tab: the issues that use the space, as compact cards in the
+ * card grid of the tabs (cardGridClass, decision 138). */
 function IssuesTab({ index, summaries }: { index: IndexFile; summaries: AvailableIssueSummary[] }) {
   if (summaries.length === 0) return <p>{tp.issuesNone}</p>
   return (
-    <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <ul className={cardGridClass}>
       {summaries.map((i) => (
         <li key={i.number}>
           <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} shared={sharedForCard(index, i)} />
@@ -166,24 +176,97 @@ function IssuesTab({ index, summaries }: { index: IndexFile; summaries: Availabl
 const issueTitle = (issues: IssueFile[], n: number) =>
   t.issueCard.numberTitle(n, issues.find((i) => i.number === n)?.title ?? '')
 
+/** The 議題 filter of a space tab: one choice per issue of the tab, with
+ * its title (no 「跨議題」). The same look and text as on the list pages. */
+function issueFilter(index: IndexFile, state: ListState, numbers: number[]): ListBarFilter {
+  return {
+    kind: 'choices',
+    key: 'issue',
+    label: t.solutionsList.issueFilter,
+    options: numbers.map((n) => ({
+      value: String(n),
+      label: t.solutionsList.issueOption(n, index.issues.find((i) => i.number === n)?.title ?? ''),
+    })),
+    value: state.issues.map(String),
+    none: t.listBar.all,
+    next: (v) => ({ ...state, issues: v.map(Number) }),
+  }
+}
+
+/** The 議題 part of the result line: 「議題：#1、#2」, or nothing. */
+const issuePart = (state: ListState) =>
+  state.issues.length > 0
+    ? [t.listBar.filterPart(t.solutionsList.issueFilter, state.issues.map(t.solutionsList.issueShort))]
+    : []
+
+/** The text when the filters and the search leave nothing (design 3.23.6).
+ * 「清除篩選」 is in the result line above it. */
+function noneText(state: ListState, none: string, noun: string): string {
+  if (state.q === null) return none
+  const filtersOn = state.issues.length > 0 || state.who !== null || state.specialOnly
+  return filtersOn ? t.listSearch.noMatchFiltered(state.q, noun) : t.listSearch.noMatch(state.q, noun)
+}
+
+/** The sort note while a share sort is on (design 3.23.3). */
+function SortNote({ id, state }: { id: string; state: ListState }) {
+  if (state.sort !== 'evidence' && state.sort !== 'solutions') return null
+  return <p id={id} className="mt-2 text-sm leading-relaxed text-muted-foreground">{t.listBar.sortNotes[state.sort]}</p>
+}
+
 /** The 解法 tab: every solution, from every issue, that uses the space,
- * grouped by issue. */
+ * grouped by issue. The menu bar (decision 138) has the sort, the filters
+ * and the search of #/solutions: 排序 (最近更新, 最近新增, 資料根據比例),
+ * 議題, 利害關係人 and the search. Inside each issue group the solutions
+ * follow the sort. */
 function SolutionsTab({ index, code, issues }: { index: IndexFile; code: string; issues: IssueFile[] }) {
-  const solutions = solutionsBySpace(issues, code)
-  const sorted = [...issues].sort((a, b) => a.number - b.number)
-  if (solutions.length === 0) return <p>{tp.solutionsNone}</p>
+  const items = useMemo(() => spaceSolutionItems(issues, code), [issues, code])
+  const numbers = useMemo(() => spaceSolutionIssues(issues, code), [issues, code])
+  // The picker lists only the stakeholders of the solutions of this space.
+  const ids = useMemo(() => [...new Set(stakeholdersBySpace(issues, code).flatMap((e) => e.stakeholders))], [issues, code])
+  const { state, go } = useSpaceTabState('solutions', index, numbers)
+  const noteId = useId()
+  const shown = useMemo(() => spaceSolutionsView(items, state, issues), [items, state, issues])
+  if (items.length === 0) return <p>{tp.solutionsNone}</p>
+
+  const filters: ListBarFilter[] = [
+    issueFilter(index, state, numbers),
+    {
+      kind: 'slot',
+      key: 'who',
+      active: state.who !== null,
+      render: (place) => (
+        <StakeholderPicker
+          stakeholders={index.stakeholders}
+          pathLabels={index.pathLabels}
+          value={state.who}
+          ids={ids}
+          place={place}
+          className="max-w-full"
+        />
+      ),
+    },
+  ]
+  const who = state.who === null ? null : findStakeholder(index.stakeholders, state.who)
+  const parts = [
+    ...issuePart(state),
+    ...(who === null ? [] : [t.listBar.filterPart(t.solutionsList.whoFilter, [t.sideMenu.item(who.id, who.name)])]),
+  ]
+  const shareOn = state.sort === 'evidence'
 
   return (
     <>
-      {sorted
-        .filter((issue) => solutions.some((s) => s.issueNumber === issue.number))
-        .map((issue) => (
-          <LabelledSection key={issue.number} headingId={`space-solutions-${issue.number}`} className="mt-6 first:mt-0">
-            <h3 id={`space-solutions-${issue.number}`} className="font-semibold">{issueTitle(issues, issue.number)}</h3>
-            <ul className="mt-2 space-y-3">
-              {solutions
-                .filter((s) => s.issueNumber === issue.number)
-                .map(({ solution: sol }) => {
+      <SpaceTabMenu tab="solutions" state={state} filters={filters} sortNoteId={shareOn ? noteId : undefined} go={go} />
+      <ResultLine page="solutions" shown={shown.length} total={items.length} q={state.q} parts={parts} className="mt-3" />
+      <SortNote id={noteId} state={state} />
+      <div className="mt-4">
+        {shown.length === 0 && <p>{noneText(state, t.solutionsList.none, t.solutionsList.noun)}</p>}
+        {groupByIssue(shown).map((group) => {
+          const issue = issues.find((i) => i.number === group.issueNumber)!
+          return (
+            <LabelledSection key={issue.number} headingId={`space-solutions-${issue.number}`} className="mt-6 first:mt-0">
+              <h3 id={`space-solutions-${issue.number}`} className="font-semibold">{issueTitle(issues, issue.number)}</h3>
+              <ul className={cn('mt-2', cardGridClass)}>
+                {group.items.map(({ solution: sol }) => {
                   const others = otherSpaces(sol, code)
                   return (
                     <li key={sol.id}>
@@ -201,69 +284,101 @@ function SolutionsTab({ index, code, issues }: { index: IndexFile; code: string;
                     </li>
                   )
                 })}
-            </ul>
-          </LabelledSection>
-        ))}
+              </ul>
+            </LabelledSection>
+          )
+        })}
+      </div>
     </>
   )
 }
 
 /** The 利害關係人 tab: the stakeholders of the stories that the solutions
- * of this space cover. First the ones in several issues, then by issue. */
+ * of this space cover. First the ones in several issues, then by issue.
+ * The menu bar (decision 138) has the sort, the filters and the search of
+ * #/stakeholders: 排序 (最近更新, 最近新增, 資料根據比例, 解法涵蓋比例), 議題,
+ * 只看特別關注族群 and the search. No tree view. Inside each block the
+ * stakeholders follow the sort. The block 「在多個議題都出現的利害關係人」 has
+ * no border box (decision 138). */
 function StakeholdersTab({ index, code, issues }: { index: IndexFile; code: string; issues: IssueFile[] }) {
-  const stakeholders = stakeholdersBySpace(issues, code)
-  const shared = stakeholdersInSeveralIssues(stakeholders)
+  const numbers = useMemo(() => spaceStakeholderIssues(issues, code), [issues, code])
+  const { state, go } = useSpaceTabState('stakeholders', index, numbers)
+  const noteId = useId()
+  const view = useMemo(() => spaceStakeholdersView(index, issues, code, state), [index, issues, code, state])
   const available = availableIssues(index).map((i) => i.number)
-  if (stakeholders.length === 0) return <p>{tp.stakeholdersNone}</p>
+  if (view.total === 0) return <p>{tp.stakeholdersNone}</p>
+
+  const filters: ListBarFilter[] = [
+    issueFilter(index, state, numbers),
+    {
+      kind: 'toggle',
+      key: 'specialonly',
+      label: t.stakeholdersList.specialOnly,
+      pressed: state.specialOnly,
+      next: (pressed) => ({ ...state, specialOnly: pressed }),
+    },
+  ]
+  const parts = [...issuePart(state), ...(state.specialOnly ? [t.stakeholdersList.specialOnly] : [])]
+  const shareOn = state.sort === 'evidence' || state.sort === 'solutions'
 
   return (
     <>
       <p className="text-muted-foreground">{tp.stakeholdersIntro}</p>
+      <SpaceTabMenu tab="stakeholders" state={state} filters={filters} sortNoteId={shareOn ? noteId : undefined} go={go} className="mt-4" />
+      <ResultLine page="stakeholders" shown={view.shown} total={view.total} q={state.q} parts={parts} className="mt-3" />
+      <SortNote id={noteId} state={state} />
 
-      <LabelledSection headingId="space-shared" className="mt-4 rounded-lg border-2 border-foreground/40 p-4">
-        <h3 id="space-shared" className="font-semibold">{tp.sharedHeading}</h3>
-        <p className="mt-1 text-sm text-muted-foreground">{tp.sharedIntro}</p>
-        {shared.length === 0 ? (
-          <p className="mt-2">{tp.sharedNone}</p>
-        ) : (
-          <ul className="mt-2 grid gap-3 sm:grid-cols-2">
-            {shared.map((s) => (
-              <li key={s.id}>
-                <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, s.id)}>
-                  {/* The issues with their titles, one per line, and the
-                      資料根據 of the stakeholder in those issues (decision 112). */}
-                  <dl className="mt-1 space-y-1 text-sm">
-                    <Field label={tp.sharedIssues}>
-                      <IssueTitleLinks numbers={s.issues} titles={index.issues} to={(n) => `/issues/${n}`} />
-                    </Field>
-                    <BasisField cells={stakeholderCells(issues.filter((i) => s.issues.includes(i.number)), s.id)} />
-                  </dl>
-                </StakeholderCard>
-              </li>
-            ))}
-          </ul>
-        )}
-      </LabelledSection>
+      {view.shown === 0 ? (
+        <p className="mt-4">{noneText(state, t.stakeholdersList.none, t.stakeholdersList.noun)}</p>
+      ) : (
+        <>
+          {/* No border box (decision 138): the heading and the text only. */}
+          <LabelledSection headingId="space-shared" className="mt-6">
+            <h3 id="space-shared" className="font-semibold">{tp.sharedHeading}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{tp.sharedIntro}</p>
+            {view.shared.length === 0 ? (
+              <p className="mt-2">{view.sharedAny && spaceTabFiltered(state) ? t.stakeholdersList.none : tp.sharedNone}</p>
+            ) : (
+              <ul className={cn('mt-2', cardGridClass)}>
+                {view.shared.map((s) => (
+                  <li key={s.id}>
+                    <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, s.id)}>
+                      {/* The issues with their titles, one per line, and the
+                          資料根據 of the stakeholder in those issues (decision 112). */}
+                      <dl className="mt-1 space-y-1 text-sm">
+                        <Field label={tp.sharedIssues}>
+                          <IssueTitleLinks numbers={s.issues} titles={index.issues} to={(n) => `/issues/${n}`} />
+                        </Field>
+                        <BasisField cells={stakeholderCells(issues.filter((i) => s.issues.includes(i.number)), s.id)} />
+                      </dl>
+                    </StakeholderCard>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </LabelledSection>
 
-      <h3 className="mt-6 font-semibold">{tp.byIssueHeading}</h3>
-      {stakeholders.map((entry) => (
-        <LabelledSection key={entry.issueNumber} headingId={`space-people-${entry.issueNumber}`} className="mt-3">
-          <h4 id={`space-people-${entry.issueNumber}`} className="font-medium">{issueTitle(issues, entry.issueNumber)}</h4>
-          <ul className="mt-2 grid gap-3 sm:grid-cols-2">
-            {entry.stakeholders.map((id) => (
-              <li key={id}>
-                <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
-                  <AlsoInLine index={index} id={id} issueNumber={entry.issueNumber} available={available} />
-                  {/* 資料根據 of the stakeholder in this issue (decision 112). */}
-                  <dl className="mt-1 text-sm">
-                    <BasisField cells={stakeholderCells(issues.filter((i) => i.number === entry.issueNumber), id)} />
-                  </dl>
-                </StakeholderCard>
-              </li>
-            ))}
-          </ul>
-        </LabelledSection>
-      ))}
+          <h3 className="mt-6 font-semibold">{tp.byIssueHeading}</h3>
+          {view.byIssue.map((entry) => (
+            <LabelledSection key={entry.issueNumber} headingId={`space-people-${entry.issueNumber}`} className="mt-3">
+              <h4 id={`space-people-${entry.issueNumber}`} className="font-medium">{issueTitle(issues, entry.issueNumber)}</h4>
+              <ul className={cn('mt-2', cardGridClass)}>
+                {entry.stakeholders.map((id) => (
+                  <li key={id}>
+                    <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, id)}>
+                      <AlsoInLine index={index} id={id} issueNumber={entry.issueNumber} available={available} />
+                      {/* 資料根據 of the stakeholder in this issue (decision 112). */}
+                      <dl className="mt-1 text-sm">
+                        <BasisField cells={stakeholderCells(issues.filter((i) => i.number === entry.issueNumber), id)} />
+                      </dl>
+                    </StakeholderCard>
+                  </li>
+                ))}
+              </ul>
+            </LabelledSection>
+          ))}
+        </>
+      )}
     </>
   )
 }

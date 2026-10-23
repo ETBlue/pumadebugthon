@@ -73,7 +73,7 @@ function cleanQuery(value: string | null): string | null {
 
 /** Only the list params of params, in their order. To compare with the
  * cleaned search. */
-function listOnlySearch(params: URLSearchParams): string {
+export function listOnlySearch(params: URLSearchParams): string {
   const names: readonly string[] = Object.values(LIST_PARAMS)
   const out = new URLSearchParams()
   for (const [key, value] of params) if (names.includes(key)) out.append(key, value)
@@ -191,6 +191,19 @@ export function clearListFilters(params: URLSearchParams): string {
   for (const name of [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.who, LIST_PARAMS.specialOnly, LIST_PARAMS.group]) {
     next.delete(name)
   }
+  const s = next.toString()
+  return s ? `?${s}` : ''
+}
+
+/** The search string of a list state on a page that also has other params
+ * (the space page tabs, decision 138): every list param of params is
+ * replaced by the list params of state (listUrlSearch). The other params,
+ * for example evidence, are kept first. "" when nothing is left. */
+export function mergeListSearch(params: URLSearchParams, page: ListPage, state: ListState): string {
+  const names: readonly string[] = Object.values(LIST_PARAMS)
+  const next = new URLSearchParams()
+  for (const [key, value] of params) if (!names.includes(key)) next.append(key, value)
+  for (const [key, value] of new URLSearchParams(listUrlSearch(page, state))) next.append(key, value)
   const s = next.toString()
   return s ? `?${s}` : ''
 }

@@ -155,7 +155,6 @@ export function ListBar({ page, state, sorts, filters, viewSwitch = false, sortN
   onNavigate: (search: string, mode: HistoryMode) => void
   className?: string
 }) {
-  const sortId = useId()
   const treeNoteId = useId()
   const [sheetOpen, setSheetOpen] = useState(false)
   const go = (next: ListState, mode: HistoryMode = 'push') => onNavigate(listUrlSearch(page, next), mode)
@@ -180,21 +179,14 @@ export function ListBar({ page, state, sorts, filters, viewSwitch = false, sortN
             straight into the bar row. */}
         <div className="flex items-center gap-2 md:contents">
           {sorts.length > 0 && (
-            <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none">
-              <label htmlFor={sortId} className="shrink-0 text-sm font-medium">{tb.sortLabel}</label>
-              <select
-                id={sortId}
-                value={state.sort}
-                disabled={tree}
-                aria-describedby={describedBy}
-                onChange={(e) => go({ ...state, sort: e.target.value as ListSort })}
-                className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 md:flex-none"
-              >
-                {sorts.map((s) => (
-                  <option key={s} value={s}>{tb.sorts[s]}</option>
-                ))}
-              </select>
-            </div>
+            <ListSortSelect
+              sorts={sorts}
+              value={state.sort}
+              disabled={tree}
+              describedBy={describedBy}
+              onChange={(sort) => go({ ...state, sort })}
+              className="flex-1 md:flex-none"
+            />
           )}
 
           {/* The filters from md. Below md they are in the sheet. */}
@@ -288,8 +280,40 @@ export function ListBar({ page, state, sorts, filters, viewSwitch = false, sortN
   )
 }
 
-/** One filter in the bar row, from md. */
-function BarFilter({ filter, onState }: { filter: ListBarFilter; onState: (s: ListState) => void }) {
+/** The sort <select> with its visible label 「排序」, as in the list bar.
+ * Also used by the menu bar of the space page tabs (decision 138).
+ * describedBy: the id of a note about the sort (aria-describedby). */
+export function ListSortSelect({ sorts, value, disabled = false, describedBy, onChange, className }: {
+  sorts: readonly ListSort[]
+  value: ListSort
+  disabled?: boolean
+  describedBy?: string
+  onChange: (sort: ListSort) => void
+  className?: string
+}) {
+  const sortId = useId()
+  return (
+    <div className={cn('flex min-w-0 items-center gap-2', className)}>
+      <label htmlFor={sortId} className="shrink-0 text-sm font-medium">{tb.sortLabel}</label>
+      <select
+        id={sortId}
+        value={value}
+        disabled={disabled}
+        aria-describedby={describedBy}
+        onChange={(e) => onChange(e.target.value as ListSort)}
+        className="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-2 text-sm text-foreground shadow-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:opacity-50 md:flex-none"
+      >
+        {sorts.map((s) => (
+          <option key={s} value={s}>{tb.sorts[s]}</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+/** One filter in the bar row, from md. Also used by the menu bar of the
+ * space page tabs (decision 138), where it shows at every width. */
+export function BarFilter({ filter, onState }: { filter: ListBarFilter; onState: (s: ListState) => void }) {
   switch (filter.kind) {
     case 'choices':
       return (

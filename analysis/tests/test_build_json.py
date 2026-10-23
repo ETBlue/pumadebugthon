@@ -41,6 +41,14 @@ def use_old_format(analysis_dir):
     """Put the old-format fixture in place of the copied 8-smokefree files."""
     for name in ("issue-analysis.md", "user-stories.csv"):
         shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(analysis_dir, "8-smokefree", name))
+    # The fixture is older than the 災害風險 row (2026-10-22), and the step 7
+    # tables need it now. Add it after each 其他顧慮與風險 row of this copy.
+    path = os.path.join(analysis_dir, "8-smokefree", "issue-analysis.md")
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    text = re.sub(r"^(\| 其他顧慮與風險 \|.*\n)", r"\1| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n", text, flags=re.M)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text)
 
 
 def run_build(analysis_dir, out_dir):
@@ -141,32 +149,52 @@ class BuildJsonOutputTest(unittest.TestCase):
                          {"text": "【待補：環保局稽查資料】", "tag": None, "pending": True})
         self.assertEqual(len(d["measures"]), 3)
 
-    def test_solution_detail(self):
-        # The rows of the step 7 section 「### 7.n 解法 X：…」, in file order.
+    def test_solution_evaluation_and_plan(self):
+        # The two tables of the step 7 section 「### 7.n 解法 X：…」 (ETBlue,
+        # 2026-10-23), with their rows by key.
         a = self.solution("A")
-        self.assertEqual([r["item"] for r in a["detail"]],
-                         ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "災害風險", "主責單位", "成本／可行性／風險"])
-        # content is a list of parts; a cell with one tag is a list of one Cell.
-        self.assertEqual(a["detail"][5]["content"],
-                         [{"text": "環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局",
-                           "tag": "AI模擬", "pending": False}])
+        self.assertEqual(list(a["evaluation"]), ["laws", "privacy", "risks", "disasters", "feasibility"])
+        self.assertEqual(list(a["plan"]), ["owner", "resources", "cost", "steps"])
+        # A cell is a list of parts; a cell with one tag is a list of one Cell.
+        cell = lambda t: [{"text": t, "tag": "AI模擬", "pending": False}]
+        self.assertEqual(a["plan"]["owner"], cell("環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局"))
+        # The old 成本／可行性／風險 cell 「成本低（主要是人力與現有資料）；可行性高；
+        # 風險：資料過舊…」 is split: cost, feasibility, and the risk at the end of 其他顧慮與風險.
+        self.assertEqual(a["plan"]["cost"], cell("成本低（主要是人力與現有資料）"))
+        self.assertEqual(a["evaluation"]["feasibility"], cell("可行性高"))
+        self.assertTrue(a["evaluation"]["risks"][0]["text"].startswith("模型只是建議，不能取代現場勘查與里民討論"))
+        self.assertTrue(a["evaluation"]["risks"][0]["text"].endswith("；資料過舊（主表涵蓋到 2018）會讓建議失準"))
+        self.assertTrue(a["plan"]["resources"][0]["text"].startswith("清潔箱位置（data.gov.tw 121355）"))
+        # 執行步驟 is a 【待補】 cell for now.
+        self.assertEqual(a["plan"]["steps"], [{"text": "【待補：執行步驟】", "tag": None, "pending": True}])
         # A solution with no related disaster says so in its 災害風險 row.
-        self.assertEqual(self.solution("C")["detail"][4],
-                         {"item": "災害風險",
-                          "content": [{"text": "無明顯相關災害風險", "tag": "AI模擬", "pending": False}]})
+        self.assertEqual(self.solution("C")["evaluation"]["disasters"], cell("無明顯相關災害風險"))
+
+    def test_split_cost_feasibility_cell_with_several_parts(self):
+        # #2 解法 B had 「QR 回報：成本低、可行性高。感測器試點…：成本中等…，可行性中；…」.
+        b = self.solution("B")
+        self.assertEqual(b["evaluation"]["feasibility"][0]["text"], "QR 回報：可行性高。感測器試點（沈伯洋構想）：可行性中")
+        self.assertTrue(b["plan"]["cost"][0]["text"].startswith("QR 回報：成本低。感測器試點（沈伯洋構想）：成本中等【待補：市場詢價】"))
+        self.assertEqual(b["plan"]["cost"][0]["tag"], "AI模擬")
+
+    def test_steps_pending_in_solution_and_issue_lists(self):
+        for s in self.issue["solutions"]:
+            item = {"section": next(p["section"] for p in s["pending"] if p["section"].startswith("7.")),
+                    "text": "【待補：執行步驟】", "context": "執行步驟"}
+            self.assertIn(item, s["pending"], s["id"])
+            self.assertIn(item, self.issue["pending"], s["id"])
 
     def test_mixed_step_7_cell(self):
         # #2 解法 E: the 災害風險 cell is split into parts with their own tags
         # (ETBlue, 2026-10-22): official sources [實證], news and a plan copied
         # on a school website [AI整理], AI judgement [AI模擬].
-        e = self.solution("E")["detail"][4]
-        self.assertEqual(e["item"], "災害風險")
-        self.assertEqual([p["tag"] for p in e["content"]],
+        e = self.solution("E")["evaluation"]["disasters"]
+        self.assertEqual([p["tag"] for p in e],
                          ["AI模擬", "實證", "AI整理", "AI模擬", "實證", "AI模擬", "實證", "AI整理"])
-        self.assertTrue(e["content"][1]["text"].startswith("傳染病防治法第 25 條規定"))
-        self.assertTrue(e["content"][7]["text"].startswith("新聞報導指出"))
-        self.assertIn("【待補：查證", e["content"][7]["text"])
-        self.assertTrue(all(p["text"] and not p["pending"] for p in e["content"]))
+        self.assertTrue(e[1]["text"].startswith("傳染病防治法第 25 條規定"))
+        self.assertTrue(e[7]["text"].startswith("新聞報導指出"))
+        self.assertIn("【待補：查證", e[7]["text"])
+        self.assertTrue(all(p["text"] and not p["pending"] for p in e))
 
     def test_solution_overview(self):
         # The solution's row of the 總覽 table, found by its 代號 cell. The row tag (in the 解法 cell) is on every field.
@@ -206,16 +234,30 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_solution_keys(self):
         self.assertEqual(list(self.solution("A")),
                          ["id", "name", "summary", "spaces", "added", "updated", "stories", "needs",
-                          "measures", "detail", "overview", "ideas", "practices", "pending"])
+                          "measures", "evaluation", "plan", "overview", "ideas", "controversies", "legal",
+                          "practices", "pending"])
+
+    def test_solution_summary_rows(self):
+        # The 分析摘要 rows of 可能的爭議 and 法規上的障礙 whose 相關編號 names the
+        # solution (ETBlue, 2026-10-23), the same objects as in summary.
+        b = self.solution("B")
+        self.assertEqual([i["item"] for i in b["controversies"]], ["試點的採購與資料", "清潔隊員的手機回報"])
+        self.assertEqual([i["item"] for i in b["legal"]], ["感測器的採購與認證", "照片與定位的個資"])
+        self.assertEqual(b["controversies"][0], self.summary_item("可能的爭議", "試點的採購與資料"))
+        self.assertEqual([i["item"] for i in self.solution("C")["legal"]], [])
+        # 「#8 解法 B」 in 「收集點與清潔箱的位置」 is not a solution of this issue.
+        self.assertEqual([i["item"] for i in self.solution("E")["controversies"]], ["收集點與清潔箱的位置"])
 
     def test_solution_practices(self):
-        # The 6.1 practice rows that name the solution, then the 相依事項與現行政策的關係
-        # rows that name it (domestic; ETBlue, 2026-10-22).
+        # The 6.1 practice rows that name the solution, then the rows of the
+        # 相依事項與現行政策的關係 table of its step 7 section (domestic; ETBlue,
+        # 2026-10-22 and 2026-10-23).
         b = self.solution("B")
         self.assertEqual([(p["place"], p["source"]) for p in b["practices"]],
                          [("美國紐約", "practice"), ("美國費城", "practice"), ("美國費城", "practice")])
         first = b["practices"][0]
-        self.assertEqual(list(first), ["name", "place", "domestic", "content", "use", "source"])
+        self.assertEqual(list(first), ["name", "place", "domestic", "content", "use", "source", "refs"])
+        self.assertEqual(first["refs"], [])
         self.assertEqual(first["name"], "新設計的清潔箱（Better Bin）")
         self.assertFalse(first["domestic"])
         self.assertEqual(first["content"]["tag"], "實證")
@@ -231,8 +273,13 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(dep["name"], "現行的裁撤與復設做法")
         self.assertEqual(dep["content"]["tag"], "AI模擬")
         self.assertIsNone(dep["use"])
-        # 「#8 解法 B」 in the 和 #8 無菸城市 row is not a solution of this issue.
+        self.assertEqual(dep["refs"], ["O04-US04", "解法 A", "解法 D"])
+        # The same row is under 解法 D too (it names A and D).
+        self.assertIn(dep, self.solution("D")["practices"])
+        # 「#8 解法 B」 in the 和 #8 無菸城市 row is not a solution of this issue,
+        # so that row stays in the 分析摘要 and is on no solution.
         self.assertEqual([p["name"] for p in self.solution("E")["practices"]], ["家戶垃圾收運"])
+        self.assertNotIn("和 #8 無菸城市", [p["name"] for s in self.issue["solutions"] for p in s["practices"]])
 
     def test_solution_practices_in_other_issues(self):
         def load(folder):
@@ -261,12 +308,18 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertTrue(a1["ideas"][0]["idea"]["text"].startswith("可參考新加坡"))
         self.assertEqual(self.solution("E", trees)["overview"]["owner"]["text"], "公園處")
         for s in trees["solutions"] + smoke["solutions"]:
-            self.assertEqual(len(s["detail"]), 7, s["id"])
+            self.assertEqual(len(s["evaluation"]) + len(s["plan"]), 9, s["id"])
             self.assertTrue(s["measures"], s["id"])
         self.assertEqual([s["ideas"] for s in smoke["solutions"]], [[]] * 5)
         b8 = self.solution("B", smoke)
-        self.assertEqual(b8["detail"][1]["content"][0]["tag"], "AI模擬")
-        self.assertEqual(self.solution("A", smoke)["detail"][1]["content"][0]["tag"], "實證")
+        self.assertEqual(b8["evaluation"]["laws"][0]["tag"], "AI模擬")
+        self.assertEqual(self.solution("A", smoke)["evaluation"]["laws"][0]["tag"], "實證")
+        # #1: every 相依事項 row names a solution, so the topic has no rows,
+        # and the rows are on the solutions (解法之間的相依 on A, B and E).
+        dep = next(t for t in trees["summary"] if t["topic"] == "相依事項與現行政策的關係")
+        self.assertEqual(dep["items"], [])
+        for code in "ABE":
+            self.assertIn("解法之間的相依", [p["name"] for p in self.solution(code, trees)["practices"]], code)
 
     def test_pending_has_6_3_and_step_7(self):
         sections = [p["section"] for p in self.issue["pending"]]
@@ -539,14 +592,24 @@ class BuildJsonOutputTest(unittest.TestCase):
             self.assertEqual(list(t), ["topic", "items"])
             self.assertTrue(t["items"])
             for i in t["items"]:
-                self.assertEqual(list(i), ["item", "text", "refs"])
+                self.assertEqual(list(i), ["item", "text", "refs", "solutions"])
+
+    def test_summary_rows_without_a_solution(self):
+        # solutions: the codes of this issue's solutions that refs names. [] means
+        # the row names no solution (ETBlue, 2026-10-23: shown on the issue 總覽).
+        self.assertEqual(self.summary_item("可能的爭議", "收集點與清潔箱的位置")["solutions"], ["E"])
+        self.assertEqual(self.summary_item("難以取捨的決定", "清潔箱的設置依據")["solutions"], [])
+        # The 相依事項 topic keeps only the rows with no solution.
+        dep = next(t for t in self.issue["summary"] if t["topic"] == "相依事項與現行政策的關係")
+        self.assertEqual([(i["item"], i["solutions"]) for i in dep["items"]],
+                         [("和 #1、#8 共用人行道", []), ("和 #8 無菸城市", [])])
 
     def test_summary_item(self):
         self.assertEqual(self.summary_item("可能的爭議", "選址討論的速度與代表性"), {
             "item": "選址討論的速度與代表性",
             "text": {"text": "解法 D 的里民討論會讓設置變慢；常出席的人聲音比較大；討論結果如果不被採用，可能傷害信任。",
                      "tag": "AI模擬", "pending": False},
-            "refs": ["解法 D", "N05", "O05-US01"]})
+            "refs": ["解法 D", "N05", "O05-US01"], "solutions": ["D"]})
 
     def test_summary_pending_row(self):
         item = self.summary_item("受影響較大的弱勢族群", "呼吸道疾病（尚未納入）")

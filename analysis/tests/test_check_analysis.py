@@ -197,7 +197,6 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(md, "| A、D | 家用垃圾", "| A、K | 家用垃圾")
         self.edit(md, "| D | 新設點中", "| K | 新設點中")
         self.edit(md, "| D | 設置後 3 個月", "| K | 設置後 3 個月")
-        self.edit(md, "O04-US04、解法 A、解法 D |", "O04-US04、解法 A、解法 K |")
         # Every other 「解法 D」, also in a list such as 「解法 A、B、D：」.
         path = os.path.join(self.dir, md)
         with open(path, encoding="utf-8") as f:
@@ -500,11 +499,11 @@ class CheckAnalysisTest(unittest.TestCase):
     # Each step 7 solution table has a 「災害風險」 row (ETBlue, 2026-10-22).
     # The cell is a tag and a list of disasters, or a tag and exactly
     # 「無明顯相關災害風險」. The check does not look at which disasters are listed.
-    DISASTER_D = "需專業主持人 |\n| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n"
+    DISASTER_D = "需事先說明決策方式 |\n| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n"
 
     def set_disaster_d(self, row):
         """Replace the 災害風險 row of #2 解法 D with `row` (a full line, or "" to remove it)."""
-        self.edit(f"{ISSUE}/issue-analysis.md", self.DISASTER_D, "需專業主持人 |\n" + row)
+        self.edit(f"{ISSUE}/issue-analysis.md", self.DISASTER_D, "需事先說明決策方式 |\n" + row)
 
     def test_every_issue_passes_with_disaster_rows(self):
         for folder in issue_folders():
@@ -536,9 +535,11 @@ class CheckAnalysisTest(unittest.TestCase):
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
-    # Each step 7 solution table has all 7 rows, once each, in this order
-    # (ETBlue, 2026-10-22). Each cell starts with a tag and has text after it.
-    STEP7_ROWS = ["需要的資料／API", "相關法規", "隱私", "其他顧慮", "災害風險", "主責單位", "成本／可行性／風險"]
+    # Each step 7 solution section has an evaluation table and a plan table
+    # (ETBlue, 2026-10-23), each with all its rows, once each, in this order.
+    # Each cell starts with a tag and has text after it, or is one 【待補：…】 item.
+    STEP7_ROWS = ["相關法規", "隱私", "其他顧慮與風險", "災害風險", "可行性"]
+    PLAN_ROWS = ["主責單位", "需要的資料／API／資源", "成本", "執行步驟"]
 
     def row_d(self, name):
         """The full line (with the newline) of the row `name` in the step 7 table of #2 解法 D."""
@@ -550,11 +551,11 @@ class CheckAnalysisTest(unittest.TestCase):
         return line + "\n"
 
     def test_step_7_without_row_fails(self):
-        for name in self.STEP7_ROWS:
+        for name in self.STEP7_ROWS + self.PLAN_ROWS:
             if name == "災害風險": continue  # tested above
             with self.subTest(row=name):
                 self.tearDown(); self.setUp()
-                self.edit(f"{ISSUE}/issue-analysis.md", self.row_d(name), "")
+                self.edit_in_section("D", self.row_d(name), "")
                 self.assertFails(f"步驟 7 #2 解法 D: no 「{name}」 row")
 
     def test_step_7_two_rows_fail(self):
@@ -566,7 +567,7 @@ class CheckAnalysisTest(unittest.TestCase):
         for row in ("| 隱私 |  |\n", "| 隱私 | `[AI模擬]` |\n"):
             with self.subTest(row=row):
                 self.tearDown(); self.setUp()
-                self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("隱私"), row)
+                self.edit_in_section("D", self.row_d("隱私"), row)
                 self.assertFails("步驟 7 #2 解法 D: the 「隱私」 cell is empty")
 
     def test_step_7_cell_without_tag_fails(self):
@@ -580,14 +581,123 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("步驟 7 #2 解法 D: unknown row 「備註」")
 
     def test_step_7_wrong_order_fails(self):
-        a, b = self.row_d("隱私"), self.row_d("其他顧慮")
-        self.edit(f"{ISSUE}/issue-analysis.md", a + b, b + a)
-        self.assertFails("步驟 7 #2 解法 D: the rows must be in this order: " + "、".join(self.STEP7_ROWS))
+        a, b = self.row_d("隱私"), self.row_d("其他顧慮與風險")
+        self.edit_in_section("D", a + b, b + a)
+        self.assertFails("步驟 7 #2 解法 D: the rows of the evaluation table must be in this order: " + "、".join(self.STEP7_ROWS))
+
+    def test_step_7_plan_wrong_order_fails(self):
+        a, b = self.row_d("成本"), self.row_d("執行步驟")
+        self.edit_in_section("D", a + b, b + a)
+        self.assertFails("步驟 7 #2 解法 D: the rows of the 執行計畫 table must be in this order: " + "、".join(self.PLAN_ROWS))
+
+    def test_step_7_row_in_the_wrong_table_fails(self):
+        # 主責單位 belongs to the plan table, not the evaluation table.
+        owner, feas = self.row_d("主責單位"), self.row_d("可行性")
+        self.edit_in_section("D", owner, "")
+        self.edit_in_section("D", feas, feas + owner)
+        self.assertFails("步驟 7 #2 解法 D: unknown row 「主責單位」 in the evaluation table", "步驟 7 #2 解法 D: no 「主責單位」 row")
+
+    def test_step_7_without_plan_table_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", "| 執行計畫 | 內容 |\n|---|---|\n| 主責單位 | `[AI模擬]` 環保局；協作：民政局",
+                  "| 項目 | 內容 |\n|---|---|\n| 主責單位 | `[AI模擬]` 環保局；協作：民政局")
+        self.assertFails("步驟 7 #2 解法 D: no table with the header 執行計畫 | 內容", "步驟 7 #2 解法 D: two tables with the header 項目 | 內容")
+
+    def test_step_7_unknown_table_fails(self):
+        self.edit_in_section("D", self.row_d("執行步驟"),
+                  self.row_d("執行步驟") + "\n| 備註 | 內容 |\n|---|---|\n| 其他 | `[AI模擬]` 說明 |\n")
+        self.assertFails("步驟 7 #2 解法 D: unknown table 「備註 | 內容」")
+
+    def test_step_7_steps_placeholder_passes(self):
+        # Every solution has 「【待補：執行步驟】」 now. A cell may also be one other
+        # 【待補：…】 item, or tagged text.
+        self.assertIn("| 執行步驟 | 【待補：執行步驟】 |\n", self.row_d("執行步驟"))
+        self.edit_in_section("D", self.row_d("成本"), "| 成本 | 【待補：單價】 |\n")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_step_7_steps_with_text_passes(self):
+        self.edit_in_section("D", self.row_d("執行步驟"), "| 執行步驟 | `[AI模擬]` 先在 2 個里試辦，再擴大 |\n")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_step_7_cell_with_text_beside_pending_needs_a_tag(self):
+        self.edit_in_section("D", self.row_d("執行步驟"), "| 執行步驟 | 先試辦【待補：時程】 |\n")
+        self.assertFails("步驟 7 #2 解法 D: the 「執行步驟」 cell must start with a tag")
+
+    # The 相依事項與現行政策的關係 table of a step 7 section (ETBlue,
+    # 2026-10-23). In #2, 「現行的裁撤與復設做法」 names 解法 A and D, so it is
+    # under both, with the same text.
+    DEP_ROW = ("| 現行的裁撤與復設做法 | `[AI模擬]` 現行做法是依家戶垃圾違規棄置量評估清潔箱的裁撤或復設（題目原文）。"
+               "解法 A、D 在這個做法上加入行人流量與里民討論，需要和環保局確認兩者怎麼銜接。 | O04-US04、解法 A、解法 D |\n")
+
+    def dep_section(self, code):
+        """(start, end) of the step 7 section of #2 解法 <code> in the copied file."""
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        start = text.index(f" 解法 {code}：", text.index("## 步驟 7"))
+        return text, start, text.index("\n### ", start)
+
+    def edit_in_section(self, code, old, new):
+        text, start, end = self.dep_section(code)
+        part = text[start:end]
+        self.assertEqual(part.count(old), 1)
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(text[:start] + part.replace(old, new) + text[end:])
+
+    def test_step_7_dependency_rows_pass(self):
+        text, start, end = self.dep_section("D")
+        self.assertIn("| 相依事項與現行政策的關係 | 說明 | 相關編號 |\n|---|---|---|\n" + self.DEP_ROW, text[start:end])
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_step_7_dependency_row_must_name_its_solution(self):
+        # Under 解法 D, a row whose 相關編號 does not name D.
+        self.edit_in_section("D", self.DEP_ROW, self.DEP_ROW.replace("| O04-US04、解法 A、解法 D |", "| O04-US04、解法 A |"))
+        self.assertFails("步驟 7 #2 解法 D 相依事項與現行政策的關係 「現行的裁撤與復設做法」: 相關編號 must name 解法 D")
+
+    def test_step_7_dependency_row_missing_under_a_named_solution(self):
+        # The row names 解法 D, but it is only under 解法 A.
+        self.edit_in_section("D", "\n| 相依事項與現行政策的關係 | 說明 | 相關編號 |\n|---|---|---|\n" + self.DEP_ROW, "")
+        self.assertFails("步驟 7 #2 解法 D: 相依事項與現行政策的關係 「現行的裁撤與復設做法」 names 解法 D, so it must be in the "
+                         "相依事項與現行政策的關係 table of 解法 D too")
+
+    def test_step_7_dependency_copies_must_be_the_same(self):
+        self.edit_in_section("D", "需要和環保局確認兩者怎麼銜接。", "需要和環保局確認。")
+        self.assertFails("the copies of 相依事項與現行政策的關係 「現行的裁撤與復設做法」 under 解法 A、解法 D are not the same")
+
+    def test_step_7_dependency_bad_reference_fails(self):
+        for old, new, needle in (("O04-US04、解法 A、解法 D", "O04-US99、解法 A、解法 D", "O04-US99 is not in"),
+                                 ("O04-US04、解法 A、解法 D", "見 7.1、解法 A、解法 D", "「見 7.1」 is not a reference")):
+            with self.subTest(new=new):
+                self.tearDown(); self.setUp()
+                # Change both copies, so they stay the same.
+                self.edit_in_section("A", old, new)
+                self.edit_in_section("D", old, new)
+                self.assertFails(f"相依事項與現行政策的關係 「現行的裁撤與復設做法」: {needle}")
+
+    def test_step_7_dependency_cell_has_one_tag(self):
+        self.edit_in_section("A", "（題目原文）。", "（題目原文）。 `[實證]` 官方")
+        self.edit_in_section("D", "（題目原文）。", "（題目原文）。 `[實證]` 官方")
+        self.assertFails("a cell has 2 tags")
+
+    def test_summary_dependency_row_with_a_solution_fails(self):
+        # The 分析摘要 keeps only the rows that name no solution of this issue.
+        self.edit(f"{ISSUE}/issue-analysis.md", "| C9、I01-US09、#8 解法 B |", "| C9、I01-US09、#8 解法 B、解法 A |")
+        self.assertFails("分析摘要 相依事項與現行政策的關係 「和 #8 無菸城市」: names 解法 A; move the row")
+
+    def test_summary_dependency_topic_without_table_passes(self):
+        # #1: every row names a solution, so the topic has only a sentence.
+        with open(os.path.join(self.dir, "1-trees", "issue-analysis.md"), encoding="utf-8") as f:
+            text = f.read()
+        body = text.split("### 相依事項與現行政策的關係", 1)[1].split("\n## ", 1)[0]
+        self.assertNotIn("| 項目 |", body)
+        code, out = self.run_check("1-trees")
+        self.assertEqual(code, 0, out)
 
     # A step 7 cell may hold more than one tag (ETBlue, 2026-10-22). Each part
     # starts with its own tag and has text after it. Other cells keep one tag.
     def test_step_7_mixed_cell_passes(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("相關法規"),
+        self.edit_in_section("D", self.row_d("相關法規"),
                   "| 相關法規 | `[實證]` 官方資料寫的規定 `[AI整理]` 新聞報導指出的做法，需真人查證【待補：查證新聞】 `[AI模擬]` 推想 |\n")
         self.set_disaster_d("| 災害風險 | `[AI模擬]` 風災：颱風時工作坊可能取消。 `[實證]` 官方資料的停班規定 |\n")
         code, out = self.run_check()
@@ -597,15 +707,15 @@ class CheckAnalysisTest(unittest.TestCase):
         for value in ("`[實證]` 官方資料 `[AI模擬]`", "`[實證]` `[AI模擬]` 推想"):
             with self.subTest(value=value):
                 self.tearDown(); self.setUp()
-                self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("隱私"), f"| 隱私 | {value} |\n")
+                self.edit_in_section("D", self.row_d("隱私"), f"| 隱私 | {value} |\n")
                 self.assertFails("步驟 7 #2 解法 D: the 「隱私」 cell has a tag with no text after it")
 
     def test_step_7_cell_with_only_tags_is_empty(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("隱私"), "| 隱私 | `[實證]` `[AI模擬]` |\n")
+        self.edit_in_section("D", self.row_d("隱私"), "| 隱私 | `[實證]` `[AI模擬]` |\n")
         self.assertFails("步驟 7 #2 解法 D: the 「隱私」 cell is empty")
 
     def test_step_7_mixed_cell_must_start_with_tag(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", self.row_d("隱私"), "| 隱私 | 說明 `[實證]` 官方資料 `[AI模擬]` 推想 |\n")
+        self.edit_in_section("D", self.row_d("隱私"), "| 隱私 | 說明 `[實證]` 官方資料 `[AI模擬]` 推想 |\n")
         self.assertFails("步驟 7 #2 解法 D: the 「隱私」 cell must start with a tag")
 
     def test_step_7_no_disaster_text_must_stand_alone_in_mixed_cell(self):
@@ -894,12 +1004,12 @@ class CheckAnalysisTest(unittest.TestCase):
         for name in ("issue-analysis.md", "user-stories.csv"):
             shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(self.dir, "8-smokefree", name))
         # The fixture is older than the 災害風險 row (2026-10-22). The check now
-        # requires the row in every file, so add it after each 其他顧慮 row of
+        # requires the row in every file, so add it after each 其他顧慮與風險 row of
         # this copy. The fixture file itself stays as it was.
         path = os.path.join(self.dir, "8-smokefree", "issue-analysis.md")
         with open(path, encoding="utf-8") as f:
             text = f.read()
-        text, n = re.subn(r"^(\| 其他顧慮 \|.*\n)", r"\1| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n", text, flags=re.M)
+        text, n = re.subn(r"^(\| 其他顧慮與風險 \|.*\n)", r"\1| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n", text, flags=re.M)
         self.assertEqual(n, 5)
         # #8 cites an open dataset that is newer than the fixture (2026-10-22),
         # and open-data.csv lists it for #8. Add it to the end of the appendix

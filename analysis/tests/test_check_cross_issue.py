@@ -231,25 +231,57 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.edit("| 人行道範圍圖 | #1 解法 D |\n| X-B | 「SWW_WTH」", "| 人行道範圍圖 | #1 解法 C |\n| X-B | 「SWW_WTH」")
         self.assertFails("#1 解法 C", "X-B")
 
-    def test_risk_row_missing(self):
-        self.edit("| X-E | `[AI模擬]` 環保局（清潔箱與清運）", "| X-Z | `[AI模擬]` 環保局（清潔箱與清運）")
-        self.assertFails("X-E")
+    # 4.5: one section per combined solution, with the tables of an issue's
+    # step 7 (ETBlue, 2026-10-23): evaluation, 執行計畫, and the
+    # 相依事項與現行政策的關係 rows that name the solution.
+    def test_evaluation_section_missing(self):
+        self.edit("### 4.5.5 解法 X-E：", "### 4.5.5 解法 X-Z：")
+        self.assertFails("4.5 X-Z: is not in 4.1", "4.5: X-E has no section 「### 4.5.n 解法 X-E：…」")
 
-    # Each 主要風險 cell in 4.5 has the disaster risks of its parts, written as
-    # 「災害風險：…（#n 解法 X）」 (ETBlue, 2026-10-22; method.md, step 7).
-    DISASTER_E = "；災害風險：負壓式吸菸區停電時無法排氣"
+    # The 災害風險 row of each combined solution sums up the 災害風險 rows of
+    # its parts (ETBlue, 2026-10-22; method.md, step 7). It must not be empty.
+    DISASTER_E = "| 災害風險 | `[AI模擬]` 負壓式吸菸區停電時無法排氣，封閉的吸菸室要考慮防火與排煙（#8 解法 B）；颱風或豪雨前後，清潔箱可能被吹倒或泡水，需要有災害時的派工方式（#2 解法 B） |"
 
-    def test_risk_cell_without_disaster_risks(self):
-        self.edit(self.DISASTER_E, "；負壓式吸菸區停電時無法排氣")
-        self.assertFails("4.5 X-E: 主要風險 has no 「災害風險：」")
+    def test_disaster_row_missing(self):
+        self.edit(self.DISASTER_E + "\n", "")
+        self.assertFails("4.5 X-E: the rows of the table 項目 | 內容 must be 相關法規、隱私、其他顧慮與風險、災害風險、可行性")
 
-    def test_risk_cell_with_empty_disaster_risks(self):
+    def test_disaster_cell_with_only_a_tag(self):
+        self.edit(self.DISASTER_E, "| 災害風險 | `[AI模擬]` |")
+        self.assertFails("4.5 X-E: the 「災害風險」 cell must start with a tag and text")
+
+    def test_plan_row_order(self):
+        self.edit("| 成本 | 【待補：整理組成解法的成本】 |\n| 執行步驟 | 【待補：執行步驟】 |\n\n| 相依事項與現行政策的關係 | 說明 | 相關編號 |\n|---|---|---|\n| 以各議題的解法為基礎 | `[AI模擬]` 合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。 | 解法 X-A、解法 X-B、解法 X-C、解法 X-D、解法 X-E、解法 X-F、解法 X-G、解法 X-H、解法 X-I、解法 X-J、解法 X-K |\n\n### 4.5.6",
+                  "| 執行步驟 | 【待補：執行步驟】 |\n| 成本 | 【待補：整理組成解法的成本】 |\n\n| 相依事項與現行政策的關係 | 說明 | 相關編號 |\n|---|---|---|\n| 以各議題的解法為基礎 | `[AI模擬]` 合併的解法不取代各議題的解法。各議題的解法可以單獨推動；合併只是在同一個地點、同一段時間一起辦。 | 解法 X-A、解法 X-B、解法 X-C、解法 X-D、解法 X-E、解法 X-F、解法 X-G、解法 X-H、解法 X-I、解法 X-J、解法 X-K |\n\n### 4.5.6")
+        self.assertFails("4.5 X-E: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本、執行步驟")
+
+    def test_dependency_copy_missing(self):
+        # 「以各議題的解法為基礎」 names all 11 combined solutions, so it is under each.
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
-        tail = text[text.index(self.DISASTER_E):text.index("（#2 解法 B） |\n| X-F")] + "（#2 解法 B）"
-        self.edit(tail, "；災害風險：")
-        self.assertFails("4.5 X-E: 主要風險 has no 「災害風險：」")
+        start = text.index("### 4.5.5 解法 X-E：")
+        end = text.index("### 4.5.6", start)
+        part = text[start:end]
+        cut = part.index("\n| 相依事項與現行政策的關係 | 說明 | 相關編號 |")
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(text[:start] + part[:cut] + "\n\n" + text[end:])
+        self.assertFails("4.5 X-E: 相依事項與現行政策的關係 「以各議題的解法為基礎」 names 解法 X-E, so it must be in the "
+                         "相依事項與現行政策的關係 table of X-E too")
 
+    def test_dependency_row_must_name_its_solution(self):
+        self.edit("| 現行的吸菸區設置要點 | `[AI模擬]` 解法 X-B 的檢查清單，以 #8 的「臺北市吸菸區設置及管理要點」（115 年 10 月 1 日生效）的距離與淨寬規定為起點之一。 | #8 O22-US02、解法 X-B |",
+                  "| 現行的吸菸區設置要點 | `[AI模擬]` 解法 X-B 的檢查清單，以 #8 的「臺北市吸菸區設置及管理要點」（115 年 10 月 1 日生效）的距離與淨寬規定為起點之一。 | #8 O22-US02 |")
+        self.assertFails("4.5 X-B 相依事項與現行政策的關係 「現行的吸菸區設置要點」: 相關編號 must name 解法 X-B")
+
+    def test_summary_dependency_row_with_a_solution_fails(self):
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        head = "### 相依事項與現行政策的關係\n"
+        i = text.index(head) + len(head)
+        row = "\n| 項目 | 說明 | 相關編號 |\n|---|---|---|\n| 測試 | `[AI模擬]` 測試 | 解法 X-A |\n"
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(text[:i] + row + text[i:])
+        self.assertFails("分析摘要 相依事項與現行政策的關係 「測試」: names 解法 X-A; move the row")
 
 if __name__ == "__main__":
     unittest.main()

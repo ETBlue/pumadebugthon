@@ -100,16 +100,42 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertIn({"issue": 1, "id": "N11"}, a["needs"]["shouldCould"])
         self.assertIn("X-N01", a["needs"]["crossIssue"])
         self.assertEqual(a["tag"], "AI模擬")
-        self.assertEqual(a["detail"]["owner"]["tag"], "AI模擬")
+        self.assertEqual(a["plan"]["owner"][0]["tag"], "AI模擬")
+
+    def test_evaluation_and_plan(self):
+        # The tables of the 「### 4.5.n 解法 X-A：…」 section: the same keys as
+        # for an issue solution (ETBlue, 2026-10-23). Each cell is a list of one Cell.
+        e = self.solution("X-E")
+        self.assertEqual(list(e["evaluation"]), ["laws", "privacy", "risks", "disasters", "feasibility"])
+        self.assertEqual(list(e["plan"]), ["owner", "resources", "cost", "steps"])
+        # The old 主要風險 cell is split at 「；災害風險：」.
+        self.assertEqual(e["evaluation"]["risks"],
+                         [{"text": "分開設置後，清潔箱或吸菸區可能離人多的地方遠一些；菸蒂收集設備需要維護（#8）",
+                           "tag": "AI模擬", "pending": False}])
+        self.assertTrue(e["evaluation"]["disasters"][0]["text"].startswith("負壓式吸菸區停電時無法排氣"))
+        # The issue files do not give these for a combined solution yet.
+        self.assertEqual(e["evaluation"]["feasibility"],
+                         [{"text": "【待補：整理組成解法的可行性】", "tag": None, "pending": True}])
+        self.assertEqual(e["plan"]["steps"], [{"text": "【待補：執行步驟】", "tag": None, "pending": True}])
+
+    def test_summary_rows_of_a_solution(self):
+        # The 可能的爭議 and 法規上的障礙 rows whose 相關編號 names 「解法 X-A」.
+        a = self.solution("X-A")
+        self.assertEqual([i["item"] for i in a["controversies"]], ["合併的選址討論"])
+        for i in a["controversies"] + a["legal"]:
+            self.assertIn("X-A", i["solutions"])
+        dep = next(t for t in self.data["summary"] if t["topic"] == "相依事項與現行政策的關係")
+        self.assertEqual(dep["items"], [])
 
     def test_practices_are_the_dependency_rows(self):
         # The cross-issue file has no practice table. A solution gets the rows of
-        # 相依事項與現行政策的關係 whose 相關編號 names it (「解法 X-A」). They are domestic.
+        # the 相依事項與現行政策的關係 table of its 4.5.n section. They are domestic.
         a = self.solution("X-A")["practices"]
         self.assertEqual([p["name"] for p in a], ["以各議題的解法為基礎", "現行的清潔箱做法"])
         self.assertEqual({(p["place"], p["domestic"], p["use"], p["source"]) for p in a},
                          {(None, True, None, "dependency")})
         self.assertEqual(a[1]["content"]["tag"], "AI模擬")
+        self.assertEqual(a[1]["refs"], ["#2 O04-US04", "解法 X-A"])
         self.assertEqual([p["name"] for p in self.solution("X-C")["practices"]], ["以各議題的解法為基礎"])
 
     def test_measures(self):

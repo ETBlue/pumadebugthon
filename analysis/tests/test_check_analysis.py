@@ -608,9 +608,9 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("步驟 7 #2 解法 D: unknown table 「備註 | 內容」")
 
     def test_step_7_steps_placeholder_passes(self):
-        # Every solution has 「【待補：執行步驟】」 now. A cell may also be one other
-        # 【待補：…】 item, or tagged text.
-        self.assertIn("| 執行步驟 | 【待補：執行步驟】 |\n", self.row_d("執行步驟"))
+        # A solution with no plan yet has 「【待補：執行步驟】」. A cell may also be
+        # one other 【待補：…】 item, or tagged text.
+        self.edit_in_section("D", self.row_d("執行步驟"), "| 執行步驟 | 【待補：執行步驟】 |\n")
         self.edit_in_section("D", self.row_d("成本"), "| 成本 | 【待補：單價】 |\n")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)

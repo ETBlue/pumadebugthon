@@ -77,7 +77,7 @@ describe('the step 7 table on the solution page', () => {
   const base = trashcans.solutions.find((s) => s.id === 'A') as Solution
   const sol: Solution = {
     ...base,
-    detail: base.detail.map((r) => (r.item === '隱私' ? { ...r, content: mixed } : r)),
+    evaluation: { ...base.evaluation, privacy: mixed },
   }
 
   function render(search: string): string {

@@ -161,8 +161,8 @@ describe('summaryGroupTag', () => {
 
 describe('summaryTabCounts', () => {
   it('counts the rows of each topic', () => {
-    expect(summaryTabCounts(smokefree)).toEqual({ decisions: 4, controversies: 5, disadvantaged: 6, legal: 6, dependencies: 5 })
-    expect(summaryTabCounts(policy)).toEqual({ decisions: 6, controversies: 5, disadvantaged: 6, legal: 6, dependencies: 5 })
+    expect(summaryTabCounts(smokefree)).toEqual({ decisions: 4, controversies: 5, disadvantaged: 6, legal: 6, dependencies: 2 })
+    expect(summaryTabCounts(policy)).toEqual({ decisions: 6, controversies: 5, disadvantaged: 6, legal: 6, dependencies: 0 })
   })
 
   it('does not count the 【待補】 rows of 受影響較大的弱勢族群', () => {
@@ -170,9 +170,9 @@ describe('summaryTabCounts', () => {
     expect(summaryItemsOf(trees, 'disadvantaged')).toHaveLength(6)
     expect(summaryItemsOf(trees, 'disadvantaged').filter((i) => i.text.pending).map((i) => i.item))
       .toEqual(['呼吸道疾病（尚未納入）', '外籍（尚未納入）'])
-    expect(summaryTabCounts(trees)).toEqual({ decisions: 5, controversies: 5, disadvantaged: 4, legal: 5, dependencies: 6 })
+    expect(summaryTabCounts(trees)).toEqual({ decisions: 5, controversies: 5, disadvantaged: 4, legal: 5, dependencies: 0 })
     // #2 has 6 rows; 呼吸道疾病（尚未納入） is 【待補】.
-    expect(summaryTabCounts(trashcans)).toEqual({ decisions: 4, controversies: 5, disadvantaged: 5, legal: 4, dependencies: 5 })
+    expect(summaryTabCounts(trashcans)).toEqual({ decisions: 4, controversies: 5, disadvantaged: 5, legal: 4, dependencies: 2 })
   })
 
   it('counts a filled row and leaves out a 【待補】 row', () => {
@@ -180,6 +180,7 @@ describe('summaryTabCounts', () => {
       item,
       text: pending ? { text: '【待補：…】', tag: null, pending: true } : { text: '說明', tag: 'AI模擬', pending: false },
       refs: [],
+      solutions: [],
     })
     const issue = {
       summary: [{ topic: '受影響較大的弱勢族群', items: [row('高齡', false), row('外籍（尚未納入）', true), row('兒童', false)] }],
@@ -199,6 +200,7 @@ describe('summaryItemsShown', () => {
     item,
     text: tag === null ? { text: '【待補：…】', tag: null, pending: true } : { text: '說明', tag, pending: false },
     refs: [],
+    solutions: [],
   })
   const items = [row('a', 'AI模擬'), row('b', '實證'), row('c', null), row('d', 'AI整理'), row('e', 'AI模擬')]
 

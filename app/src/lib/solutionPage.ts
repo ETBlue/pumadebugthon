@@ -1,7 +1,7 @@
 // Lookups for the solution page #/solutions/<n>-<code> (design 3.12).
 // The paths are in entityPaths.ts (solutionPath).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
-import type { Conflict, Group, IssueFile, Solution, SolutionPractice, Story } from '@/types'
+import type { Conflict, Group, IssueFile, Solution, SolutionEvaluation, SolutionPlan, SolutionPractice, Step7Cell, Story } from '@/types'
 import { compareIds } from './ids'
 import { stripMarkdown } from './markdown'
 import {
@@ -248,4 +248,24 @@ export function practiceSides(practices: SolutionPractice[]): PracticeSides {
     domestic: practices.filter((p) => p.domestic),
     foreign: practices.filter((p) => !p.domestic),
   }
+}
+
+/** One row of a step 7 table, with its label. */
+export interface Step7Row {
+  key: string
+  label: string
+  parts: Step7Cell
+}
+
+/** The rows of the step 7 evaluation table and of the 執行計畫 table of a
+ * solution (an issue solution or a cross-issue solution), in file order,
+ * with the labels of the file (ETBlue, 2026-10-23). labels: the
+ * evaluationLabels and planLabels of the i18n file. */
+export function step7Rows(
+  sol: { evaluation: SolutionEvaluation; plan: SolutionPlan },
+  labels: { evaluation: Record<keyof SolutionEvaluation, string>; plan: Record<keyof SolutionPlan, string> },
+): { evaluation: Step7Row[]; plan: Step7Row[] } {
+  const rows = <T extends object>(table: T, names: Record<keyof T, string>): Step7Row[] =>
+    (Object.keys(names) as (keyof T & string)[]).map((key) => ({ key, label: names[key], parts: table[key] as Step7Cell }))
+  return { evaluation: rows(sol.evaluation, labels.evaluation), plan: rows(sol.plan, labels.plan) }
 }

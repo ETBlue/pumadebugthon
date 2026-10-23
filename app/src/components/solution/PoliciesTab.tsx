@@ -1,10 +1,6 @@
-import { Link, useSearchParams } from 'react-router'
 import { CellText } from '@/components/CellText'
 import { Field } from '@/components/Field'
-import { targetLinkClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
-import { dataBasisFilterSearch } from '@/lib/dataBasis'
-import { tabPath } from '@/lib/issuePage'
 import { practiceSides } from '@/lib/solutionPage'
 import type { SolutionPractice } from '@/types'
 import { PartEmpty, SolutionPart, TwoColumns } from './Parts'
@@ -17,8 +13,6 @@ const tp = t.solutionPage
  * (decision 137): no border box, an h4 heading, the text, then the source
  * line. A 【待補】 item is in muted text. */
 function PracticeItem({ practice: p, issueNumber }: { practice: SolutionPractice; issueNumber: number | null }) {
-  const [params] = useSearchParams()
-  const search = dataBasisFilterSearch(params)
   const dependency = p.source === 'dependency'
   return (
     <li className={p.content.pending ? 'min-w-0 text-muted-foreground' : 'min-w-0'}>
@@ -38,15 +32,9 @@ function PracticeItem({ practice: p, issueNumber }: { practice: SolutionPractice
       <p className="mt-1 text-sm text-muted-foreground">
         {!dependency && issueNumber !== null && tp.practiceSource(issueNumber)}
         {dependency && issueNumber === null && tp.crossDependencySource}
-        {dependency && issueNumber !== null && (
-          <>
-            {tp.dependencySource}
-            {'　'}
-            <Link to={{ pathname: tabPath(issueNumber, 'dependencies'), search }} className={targetLinkClass}>
-              {tp.dependencyLink(issueNumber)}
-            </Link>
-          </>
-        )}
+        {/* Since 2026-10-23 the row is in the solution's own step 7 section,
+            not on the issue's 分析摘要 tab, so there is no link to that tab. */}
+        {dependency && issueNumber !== null && tp.dependencySource}
       </p>
     </li>
   )

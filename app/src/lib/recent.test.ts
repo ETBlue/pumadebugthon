@@ -28,7 +28,9 @@ function solution(id: string, updated: string, stories: string[] = []): Solution
   const cell = { text: '', tag: null, pending: false }
   return {
     id, name: { text: id, tag: null, pending: false }, summary: '', spaces: [], added: '2026-10-16', updated, stories, needs: null,
-    measures: [], detail: [], overview: { cost: cell, feasibility: cell, risk: cell, owner: cell }, ideas: [], practices: [], pending: [],
+    measures: [], evaluation: { laws: [cell], privacy: [cell], risks: [cell], disasters: [cell], feasibility: [cell] },
+    plan: { owner: [cell], resources: [cell], cost: [cell], steps: [cell] },
+    overview: { cost: cell, feasibility: cell, risk: cell, owner: cell }, ideas: [], controversies: [], legal: [], practices: [], pending: [],
   }
 }
 

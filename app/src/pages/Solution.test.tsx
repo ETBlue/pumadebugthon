@@ -118,16 +118,18 @@ describe('the solution page tabs (decision 103)', () => {
     expect(html).toContain('id="solution-conflicts"')
   })
 
-  it('相關政策 shows 國內 and 國外; a dependency row links to the issue tab', () => {
+  it('相關政策 shows 國內 and 國外; a dependency row names its step 7 source', () => {
     const html = render('/solutions/2-A/policies')
     expect(html).toContain('國內 2')
     expect(html).toContain('國外 2')
     expect(html).toContain('本文件怎麼用')
     const trashcans = trashcansJson as IssueFile
     const a = trashcans.solutions.find((s) => s.id === 'A')!
-    if (a.practices.some((p) => p.source === 'dependency')) {
-      expect(html).toContain('href="/issues/2/dependencies"')
-    }
+    // The rows of the 相依事項 table of 7.1 (ETBlue, 2026-10-23). The issue's
+    // 分析摘要 tab no longer has them, so there is no link to it.
+    expect(a.practices.some((p) => p.source === 'dependency')).toBe(true)
+    expect(html).toContain('議題分析步驟 7 這個解法的「相依事項與現行政策的關係」')
+    expect(html).not.toContain('href="/issues/2/dependencies"')
   })
 
   it('相關政策 has an empty state (#8 E has no practices)', () => {
@@ -154,7 +156,7 @@ describe('the cross-issue solution page tabs (decision 103)', () => {
 
   it('a dependency row of a cross-issue solution has no link: its topic has no page', () => {
     const html = render('/solutions/X-A/policies')
-    expect(html).toContain('跨議題分析的分析摘要')
+    expect(html).toContain('跨議題分析 4.5')
     expect(html).not.toContain('/dependencies"')
   })
 })

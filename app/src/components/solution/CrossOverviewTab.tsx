@@ -1,5 +1,4 @@
 import { Link, useSearchParams } from 'react-router'
-import { CellParts } from '@/components/CellParts'
 import { CellText } from '@/components/CellText'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Markdown } from '@/components/Markdown'
@@ -9,9 +8,11 @@ import { t } from '@/i18n/zh-TW'
 import { crossSolutionFocus } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { solutionPath } from '@/lib/entityPaths'
+import { step7Rows } from '@/lib/solutionPage'
 import { cn } from '@/lib/utils'
 import type { CrossIssueFile, CrossSolution, IndexFile, IssueFile } from '@/types'
 import { PartEmpty, SolutionPart } from './Parts'
+import { Step7Tables } from './Step7Tables'
 
 const tp = t.solutionPage
 const tx = t.crossIssue
@@ -78,19 +79,7 @@ export function CrossOverviewTab({ data, issues, solution: sol }: {
       <SolutionPart id="cross-detail" title={tx.detailHeading}>
         <p className="text-sm text-muted-foreground">{tp.detailIntro}</p>
         <DataBasisToggle className="mt-3" />
-        <dl className="mt-4 space-y-4">
-          {([
-            [tx.owner, sol.detail.owner],
-            [tx.laws, sol.detail.laws],
-            [tx.privacy, sol.detail.privacy],
-            [tx.risks, sol.detail.risks],
-          ] as const).map(([label, cell]) => (
-            <div key={label}>
-              <dt className="font-semibold">{label}</dt>
-              <dd className="mt-1 leading-relaxed"><CellParts parts={[cell]} dataBasedOnly={dataBasedOnly} /></dd>
-            </div>
-          ))}
-        </dl>
+        <Step7Tables rows={step7Rows(sol, { evaluation: tp.evaluationLabels, plan: tp.planLabels })} dataBasedOnly={dataBasedOnly} />
       </SolutionPart>
 
       <nav aria-labelledby="cross-more" className="border-t pt-6">

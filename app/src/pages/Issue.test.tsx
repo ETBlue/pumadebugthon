@@ -120,7 +120,7 @@ describe('the issue page tabs', () => {
   it('has nine tabs: 利害關係人 right after 總覽 (decision 116), then four 分析摘要 topics after 解法, with their counts (#1)', () => {
     expect(tabNames(render('/issues/1'))).toEqual([
       '總覽', '利害關係人 28・弱勢 4', '訴求 50・衝突 9', '需求 31', '解法 5',
-      '難以取捨 5', '可能爭議 5', '法規障礙 5', '相關解法與政策 6',
+      '難以取捨 5', '可能爭議 5', '法規障礙 5', '相關解法與政策 0',
     ])
   })
 
@@ -147,9 +147,9 @@ describe('the issue page tabs', () => {
   })
 
   it('a reference link keeps 「只看有資料根據」 (?evidence=1)', () => {
-    // 參與式預算 is tagged [實證], so the filter keeps it.
-    expect(render('/issues/9/dependencies?evidence=1')).toContain('href="/issues/9/wants?focus=C3&amp;evidence=1"')
-    expect(render('/issues/9/dependencies')).toContain('href="/issues/9/wants?focus=C3"')
+    // 行政院的生成式 AI 參考指引 is tagged [實證], so the filter keeps it.
+    expect(render('/issues/9/legal?evidence=1')).toContain('href="/solutions/9-B?evidence=1"')
+    expect(render('/issues/9/legal')).toContain('href="/solutions/9-B"')
     expect(render('/issues/2/controversies')).toContain('href="/issues/2/wants?focus=C9"')
   })
 
@@ -295,7 +295,8 @@ describe('「只看有資料根據」 on the 分析摘要 tabs (decision 108)', 
   })
 
   it('shows every row when the filter is off', () => {
-    expect(rowNames(render('/issues/9/dependencies'))).toHaveLength(5)
+    // #8 keeps 2 rows that name no solution (ETBlue, 2026-10-23).
+    expect(rowNames(render('/issues/8/dependencies'))).toHaveLength(2)
     expect(rowNames(render('/issues/8/legal'))).toHaveLength(6)
   })
 

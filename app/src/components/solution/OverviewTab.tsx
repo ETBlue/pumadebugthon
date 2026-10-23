@@ -10,9 +10,11 @@ import { t } from '@/i18n/zh-TW'
 import { crossSolutionsOfSolution } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { pendingBySection, tabPath } from '@/lib/issuePage'
+import { step7Rows } from '@/lib/solutionPage'
 import type { IssueFile, Solution } from '@/types'
 import { CrossSolutionLink } from './CrossSolutionCard'
 import { PartEmpty, SolutionPart } from './Parts'
+import { Step7Tables } from './Step7Tables'
 
 const tp = t.solutionPage
 
@@ -44,14 +46,7 @@ export function OverviewTab({ issue, solution: sol }: { issue: IssueFile; soluti
             <Field label={tp.owner}><CellParts parts={[sol.overview.owner]} dataBasedOnly={dataBasedOnly} /></Field>
           </dl>
         </section>
-        <dl className="mt-4 space-y-4">
-          {sol.detail.map((r) => (
-            <div key={r.item}>
-              <dt className="font-semibold">{r.item}</dt>
-              <dd className="mt-1 leading-relaxed"><CellParts parts={r.content} dataBasedOnly={dataBasedOnly} /></dd>
-            </div>
-          ))}
-        </dl>
+        <Step7Tables rows={step7Rows(sol, { evaluation: tp.evaluationLabels, plan: tp.planLabels })} dataBasedOnly={dataBasedOnly} />
       </SolutionPart>
 
       {sol.ideas.length > 0 && (

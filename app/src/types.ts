@@ -292,15 +292,25 @@ export interface Solution {
   needs: { must: string[]; shouldCould: string[] } | null
   /** 6.3 rows whose 解法 cell lists this solution, in file order. */
   measures: Measure[]
-  /** The rows of its step 7 section (「### 7.n 解法 X：…」), in file order. */
-  detail: DetailRow[]
+  /** The evaluation table of its step 7 section (「### 7.n 解法 X：…」,
+   * ETBlue, 2026-10-23). */
+  evaluation: SolutionEvaluation
+  /** The 執行計畫 table of its step 7 section. */
+  plan: SolutionPlan
   /** Its row of the step 7 總覽 table. Every field has the row's tag. */
   overview: SolutionOverview
   /** Rows of the 6.1 構想 table whose 本文件的處理 cell names this solution. */
   ideas: SolutionIdea[]
+  /** The 分析摘要 rows of 可能的爭議 whose 相關編號 names this solution
+   * (「解法 A」, not 「#8 解法 B」), in file order. The same objects as in
+   * IssueFile.summary. Can be []. */
+  controversies: SummaryItem[]
+  /** The 分析摘要 rows of 法規上的障礙 that name this solution, the same way. */
+  legal: SummaryItem[]
   /** 相關或類似的政策與做法 (ETBlue, 2026-10-22; design decision 104): the
-   * 6.1 practice rows that name this solution, then the 分析摘要 rows of
-   * 相依事項與現行政策的關係 that name it. In file order. Can be []. */
+   * 6.1 practice rows that name this solution, then the rows of the
+   * 相依事項與現行政策的關係 table of its step 7 section (moved there from
+   * the 分析摘要 on 2026-10-23). In file order. Can be []. */
   practices: SolutionPractice[]
   /** The 【待補】 items of its step 7 section and of its 6.3 rows. The same
    * items are also in IssueFile.pending. */
@@ -317,15 +327,38 @@ export interface Measure {
   source: string
 }
 
-/** A row of a step 7 section, for example 相關法規. */
-export interface DetailRow {
-  /** 項目, for example 「需要的資料／API」 or 「隱私」. */
-  item: string
-  /** 內容: the parts of the cell, in file order, one Cell per tag. Only these
-   * cells may hold more than one tag (ETBlue, 2026-10-22; design decision 101):
-   * 「`[實證]` 官方資料… `[AI模擬]` 推想…」 is two parts. A cell with one
-   * tag is a list of one Cell. Never empty. */
-  content: Cell[]
+/** A cell of a step 7 table: the parts of the cell, in file order, one Cell
+ * per tag. Only these cells may hold more than one tag (ETBlue, 2026-10-22;
+ * design decision 101): 「`[實證]` 官方資料… `[AI模擬]` 推想…」 is two
+ * parts. A cell with one tag, or a 【待補】 cell such as
+ * 「【待補：執行步驟】」, is a list of one Cell. Never empty. */
+export type Step7Cell = Cell[]
+
+/** The evaluation table of a step 7 section (項目 | 內容; ETBlue, 2026-10-23). */
+export interface SolutionEvaluation {
+  /** 相關法規 */
+  laws: Step7Cell
+  /** 隱私 */
+  privacy: Step7Cell
+  /** 其他顧慮與風險 (the risk part of the old 成本／可行性／風險 cell is at its end) */
+  risks: Step7Cell
+  /** 災害風險 */
+  disasters: Step7Cell
+  /** 可行性 */
+  feasibility: Step7Cell
+}
+
+/** The 執行計畫 table of a step 7 section (執行計畫 | 內容; ETBlue, 2026-10-23). */
+export interface SolutionPlan {
+  /** 主責單位 */
+  owner: Step7Cell
+  /** 需要的資料／API／資源 */
+  resources: Step7Cell
+  /** 成本 */
+  cost: Step7Cell
+  /** 執行步驟: a short plan (phases and the first step). 「【待補：執行步驟】」
+   * until it is written. */
+  steps: Step7Cell
 }
 
 /** A row of the step 7 總覽 table. */
@@ -364,8 +397,12 @@ export interface SolutionPractice {
   /** 本文件怎麼用. null for a dependency row. */
   use: Cell | null
   /** "practice": a row of a 6.1 practice table (做法 | 內容 | 本文件怎麼用).
-   * "dependency": a row of the 分析摘要 topic 相依事項與現行政策的關係. */
+   * "dependency": a row of the 相依事項與現行政策的關係 table of the
+   * solution's step 7 section (4.5.n in the cross-issue file). */
   source: 'practice' | 'dependency'
+  /** 相關編號 of a dependency row, as written (for example "O04-US04",
+   * "解法 A", "#1 C7"). [] for a practice row. */
+  refs: string[]
 }
 
 /** A row of a 分析摘要 topic table (項目 | 說明 | 相關編號). */
@@ -378,6 +415,11 @@ export interface SummaryItem {
    * "#8 解法 B" (another issue). Empty for 「—」. build_json.py checks
    * that each one exists. */
   refs: string[]
+  /** The codes of the solutions that refs names: 「解法 A」 -> "A" in an
+   * issue file, 「解法 X-A」 -> "X-A" in the cross-issue file. 「#8 解法 B」
+   * is not one. [] when the row names no solution (ETBlue, 2026-10-23: such
+   * rows are shown on the issue 總覽). */
+  solutions: string[]
 }
 
 /** One topic of the 分析摘要 (a 「### 」 subsection). */
@@ -545,8 +587,14 @@ export interface CrossSolution {
     crossIssue: string[]
   }
   measures: CrossMeasure[]
-  detail: { owner: Cell; laws: Cell; privacy: Cell; risks: Cell }
-  /** The 分析摘要 rows of 相依事項與現行政策的關係 that name it (「解法 X-A」).
+  /** The tables of its 「### 4.5.n 解法 X-A：…」 section: the same shape as
+   * for an issue solution. Each cell has one part. */
+  evaluation: SolutionEvaluation
+  plan: SolutionPlan
+  /** The 分析摘要 rows of 可能的爭議 and 法規上的障礙 that name it. */
+  controversies: SummaryItem[]
+  legal: SummaryItem[]
+  /** The rows of the 相依事項與現行政策的關係 table of its 4.5.n section.
    * All domestic, source "dependency". The file has no practice table. */
   practices: SolutionPractice[]
 }

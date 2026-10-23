@@ -594,6 +594,22 @@ export const t = {
     source: '資料來源',
     detailHeading: '資源、法規、隱私與風險',
     detailIntro: '這部分由 AI 整理，可以作為討論的起點。成本與法條適用需由專業人士確認。',
+    /** The rows of the step 7 evaluation table (ETBlue, 2026-10-23), in file order. */
+    evaluationLabels: {
+      laws: '相關法規',
+      privacy: '隱私',
+      risks: '其他顧慮與風險',
+      disasters: '災害風險',
+      feasibility: '可行性',
+    },
+    /** The step 7 執行計畫 table and its rows, in file order. */
+    planHeading: '執行計畫',
+    planLabels: {
+      owner: '主責單位',
+      resources: '需要的資料／API／資源',
+      cost: '成本',
+      steps: '執行步驟',
+    },
     /** A step 7 cell whose parts are all hidden by 「只看有資料根據」 (decision 105). */
     detailFilteredNone: '這一格只有標記 [AI模擬] 的內容。',
     /** The 相關政策 tab (decisions 103 and 104). */
@@ -611,11 +627,10 @@ export const t = {
     /** The kind of an item: a row of a 6.1 practice table, or a dependency row. */
     practiceKind: '相關做法',
     dependencyKind: '相依與現行政策',
-    /** Where a dependency row comes from: the 分析摘要 topic of the issue. */
-    dependencySource: '來源：分析摘要的「相依事項與現行政策的關係」',
-    dependencyLink: (n: number) => `到 #${n} 的相關解法與政策分頁`,
+    /** Where a dependency row comes from: the step 7 section of the solution (since 2026-10-23). */
+    dependencySource: '來源：議題分析步驟 7 這個解法的「相依事項與現行政策的關係」',
     /** A cross-issue solution: the topic is in the cross-issue file, which has no page. */
-    crossDependencySource: '來源：跨議題分析的分析摘要「相依事項與現行政策的關係」。',
+    crossDependencySource: '來源：跨議題分析 4.5 這個解法的「相依事項與現行政策的關係」。',
     overviewHeading: '總覽',
     cost: '成本',
     feasibility: '可行性',
@@ -896,10 +911,6 @@ export const t = {
     measureFrom: '來自',
     measureNew: '新指標',
     detailHeading: '主責單位、法規、隱私與風險',
-    owner: '主責單位',
-    laws: '法規',
-    privacy: '隱私',
-    risks: '風險',
     /** The 需求 tab. */
     groupsHeading: '跨議題的共同需求',
     groupsIntro: '同一個需求出現在幾個議題。這個解法涵蓋這些群組，所以群組裡各議題的需求都算被涵蓋。',

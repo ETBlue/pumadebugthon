@@ -123,9 +123,12 @@ describe('issue files', () => {
       expect(issue.summary).toHaveLength(5)
       for (const topic of issue.summary) {
         expect(typeof topic.topic).toBe('string')
-        expect(topic.items.length).toBeGreaterThan(0)
+        // 相依事項與現行政策的關係 keeps only the rows that name no solution
+        // (ETBlue, 2026-10-23), so it can be empty (#1, #9).
+        if (topic.topic !== '相依事項與現行政策的關係') expect(topic.items.length).toBeGreaterThan(0)
         for (const item of topic.items) {
-          expect(Object.keys(item)).toEqual(['item', 'text', 'refs'])
+          expect(Object.keys(item)).toEqual(['item', 'text', 'refs', 'solutions'])
+          if (topic.topic === '相依事項與現行政策的關係') expect(item.solutions).toEqual([])
           expect(typeof item.item).toBe('string')
           expectCell(item.text)
           // A row with a tag lists where it comes from; a 【待補】 row may list nothing.
@@ -208,20 +211,24 @@ describe('issue files', () => {
             expect(typeof m.source).toBe('string')
             expectCell(m.baseline)
           }
-          expect(sol.detail.length, sol.id).toBeGreaterThan(0)
-          for (const r of sol.detail) {
-            expect(typeof r.item).toBe('string')
-            expect(r.content.length, `${sol.id} ${r.item}`).toBeGreaterThan(0)
-            for (const part of r.content) expectCell(part)
+          // The step 7 tables (ETBlue, 2026-10-23): the evaluation rows and the 執行計畫 rows, by key.
+          expect(Object.keys(sol.evaluation)).toEqual(['laws', 'privacy', 'risks', 'disasters', 'feasibility'])
+          expect(Object.keys(sol.plan)).toEqual(['owner', 'resources', 'cost', 'steps'])
+          for (const [key, parts] of [...Object.entries(sol.evaluation), ...Object.entries(sol.plan)]) {
+            expect(parts.length, `${sol.id} ${key}`).toBeGreaterThan(0)
+            for (const part of parts) expectCell(part)
             // A cell with several parts: each part has its own tag and text.
-            if (r.content.length > 1) {
-              for (const part of r.content) {
+            if (parts.length > 1) {
+              for (const part of parts) {
                 expect(part.tag).not.toBeNull()
                 expect(part.text).not.toBe('')
               }
             }
           }
           for (const c of Object.values(sol.overview)) expectCell(c)
+          // The 分析摘要 rows of 可能的爭議 and 法規上的障礙 that name the solution.
+          for (const i of [...sol.controversies, ...sol.legal]) expect(i.solutions).toContain(sol.id)
+          for (const p of sol.practices) expect(Array.isArray(p.refs)).toBe(true)
           expect(Object.keys(sol.overview)).toEqual(['cost', 'feasibility', 'risk', 'owner'])
           for (const i of sol.ideas) {
             expectCell(i.idea)
@@ -304,7 +311,10 @@ describe('cross-issue.json', () => {
     for (const s of cross.solutions) {
       expect(TAGS).toContain(s.tag)
       expect(s.added).toMatch(/^\d{4}-\d{2}-\d{2}$/)
-      for (const cell of Object.values(s.detail)) expectCell(cell)
+      for (const parts of [...Object.values(s.evaluation), ...Object.values(s.plan)]) {
+        expect(parts).toHaveLength(1)
+        expectCell(parts[0])
+      }
       for (const m of s.measures) {
         expectCell(m.baseline)
         expect(typeof m.isNew).toBe('boolean')

@@ -165,8 +165,10 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertTrue(a["evaluation"]["risks"][0]["text"].startswith("模型只是建議，不能取代現場勘查與里民討論"))
         self.assertTrue(a["evaluation"]["risks"][0]["text"].endswith("；資料過舊（主表涵蓋到 2018）會讓建議失準"))
         self.assertTrue(a["plan"]["resources"][0]["text"].startswith("清潔箱位置（data.gov.tw 121355）"))
-        # 執行步驟 is a 【待補】 cell for now.
-        self.assertEqual(a["plan"]["steps"], [{"text": "【待補：執行步驟】", "tag": None, "pending": True}])
+        # 執行步驟 is a short plan by AI, one cell with phases.
+        self.assertEqual(len(a["plan"]["steps"]), 1)
+        self.assertEqual(a["plan"]["steps"][0]["tag"], "AI模擬")
+        self.assertTrue(a["plan"]["steps"][0]["text"].startswith("第一步："))
         # A solution with no related disaster says so in its 災害風險 row.
         self.assertEqual(self.solution("C")["evaluation"]["disasters"], cell("無明顯相關災害風險"))
 
@@ -178,11 +180,15 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(b["plan"]["cost"][0]["tag"], "AI模擬")
 
     def test_steps_pending_in_solution_and_issue_lists(self):
+        # A 【待補】 inside a plan is listed for the solution and for the issue.
+        found = 0
         for s in self.issue["solutions"]:
-            item = {"section": next(p["section"] for p in s["pending"] if p["section"].startswith("7.")),
-                    "text": "【待補：執行步驟】", "context": "執行步驟"}
-            self.assertIn(item, s["pending"], s["id"])
-            self.assertIn(item, self.issue["pending"], s["id"])
+            for item in s["pending"]:
+                self.assertNotEqual(item["text"], "【待補：執行步驟】", s["id"])
+                if item["context"] == "執行步驟":
+                    found += 1
+                    self.assertIn(item, self.issue["pending"], s["id"])
+        self.assertGreater(found, 0)
 
     def test_mixed_step_7_cell(self):
         # #2 解法 E: the 災害風險 cell is split into parts with their own tags

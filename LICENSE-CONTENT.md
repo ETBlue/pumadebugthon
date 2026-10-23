@@ -12,7 +12,8 @@
 
 除了下方的例外，以下內容使用 CC BY 4.0：
 
-- `analysis/` 的議題分析：`*/issue-analysis.md`、`*/user-stories.csv`、`docs/method.md`、`README.md`、共用的 CSV 檔（`data/stakeholders.csv`、`data/path-labels.csv`、`data/space-types.csv`、`data/issues.csv`）
+- `analysis/` 的議題分析：`*/issue-analysis.md`、`*/user-stories.csv`、`docs/method.md`、`docs/data-guide.md`、`README.md`、共用的 CSV 檔（`data/stakeholders.csv`、`data/path-labels.csv`、`data/space-types.csv`、`data/issues.csv`）
+- 網站發布的資料檔（由上面的議題分析產生）：`data/*.json`、`data/issues/*.json`，以及每種資料一個檔案的 `data/flat/*.csv`、`data/flat/*.json`（說明見 `analysis/docs/data-guide.md`）
 - `app/` 的文件：`README.md`、`docs/design.md`、`docs/plan.md`
 - 網站的介面文字（`app/src/i18n/`），以及網站顯示的分析內容
 - `human-inputs.md`、`ai-inputs.md` 等筆記
@@ -37,7 +38,7 @@ This repo uses three licenses.
 | Content made by the author, ETBlue (listed above) | [Creative Commons Attribution 4.0 International (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/) |
 | Content from the hackathon host, and open data | Not covered by the two licenses above. See the exceptions. |
 
-The CC BY 4.0 content includes the issue analysis in `analysis/` (issue files, user story CSV files, `docs/method.md`, `README.md`, and the shared CSV files in `data/`), the documents in `app/` (`README.md`, `docs/design.md`, `docs/plan.md`), the UI text in `app/src/i18n/`, and the notes (`human-inputs.md`, `ai-inputs.md`). Attribution: ETBlue, with a link to <https://github.com/ETBlue/pumadebugthon>.
+The CC BY 4.0 content includes the issue analysis in `analysis/` (issue files, user story CSV files, `docs/method.md`, `README.md`, and the shared CSV files in `data/`, and the data guide `docs/data-guide.md`), the data files that the site publishes from the analysis (`data/*.json`, `data/issues/*.json`, and the per-type files `data/flat/*.csv` and `data/flat/*.json`), the documents in `app/` (`README.md`, `docs/design.md`, `docs/plan.md`), the UI text in `app/src/i18n/`, and the notes (`human-inputs.md`, `ai-inputs.md`). Attribution: ETBlue, with a link to <https://github.com/ETBlue/pumadebugthon>.
 
 Exceptions:
 

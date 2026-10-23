@@ -63,11 +63,12 @@ export function CrossOverviewTab({ data, issues, solution: sol }: {
         {focus.length === 0 ? (
           <PartEmpty>{tx.focusNone}</PartEmpty>
         ) : (
-          <dl className="space-y-3">
+          // A focus row has no ID and no page: article style, not a card (decision 137).
+          <dl className="space-y-6">
             {focus.map((f) => (
-              <div key={f.tag} className="rounded-md border p-3">
-                <dt className="font-semibold">{f.tag}</dt>
-                <dd className="mt-1"><CellText cell={f.note} /></dd>
+              <div key={f.tag} className={f.note.pending ? 'min-w-0 text-muted-foreground' : 'min-w-0'}>
+                <dt className="text-lg font-semibold text-foreground">{f.tag}</dt>
+                <dd className="mt-1 leading-relaxed"><CellText cell={f.note} /></dd>
               </div>
             ))}
           </dl>

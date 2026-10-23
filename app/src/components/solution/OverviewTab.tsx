@@ -34,8 +34,9 @@ export function OverviewTab({ issue, solution: sol }: { issue: IssueFile; soluti
       <SolutionPart id="solution-detail" title={tp.detailHeading}>
         <p className="text-sm text-muted-foreground">{tp.detailIntro}</p>
         <DataBasisToggle className="mt-3" />
-        <section aria-labelledby="solution-overview" className="mt-4 rounded-md border p-3">
-          <h4 id="solution-overview" className="font-semibold">{tp.overviewHeading}</h4>
+        {/* Not an entity, so no card box (decision 137). */}
+        <section aria-labelledby="solution-overview" className="mt-6">
+          <h4 id="solution-overview" className="text-lg font-semibold">{tp.overviewHeading}</h4>
           <dl className="mt-2 space-y-1.5">
             <Field label={tp.cost}><CellParts parts={[sol.overview.cost]} dataBasedOnly={dataBasedOnly} /></Field>
             <Field label={tp.feasibility}><CellParts parts={[sol.overview.feasibility]} dataBasedOnly={dataBasedOnly} /></Field>
@@ -56,19 +57,16 @@ export function OverviewTab({ issue, solution: sol }: { issue: IssueFile; soluti
       {sol.ideas.length > 0 && (
         <SolutionPart id="solution-ideas" title={tp.ideasHeading}>
           <p className="text-sm text-muted-foreground">{tp.ideasIntro}</p>
-          <ul className="mt-3 space-y-3">
+          {/* An idea has no ID and no page: article style, not a card (decision 137). */}
+          <ul className="mt-4 space-y-6">
             {sol.ideas.map((idea, i) => (
-              <li key={i} className="rounded-md border p-3">
-                <dl className="space-y-2">
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{tp.idea}</dt>
-                    <dd><CellText cell={idea.idea} /></dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm text-muted-foreground">{tp.handling}</dt>
-                    <dd><CellText cell={idea.handling} /></dd>
-                  </div>
-                </dl>
+              <li key={i} className={idea.idea.pending ? 'min-w-0 text-muted-foreground' : 'min-w-0'}>
+                <h4 className="text-lg font-semibold text-foreground">
+                  <span className="sr-only">{tp.idea}：</span>
+                  <CellText cell={idea.idea} />
+                </h4>
+                <p className="mt-1 text-sm text-muted-foreground">{tp.handling}</p>
+                <p className="leading-relaxed"><CellText cell={idea.handling} /></p>
               </li>
             ))}
           </ul>

@@ -181,6 +181,46 @@ describe('the dates in the metadata of 總覽 (decision 131)', () => {
   })
 })
 
+describe('items that are not entities are in article style (decision 137)', () => {
+  const CARD = 'rounded-md border p-3'
+  const listItems = (html: string, from: string) => html.slice(html.indexOf(from)).match(/<li[^>]*>/g) ?? []
+
+  it('成效衡量: each row is an h3 with no card box (issue and cross-issue)', () => {
+    for (const path of ['/solutions/2-A/measures', '/solutions/X-A/measures']) {
+      const html = render(path)
+      expect(html, path).toContain('<ul class="space-y-6"><li class="min-w-0"><h3 class="text-lg font-semibold">')
+      expect(html, path).not.toContain(CARD)
+    }
+  })
+
+  it('相關政策: each item is an h4 with no card box, inside the two columns', () => {
+    for (const path of ['/solutions/2-A/policies', '/solutions/X-A/policies']) {
+      const html = render(path)
+      expect(html, path).not.toContain(CARD)
+      expect(html, path).toMatch(/<li class="min-w-0[^"]*"><h4 class="text-lg font-semibold text-foreground">/)
+    }
+  })
+
+  it('總覽: the 概覽 block and the ideas have no card box (#2 B has 2 ideas)', () => {
+    const html = render('/solutions/2-B')
+    expect(html).toContain('aria-labelledby="solution-overview" class="mt-6"')
+    const ideas = files['2-trashcans'].solutions.find((s) => s.id === 'B')!.ideas
+    expect(ideas).toHaveLength(2)
+    const items = listItems(html, 'id="solution-ideas"').slice(0, 2)
+    expect(items).toHaveLength(2)
+    for (const li of items) expect(li).toMatch(/^<li class="min-w-0( text-muted-foreground)?">$/)
+    expect(html.slice(html.indexOf('id="solution-ideas"'))).toContain('<h4 class="text-lg font-semibold text-foreground">')
+  })
+
+  it('cross-issue 總覽: the 特別關注族群 rows have no card box; the merged solutions keep their cards', () => {
+    const html = render('/solutions/X-A')
+    const focus = html.slice(html.indexOf('id="cross-focus"'), html.indexOf('id="cross-detail"'))
+    expect(focus).not.toContain(CARD)
+    const parts = html.slice(html.indexOf('id="cross-parts"'), html.indexOf('id="cross-focus"'))
+    expect(parts).toContain(CARD)
+  })
+})
+
 describe('two columns side by side from lg (decision 136)', () => {
   const COLS = 'class="grid gap-10 *:min-w-0 lg:grid-cols-2 lg:gap-8"'
   // The heading IDs of the sections after each two-column grid starts, in

@@ -17,17 +17,19 @@ const tx = t.crossIssue
 // the cross-issue file), moved here from the 總覽 tab. The tab content is
 // under the hidden h2 「成效衡量」, so each indicator is an h3. The
 // 「只看有資料根據」 filter did not change this list on the 總覽 tab, so it
-// does not change it here either.
+// does not change it here either. A row has no ID and no page, so it is
+// not an entity. The rows are an article, not cards (decision 137): one
+// column, no border box, a heading and its fields, space-y-6 between rows.
 
 /** The 成效衡量 tab of an issue solution. */
 export function MeasuresTab({ solution: sol }: { solution: Solution }) {
   if (sol.measures.length === 0) return <PartEmpty>{tp.measuresNone}</PartEmpty>
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-6">
       {sol.measures.map((m, i) => (
-        <li key={i} className="rounded-md border p-3">
-          <h3 className="font-medium"><Markdown text={m.metric} /></h3>
-          <dl className="mt-2 space-y-1.5 text-sm">
+        <li key={i} className="min-w-0">
+          <h3 className="text-lg font-semibold"><Markdown text={m.metric} /></h3>
+          <dl className="mt-1 space-y-1.5 text-sm">
             <Field label={tp.baseline}><CellText cell={m.baseline} /></Field>
             <Field label={tp.source}><Markdown text={m.source} /></Field>
           </dl>
@@ -44,10 +46,10 @@ export function CrossMeasuresTab({ solution: sol }: { solution: CrossSolution })
   const search = dataBasisFilterSearch(params)
   if (sol.measures.length === 0) return <PartEmpty>{tp.measuresNone}</PartEmpty>
   return (
-    <ul className="space-y-3">
+    <ul className="space-y-6">
       {sol.measures.map((m, i) => (
-        <li key={i} className="rounded-md border p-3">
-          <h3 className="font-medium">
+        <li key={i} className="min-w-0">
+          <h3 className="text-lg font-semibold">
             <Markdown text={m.indicator} />
             {m.isNew && (
               <span className="ml-2 rounded-sm border px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
@@ -55,7 +57,7 @@ export function CrossMeasuresTab({ solution: sol }: { solution: CrossSolution })
               </span>
             )}
           </h3>
-          <dl className="mt-2 space-y-1.5 text-sm">
+          <dl className="mt-1 space-y-1.5 text-sm">
             <Field label={tp.baseline}><CellText cell={m.baseline} /></Field>
             <Field label={tp.source}><Markdown text={m.source} /></Field>
             {m.from.length > 0 && (

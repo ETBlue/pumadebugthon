@@ -12,27 +12,30 @@ import { PartEmpty, SolutionPart, TwoColumns } from './Parts'
 const tp = t.solutionPage
 
 /** One item: the kind (相關做法 or 相依與現行政策), the place and the name,
- * the content with its tag, 本文件怎麼用 when present, and where it comes from. */
+ * the content with its tag, 本文件怎麼用 when present, and where it comes from.
+ * An item has no ID and no page, so it is in article style, not a card
+ * (decision 137): no border box, an h4 heading, the text, then the source
+ * line. A 【待補】 item is in muted text. */
 function PracticeItem({ practice: p, issueNumber }: { practice: SolutionPractice; issueNumber: number | null }) {
   const [params] = useSearchParams()
   const search = dataBasisFilterSearch(params)
   const dependency = p.source === 'dependency'
   return (
-    <li className="rounded-md border p-3">
-      <h4 className="font-semibold">
+    <li className={p.content.pending ? 'min-w-0 text-muted-foreground' : 'min-w-0'}>
+      <h4 className="text-lg font-semibold text-foreground">
         <span className="mr-2 rounded-sm border px-1.5 py-0.5 text-xs font-normal text-muted-foreground">
           {dependency ? tp.dependencyKind : tp.practiceKind}
         </span>
         {p.place !== null && <span className="mr-1.5">{p.place}：</span>}
         {p.name}
       </h4>
-      <p className="mt-2"><CellText cell={p.content} /></p>
+      <p className="mt-1 leading-relaxed"><CellText cell={p.content} /></p>
       {p.use !== null && (
-        <dl className="mt-2 text-sm">
+        <dl className="mt-1 text-sm">
           <Field label={tp.practiceUse}><CellText cell={p.use} /></Field>
         </dl>
       )}
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground">
         {!dependency && issueNumber !== null && tp.practiceSource(issueNumber)}
         {dependency && issueNumber === null && tp.crossDependencySource}
         {dependency && issueNumber !== null && (
@@ -61,7 +64,7 @@ function Side({ id, title, items, none, issueNumber }: {
       {items.length === 0 ? (
         <PartEmpty>{none}</PartEmpty>
       ) : (
-        <ul className="space-y-3">
+        <ul className="space-y-6">
           {items.map((p, i) => <PracticeItem key={i} practice={p} issueNumber={issueNumber} />)}
         </ul>
       )}

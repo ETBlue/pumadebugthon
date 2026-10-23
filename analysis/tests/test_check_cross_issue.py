@@ -68,11 +68,11 @@ class CheckCrossIssueTest(unittest.TestCase):
         # the test adds a fake issue #7 with no folder to the copied issues.csv.
         with open(os.path.join(self.dir, "data", "issues.csv"), "a", encoding="utf-8") as f:
             f.write("7,7-test,測試用的議題（沒有分析）,主辦單位,\n")
-        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9（試作）", "# 跨議題分析：#1、#2、#3、#4、#5、#6、#7、#8、#9（試作）")
+        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10（試作）", "# 跨議題分析：#1、#2、#3、#4、#5、#6、#7、#8、#9、#10（試作）")
         self.assertFails("title", "#7")
 
     def test_title_without_issue_numbers(self):
-        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9（試作）", "# 跨議題分析（試作）")
+        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10（試作）", "# 跨議題分析（試作）")
         self.assertFails("title")
 
     @unittest.skipUnless(os.path.isfile(os.path.join(ANALYSIS, "9-policydiscovery", "issue-analysis.md")), "needs #9")
@@ -80,20 +80,18 @@ class CheckCrossIssueTest(unittest.TestCase):
         # #9 shares stakeholders with the other issues. When the title does not name it,
         # the check prints a note for a person (the owner decides). The #9 column of 1.1
         # then is an error, but the note is still there.
-        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9（試作）", "# 跨議題分析：#1、#2、#3、#4、#5、#6、#8（試作）")
+        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10（試作）", "# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#10（試作）")
         code, out = self.run_check()
         self.assertIn("NOTE: issue #9", out)
         self.assertIn("O07", out)
 
-    def test_real_file_compares_all_issues_but_10(self):
-        # ETBlue added #9 on 2026-10-20 and #3, #4, #5 and #6 on 2026-10-23, so they
-        # get no note. #10 (added 2026-10-24) shares stakeholders but is not compared
-        # yet, so it gets a note; the owner decides whether to add it.
+    def test_real_file_compares_all_issues_without_notes(self):
+        # ETBlue added #9 on 2026-10-20, #3, #4, #5 and #6 on 2026-10-23 and #10 on
+        # 2026-10-24. Every issue with an analysis is compared, so the check prints no note.
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
-        self.assertIn("issues: [1, 2, 3, 4, 5, 6, 8, 9]", out)
-        self.assertIn("NOTE: issue #10", out)
-        self.assertEqual(out.count("NOTE:"), 1, out)
+        self.assertIn("issues: [1, 2, 3, 4, 5, 6, 8, 9, 10]", out)
+        self.assertNotIn("NOTE:", out)
 
     # ---------- tags and 待補 ----------
 
@@ -138,11 +136,11 @@ class CheckCrossIssueTest(unittest.TestCase):
     # ---------- shared stakeholders ----------
 
     def test_shared_stakeholder_missing(self):
-        self.edit("| I19 | 無家者 | 經濟弱勢 | #1、#3、#8 | #1 I19-US01 | — | #3 I19-US01 | — | — | — | #8 I19-US01 | — |\n", "")
+        self.edit("| I19 | 無家者 | 經濟弱勢 | #1、#3、#8 | #1 I19-US01 | — | #3 I19-US01 | — | — | — | #8 I19-US01 | — | — |\n", "")
         self.assertFails("I19")
 
     def test_shared_stakeholder_story_missing(self):
-        self.edit("| #8 O03-US01 | — |\n", "| — | — |\n")
+        self.edit("| #8 O03-US01 | — | — |\n", "| — | — | — |\n")
         self.assertFails("O03", "#8")
 
     def test_focus_group_order(self):
@@ -173,11 +171,11 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-N06", "各議題不同")
 
     def test_priority_not_from_issues(self):
-        self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S | `[AI模擬]` S |", "| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S | `[AI模擬]` M |")
+        self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S | `[AI模擬]` S |", "| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S | `[AI模擬]` M |")
         self.assertFails("X-N03")
 
     def test_priority_listed_wrong(self):
-        self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S |", "| #1 N15 M、#2 N03 S、#3 N04 S、#8 N07 S |")
+        self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S |", "| #1 N15 M、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S |")
         self.assertFails("#1 N15")
 
     def test_need_group_not_covered(self):
@@ -207,8 +205,8 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-E", "2 or more issues")
 
     def test_combined_space_not_in_parts(self):
-        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D | `sidewalk`、`park`、`mrt-exit` |",
-                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D | `sidewalk`、`park`、`mrt-exit`、`utility` |")
+        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A | `sidewalk`、`park`、`mrt-exit`、`indoor` |",
+                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A | `sidewalk`、`park`、`mrt-exit`、`indoor`、`utility` |")
         self.assertFails("X-C", "utility")
 
     def test_must_column_priority_wrong(self):

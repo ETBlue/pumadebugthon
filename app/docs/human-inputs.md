@@ -106,10 +106,11 @@ information architecture:
     * user wants with covered / not covered count
     * user needs with fulfilled / not fulfilled count
     * conflicts with resolved / related count
-    * potential controversies with count
-    * legal blockers with count
     * execution plans
     * result evaluation methods with count
+    * potential risks with count
+    * potential controversies with count
+    * legal blockers with count
     * related or similar policies / solutions with "from domestic country" / "from foreign country" count
 
 visual:

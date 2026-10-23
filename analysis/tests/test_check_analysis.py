@@ -1069,13 +1069,31 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_bad_updated_date_fails(self):
         row = self.dates_row("利害關係人", "I05")
-        date = row.split(",")[2]
+        date = row.split(",")[3]
         for wrong, needle in (("2026/10/20", "not YYYY-MM-DD"), ("2026-02-30", "not a real date"),
                               ("2999-01-01", "future"), ("2026-10-01", "before its 新增日期 2026-10-18")):
             with self.subTest(wrong=wrong):
                 self.tearDown(); self.setUp()
                 self.edit(self.DATES, row, row.replace(f",{date},", f",{wrong},"))
                 self.assertFails("updated-dates.csv: 利害關係人 I05 更新日期", needle, dates=False)
+
+    def test_bad_story_added_date_fails(self):
+        # A user story keeps its 新增日期 in updated-dates.csv.
+        row = self.dates_row("使用者故事", "2-O01-US01")
+        parts = row.split(",")
+        for added, updated, needle in (("", parts[3], "新增日期 '' is not YYYY-MM-DD"),
+                                       ("2999-01-01", parts[3], "新增日期 2999-01-01 is in the future"),
+                                       ("2026-10-20", "2026-10-19", "更新日期 2026-10-19 is before its 新增日期 2026-10-20")):
+            with self.subTest(added=added):
+                self.tearDown(); self.setUp()
+                self.edit(self.DATES, row, ",".join(parts[:2] + [added, updated] + parts[4:]))
+                self.assertFails("updated-dates.csv: 使用者故事 2-O01-US01", needle, dates=False)
+
+    def test_added_date_on_other_type_fails(self):
+        # A stakeholder's 新增日期 is in stakeholders.csv, so the column stays empty.
+        row = self.dates_row("利害關係人", "I05")
+        self.edit(self.DATES, row, row.replace("I05,,", "I05,2026-10-18,"))
+        self.assertFails("updated-dates.csv: 利害關係人 I05 新增日期 must be empty", dates=False)
 
 
 if __name__ == "__main__":

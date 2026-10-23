@@ -63,8 +63,8 @@ describe('sortIssues', () => {
 })
 
 describe('sortStakeholders', () => {
-  it('最近新增 gives the same first 5 as the home block', () => {
-    expect(ids(sortStakeholders(listed, 'added', ctx).slice(0, 5))).toEqual(ids(recentStakeholders(index.stakeholders, 5)))
+  it('最近更新 gives the same first 5 as the home block (decision 131)', () => {
+    expect(ids(sortStakeholders(listed, 'updated', ctx).slice(0, 5))).toEqual(ids(recentStakeholders(index.stakeholders, 5)))
   })
 
   it('最近更新 uses updated, ties by ID highest first, no date last in ID order', () => {
@@ -123,9 +123,9 @@ describe('sortStakeholders', () => {
 })
 
 describe('sortSolutions', () => {
-  it('最近新增 gives the same first 5 as the home block', () => {
-    expect(keys(sortSolutions(allSolutions, 'added', ctx).slice(0, 5))).toEqual(keys(recentSolutionItems(files, cross, 5)))
-    expect(keys(sortSolutions(allSolutions, 'added', ctx))).toEqual(keys(recentSolutionItems(files, cross)))
+  it('最近更新 gives the same first 5 as the home block (decision 131)', () => {
+    expect(keys(sortSolutions(allSolutions, 'updated', ctx).slice(0, 5))).toEqual(keys(recentSolutionItems(files, cross, 5)))
+    expect(keys(sortSolutions(allSolutions, 'updated', ctx))).toEqual(keys(recentSolutionItems(files, cross)))
   })
 
   it('最近更新 with two dates: newest first, then the tie rule of the home block', () => {

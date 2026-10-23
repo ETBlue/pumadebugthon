@@ -954,7 +954,7 @@ def main(md_path, csv_path):
 
     # 19. dates (design 3.23.8). issues.csv: an issue with an analysis has a
     # 新增日期 (YYYY-MM-DD, not after today). updated-dates.csv: one row per
-    # current stakeholder and solution, with a right date and a fingerprint
+    # current stakeholder, solution, story and space type, with right dates and a fingerprint
     # that matches the content (see update_dates.problems).
     issue_rows = read_csv("issues.csv")
     if issue_rows and DATE_COL not in issue_rows[0]:

@@ -179,3 +179,40 @@ describe('the home page solution cards 資料根據 (decision 112)', () => {
     })
   })
 })
+
+describe('the home page dates (decision 131)', () => {
+  const field = (date: string) => `${t.dates.updated}</dt><dd><time dateTime="${date}">${date}</time>`
+
+  it('the stakeholder and solution blocks are sorted by 更新日期', () => {
+    const html = render()
+    expect(block(html, 'recent-stakeholders')).toContain(`>${t.home.stakeholdersHeading}</h2>`)
+    expect(t.home.stakeholdersHeading).toBe('最近更新的族群')
+    expect(t.home.solutionsHeading).toBe('最近更新的解法')
+    const updated = recentStakeholders(index.stakeholders).map((s) => s.updated!)
+    expect(updated).toEqual([...updated].sort().reverse())
+  })
+
+  it('each stakeholder card shows its 更新日期 and no 新增日期', () => {
+    const shown = cards(block(render(), 'recent-stakeholders'))
+    recentStakeholders(index.stakeholders, 5).forEach((s, i) => {
+      expect(shown[i]).toContain(field(s.updated!))
+      expect(shown[i]).not.toContain(t.dates.added)
+      expect(shown[i]).not.toContain('加入日期')
+    })
+  })
+
+  it('each solution card shows its 更新日期 and no 新增日期', () => {
+    const html = block(render(), 'recent-solutions')
+    const lis = html.split('<li>').slice(1)
+    recentSolutionItems(issueFiles, crossJson as CrossIssueFile, 5).forEach((item, i) => {
+      expect(lis[i]).toContain(field(item.solution.updated!))
+      expect(lis[i]).not.toContain(t.dates.added)
+    })
+  })
+
+  it('the 「看全部」 links have no sort param: 最近更新 is the default', () => {
+    const html = render()
+    expect(block(html, 'recent-stakeholders')).toContain('href="/stakeholders"')
+    expect(block(html, 'recent-solutions')).toContain('href="/solutions"')
+  })
+})

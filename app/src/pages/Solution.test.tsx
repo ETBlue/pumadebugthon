@@ -9,6 +9,7 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import { t } from '@/i18n/zh-TW'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import Solution from './Solution'
 
@@ -155,5 +156,27 @@ describe('the cross-issue solution page tabs (decision 103)', () => {
     const html = render('/solutions/X-A/policies')
     expect(html).toContain('跨議題分析的分析摘要')
     expect(html).not.toContain('/dependencies"')
+  })
+})
+
+describe('the dates in the metadata of 總覽 (decision 131)', () => {
+  const field = (label: string, date: string) => `${label}</dt><dd><time dateTime="${date}">${date}</time>`
+
+  it('an issue solution shows 新增日期 and 更新日期', () => {
+    const sol = files['2-trashcans'].solutions.find((s) => s.id === 'A')!
+    const html = render('/solutions/2-A')
+    expect(html).toContain(field(t.dates.added, sol.added))
+    expect(html).toContain(field(t.dates.updated, sol.updated!))
+  })
+
+  it('a cross-issue solution shows 新增日期 and 更新日期', () => {
+    const sol = cross.solutions.find((s) => s.code === 'X-A')!
+    const html = render('/solutions/X-A')
+    expect(html).toContain(field(t.dates.added, sol.added))
+    expect(html).toContain(field(t.dates.updated, sol.updated!))
+  })
+
+  it('the other tabs have no 新增日期', () => {
+    expect(render('/solutions/2-A/needs')).not.toContain(t.dates.added)
   })
 })

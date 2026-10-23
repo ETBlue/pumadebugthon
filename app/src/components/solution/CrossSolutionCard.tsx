@@ -3,7 +3,8 @@ import { Link, useSearchParams } from 'react-router'
 import { Field } from '@/components/Field'
 import { IssueTitleLinks } from '@/components/IssueTitleLinks'
 import { Markdown } from '@/components/Markdown'
-import { CoveredBasisField, SolutionDateFields, type CoveredBasis } from '@/components/SolutionCard'
+import { UpdatedField } from '@/components/DateFields'
+import { CoveredBasisField, type CoveredBasis } from '@/components/SolutionCard'
 import { Badge } from '@/components/ui/badge'
 import { SpaceLinks } from '@/components/SpaceLinks'
 import { linkClass } from '@/components/styles'
@@ -65,9 +66,10 @@ export function CrossIssueLinks({ solution, titles }: { solution: CrossSolution;
 /** One cross-issue solution in a list (design 3.9, 3.18): the code and name,
  * the summary and the issues. The detailed variant (#/solutions, design
  * 3.23.9) also shows the badge 「跨議題解法」, 「也涵蓋 #1 的需求」 when it
- * covers needs of issues outside its parts, the space types, 新增日期,
- * 更新日期, the number of needs it covers and 「涵蓋需求的資料根據」.
- * children come last (for example the date on the home page). */
+ * covers needs of issues outside its parts, the space types, 更新日期,
+ * the number of needs it covers and 「涵蓋需求的資料根據」. children come
+ * next (for example 資料根據 on the home page). Without detailed, 更新日期
+ * comes last, after children. A card never shows 新增日期 (decision 131). */
 export function CrossSolutionCard({ solution: sol, issueTitles, detailed, children }: {
   solution: CrossSolution
   /** The titles of the issues (index.issues), for 「#1 把三千棵樹種回來」
@@ -98,7 +100,8 @@ export function CrossSolutionCard({ solution: sol, issueTitles, detailed, childr
         {detailed && sol.spaces.length > 0 && (
           <Field label={tl.solutionSpaces}><SpaceLinks spaceTypes={detailed.spaceTypes} codes={sol.spaces} /></Field>
         )}
-        {detailed && <SolutionDateFields added={sol.added} updated={sol.updated} />}
+        {/* A card shows only 更新日期 (decision 131). */}
+        {detailed && <UpdatedField updated={sol.updated} />}
       </dl>
       {detailed && detailed.coveredNeeds !== null && <p className="mt-1 text-sm">{tl.solutionNeeds(detailed.coveredNeeds)}</p>}
       {detailed && (
@@ -107,6 +110,10 @@ export function CrossSolutionCard({ solution: sol, issueTitles, detailed, childr
         </dl>
       )}
       {children}
+      {/* Without detailed, 更新日期 is last, after children (decision 131). */}
+      {!detailed && sol.updated && (
+        <dl className="mt-1 text-sm"><UpdatedField updated={sol.updated} /></dl>
+      )}
     </div>
   )
 }

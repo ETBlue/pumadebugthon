@@ -84,8 +84,8 @@ describe('solutionListView (filter, then search, then sort)', () => {
     expect(keys(view('sort=evidence'))).toEqual(keys(sortSolutions(items, 'evidence', ctx)))
   })
 
-  it('?sort=added gives the same first 5 as the home block', () => {
-    expect(keys(view('sort=added').slice(0, 5))).toEqual(keys(recentSolutionItems(files, cross, 5)))
+  it('the default sort (最近更新) gives the same first 5 as the home block (decision 131)', () => {
+    expect(keys(view('').slice(0, 5))).toEqual(keys(recentSolutionItems(files, cross, 5)))
   })
 
   it('?issue=1 includes X-E, which covers a need of #1 but has no part in #1', () => {

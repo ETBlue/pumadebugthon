@@ -172,11 +172,13 @@ export function listPath(page: ListPage, state: Partial<ListState> = {}): string
 
 /** The 「看全部」 links of the home blocks (design 3.23.12, decision 91).
  * Each list has the sort of its block, so its first 5 cards are the 5 items
- * of the block. 最近更新 is the default sort, so #/issues has no param. */
+ * of the block. 最近更新 is the default sort. Since decision 131 all three
+ * blocks use it, so no link has a param (before: ?sort=added for the
+ * stakeholders and the solutions). */
 export const HOME_ALL_PATHS: Record<Exclude<ListPage, 'spaces'>, string> = {
   issues: listPath('issues'),
-  stakeholders: listPath('stakeholders', { sort: 'added' }),
-  solutions: listPath('solutions', { sort: 'added' }),
+  stakeholders: listPath('stakeholders'),
+  solutions: listPath('solutions'),
 }
 
 /** The stakeholders in 2 or more issues: #/stakeholders?issue=X (decision 91). */

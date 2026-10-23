@@ -387,9 +387,23 @@ class BuildJsonOutputTest(unittest.TestCase):
         codes = [s["code"] for s in self.index["spaceTypes"]]
         self.assertEqual(len(codes), 13)
         self.assertEqual(self.index["spaceTypes"][0]["name"], "人行道")
+        # Each space type has its 新增日期 and 更新日期 from updated-dates.csv.
+        # This copy has no updated-dates.csv, so both are null (ScriptTest in
+        # test_update_dates.py checks the values).
+        for s in self.index["spaceTypes"]:
+            self.assertEqual(list(s), ["code", "name", "group", "description", "added", "updated"])
+            self.assertIsNone(s["added"])
+            self.assertIsNone(s["updated"])
 
     def test_story_shape(self):
-        self.assertEqual(self.story("I06-US01"), {
+        # added and updated come from updated-dates.csv. This copy has no
+        # such file, so both are null (ScriptTest in test_update_dates.py
+        # checks the values).
+        story = self.story("I06-US01")
+        self.assertEqual(list(story)[-2:], ["added", "updated"])
+        self.assertIsNone(story["added"])
+        self.assertIsNone(story["updated"])
+        self.assertEqual({k: v for k, v in story.items() if k not in ("added", "updated")}, {
             "id": "I06-US01", "stakeholder": "I06",
             "want": {"text": "清潔箱不要擋住人行道與導盲磚", "tag": "AI模擬", "pending": False},
             "group": "W08",

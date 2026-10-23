@@ -2,6 +2,7 @@ import { useMemo, type ComponentType } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
 import { BasisField } from '@/components/BasisField'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
+import { DateFields } from '@/components/DateFields'
 import { Field } from '@/components/Field'
 import { FilterStatus } from '@/components/FilterStatus'
 import { LoadState } from '@/components/LoadState'
@@ -255,8 +256,7 @@ function StakeholderMeta({ index, stakeholder: s, shown, cells }: {
         )}
       </Field>
       {shown.length > 0 && <BasisField cells={cells} label={tl.basis} />}
-      {s.added && <Field label={tl.added}><time dateTime={s.added}>{s.added}</time></Field>}
-      {s.updated && <Field label={tl.updated}><time dateTime={s.updated}>{s.updated}</time></Field>}
+      <DateFields added={s.added} updated={s.updated} />
     </dl>
   )
 }

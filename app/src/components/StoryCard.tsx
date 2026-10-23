@@ -30,8 +30,8 @@ export interface StoryCardProps {
   needKey?: string
 }
 
-/** One user story: ID, stakeholder, 我想要, 以便, source and priority with its
- * tag. The priority is the one of the story's need (storyPriority, design 3.15).
+/** One user story: ID, stakeholder, 我想要, 以便, source, priority with its
+ * tag, and 更新日期. The priority is the one of the story's need (storyPriority, design 3.15).
  * The story ID links to the story page. The story page has no data filter,
  * so that link drops ?evidence=1. The 訴求 and 需求 links go to issue tabs,
  * so they keep it. */
@@ -78,6 +78,13 @@ export function StoryCard({
             {priorityLabel(priority.priority)}
           </dd>
         </div>
+        {/* A card shows only 更新日期 (decision 131). 新增日期 is on the story page. */}
+        {story.updated && (
+          <div className={row}>
+            <dt className={label}>{t.dates.updated}</dt>
+            <dd><time dateTime={story.updated}>{story.updated}</time></dd>
+          </div>
+        )}
       </dl>
       {(wantKey !== undefined || needKey !== undefined) && (
         <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1">

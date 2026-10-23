@@ -10,6 +10,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
+import { t } from '@/i18n/zh-TW'
 import { forgetListSearches, rememberListSearch } from '@/lib/backLink'
 import { listParamsOf, listUrlSearch } from '@/lib/listParams'
 import { issuesBySpace, solutionsBySpace, spaceStakeholderCount, stakeholdersBySpace } from '@/lib/spaces'
@@ -137,6 +138,29 @@ describe('the space page back button', () => {
       </MemoryRouter>,
     )
     expect(html).toContain(`href="/spaces?q=park&amp;group=${encodeURIComponent('道路')}"`)
+  })
+
+  it('shows 新增日期 and 更新日期 of the space type, and the card shows only 更新日期 (decision 131)', () => {
+    // The fixture has no dates on the space types, so this test sets them.
+    const space = index.spaceTypes.find((s) => s.code === 'sidewalk')!
+    const saved = { added: space.added, updated: space.updated }
+    Object.assign(space, { added: '2026-10-18', updated: '2026-10-19' })
+    try {
+      const page = renderToStaticMarkup(
+        <MemoryRouter initialEntries={['/spaces/sidewalk']}>
+          <Routes>
+            <Route path="/spaces/:code" element={<Space />} />
+          </Routes>
+        </MemoryRouter>,
+      )
+      expect(page).toContain(`${t.dates.added}</dt><dd><time dateTime="2026-10-18">2026-10-18</time>`)
+      expect(page).toContain(`${t.dates.updated}</dt><dd><time dateTime="2026-10-19">2026-10-19</time>`)
+      const shown = card(render(), 'sidewalk')
+      expect(shown).toContain(`${t.dates.updated}</dt><dd><time dateTime="2026-10-19">2026-10-19</time>`)
+      expect(shown).not.toContain(t.dates.added)
+    } finally {
+      Object.assign(space, saved)
+    }
   })
 })
 

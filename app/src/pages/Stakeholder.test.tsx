@@ -95,8 +95,8 @@ describe('the 總覽 metadata of the stakeholder page (decision 118)', () => {
 
   it('shows 新增日期 and 更新日期 as <time> fields, as on the card', () => {
     const html = renderPage('/stakeholders/I06')
-    expect(fieldValue(html, t.stakeholdersList.added)).toBe('<time dateTime="2026-10-18">2026-10-18</time>')
-    expect(fieldValue(html, t.stakeholdersList.updated)).toBe('<time dateTime="2026-10-20">2026-10-20</time>')
+    expect(fieldValue(html, t.dates.added)).toBe('<time dateTime="2026-10-18">2026-10-18</time>')
+    expect(fieldValue(html, t.dates.updated)).toBe('<time dateTime="2026-10-20">2026-10-20</time>')
   })
 
   it('shows 分類路徑 with the same text as the card on #/stakeholders', () => {

@@ -7,6 +7,7 @@ import { StakeholdersTab } from '@/components/issue/StakeholdersTab'
 import { SummaryTab } from '@/components/issue/SummaryTab'
 import { WantsTab } from '@/components/issue/WantsTab'
 import type { IssueTabProps } from '@/components/issue/types'
+import { DateFields } from '@/components/DateFields'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { SpaceLinks } from '@/components/SpaceLinks'
@@ -161,17 +162,16 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
 }
 
 /** The metadata of the issue at the top of the 總覽 tab (decision 111): the
- * space types and the last update. Nothing when both are empty. */
+ * space types, 新增日期 and 更新日期 (decision 131). Nothing when all are
+ * empty. */
 function IssueMeta({ index, summary }: { index: IndexFile; summary: AvailableIssueSummary }) {
-  if (summary.spaces.length === 0 && !summary.updated) return null
+  if (summary.spaces.length === 0 && !summary.added && !summary.updated) return null
   return (
     <dl className="mb-6 space-y-1.5 text-sm">
       {summary.spaces.length > 0 && (
         <Field label={ti.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={summary.spaces} /></Field>
       )}
-      {summary.updated && (
-        <Field label={ti.updated}><time dateTime={summary.updated}>{summary.updated}</time></Field>
-      )}
+      <DateFields added={summary.added} updated={summary.updated} />
     </dl>
   )
 }

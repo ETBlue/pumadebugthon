@@ -13,10 +13,14 @@ Dates (design 3.23.8):
   without an analysis). An analyzed issue must have it. issues[].updated is
   the date of the last git commit of the issue folder.
 - updated: the 更新日期 in data/updated-dates.csv (kept by update_dates.py),
-  on each stakeholder in index.json, each solution in the issue JSON and each
-  cross-issue solution in cross-issue.json. null when the item has no row (a
-  moved stakeholder, or the file is missing). check_analysis.py checks that
-  the file is complete and up to date.
+  on each stakeholder in index.json, each solution in the issue JSON, each
+  cross-issue solution in cross-issue.json, each story in the issue JSON and
+  each space type in index.json. null when the item has no row (a moved
+  stakeholder, or the file is missing). check_analysis.py checks that the
+  file is complete and up to date.
+- added on a story (stories[]) and on a space type (spaceTypes[]): the
+  新增日期 in data/updated-dates.csv. These two have no other place for a
+  新增日期. null when the item has no row.
 
 A section that cannot be read stops the script with exit code 1 and the line
 "<folder>: <section>: <reason>". Nothing is written in that case.
@@ -257,11 +261,19 @@ DATES_FILE = "updated-dates.csv"
 
 
 def read_updated_dates(analysis_dir):
-    """(類型, 編號) -> 更新日期 from data/updated-dates.csv. {} when the file does not exist."""
+    """(類型, 編號) -> {"added", "updated"} from data/updated-dates.csv.
+    added is the 新增日期 column (only filled for a story and a space type),
+    or None when it is empty. {} when the file does not exist."""
     if not os.path.exists(common.data_file(analysis_dir, DATES_FILE)):
         return {}
     rows = read_csv(analysis_dir, DATES_FILE, ["類型", "編號", "更新日期", "內容指紋"])
-    return {(r["類型"], r["編號"]): r["更新日期"].strip() for r in rows}
+    return {(r["類型"], r["編號"]): {"added": (r.get("新增日期") or "").strip() or None,
+                                     "updated": r["更新日期"].strip()} for r in rows}
+
+
+def dates_of(dates, type_, iid):
+    """{"added", "updated"} of one item. Both None when it has no row."""
+    return dates.get((type_, iid), {"added": None, "updated": None})
 
 
 def git_updated(folder):
@@ -936,7 +948,10 @@ def build(analysis_dir):
             raise ReadError("issues.csv", f"row {i}: issue #{num} has an analysis, so 新增日期 must be filled")
         added = check_date(row["新增日期"], "issues.csv", f"row {i}")
         for s in data["solutions"]:
-            s["updated"] = dates.get(("解法", f"{num}-{s['id']}"))
+            s["updated"] = dates_of(dates, "解法", f"{num}-{s['id']}")["updated"]
+        for s in data["stories"]:
+            d = dates_of(dates, "使用者故事", f"{num}-{s['id']}")
+            s["added"], s["updated"] = d["added"], d["updated"]
         ids_by_num[num] = common.issue_ids(text)
         cross_by_folder[folder] = (num, data.pop("summaryCross"))
         updated = git_updated(os.path.join(analysis_dir, folder))
@@ -986,7 +1001,7 @@ def build(analysis_dir):
             "issues": [] if moved_to else [int(x) for x in issues],
             "movedTo": moved_to,
             "added": check_date(r["新增日期"], "stakeholders.csv", sid),
-            "updated": None if moved_to else dates.get(("利害關係人", sid)),
+            "updated": None if moved_to else dates_of(dates, "利害關係人", sid)["updated"],
         })
 
     open_data = []
@@ -1001,7 +1016,8 @@ def build(analysis_dir):
         "issues": index_issues,
         "stakeholders": stakeholders,
         "pathLabels": {r["分類路徑"]: r["名稱"] for r in label_rows},
-        "spaceTypes": [{"code": r["代碼"], "name": r["名稱"], "group": r["分組"], "description": r["說明"]}
+        "spaceTypes": [{"code": r["代碼"], "name": r["名稱"], "group": r["分組"], "description": r["說明"],
+                        **dates_of(dates, "空間類型", r["代碼"])}
                        for r in space_rows],
         "openData": open_data,
     }
@@ -1034,7 +1050,7 @@ def build_cross_issue(analysis_dir):
         raise ReadError(CROSS_SECTION, errors[0] + more)
     dates = read_updated_dates(analysis_dir)
     for s in data["solutions"]:
-        s["updated"] = dates.get(("跨議題解法", s["code"]))
+        s["updated"] = dates_of(dates, "跨議題解法", s["code"])["updated"]
         s["practices"] = []
     # The cross-issue file has no practice table: only the dependency rows.
     add_dependencies(data["summary"], {s["code"]: s for s in data["solutions"]}, prefix="X-")

@@ -118,6 +118,13 @@ export interface SpaceType {
   name: string
   group: string
   description: string
+  /** 新增日期 from analysis/data/updated-dates.csv (YYYY-MM-DD): the day the
+   * row was added to space-types.csv. null when the file has no row for it.
+   * Optional so test data and older JSON still fit (decision 131). */
+  added?: string | null
+  /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD): the last day
+   * its row (名稱, 分組, 說明) changed. null when the file has no row. */
+  updated?: string | null
 }
 
 /** A row of analysis/data/open-data.csv: an open dataset that an issue's appendix
@@ -196,6 +203,13 @@ export interface Story {
   priorityTag: PriorityTag
   /** 相同需求編號, for example "N01", or null. Always null in the old format. */
   needGroup: string | null
+  /** 新增日期 from analysis/data/updated-dates.csv (YYYY-MM-DD): the day the
+   * story ID first appeared in the issue. null when the file has no row for
+   * it. Optional so test data and older JSON still fit (decision 131). */
+  added?: string | null
+  /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD): the last day
+   * its own content changed. null when the file has no row (decision 131). */
+  updated?: string | null
 }
 
 /** A row of the 相同訴求群組 table. */

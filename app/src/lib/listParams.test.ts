@@ -141,11 +141,12 @@ describe('links to the list pages', () => {
     expect(listPath('solutions', { sort: 'added', issues: [2] })).toBe('/solutions?sort=added&issue=2')
   })
 
-  it('gives each home 「看全部」 link the sort of its block (decision 91)', () => {
+  it('gives each home 「看全部」 link the sort of its block (decisions 91 and 131)', () => {
+    // Every block uses 最近更新, the default sort, so no link has a param.
     expect(HOME_ALL_PATHS).toEqual({
       issues: '/issues',
-      stakeholders: '/stakeholders?sort=added',
-      solutions: '/solutions?sort=added',
+      stakeholders: '/stakeholders',
+      solutions: '/solutions',
     })
   })
 

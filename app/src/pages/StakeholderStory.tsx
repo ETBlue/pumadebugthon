@@ -150,6 +150,19 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
                 <Link to={tabPath(n, 'overview')} className={linkClass}>{t.issueCard.numberTitle(n, summary.title)}</Link>
               </dd>
             </div>
+            {/* 新增日期 and 更新日期 of the story (decision 131). A missing date is left out. */}
+            {story.added && (
+              <div className={row}>
+                <dt className={label}>{t.dates.added}</dt>
+                <dd className="min-w-0"><time dateTime={story.added}>{story.added}</time></dd>
+              </div>
+            )}
+            {story.updated && (
+              <div className={row}>
+                <dt className={label}>{t.dates.updated}</dt>
+                <dd className="min-w-0"><time dateTime={story.updated}>{story.updated}</time></dd>
+              </div>
+            )}
           </dl>
         </Section>
 

@@ -121,7 +121,7 @@ export function IssueCard(props: IssueCardProps) {
         ) : (
           <Field label={tc.focusGaps}>{tc.focusGapsValue(gaps.groups)}</Field>
         ))}
-        {issue.added && <Field label={tc.added}><time dateTime={issue.added}>{issue.added}</time></Field>}
+        {/* A card shows only 更新日期 (decision 131). 新增日期 is on the issue page. */}
         {updated}
         {spaces}
       </dl>

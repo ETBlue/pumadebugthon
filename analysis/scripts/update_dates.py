@@ -1,11 +1,16 @@
-"""Keep the 更新日期 of each stakeholder, solution and cross-issue solution.
+"""Keep the 更新日期 of each stakeholder, solution, cross-issue solution, user
+story and space type, and the 新增日期 of each user story and space type.
 
 Usage: python3 -I analysis/scripts/update_dates.py analysis [--check]
 
 Writes analysis/data/updated-dates.csv (UTF-8 with BOM). Columns:
-- 類型: 利害關係人, 跨議題解法 or 解法.
-- 編號: the stakeholder ID (I06), the cross-issue solution code (X-A), or the
-  issue number and the solution code (2-A).
+- 類型: 利害關係人, 跨議題解法, 解法, 使用者故事 or 空間類型.
+- 編號: the stakeholder ID (I06), the cross-issue solution code (X-A), the
+  issue number and the solution code (2-A), the issue number and the story
+  ID (2-O01-US01), or the space type code (sidewalk).
+- 新增日期: only for 使用者故事 and 空間類型, because they have no other
+  place for it (YYYY-MM-DD). Empty for the other types: their 新增日期 is in
+  issues.csv, stakeholders.csv, 6.1 or cross-issue-analysis.md.
 - 更新日期: the last day the item's own content changed (YYYY-MM-DD).
 - 內容指紋: analysis_common.fingerprint of the item's own content.
 
@@ -25,6 +30,14 @@ The content of each item (design 3.23.8):
   ETBlue 2026-10-22; only when the list is not empty).
 - 跨議題解法: its part of cross-issue-analysis.md (name, tag, summary,
   parts, spaces, needs, measures, detail, and practices when not empty).
+- 使用者故事: its row in the step 4 table (我想要…, 以便…, their tags, 來源,
+  優先順序 and its tag, 相同訴求編號, 相同需求編號). The same fields as in
+  the stakeholder's content.
+- 空間類型: its row in space-types.csv (名稱, 分組, 說明).
+
+The rule for the 新增日期 of a 使用者故事 or a 空間類型:
+- A new item (no row yet, or an empty 新增日期) gets today (Taiwan time).
+- Otherwise it keeps its date. It never changes.
 
 The rule for the 更新日期:
 - A new item (no row yet) gets its 新增日期.
@@ -34,7 +47,9 @@ The rule for the 更新日期:
 
 Row order: the stakeholders (O before I, then the number), then the
 cross-issue solutions (X-A, X-B…), then the issue solutions (by issue
-number, then by code). This is the fixed ID order of the app.
+number, then by code), then the user stories (by issue number, then in the
+order of the step 4 table), then the space types (in the order of
+space-types.csv). This is the fixed ID order of the app.
 
 With --check, the script writes nothing. It fails (exit code 1) when the
 file would change, with the message 「請執行 update_dates.py」. build_all.sh
@@ -50,9 +65,13 @@ import analysis_common as common
 import build_json
 
 FILE = "updated-dates.csv"
-HEADER = ["類型", "編號", "更新日期", "內容指紋"]
-STAKEHOLDER, CROSS, SOLUTION = "利害關係人", "跨議題解法", "解法"
-TYPES = (STAKEHOLDER, CROSS, SOLUTION)
+HEADER = ["類型", "編號", "新增日期", "更新日期", "內容指紋"]
+STAKEHOLDER, CROSS, SOLUTION, STORY, SPACE = "利害關係人", "跨議題解法", "解法", "使用者故事", "空間類型"
+TYPES = (STAKEHOLDER, CROSS, SOLUTION, STORY, SPACE)
+# The types whose 新增日期 is kept in this file (they have no other place for it).
+OWN_ADDED = (STORY, SPACE)
+# The columns of space-types.csv that are the space type's own content.
+SPACE_COLS = ("名稱", "分組", "說明")
 # The columns of stakeholders.csv that are the stakeholder's own content.
 STAKE_COLS = ("利害關係人", "分類路徑", "特別關注", "議題", "備註")
 # The fields of a story that are the stakeholder's content.
@@ -89,8 +108,9 @@ def stakeholder_order(sid):
 
 def items(analysis_dir):
     """Every item with its fingerprint, in the row order:
-    [{"type", "id", "added", "fingerprint"}]. A file that cannot be read
-    raises build_json.ReadError."""
+    [{"type", "id", "added", "fingerprint"}]. added is None for a 使用者故事
+    and a 空間類型 (this file keeps their 新增日期). A file that cannot be
+    read raises build_json.ReadError."""
     index, issue_files = build_json.build(analysis_dir)
     cross = build_json.build_cross_issue(analysis_dir)
     stake_rows = build_json.read_csv(analysis_dir, "stakeholders.csv", ("利害關係人編號", "新增日期") + STAKE_COLS)
@@ -121,6 +141,14 @@ def items(analysis_dir):
                 content["stories"] = s["stories"]  # the old format maps solutions to stories
             out.append({"type": SOLUTION, "id": f"{d['number']}-{s['id']}", "added": s["added"],
                         "fingerprint": common.fingerprint(without_pending(content))})
+    for d in issues:
+        for s in d["stories"]:
+            content = without_pending({k: s[k] for k in STORY_KEYS})
+            out.append({"type": STORY, "id": f"{d['number']}-{s['id']}", "added": None,
+                        "fingerprint": common.fingerprint(content)})
+    for r in build_json.read_csv(analysis_dir, "space-types.csv", ("代碼",) + SPACE_COLS):
+        content = {c: r[c].strip() for c in SPACE_COLS}
+        out.append({"type": SPACE, "id": r["代碼"].strip(), "added": None, "fingerprint": common.fingerprint(content)})
     return out
 
 
@@ -134,19 +162,23 @@ def read_rows(analysis_dir):
 
 
 def updated_rows(current, old_rows, today):
-    """The new rows: one per current item, with the 更新日期 rule above.
-    today is a YYYY-MM-DD string."""
+    """The new rows: one per current item, with the 新增日期 and 更新日期
+    rules above. today is a YYYY-MM-DD string. An old row from the file
+    before the 新增日期 column has no 新增日期."""
     old = {(r["類型"], r["編號"]): r for r in old_rows}
     out = []
     for i in current:
         r = old.get((i["type"], i["id"]))
+        own = i["type"] in OWN_ADDED
+        added = (((r or {}).get("新增日期") or "").strip() or today) if own else ""
         if r is None:
-            date = i["added"]
+            date = added if own else i["added"]
         elif r["內容指紋"] == i["fingerprint"]:
             date = r["更新日期"]
         else:
             date = today
-        out.append({"類型": i["type"], "編號": i["id"], "更新日期": date, "內容指紋": i["fingerprint"]})
+        out.append({"類型": i["type"], "編號": i["id"], "新增日期": added, "更新日期": date,
+                    "內容指紋": i["fingerprint"]})
     return out
 
 
@@ -174,9 +206,11 @@ def date_problem(value):
 
 def problems(analysis_dir):
     """The problems of updated-dates.csv, as a list of messages ([] when it is right).
-    Every current item has exactly one row and there are no other rows. Each
-    更新日期 is a real date, not after today, and not before the item's
-    新增日期. Each 內容指紋 matches the current content."""
+    Every current item has exactly one row and there are no other rows. A
+    使用者故事 or 空間類型 has a 新增日期 that is a real date, not after
+    today; the other types leave it empty. Each 更新日期 is a real date, not
+    after today, and not before the item's 新增日期. Each 內容指紋 matches
+    the current content."""
     try:
         current = items(analysis_dir)
     except build_json.ReadError as e:
@@ -196,13 +230,23 @@ def problems(analysis_dir):
         seen.add(key)
         item = by_key.get(key)
         if item is None:
-            out.append(f"{name} is not a current stakeholder or solution. {RUN}"); continue
+            out.append(f"{name} is not a current stakeholder, solution, story or space type. {RUN}"); continue
+        added = (r["新增日期"] or "").strip()
+        if item["type"] in OWN_ADDED:
+            why = date_problem(added)
+            if why:
+                out.append(f"{name} 新增日期 {why}")
+                added = ""
+        else:
+            if added:
+                out.append(f"{name} 新增日期 must be empty (its 新增日期 is in its own file)")
+            added = item["added"]
         date = (r["更新日期"] or "").strip()
         why = date_problem(date)
         if why:
             out.append(f"{name} 更新日期 {why}")
-        elif date < item["added"]:
-            out.append(f"{name} 更新日期 {date} is before its 新增日期 {item['added']}")
+        elif added and date < added:
+            out.append(f"{name} 更新日期 {date} is before its 新增日期 {added}")
         if r["內容指紋"] != item["fingerprint"]:
             out.append(f"{name}: the content changed, but its 更新日期 was not updated. {RUN}")
     for i in current:
@@ -238,6 +282,8 @@ def main(analysis_dir, check=False):
             print(f"new: {r['類型']} {r['編號']} {r['更新日期']}")
         elif o["內容指紋"] != r["內容指紋"]:
             print(f"changed: {r['類型']} {r['編號']} {o['更新日期']} -> {r['更新日期']}")
+        elif (o.get("新增日期") or "") != r["新增日期"]:
+            print(f"新增日期: {r['類型']} {r['編號']} {r['新增日期']}")
     for key in old_by_key:
         if key not in new_keys:
             print(f"removed: {key[0]} {key[1]}")

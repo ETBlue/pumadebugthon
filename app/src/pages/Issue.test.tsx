@@ -93,6 +93,13 @@ describe('the band, the side menu and the metadata (decision 111)', () => {
     expect(render('/issues/1')).toContain('更新日期')
     expect(render('/issues/1/wants')).not.toContain('更新日期')
   })
+
+  it('shows 新增日期 and 更新日期 in the metadata (decision 131)', () => {
+    const html = render('/issues/1')
+    const issue = (indexJson as IndexFile).issues.find((i) => i.number === 1)!
+    expect(html).toContain(`${t.dates.added}</dt><dd><time dateTime="${issue.added}">${issue.added}</time>`)
+    expect(html).toContain(`${t.dates.updated}</dt><dd><time dateTime="${issue.updated}">${issue.updated}</time>`)
+  })
 })
 
 describe('old issue URLs (decision 110: no redirects)', () => {

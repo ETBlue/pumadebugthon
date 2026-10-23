@@ -18,14 +18,16 @@ function issue(number: number, updated: string | null, stories = 10): AvailableI
   return { ...available, number, updated, counts: { ...available.counts, stories, solutions: stories } }
 }
 
-function stakeholder(id: string, added: string, issues: number[] = [1]): Stakeholder {
-  return { id, name: id, path: 'res', focus: [], issues, movedTo: null, added }
+// The home blocks sort by 更新日期 (decision 131). added is fixed, so a
+// test that passes cannot depend on it.
+function stakeholder(id: string, updated: string, issues: number[] = [1]): Stakeholder {
+  return { id, name: id, path: 'res', focus: [], issues, movedTo: null, added: '2026-10-18', updated }
 }
 
-function solution(id: string, added: string, stories: string[] = []): Solution {
+function solution(id: string, updated: string, stories: string[] = []): Solution {
   const cell = { text: '', tag: null, pending: false }
   return {
-    id, name: { text: id, tag: null, pending: false }, summary: '', spaces: [], added, stories, needs: null,
+    id, name: { text: id, tag: null, pending: false }, summary: '', spaces: [], added: '2026-10-16', updated, stories, needs: null,
     measures: [], detail: [], overview: { cost: cell, feasibility: cell, risk: cell, owner: cell }, ideas: [], practices: [], pending: [],
   }
 }
@@ -76,16 +78,16 @@ describe('recentIssues', () => {
 })
 
 describe('recentStakeholders', () => {
-  it('lists active stakeholders by added date, then by ID, highest first', () => {
-    // I36 (#9) has 2026-10-21, so it comes first. The other #9 rows (O25–O31,
-    // I29–I35) have 2026-10-20. I34 has no issue now, so it is left out
-    // (decision 78). The other rows have 2026-10-18. Inside one date the ID decides: I
-    // before O, high numbers first.
+  it('lists active stakeholders by update date, then by ID, highest first (decision 131)', () => {
+    // In the fixture, I36, I35, I31, I27, I14 and I09 have the newest
+    // 更新日期 (2026-10-21), so they come first. Inside one date the ID
+    // decides: I before O, high numbers first. I34 has no issue now, so it is
+    // left out (decision 78).
     const ids = recentStakeholders(index.stakeholders).map((s) => s.id)
-    expect(ids.slice(0, 8)).toEqual(['I36', 'I35', 'I33', 'I32', 'I31', 'I30', 'I29', 'O31'])
-    expect(ids.slice(14, 17)).toEqual(['I28', 'I27', 'I26'])
-    expect(ids.indexOf('I01')).toBe(ids.indexOf('O24') - 1)
-    expect(ids.at(-1)).toBe('O01')
+    expect(ids.slice(0, 7)).toEqual(['I36', 'I35', 'I31', 'I27', 'I14', 'I09', 'I33'])
+    // Not the order of 新增日期: by 新增日期, I33 came before I31 (the same day, a higher ID).
+    const updated = recentStakeholders(index.stakeholders).map((s) => s.updated!)
+    expect(updated).toEqual([...updated].sort().reverse())
   })
 
   it('leaves out moved IDs and stakeholders with no issue (I34)', () => {
@@ -123,18 +125,26 @@ describe('recentStakeholders', () => {
   })
 
   it('keeps only the first items when a limit is given', () => {
-    expect(recentStakeholders(index.stakeholders, 3).map((s) => s.id)).toEqual(['I36', 'I35', 'I33'])
+    expect(recentStakeholders(index.stakeholders, 3).map((s) => s.id)).toEqual(['I36', 'I35', 'I31'])
   })
 })
 
 describe('recentSolutions', () => {
   const key = (x: { issueNumber: number; solution: Solution }) => `${x.issueNumber}${x.solution.id}`
 
-  it('lists solutions by added date, then issue number, then letter, highest first', () => {
-    // #2 A to D were added on 2026-10-16. Every other solution has 2026-10-18.
+  it('lists solutions by update date, then issue number, then letter, highest first (decision 131)', () => {
+    // Every solution in the fixture has the 更新日期 2026-10-22, so the issue
+    // number and the letter decide. #2 A to D were added earlier (2026-10-16),
+    // but the 新增日期 is not used any more.
     expect(recentSolutions([trees, trashcans, smokefree]).map(key)).toEqual([
-      '8E', '8D', '8C', '8B', '8A', '2E', '1E', '1D', '1C', '1B', '1A', '2D', '2C', '2B', '2A',
+      '8E', '8D', '8C', '8B', '8A', '2E', '2D', '2C', '2B', '2A', '1E', '1D', '1C', '1B', '1A',
     ])
+  })
+
+  it('puts a newer update date first, whatever the 新增日期', () => {
+    const older = { ...solution('A', '2026-10-20'), added: '2026-10-19' }
+    const newer = { ...solution('B', '2026-10-22'), added: '2026-10-01' }
+    expect(recentSolutions([issueFile(3, [older, newer])]).map(key)).toEqual(['3B', '3A'])
   })
 
   it('does not depend on the order of the issue files', () => {
@@ -165,15 +175,16 @@ describe('recentSolutionItems', () => {
   const key = (x: ReturnType<typeof recentSolutionItems>[number]) =>
     x.kind === 'cross' ? x.solution.code : `${x.issueNumber}${x.solution.id}`
 
-  it('adds the cross-issue solutions by their added date (decision 51)', () => {
-    // X-A to X-E were added on 2026-10-20, after every issue solution.
+  it('adds the cross-issue solutions by their update date (decisions 51 and 131)', () => {
+    // X-A to X-E have the same 更新日期 (2026-10-22) as the issue solutions,
+    // so they come first.
     expect(recentSolutionItems([trees, trashcans, smokefree], cross, 7).map(key)).toEqual([
       'X-E', 'X-D', 'X-C', 'X-B', 'X-A', '8E', '8D',
     ])
   })
 
   it('puts the cross-issue solutions first on the same date', () => {
-    const sameDay: CrossIssueFile = { ...cross, solutions: cross.solutions.map((s) => ({ ...s, added: '2026-10-18' })) }
+    const sameDay: CrossIssueFile = { ...cross, solutions: cross.solutions.map((s) => ({ ...s, updated: '2026-10-22' })) }
     expect(recentSolutionItems([smokefree], sameDay, 7).map(key)).toEqual(['X-E', 'X-D', 'X-C', 'X-B', 'X-A', '8E', '8D'])
   })
 

@@ -47,3 +47,29 @@ describe('the story page', () => {
     expect(html).not.toContain(t.about.basisNote)
   })
 })
+
+describe('the dates of the story (decision 131)', () => {
+  const story = (trashcansJson as IssueFile).stories.find((s) => s.id === 'I06-US01')!
+  const row = (label: string, date: string) =>
+    `${label}</dt><dd class="min-w-0"><time dateTime="${date}">${date}</time></dd>`
+
+  it('shows 新增日期 and 更新日期 after the issue line', () => {
+    // The fixture has no dates on the stories, so this test sets them.
+    const saved = { added: story.added, updated: story.updated }
+    Object.assign(story, { added: '2026-10-16', updated: '2026-10-20' })
+    try {
+      const html = render('/stakeholders/I06/stories/2/I06-US01')
+      expect(html).toContain(row(t.dates.added, '2026-10-16'))
+      expect(html).toContain(row(t.dates.updated, '2026-10-20'))
+      expect(html.indexOf(`>${t.storyPage.issue}</dt>`)).toBeGreaterThan(-1)
+      expect(html.indexOf(`>${t.storyPage.issue}</dt>`)).toBeLessThan(html.indexOf(t.dates.added))
+    } finally {
+      Object.assign(story, saved)
+    }
+  })
+
+  it('leaves out a date the story does not have', () => {
+    const html = render('/stakeholders/I06/stories/2/I06-US01')
+    expect(html).not.toContain(t.dates.added)
+  })
+})

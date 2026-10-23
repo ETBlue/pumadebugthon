@@ -1,5 +1,6 @@
 // The "recent" lists of the home page (design 3.1).
-// Sort rule: by date, newest first. Items with the same date: by ID, highest
+// Sort rule: by 更新日期, newest first (decision 131; before, the stakeholders
+// and the solutions were sorted by 新增日期). Items with the same date: by ID, highest
 // first. An item with no date goes last. Never by a count.
 import type { AvailableIssueSummary, CrossIssueFile, CrossSolution, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
 import { compareIds } from './ids'
@@ -7,7 +8,7 @@ import { isListed } from './stakeholders'
 
 /** Newest date first. A missing date (null or "") goes last. Dates are
  * YYYY-MM-DD, so string order is date order. */
-function compareDatesDesc(a: string | null, b: string | null): number {
+function compareDatesDesc(a: string | null | undefined, b: string | null | undefined): number {
   if (!a || !b) return (a ? 0 : 1) - (b ? 0 : 1)
   return a < b ? 1 : a > b ? -1 : 0
 }
@@ -25,13 +26,13 @@ export function recentIssues(issues: IssueSummary[], limit?: number): AvailableI
   return take(list, limit)
 }
 
-/** 最近加入分析的族群: listed stakeholders (decision 78: moved IDs and
- * stakeholders with no issue left out) by `added`,
+/** 最近更新的族群: listed stakeholders (decision 78: moved IDs and
+ * stakeholders with no issue left out) by `updated` (decision 131),
  * then by ID, highest first (the reverse of compareIds, so I comes before O). */
 export function recentStakeholders(stakeholders: Stakeholder[], limit?: number): Stakeholder[] {
   const list = stakeholders
     .filter(isListed)
-    .sort((a, b) => compareDatesDesc(a.added, b.added) || compareIds(b.id, a.id))
+    .sort((a, b) => compareDatesDesc(a.updated, b.updated) || compareIds(b.id, a.id))
   return take(list, limit)
 }
 
@@ -40,33 +41,33 @@ export interface IssueSolution {
   solution: Solution
 }
 
-/** 最近分析出的解法: the solutions of the given issue files by `added`, then
+/** 最近更新的解法: the solutions of the given issue files by `updated`, then
  * by issue number, then by solution letter, highest first. */
 export function recentSolutions(issues: IssueFile[], limit?: number): IssueSolution[] {
   const list = issues
     .flatMap((issue) => issue.solutions.map((solution) => ({ issueNumber: issue.number, solution })))
     .sort(
       (a, b) =>
-        compareDatesDesc(a.solution.added, b.solution.added) ||
+        compareDatesDesc(a.solution.updated, b.solution.updated) ||
         b.issueNumber - a.issueNumber ||
         (a.solution.id < b.solution.id ? 1 : a.solution.id > b.solution.id ? -1 : 0),
     )
   return take(list, limit)
 }
 
-/** One item of 最近分析出的解法: an issue solution or a cross-issue solution. */
+/** One item of 最近更新的解法: an issue solution or a cross-issue solution. */
 export type RecentSolution =
   | ({ kind: 'issue' } & IssueSolution)
   | { kind: 'cross'; solution: CrossSolution }
 
-/** 最近分析出的解法 with the cross-issue solutions (decision 51): every
- * solution by `added`, newest first. On the same date the cross-issue
+/** 最近更新的解法 with the cross-issue solutions (decision 51): every
+ * solution by `updated` (decision 131), newest first. On the same date the cross-issue
  * solutions come first (code, highest first), then the issue solutions in
  * the order of recentSolutions. cross is null when cross-issue.json does
  * not exist. */
 export function recentSolutionItems(issues: IssueFile[], cross: CrossIssueFile | null, limit?: number): RecentSolution[] {
   const crossItems: RecentSolution[] = [...(cross?.solutions ?? [])]
-    .sort((a, b) => compareDatesDesc(a.added, b.added) || (a.code < b.code ? 1 : a.code > b.code ? -1 : 0))
+    .sort((a, b) => compareDatesDesc(a.updated, b.updated) || (a.code < b.code ? 1 : a.code > b.code ? -1 : 0))
     .map((solution) => ({ kind: 'cross', solution }))
   const issueItems: RecentSolution[] = recentSolutions(issues).map((x) => ({ kind: 'issue', ...x }))
   // Merge the two lists, which are both in date order. A cross-issue
@@ -77,7 +78,7 @@ export function recentSolutionItems(issues: IssueFile[], cross: CrossIssueFile |
   while (i < crossItems.length || j < issueItems.length) {
     const c = crossItems[i]
     const s = issueItems[j]
-    if (c && (!s || compareDatesDesc(c.solution.added, s.solution.added) <= 0)) out.push(crossItems[i++])
+    if (c && (!s || compareDatesDesc(c.solution.updated, s.solution.updated) <= 0)) out.push(crossItems[i++])
     else out.push(issueItems[j++])
   }
   return take(out, limit)

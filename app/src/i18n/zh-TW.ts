@@ -94,6 +94,12 @@ export const t = {
     loading: '資料載入中…',
     loadError: '資料載入失敗，請重新整理頁面再試一次。',
   },
+  /** The two dates of every item (decision 131): a detail page shows both,
+   * a list card shows only 更新日期. */
+  dates: {
+    added: '新增日期',
+    updated: '更新日期',
+  },
   /** MoSCoW labels (design 3.4). */
   priority: {
     M: '必須有',
@@ -137,14 +143,12 @@ export const t = {
     all: '看全部',
     issuesAll: '看全部議題',
     issuesNone: '目前沒有已完成分析的議題。',
-    stakeholdersHeading: '最近加入分析的族群',
+    stakeholdersHeading: '最近更新的族群',
     stakeholdersAll: '看全部利害關係人',
     stakeholdersNone: '目前沒有利害關係人。',
-    solutionsHeading: '最近分析出的解法',
+    solutionsHeading: '最近更新的解法',
     solutionsAll: '看全部解法',
     solutionsNone: '目前沒有解法。',
-    added: '加入日期',
-    solutionAdded: '新增日期',
     issues: '出現的議題',
     /** The issue of a solution card: 「議題 #2 找回消失的垃圾桶」 (decision 112). */
     solutionIssue: '議題',
@@ -164,8 +168,6 @@ export const t = {
     /** titles: 「#1 把三千棵樹種回來」 (decision 112). */
     sharedValue: (n: number, titles: string[]) =>
       titles.length > 0 ? `${n} 位，也出現在 ${titles.join('、')}` : `${n} 位`,
-    /** 新增日期 on the detailed card (design 3.23.9). */
-    added: '新增日期',
     updated: '更新日期',
     spaces: '空間類型',
     /** 特別關注族群 (design 3.9). Never a count like 「4／6」: it reads like a score. */
@@ -204,7 +206,6 @@ export const t = {
     tabNotFound: '找不到這個分頁。',
     tabsLabel: '議題內容',
     spaces: '空間類型',
-    updated: '更新日期',
     backHome: '回到首頁',
     goToOverview: '回到總覽',
     /** The tab names, also for the page title (design 3.2). */
@@ -542,7 +543,6 @@ export const t = {
     issuesLink: '看全部議題',
     backHome: '回到首頁',
     spaces: '空間類型',
-    added: '新增日期',
     /** The line under the h1 (design 3.12): 「議題：#2 找回消失的垃圾桶」. */
     issueLine: '議題：',
     groupsHeading: '涵蓋的相同訴求群組',
@@ -979,8 +979,6 @@ export const t = {
     basisNone: '沒有涵蓋的需求',
     /** Next to the counts while 資料根據比例 is on. */
     sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
-    added: '新增日期',
-    updated: '更新日期',
   },
   /** #/stakeholders with the search, sort and filter bar, card view and
    * tree view (design 3.23, Task L6). */
@@ -1015,8 +1013,6 @@ export const t = {
     /** After the coverage while 解法涵蓋比例 is on. */
     coveragePercent: (p: number) => `（${p}%）`,
     noNeeds: '沒有需求',
-    added: '新增日期',
-    updated: '更新日期',
     /** The name of the tree in tree view. */
     treeLabel: '利害關係人分類',
     /** The counts after a stakeholder in tree view (decision 117):

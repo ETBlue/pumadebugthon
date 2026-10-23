@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { BasisField } from '@/components/BasisField'
+import { DateFields } from '@/components/DateFields'
 import { Field } from '@/components/Field'
 import { LabelledSection } from '@/components/LabelledSection'
 import { AlsoInLine } from '@/components/issue/AlsoIn'
@@ -139,6 +140,8 @@ function SpaceOverview({ space }: { space: SpaceType }) {
       <dl className="space-y-1.5 text-sm">
         <Field label={tp.group}>{space.group}</Field>
         {space.description && <Field label={tp.description}>{space.description}</Field>}
+        {/* The dates of the space type itself (decision 131). */}
+        <DateFields added={space.added} updated={space.updated} />
       </dl>
       <p className={`mt-4 leading-relaxed ${proseClass}`}>{tp.intro}</p>
     </>

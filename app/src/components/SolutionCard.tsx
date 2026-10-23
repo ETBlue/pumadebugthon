@@ -8,6 +8,7 @@ import { solutionPath } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
 import type { CellCounts, Solution, SpaceType } from '@/types'
 import { CellBasis } from './CellBasis'
+import { UpdatedField } from './DateFields'
 import { Field } from './Field'
 import { Markdown } from './Markdown'
 import { SpaceLinks } from './SpaceLinks'
@@ -68,24 +69,14 @@ export function CoveredBasisField({ basis }: { basis: CoveredBasis }) {
   )
 }
 
-/** 新增日期 and 更新日期 of a solution, as fields in a <dl>. A missing date
- * is left out (the data may not have 更新日期 yet). */
-export function SolutionDateFields({ added, updated }: { added?: string | null; updated?: string | null }) {
-  return (
-    <>
-      {added && <Field label={ts.added}><time dateTime={added}>{added}</time></Field>}
-      {updated && <Field label={ts.updated}><time dateTime={updated}>{updated}</time></Field>}
-    </>
-  )
-}
-
 interface CommonProps {
   solution: Solution
   issueNumber: number
   /** The code shows the issue too (「#2 A」). See SolutionTitleLink. */
   showIssue?: boolean
   /** Extra content for one page, shown at the end of the card. For example
-   * the 新增日期 on the home page, or the other space types on a space page. */
+   * the issue and 資料根據 on the home page, or the other space types on a
+   * space page. */
   children?: ReactNode
 }
 
@@ -110,7 +101,7 @@ export type SolutionCardProps =
 /** One solution in a list (design 3.9). Both variants show the tag, the code
  * and name as a link to the solution page, and the one-line summary. The
  * detailed variant (#/solutions, design 3.23.9) also shows the issue,
- * 空間類型, 新增日期, 更新日期, the number of needs it covers (decision 54)
+ * 空間類型, 更新日期, the number of needs it covers (decision 54)
  * and 「涵蓋需求的資料根據」. children come last. */
 export function SolutionCard(props: SolutionCardProps) {
   const { solution: sol, issueNumber, showIssue = false, children } = props
@@ -129,7 +120,8 @@ export function SolutionCard(props: SolutionCardProps) {
             {sol.spaces.length > 0 && (
               <Field label={tl.solutionSpaces}><SpaceLinks spaceTypes={props.spaceTypes} codes={sol.spaces} /></Field>
             )}
-            <SolutionDateFields added={sol.added} updated={sol.updated} />
+            {/* A card shows only 更新日期 (decision 131). */}
+            <UpdatedField updated={sol.updated} />
           </dl>
           {props.coveredNeeds !== null && <p className="mt-1 text-sm">{tl.solutionNeeds(props.coveredNeeds)}</p>}
           <dl className="mt-1 text-sm">
@@ -138,6 +130,10 @@ export function SolutionCard(props: SolutionCardProps) {
         </>
       )}
       {children}
+      {/* The compact card shows 更新日期 last, after children (decision 131). */}
+      {props.variant === 'compact' && sol.updated && (
+        <dl className="mt-1 text-sm"><UpdatedField updated={sol.updated} /></dl>
+      )}
     </div>
   )
 }

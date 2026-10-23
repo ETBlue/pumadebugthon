@@ -7,6 +7,7 @@ import { issueNumberTitle, type IssueTitles } from '@/lib/issues'
 import type { StakeholderIssueStories } from '@/lib/stakeholders'
 import type { CellCounts, Stakeholder } from '@/types'
 import { CellBasis } from './CellBasis'
+import { UpdatedField } from './DateFields'
 import { Field } from './Field'
 import { IssueTitleLinks } from './IssueTitleLinks'
 import { PriorityCounts } from './PriorityCounts'
@@ -41,7 +42,7 @@ export interface StakeholderListFields {
 interface CommonProps {
   stakeholder: Stakeholder
   /** Extra content for one page, shown at the end of the card. For example
-   * the issues and 加入日期 on the home page, or 「也出現在 #1」. */
+   * the issues and 資料根據 on the home page, or 「也出現在 #1」. */
   children?: ReactNode
 }
 
@@ -49,9 +50,10 @@ interface CommonProps {
  * - detailed: the larger box. With entries (the issue's 利害關係人 tab): the
  *   stories of the stakeholder per issue, from storyCountsByStakeholder.
  *   With listFields (#/stakeholders): 分類路徑, the issues, 資料根據,
- *   解法涵蓋 and the dates (design 3.23.9).
+ *   解法涵蓋 and 更新日期 (design 3.23.9).
  * - compact: short lists (home page, solution page, space page, opinion
- *   check). */
+ *   check).
+ * Every variant shows 更新日期 and never 新增日期 (decision 131). */
 export type StakeholderCardProps =
   | (CommonProps & {
       variant: 'detailed'
@@ -93,6 +95,10 @@ export function StakeholderCard(props: StakeholderCardProps) {
         <ListFields stakeholder={s} fields={props.listFields} />
       )}
       {children}
+      {/* The other variants show 更新日期 last, after children (decision 131). */}
+      {!(props.variant === 'detailed' && props.listFields !== undefined) && s.updated && (
+        <dl className="mt-1 text-sm"><UpdatedField updated={s.updated} /></dl>
+      )}
     </article>
   )
 }
@@ -138,8 +144,8 @@ function ListFields({ stakeholder: s, fields: f }: { stakeholder: Stakeholder; f
         {total === 0 ? tl.noNeeds : tl.coverageValue(total, covered)}
         {total > 0 && f.solutionsPercent !== null && <span className="font-medium">{tl.coveragePercent(f.solutionsPercent)}</span>}
       </Field>
-      {s.added && <Field label={tl.added}><time dateTime={s.added}>{s.added}</time></Field>}
-      {s.updated && <Field label={tl.updated}><time dateTime={s.updated}>{s.updated}</time></Field>}
+      {/* A card shows only 更新日期 (decision 131). */}
+      <UpdatedField updated={s.updated} />
     </dl>
   )
 }

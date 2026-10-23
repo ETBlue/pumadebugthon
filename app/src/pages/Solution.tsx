@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router'
 import { PageBand, PageBody, type BackTarget } from '@/components/PageBand'
 import { PageTabs } from '@/components/PageTabs'
 import { CellText } from '@/components/CellText'
+import { DateFields } from '@/components/DateFields'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
@@ -132,6 +133,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
                     <SolutionMeta
                       spaces={sol.spaces}
                       added={sol.added}
+                      updated={sol.updated}
                       summary={sol.summary}
                       index={index}
                       issueLine={
@@ -228,6 +230,7 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
                     <SolutionMeta
                       spaces={sol.spaces}
                       added={sol.added}
+                      updated={sol.updated}
                       summary={sol.summary}
                       index={index}
                       issueLine={
@@ -255,12 +258,14 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
 }
 
 /** The metadata of a solution at the top of the 總覽 tab (decision 111): the
- * 議題 line, the summary, the space types and the date it was added. */
-function SolutionMeta({ issueLine, summary, spaces, added, index }: {
+ * 議題 line, the summary, the space types, 新增日期 and 更新日期 (decision
+ * 131). */
+function SolutionMeta({ issueLine, summary, spaces, added, updated, index }: {
   issueLine: ReactNode
   summary: string
   spaces: string[]
   added: string
+  updated?: string | null
   index: IndexFile
 }) {
   return (
@@ -271,7 +276,7 @@ function SolutionMeta({ issueLine, summary, spaces, added, index }: {
         {spaces.length > 0 && (
           <Field label={tp.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={spaces} /></Field>
         )}
-        <Field label={tp.added}><time dateTime={added}>{added}</time></Field>
+        <DateFields added={added} updated={updated} />
       </dl>
     </div>
   )

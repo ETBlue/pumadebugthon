@@ -330,3 +330,53 @@ describe('the cross-issue solutions on the 需求 tab (decision 126)', () => {
     expect(need).not.toContain('href="/solutions/X-')
   })
 })
+
+describe('the card grids of the stakeholder tabs (decision 139)', () => {
+  // cardGridClass, with or without a top margin before it.
+  const GRID = /<ul class="(?:mt-3 )?grid gap-4 lg:grid-cols-2">/g
+  const grids = (html: string) => html.match(GRID)?.length ?? 0
+  beforeEach(() => {
+    state.loading = false
+    state.cross = 'ready'
+    state.crossFile = null
+    state.override = {}
+  })
+
+  it('總覽: the stories of each issue are a grid, with cards of equal height', () => {
+    const html = renderPage('/stakeholders/I06')
+    expect(grids(html)).toBeGreaterThanOrEqual(3)
+    // StoryCard gets h-full, so the cards in one row have the same height.
+    expect(html).toContain('<article class="rounded-md border text-sm p-4 h-full">')
+  })
+
+  it('需求: each priority group is a grid of NeedItem cards', () => {
+    const html = renderPage('/stakeholders/I06/needs')
+    expect(grids(html)).toBeGreaterThanOrEqual(3)
+    expect(html).toContain('class="rounded-lg border p-3 md:p-4 h-full"')
+  })
+
+  it('訴求: the wants are a grid, but the conflicts keep one card per row', () => {
+    const html = renderPage('/stakeholders/I06/wants')
+    expect(grids(html)).toBeGreaterThanOrEqual(3)
+    expect(html).toContain('class="rounded-lg border p-3 md:p-4 h-full"')
+    // A conflict card has two sides in it, so its list is not a grid.
+    const conflicts = html.split('id="stakeholder-wants-1-conflicts"')[1]
+    const list = conflicts.slice(0, conflicts.indexOf('</ul>'))
+    expect(list).toContain('<ul class="space-y-4">')
+    expect(list).not.toContain('grid gap-4 lg:grid-cols-2')
+  })
+
+  it('解法: the solutions, the uncovered needs and 跨議題解法 are grids', () => {
+    const html = renderPage('/stakeholders/I06/solutions')
+    // The issue solutions use the compact SolutionCard with h-full.
+    expect(html).toContain('<div class="rounded-md border p-3 h-full">')
+    expect(html.split('id="stakeholder-solutions-cross"')[1]).toMatch(GRID)
+    expect(grids(html)).toBeGreaterThanOrEqual(4)
+  })
+
+  it('never uses 3 columns', () => {
+    for (const tab of ['', '/needs', '/wants', '/solutions']) {
+      expect(renderPage(`/stakeholders/I06${tab}`)).not.toContain('xl:grid-cols-3')
+    }
+  })
+})

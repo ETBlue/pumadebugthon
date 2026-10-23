@@ -5,7 +5,7 @@ import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggl
 import { Heading, type HeadingLevel } from '@/components/Heading'
 import { LabelledSection } from '@/components/LabelledSection'
 import { Markdown } from '@/components/Markdown'
-import { targetLinkClass } from '@/components/styles'
+import { cardGridClass, targetLinkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
 import { crossWantCoverage } from '@/lib/crossIssue'
@@ -122,7 +122,7 @@ function GroupsPart({ index, issue, solution }: { index: IndexFile; issue: Issue
       ) : (
         <>
           <p className="text-sm text-muted-foreground">{tp.groupsIntro}</p>
-          <ul className="mt-3 space-y-3">
+          <ul className={`mt-3 ${cardGridClass}`}>
             {groups.map(({ group: g, full, covered, stakeholders: members }) => (
               <li key={g.id} className="rounded-md border p-3">
                 <p>

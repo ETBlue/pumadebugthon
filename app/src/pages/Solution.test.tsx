@@ -277,3 +277,37 @@ describe('two columns side by side from lg (decision 136)', () => {
     expect(columnPairs(render('/solutions/X-A/policies'))[0].slice(0, 2)).toEqual(['policies-domestic', 'policies-foreign'])
   })
 })
+
+describe('the plain card lists of the solution tabs (decision 139)', () => {
+  const GRID = /<ul class="mt-3 grid gap-4 lg:grid-cols-2">/
+  const COLS = 'class="grid gap-10 *:min-w-0 lg:grid-cols-2 lg:gap-8"'
+
+  it('訴求: 涵蓋的相同訴求群組 is a grid; the two halves keep one card per row', () => {
+    const [above, halves] = render('/solutions/2-A/wants').split(COLS)
+    expect(above.split('id="solution-groups"')[1]).toMatch(GRID)
+    expect(halves).not.toContain('grid gap-4 lg:grid-cols-2')
+  })
+
+  it('需求: the two halves keep one card per row', () => {
+    expect(render('/solutions/2-A/needs').split(COLS)[1]).not.toContain('grid gap-4 lg:grid-cols-2')
+  })
+
+  it('衝突: 相關的衝突 is a grid; 解開的衝突 keeps one conflict per row', () => {
+    const html = render('/solutions/2-A/conflicts')
+    const [wayOut, related] = html.split('id="solution-way-out"')[1].split('id="solution-conflicts"')
+    expect(wayOut).toContain('<li')
+    expect(wayOut).not.toContain('grid gap-4 lg:grid-cols-2')
+    expect(related).toContain('<li')
+    expect(related).toMatch(GRID)
+  })
+
+  it('cross-issue 需求: 跨議題的共同需求 is a grid of cards with equal height', () => {
+    const groups = render('/solutions/X-A/needs').split('id="cross-groups"')[1]
+    expect(groups).toMatch(GRID)
+    expect(groups).toContain('class="h-full rounded-md border p-3"')
+  })
+
+  it('cross-issue 總覽: the merged solutions are a grid', () => {
+    expect(render('/solutions/X-A').split('id="cross-parts"')[1]).toMatch(GRID)
+  })
+})

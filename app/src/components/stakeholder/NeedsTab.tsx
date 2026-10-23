@@ -1,5 +1,6 @@
 import { DataBasisEmpty, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { NeedItem, type NeedPart } from '@/components/NeedItem'
+import { cardGridClass } from '@/components/styles'
 import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { crossSolutionsByNeed } from '@/lib/coverage'
@@ -40,7 +41,7 @@ export function NeedsTab({ index, issues, id }: StakeholderTabProps) {
             ) : (
               groups.map((g) => (
                 <Part key={g.priority} id={`${p}-${g.priority}`} title={priorityLabel(g.priority)}>
-                  <ul className="space-y-3">
+                  <ul className={cardGridClass}>
                     {g.items.map((item) => (
                       <li key={item.need.id}>
                         <NeedItem
@@ -53,6 +54,7 @@ export function NeedsTab({ index, issues, id }: StakeholderTabProps) {
                           ownStories={ownStoriesOf(item.need.id)}
                           crossSolutions={crossOf.get(item.need.id) ?? []}
                           focusTarget={false}
+                          className="h-full"
                         />
                       </li>
                     ))}

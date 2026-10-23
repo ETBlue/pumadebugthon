@@ -8,7 +8,7 @@ import { ItemKey } from '@/components/ItemKey'
 import { Markdown } from '@/components/Markdown'
 import { NeedPriority, NeedSummaryLink } from '@/components/NeedItem'
 import { StoryCard } from '@/components/StoryCard'
-import { linkClass, targetLinkClass } from '@/components/styles'
+import { cardGridClass, linkClass, targetLinkClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import {
   crossConflictView, crossRelatedConflicts, crossWayOutConflicts, findCrossSolution,
@@ -217,7 +217,7 @@ export function ConflictsTab({ index, issue, solution: sol }: { index: IndexFile
           ) : (
             <>
               <p className="text-sm text-muted-foreground">{tp.conflictsIntro}</p>
-              <ul className="mt-3 space-y-3">
+              <ul className={`mt-3 ${cardGridClass}`}>
                 {related.map(({ conflict: c, covered }) => (
                   <li key={c.id} className="rounded-md border p-3">
                     <p>
@@ -284,7 +284,7 @@ export function CrossConflictsTab({ data, index, issues, solution: sol }: {
           ) : (
             <>
               <p className="text-sm text-muted-foreground">{tx.relatedConflictsIntro}</p>
-              <ul className="mt-3 space-y-3">
+              <ul className={`mt-3 ${cardGridClass}`}>
                 {related.map(({ conflict: c, covered }) => (
                   <li key={c.id} className="rounded-md border p-3">
                     <p>

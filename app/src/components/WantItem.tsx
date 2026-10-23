@@ -48,6 +48,8 @@ export interface WantItemProps {
   focusTarget?: boolean
   /** Extra content for one page, at the end. */
   children?: ReactNode
+  /** Extra classes for the card, for example `h-full` in a grid. */
+  className?: string
 }
 
 /** One want (訴求) in a list (design 3.2, 3.3, 3.16): the label with its
@@ -55,7 +57,7 @@ export interface WantItemProps {
  * conflicts in file order, as WantItem in src/lib/wantList.ts gives them. */
 export function WantItem({
   item, issueNumber, stakeholders, parts = ISSUE_WANT_PARTS, headingLevel = 4, summaryLink = false,
-  others, pick, focusTarget = true, children,
+  others, pick, focusTarget = true, children, className,
 }: WantItemProps) {
   const [params] = useSearchParams()
   const dataBasedOnly = isDataBasisFilterOn(params)
@@ -96,7 +98,7 @@ export function WantItem({
     <article
       {...(focusTarget ? focusTargetProps(item.key) : {})}
       aria-labelledby={headingId}
-      className={cn('rounded-lg border p-3 md:p-4', focusTarget && focusTargetClass)}
+      className={cn('rounded-lg border p-3 md:p-4', focusTarget && focusTargetClass, className)}
     >
       <Heading level={headingLevel} id={headingId} className="font-semibold">{label}</Heading>
       {has('key') && (

@@ -15,6 +15,7 @@ import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { crossSolutionPath } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
 import { issueNumberTitle, type IssueTitles } from '@/lib/issues'
+import { cn } from '@/lib/utils'
 import type { CrossSolution, SpaceType } from '@/types'
 
 const tx = t.crossIssue
@@ -71,7 +72,7 @@ export function CrossIssueLinks({ solution, titles }: { solution: CrossSolution;
  * last (for example 資料根據 on the home page). A card never shows 新增日期
  * (decision 131). Without detailed, the card is small and shows no date
  * (decision 132). */
-export function CrossSolutionCard({ solution: sol, issueTitles, detailed, children }: {
+export function CrossSolutionCard({ solution: sol, issueTitles, detailed, children, className }: {
   solution: CrossSolution
   /** The titles of the issues (index.issues), for 「#1 把三千棵樹種回來」
    * (decision 112). */
@@ -81,9 +82,11 @@ export function CrossSolutionCard({ solution: sol, issueTitles, detailed, childr
    * on), and the issues of crossAlsoCovers. */
   detailed?: { spaceTypes: SpaceType[]; coveredNeeds: number | null; basis: CoveredBasis; alsoCovers: number[] }
   children?: ReactNode
+  /** Extra classes for the card, for example `h-full` in a grid. */
+  className?: string
 }) {
   return (
-    <div className="rounded-md border p-3">
+    <div className={cn('rounded-md border p-3', className)}>
       {detailed && (
         <p className="mb-1">
           <Badge variant="secondary" className="rounded-sm">{ts.crossBadge}</Badge>

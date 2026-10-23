@@ -3,6 +3,7 @@ import { DataBasisEmpty, useDataBasisFilter } from '@/components/DataBasisToggle
 import { Markdown } from '@/components/Markdown'
 import { PriorityCounts } from '@/components/PriorityCounts'
 import { StoryCard } from '@/components/StoryCard'
+import { cardGridClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { dataBasedOnly as onlyDataBased } from '@/lib/dataBasis'
 import { needKey } from '@/lib/needs'
@@ -67,7 +68,7 @@ export function OverviewTab({ index, issues, id }: StakeholderTabProps) {
               ) : stories.length === 0 ? (
                 <DataBasisEmpty />
               ) : (
-                <ul className="space-y-2">
+                <ul className={cardGridClass}>
                   {stories.map((story) => (
                     <li key={story.id}>
                       <StoryCard
@@ -76,6 +77,7 @@ export function OverviewTab({ index, issues, id }: StakeholderTabProps) {
                         stakeholderName={stakeholderName(index.stakeholders, story.stakeholder)}
                         wantKey={wantKey(issue, story)}
                         needKey={needKey(story)}
+                        className="h-full"
                       />
                     </li>
                   ))}

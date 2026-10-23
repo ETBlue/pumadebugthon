@@ -4,6 +4,7 @@ import { LabelledSection } from '@/components/LabelledSection'
 import { NeedItem, NeedSummaryLink } from '@/components/NeedItem'
 import { CoveredBasisField, SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
+import { cardGridClass } from '@/components/styles'
 import { useCrossIssueOrNull, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import {
@@ -60,7 +61,7 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
                   {v.solutions.length === 0 ? (
                     <Empty>{crossOnly ? tp.solutionsNoneCrossOnly : tp.solutionsNone}</Empty>
                   ) : (
-                    <ul className="space-y-3">
+                    <ul className={cardGridClass}>
                       {v.solutions.map(({ solution, needs }) => (
                         <li key={solution.id}>
                           <SolutionCard variant="compact" solution={solution} issueNumber={issue.number}>
@@ -89,7 +90,7 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
                   {uncovered.length === 0 ? (
                     <Empty>{tp.uncoveredNeedsNone}</Empty>
                   ) : (
-                    <ul className="space-y-3">
+                    <ul className={cardGridClass}>
                       {uncovered.map((item) => (
                         <li key={item.need.id}>
                           <NeedItem
@@ -99,6 +100,7 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
                             parts={['priority', 'reason']}
                             summaryLink
                             focusTarget={false}
+                            className="h-full"
                           />
                         </li>
                       ))}
@@ -134,14 +136,14 @@ function CrossSolutionsSection({ index, shown }: { index: StakeholderTabProps['i
       ) : (
         <div>
           <p className="text-sm text-muted-foreground">{tp.crossSolutionsIntro}</p>
-          <ul className="mt-3 space-y-3">
+          <ul className={`mt-3 ${cardGridClass}`}>
             {shown.map(({ solution, needs }) => {
               const cells = cross !== null && allIssues.status === 'ready'
                 ? crossSolutionCells(cross, solution, allIssues.data)
                 : null
               return (
                 <li key={solution.code}>
-                  <CrossSolutionCard solution={solution} issueTitles={index.issues}>
+                  <CrossSolutionCard solution={solution} issueTitles={index.issues} className="h-full">
                     {cells && (
                       <dl className="mt-2 text-sm">
                         <CoveredBasisField basis={{ cells, percent: null }} />

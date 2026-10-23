@@ -3,6 +3,7 @@ import { CellText } from '@/components/CellText'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { ItemKey } from '@/components/ItemKey'
 import { Markdown } from '@/components/Markdown'
+import { cardGridClass } from '@/components/styles'
 import { NeedSummaryLink } from '@/components/NeedItem'
 import { TagBadge } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
@@ -32,7 +33,7 @@ function CrossNeedGroupCard({ group: g, issues }: { group: CrossNeedGroup; issue
   const keep = new Set<NeedItem>(dataBasedOnly ? dataBasedNeeds(items.map((i) => i.item)) : items.map((i) => i.item))
   const shown = items.filter((i) => keep.has(i.item))
   return (
-    <article aria-labelledby={key} className="rounded-md border p-3">
+    <article aria-labelledby={key} className="h-full rounded-md border p-3">
       <h4 id={key} className="font-semibold">
         <span className="mr-2 font-mono">{g.id}</span>
         {g.tag && <TagBadge kind={g.tag} className="mr-1.5" />}
@@ -106,7 +107,7 @@ export function CrossNeedsTab({ data, index, issues, solution }: {
           ) : (
             <>
               <p className="text-sm text-muted-foreground">{tx.groupsIntro}</p>
-              <ul className="mt-3 space-y-3">
+              <ul className={`mt-3 ${cardGridClass}`}>
                 {groups.map((g) => <li key={g.id}><CrossNeedGroupCard group={g} issues={issues} /></li>)}
               </ul>
             </>

@@ -1,5 +1,6 @@
 import { ConflictView } from '@/components/ConflictView'
 import { DataBasisEmpty, useDataBasisFilter } from '@/components/DataBasisToggle'
+import { cardGridClass } from '@/components/styles'
 import { WantItem, type WantPart } from '@/components/WantItem'
 import { t } from '@/i18n/zh-TW'
 import { dataBasedPickList } from '@/lib/dataBasis'
@@ -35,7 +36,7 @@ export function WantsTab({ index, issues, id }: StakeholderTabProps) {
               ) : wants.length === 0 ? (
                 <DataBasisEmpty />
               ) : (
-                <ul className="space-y-3">
+                <ul className={cardGridClass}>
                   {wants.map((w) => (
                     <li key={w.key}>
                       <WantItem
@@ -46,6 +47,7 @@ export function WantsTab({ index, issues, id }: StakeholderTabProps) {
                         summaryLink
                         others={id}
                         focusTarget={false}
+                        className="h-full"
                       />
                     </li>
                   ))}
@@ -53,6 +55,7 @@ export function WantsTab({ index, issues, id }: StakeholderTabProps) {
               )}
             </Part>
 
+            {/* One conflict per row: a conflict card has two sides in it. */}
             <Part id={`${p}-conflicts`} title={tp.conflicts}>
               {conflicts.length === 0 ? (
                 <Empty>{tp.conflictsNone}</Empty>

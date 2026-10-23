@@ -28,6 +28,8 @@ export interface StoryCardProps {
   /** The need key of the story (needKey). When given, the card links to the
    * need on the issue's 需求 tab (?focus=, decision 57). */
   needKey?: string
+  /** Extra classes for the card, for example `h-full` in a grid. */
+  className?: string
 }
 
 /** One user story: ID, stakeholder, 我想要, 以便, source and priority with its
@@ -38,7 +40,7 @@ export interface StoryCardProps {
  * so that link drops ?evidence=1. The 訴求 and 需求 links go to issue tabs,
  * so they keep it. */
 export function StoryCard({
-  story, issue, stakeholderName, compact = false, stakeholderNote, wantKey, needKey,
+  story, issue, stakeholderName, compact = false, stakeholderNote, wantKey, needKey, className,
 }: StoryCardProps) {
   const [params] = useSearchParams()
   const issueNumber = issue.number
@@ -47,7 +49,7 @@ export function StoryCard({
   const row = 'flex flex-col gap-0.5 md:flex-row md:gap-3'
   const label = 'shrink-0 text-muted-foreground md:w-20'
   return (
-    <article className={cn('rounded-md border text-sm', compact ? 'p-3' : 'p-4')}>
+    <article className={cn('rounded-md border text-sm', compact ? 'p-3' : 'p-4', className)}>
       <p className="flex flex-wrap items-baseline gap-x-2">
         <Link to={storyPath(issueNumber, story.id)} className={cn(targetLinkClass, 'font-mono font-semibold')}>
           {story.id}

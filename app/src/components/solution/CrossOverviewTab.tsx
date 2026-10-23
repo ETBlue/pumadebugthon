@@ -4,7 +4,7 @@ import { CellText } from '@/components/CellText'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Markdown } from '@/components/Markdown'
 import { SolutionTitleLink } from '@/components/SolutionCard'
-import { targetLinkClass } from '@/components/styles'
+import { cardGridClass, targetLinkClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { crossSolutionFocus } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
@@ -46,7 +46,7 @@ export function CrossOverviewTab({ data, issues, solution: sol }: {
     <div className="space-y-10">
       <SolutionPart id="cross-parts" title={tx.partsHeading}>
         <p className="text-sm text-muted-foreground">{tx.partsIntro}</p>
-        <ul className="mt-3 space-y-3">
+        <ul className={`mt-3 ${cardGridClass}`}>
           {sol.parts.map((p) => {
             const found = issueSolution(p.issue, p.code)
             return (

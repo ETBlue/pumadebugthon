@@ -710,3 +710,19 @@ describe('the 需求 tab filters: 優先順序 and 只看有衝突的需求 (dec
     expect(html).not.toMatch(/href="\/issues\/1\/[a-z]*\?[^"]*(priority|conflict)/)
   })
 })
+
+describe('the card grids of the 需求 and 解法 tabs (decisions 130 and 139)', () => {
+  const GRID = /<ul class="(?:mt-3 )?grid gap-4 lg:grid-cols-2">/
+
+  it('需求: each priority group is a grid of 2 columns at most', () => {
+    const html = render('/issues/2/needs')
+    expect(html).toMatch(GRID)
+    expect(html).not.toContain('xl:grid-cols-3')
+  })
+
+  it('解法: the solutions are a grid of 2 columns at most', () => {
+    const html = render('/issues/2/solutions')
+    expect(html).toMatch(GRID)
+    expect(html).not.toContain('xl:grid-cols-3')
+  })
+})

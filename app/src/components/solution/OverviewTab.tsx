@@ -4,7 +4,7 @@ import { CellText } from '@/components/CellText'
 import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { Field } from '@/components/Field'
 import { Markdown } from '@/components/Markdown'
-import { targetLinkClass } from '@/components/styles'
+import { cardGridClass, targetLinkClass } from '@/components/styles'
 import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { crossSolutionsOfSolution } from '@/lib/crossIssue'
@@ -76,7 +76,7 @@ export function OverviewTab({ issue, solution: sol }: { issue: IssueFile; soluti
       {crossList.length > 0 && (
         <SolutionPart id="solution-cross" title={t.crossIssue.solutionPartHeading}>
           <p className="text-sm text-muted-foreground">{t.crossIssue.solutionPartIntro}</p>
-          <ul className="mt-3 space-y-3">
+          <ul className={`mt-3 ${cardGridClass}`}>
             {crossList.map((x) => (
               <li key={x.code} className="rounded-md border p-3">
                 <p className="font-medium"><CrossSolutionLink solution={x} /></p>

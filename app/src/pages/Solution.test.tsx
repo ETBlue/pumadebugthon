@@ -53,7 +53,7 @@ const activeTab = (html: string) => /role="tab" aria-selected="true"[^>]*aria-la
 describe('the solution page tabs (decision 103)', () => {
   it('has ten tabs in order, with their counts (#2 A); 利害關係人, 訴求, 需求, 衝突 in the order of the issue page (decision 142)', () => {
     expect(tabNames(render('/solutions/2-A'))).toEqual([
-      '總覽', '利害關係人　涵蓋 14・未涵蓋 13', '訴求　涵蓋 28・未涵蓋 25', '需求　涵蓋 9・未涵蓋 13',
+      '總覽', '利害關係人　涵蓋 14・未涵蓋 13', '訴求　涵蓋 28・未涵蓋 25', '需求　滿足 9・未滿足 13',
       '衝突　解開 5・相關 3', '可能爭議 4', '法規障礙 2', '執行計畫', '成效衡量 4', '相關政策　國內 2・國外 2',
     ])
   })
@@ -155,7 +155,7 @@ describe('the solution page tabs (decision 103)', () => {
 describe('the cross-issue solution page tabs (decision 103)', () => {
   it('has the same ten tabs (X-A)', () => {
     expect(tabNames(render('/solutions/X-A'))).toEqual([
-      '總覽', '利害關係人　涵蓋 21・未涵蓋 30', '訴求　涵蓋 44・未涵蓋 123', '需求　涵蓋 17・未涵蓋 60',
+      '總覽', '利害關係人　涵蓋 21・未涵蓋 30', '訴求　涵蓋 44・未涵蓋 123', '需求　滿足 17・未滿足 60',
       '衝突　解開 1・相關 1', '可能爭議 4', '法規障礙 2', '執行計畫', '成效衡量 4', '相關政策　國內 2・國外 0',
     ])
   })

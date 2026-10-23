@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { BasisField } from '@/components/BasisField'
 import { CellText } from '@/components/CellText'
 import { PickLabel } from '@/components/PickLabel'
@@ -13,6 +13,8 @@ import { solutionCells, stakeholderCells } from '@/lib/coverage'
 import { dataBasedCount, isDataBasisFilterOn } from '@/lib/dataBasis'
 import { filterPickList, opinionResult, type PickItem } from '@/lib/opinion'
 import { findStakeholder, stakeholderName } from '@/lib/stakeholders'
+import { conflictFocusPath } from '@/lib/entityPaths'
+import { targetLinkClass } from '@/components/styles'
 import { cn } from '@/lib/utils'
 import { issueWants, type WantItem as WantData } from '@/lib/wantList'
 import { pickSearch } from '@/lib/wantsTab'
@@ -139,6 +141,7 @@ export function OpinionTab(props: IssueTabProps & { wants: WantData[]; filtered:
 function OpinionResult({ index, issue, summary, available, picked }: IssueTabProps & { picked: PickItem }) {
   const result = opinionResult(issue, picked.storyIds)
   const n = summary.number
+  const [params] = useSearchParams()
   const alsoIn = (id: string) => (
     <AlsoIn index={index} id={id} issueNumber={n} available={available} />
   )
@@ -174,7 +177,8 @@ function OpinionResult({ index, issue, summary, available, picked }: IssueTabPro
             {result.otherSide.map(({ conflict: c, otherStories }) => (
               <li key={c.id} className="rounded-lg border p-4">
                 <h6 className="font-semibold">
-                  <span className="mr-2 font-mono">{c.id}</span>
+                  {/* The ID links to the conflict on the 衝突 tab (decision 142). */}
+                  <Link to={conflictFocusPath(n, c.id, params)} className={cn(targetLinkClass, 'mr-2 font-mono')}>{c.id}</Link>
                   <CellText cell={c.text} />
                 </h6>
                 <p className="mt-3 text-sm text-muted-foreground">{to.otherStories}</p>

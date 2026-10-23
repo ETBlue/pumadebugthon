@@ -543,7 +543,7 @@ export const t = {
      * no percent, no bar. */
     tabLabels: {
       needs: (covered: number, notCovered: number): TabLabel => ({
-        main: '需求', sep: '　', sub: `涵蓋 ${covered}・未涵蓋 ${notCovered}`,
+        main: '需求', sep: '　', sub: `滿足 ${covered}・未滿足 ${notCovered}`,
       }),
       wants: (covered: number, notCovered: number): TabLabel => ({
         main: '訴求', sep: '　', sub: `涵蓋 ${covered}・未涵蓋 ${notCovered}`,

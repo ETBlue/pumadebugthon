@@ -149,7 +149,7 @@ describe('solutionTabLabel', () => {
     const c = solutionTabCounts(trashcans, sol(trashcans, 'A'))
     const text = (tab: Parameters<typeof solutionTabLabel>[0]) => tabLabelText(solutionTabLabel(tab, c))
     expect(text('overview')).toBe('總覽')
-    expect(text('needs')).toBe('需求　涵蓋 9・未涵蓋 13')
+    expect(text('needs')).toBe('需求　滿足 9・未滿足 13')
     expect(text('wants')).toBe('訴求　涵蓋 28・未涵蓋 25')
     expect(text('stakeholders')).toBe('利害關係人　涵蓋 14・未涵蓋 13')
     expect(text('conflicts')).toBe('衝突　解開 5・相關 3')

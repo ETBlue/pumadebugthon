@@ -866,3 +866,12 @@ describe('the 分析摘要 rows with no solution on 總覽 (decision 140)', () =
     expect(html.indexOf('unlinked-heading')).toBeLessThan(html.indexOf('pending-heading'))
   })
 })
+
+describe('the 我的想法 result links each conflict ID to the 衝突 tab (decision 142)', () => {
+  it('links a conflict ID in 可能有不同意見的人 to the 衝突 tab', () => {
+    // Find a pick whose result lists a conflict.
+    const htmls = Array.from({ length: 20 }, (_, i) => render(`/issues/2/wants?pick=W${String(i + 1).padStart(2, '0')}`))
+    const withConflict = htmls.filter((h) => /<h6[^>]*><a[^>]*href="\/issues\/2\/conflicts\?focus=C\d+"/.test(h))
+    expect(withConflict.length).toBeGreaterThan(0)
+  })
+})

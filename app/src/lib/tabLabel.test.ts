@@ -15,7 +15,7 @@ describe('tabLabelText', () => {
 
   it('joins the two parts with the separator, as the label reads on a wide screen', () => {
     expect(tabLabelText(t.issue.tabLabels.stakeholders(27, 5))).toBe('利害關係人 27・弱勢 5')
-    expect(tabLabelText(t.solutionPage.tabLabels.needs(9, 12))).toBe('需求　涵蓋 9・未涵蓋 12')
+    expect(tabLabelText(t.solutionPage.tabLabels.needs(9, 12))).toBe('需求　滿足 9・未滿足 12')
     expect(tabLabelText(t.solutionPage.tabLabels.stakeholders(14, 13))).toBe('利害關係人　涵蓋 14・未涵蓋 13')
   })
 

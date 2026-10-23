@@ -30,13 +30,21 @@ export type IssueCardProps =
        * while the 資料根據比例 sort is on (design 3.23.3). */
       share?: Share | null
     }
-  | { variant: 'compact'; issue: IssueSummary; spaceTypes: SpaceType[]; shared: SharedForCard | null }
+  | {
+      variant: 'compact'
+      issue: IssueSummary
+      spaceTypes: SpaceType[]
+      shared: SharedForCard | null
+      /** Show 更新日期. Only the home page does; the space page shows no
+       * date on its small cards (decision 132). */
+      showUpdated?: boolean
+    }
 
 /** One issue in a list (design 3.9). Two variants:
  * - detailed: a box with all the counts, 資料根據, 特別關注族群 (the groups not
  *   included yet), 更新日期 and 空間類型.
  * - compact: the title link, 跨議題共用的利害關係人, 資料根據 (counts and bar
- *   only, decision 72), 更新日期 and 空間類型, in a smaller box. It uses
+ *   only, decision 72), 更新日期 (home page only) and 空間類型, in a smaller box. It uses
  *   the same box as the compact SolutionCard, so the home blocks look alike.
  *   The home page and the space page list only analyzed issues, but an issue
  *   that is 製作中 still shows its badge and a dashed border, and no fields.
@@ -76,7 +84,7 @@ export function IssueCard(props: IssueCardProps) {
             <Field label={t.basis.label}>
               <CellBasis cells={issue.counts.cells} stories={issue.counts.stories} compact inlineLabel={false} />
             </Field>
-            {updated}
+            {props.showUpdated && updated}
             {spaces}
           </dl>
         )}

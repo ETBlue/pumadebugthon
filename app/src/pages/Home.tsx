@@ -87,7 +87,7 @@ function HomeBlocks({ index }: { index: IndexFile }) {
             <ul className="space-y-3">
               {issues.map((issue) => (
                 <li key={issue.number}>
-                  <IssueCard variant="compact" issue={issue} spaceTypes={index.spaceTypes} shared={sharedForCard(index, issue)} />
+                  <IssueCard variant="compact" showUpdated issue={issue} spaceTypes={index.spaceTypes} shared={sharedForCard(index, issue)} />
                 </li>
               ))}
             </ul>

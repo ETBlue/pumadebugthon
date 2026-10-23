@@ -4,14 +4,17 @@ cmt,社群
 cmt-building,公寓大廈管理委員會
 cmt-civictech,公民科技
 cmt-local,在地自組團體
+cmt-religion,宗教團體
 edu,教育機構
 gov,政府
 gov-central,中央政府
 gov-central-ly,立法院
+gov-central-moenv,環境部
 gov-central-moi,內政部
 gov-central-moi-nlma,國土管理署
 gov-central-motc,交通部
 gov-central-motc-freeway,高速公路局
+gov-central-motc-thb,公路局
 gov-local,地方政府
 gov-local-newtaipei,新北市
 gov-local-newtaipei-dot,新北市交通局
@@ -19,6 +22,7 @@ gov-local-taipei,臺北市
 gov-local-taipei-ca,民政局
 gov-local-taipei-council,臺北市議會
 gov-local-taipei-ded,產業發展局
+gov-local-taipei-ded-commerce,商業處
 gov-local-taipei-ded-market,市場處
 gov-local-taipei-doh,衛生局
 gov-local-taipei-doit,資訊局
@@ -31,6 +35,7 @@ gov-local-taipei-dot-traffic,交通管制工程處
 gov-local-taipei-dot-transit,公共運輸處
 gov-local-taipei-epb,環保局
 gov-local-taipei-epb-cleaning,清潔隊
+gov-local-taipei-epb-epib,環保稽查大隊
 gov-local-taipei-epb-vector,水質病媒管制科
 gov-local-taipei-fire,消防局
 gov-local-taipei-law,法務局
@@ -51,6 +56,7 @@ gov-local-taipei-udd-bmo,建築管理工程處
 gov-local-taipei-udd-uro,都市更新處
 ind,產業
 ind-assoc,產業團體
+ind-automotive,汽機車維修與改裝業
 ind-bus,公車客運業
 ind-construction,營造業
 ind-events,活動產業

@@ -22,3 +22,11 @@ export function SolutionPart({ id, title, level = 3, children }: {
 export function PartEmpty({ children }: { children: ReactNode }) {
   return <p className="text-muted-foreground">{children}</p>
 }
+
+/** Two parts side by side (decision 136): 2 columns from `lg`, 1 column
+ * below it, with the first child on top. `lg` and not `md`, because the tab
+ * menu takes 10 to 11rem on the left (decision 130). Each child gets
+ * `min-w-0`, so long text wraps inside its column. */
+export function TwoColumns({ children }: { children: ReactNode }) {
+  return <div className="grid gap-10 *:min-w-0 lg:grid-cols-2 lg:gap-8">{children}</div>
+}

@@ -10,7 +10,7 @@ import {
 } from '@/lib/solutionPage'
 import type { NeedItem as NeedData } from '@/lib/needs'
 import type { IssueFile, Solution, Stakeholder } from '@/types'
-import { PartEmpty } from './Parts'
+import { PartEmpty, TwoColumns } from './Parts'
 
 const tp = t.solutionPage
 
@@ -88,7 +88,8 @@ export interface NeedCoveragePartsProps {
 }
 
 /** The two parts of the 需求 tab (design 3.12): 「涵蓋的需求」 grouped by the
- * need's priority, then 「未涵蓋的需求」 grouped by priority, each with the
+ * need's priority and 「未涵蓋的需求」 grouped by priority, side by side
+ * from `lg` (decision 136), each with the
  * other solutions that cover it. It follows the 「只看有資料根據」 setting in
  * the URL. The toggle itself is on the tab. */
 export function NeedCoverageParts({
@@ -101,40 +102,43 @@ export function NeedCoverageParts({
   const common = { issueNumber, solutionId, stakeholders, level: sub, focusTarget }
   const emptyText = (all: number, noneText: string) => (all === 0 ? noneText : tp.needsFilteredNone)
 
+  const covered = (
+    <LabelledSection headingId={`${idPrefix}-covered`}>
+      <Heading level={headingLevel} id={`${idPrefix}-covered`} className="text-xl font-bold">
+        {tp.coveredNeedsHeading}
+      </Heading>
+      {groups.covered.length === 0 ? (
+        <div className="mt-3"><PartEmpty>{emptyText(coverage.covered.length, tp.coveredNeedsNone)}</PartEmpty></div>
+      ) : (
+        <PriorityGroups {...common} groups={groups.covered} idPrefix={`${idPrefix}-covered`} parts={COVERED_PARTS} />
+      )}
+    </LabelledSection>
+  )
+  // An issue that is not in the parts of a cross-issue solution has only the
+  // covered part. It keeps the full width (decision 136).
+  if (!showNotCovered) return covered
   return (
-    <div className="space-y-10">
-      <LabelledSection headingId={`${idPrefix}-covered`}>
-        <Heading level={headingLevel} id={`${idPrefix}-covered`} className="text-xl font-bold">
-          {tp.coveredNeedsHeading}
+    <TwoColumns>
+      {covered}
+      <LabelledSection headingId={`${idPrefix}-not-covered`}>
+        <Heading level={headingLevel} id={`${idPrefix}-not-covered`} className="text-xl font-bold">
+          {tp.notCoveredNeedsHeading}
         </Heading>
-        {groups.covered.length === 0 ? (
-          <div className="mt-3"><PartEmpty>{emptyText(coverage.covered.length, tp.coveredNeedsNone)}</PartEmpty></div>
+        <p className="mt-1 text-sm text-muted-foreground">{tp.notCoveredNeedsIntro}</p>
+        {groups.notCovered.length === 0 ? (
+          <div className="mt-3">
+            <PartEmpty>{emptyText(coverage.notCovered.length, tp.notCoveredNeedsNone)}</PartEmpty>
+          </div>
         ) : (
-          <PriorityGroups {...common} groups={groups.covered} idPrefix={`${idPrefix}-covered`} parts={COVERED_PARTS} />
+          <PriorityGroups
+            {...common}
+            groups={groups.notCovered}
+            idPrefix={`${idPrefix}-not-covered`}
+            parts={NOT_COVERED_PARTS}
+          />
         )}
       </LabelledSection>
-
-      {showNotCovered && (
-        <LabelledSection headingId={`${idPrefix}-not-covered`}>
-          <Heading level={headingLevel} id={`${idPrefix}-not-covered`} className="text-xl font-bold">
-            {tp.notCoveredNeedsHeading}
-          </Heading>
-          <p className="mt-1 text-sm text-muted-foreground">{tp.notCoveredNeedsIntro}</p>
-          {groups.notCovered.length === 0 ? (
-            <div className="mt-3">
-              <PartEmpty>{emptyText(coverage.notCovered.length, tp.notCoveredNeedsNone)}</PartEmpty>
-            </div>
-          ) : (
-            <PriorityGroups
-              {...common}
-              groups={groups.notCovered}
-              idPrefix={`${idPrefix}-not-covered`}
-              parts={NOT_COVERED_PARTS}
-            />
-          )}
-        </LabelledSection>
-      )}
-    </div>
+    </TwoColumns>
   )
 }
 

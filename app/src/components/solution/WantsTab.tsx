@@ -15,7 +15,7 @@ import { solutionGroupCoverage, solutionWantCoverage, type WantCoverage } from '
 import { stakeholderName } from '@/lib/stakeholders'
 import { cn } from '@/lib/utils'
 import type { CrossIssueFile, CrossSolution, IndexFile, IssueFile, Solution, Stakeholder, Story } from '@/types'
-import { PartEmpty, SolutionPart } from './Parts'
+import { PartEmpty, SolutionPart, TwoColumns } from './Parts'
 
 const tp = t.solutionPage
 const tx = t.crossIssue
@@ -69,7 +69,8 @@ function WantList({ id, title, intro, stories, none, issueNumber, stakeholders, 
   )
 }
 
-/** 「涵蓋的訴求」 and 「未涵蓋的訴求」 of one issue. */
+/** 「涵蓋的訴求」 and 「未涵蓋的訴求」 of one issue, side by side from `lg`
+ * (decision 136). */
 function WantCoverageParts({ wants, issueNumber, stakeholders, level = 3, idPrefix = 'solution-wants', showNotCovered = true }: {
   wants: WantCoverage
   issueNumber: number
@@ -80,26 +81,29 @@ function WantCoverageParts({ wants, issueNumber, stakeholders, level = 3, idPref
   showNotCovered?: boolean
 }) {
   const common = { issueNumber, stakeholders, level }
+  const covered = (
+    <WantList
+      {...common}
+      id={`${idPrefix}-covered`}
+      title={tp.coveredWantsHeading}
+      stories={wants.covered}
+      none={tp.coveredWantsNone}
+    />
+  )
+  // With only the covered part, it keeps the full width (decision 136).
+  if (!showNotCovered) return covered
   return (
-    <div className="space-y-10">
+    <TwoColumns>
+      {covered}
       <WantList
         {...common}
-        id={`${idPrefix}-covered`}
-        title={tp.coveredWantsHeading}
-        stories={wants.covered}
-        none={tp.coveredWantsNone}
+        id={`${idPrefix}-not-covered`}
+        title={tp.notCoveredWantsHeading}
+        intro={tp.notCoveredWantsIntro}
+        stories={wants.notCovered}
+        none={tp.notCoveredWantsNone}
       />
-      {showNotCovered && (
-        <WantList
-          {...common}
-          id={`${idPrefix}-not-covered`}
-          title={tp.notCoveredWantsHeading}
-          intro={tp.notCoveredWantsIntro}
-          stories={wants.notCovered}
-          none={tp.notCoveredWantsNone}
-        />
-      )}
-    </div>
+    </TwoColumns>
   )
 }
 

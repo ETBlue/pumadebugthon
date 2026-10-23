@@ -180,3 +180,60 @@ describe('the dates in the metadata of 總覽 (decision 131)', () => {
     expect(render('/solutions/2-A/needs')).not.toContain(t.dates.added)
   })
 })
+
+describe('two columns side by side from lg (decision 136)', () => {
+  const COLS = 'class="grid gap-10 *:min-w-0 lg:grid-cols-2 lg:gap-8"'
+  // The heading IDs of the sections after each two-column grid starts, in
+  // page order. aria-labelledby can list outer headings first, so take the last ID.
+  const columnPairs = (html: string) =>
+    html.split(COLS).slice(1).map((chunk) =>
+      [...chunk.matchAll(/<section aria-labelledby="([^"]+)"/g)].map((m) => m[1].split(' ').at(-1)!))
+
+  it('需求: 涵蓋的需求 first, then 未涵蓋的需求, in one grid', () => {
+    const pairs = columnPairs(render('/solutions/2-A/needs'))
+    expect(pairs).toHaveLength(1)
+    expect(pairs[0][0]).toBe('solution-needs-covered')
+    expect(pairs[0].indexOf('solution-needs-not-covered')).toBeGreaterThan(0)
+  })
+
+  it('訴求: the two want lists in one grid; 涵蓋的相同訴求群組 stays above it, full width', () => {
+    const html = render('/solutions/2-A/wants')
+    const pairs = columnPairs(html)
+    expect(pairs).toHaveLength(1)
+    expect(pairs[0].slice(0, 2)).toEqual(['solution-wants-covered', 'solution-wants-not-covered'])
+    expect(html.indexOf('id="solution-groups"')).toBeLessThan(html.indexOf(COLS))
+  })
+
+  it('利害關係人: the two parts in one grid, with one card per row inside each part', () => {
+    const html = render('/solutions/2-A/stakeholders')
+    const chunks = html.split(COLS)
+    expect(chunks).toHaveLength(2)
+    expect(chunks[1].indexOf('id="solution-stakeholders-covered"'))
+      .toBeLessThan(chunks[1].indexOf('id="solution-stakeholders-not-covered"'))
+    // The card list is no longer a 2-column grid inside the half.
+    expect(html).not.toContain('grid gap-3 lg:grid-cols-2')
+  })
+
+  it('相關政策: 國內 first, then 國外, in one grid', () => {
+    const pairs = columnPairs(render('/solutions/2-A/policies'))
+    expect(pairs).toHaveLength(1)
+    expect(pairs[0].slice(0, 2)).toEqual(['policies-domestic', 'policies-foreign'])
+  })
+
+  it('cross-issue 需求 and 訴求: one grid per issue in parts, none for an issue not in parts (X-E)', () => {
+    // X-E has parts in #2 and #8. Its group X-N03 covers #1 N15, so #1 shows
+    // only its covered part, at full width.
+    const needs = render('/solutions/X-E/needs')
+    expect(columnPairs(needs).map((p) => p[0])).toEqual(['cross-needs-2-covered', 'cross-needs-8-covered'])
+    expect(needs).toContain('id="cross-needs-1-covered"')
+    expect(needs).not.toContain('id="cross-needs-1-not-covered"')
+    const wants = render('/solutions/X-E/wants')
+    expect(columnPairs(wants).map((p) => p[0])).toEqual(['cross-wants-2-covered', 'cross-wants-8-covered'])
+    expect(wants).toContain('id="cross-wants-1-covered"')
+  })
+
+  it('cross-issue 利害關係人 and 相關政策 also have the two columns (X-A)', () => {
+    expect(render('/solutions/X-A/stakeholders').split(COLS)).toHaveLength(2)
+    expect(columnPairs(render('/solutions/X-A/policies'))[0].slice(0, 2)).toEqual(['policies-domestic', 'policies-foreign'])
+  })
+})

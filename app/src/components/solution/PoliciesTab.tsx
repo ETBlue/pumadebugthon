@@ -7,7 +7,7 @@ import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { tabPath } from '@/lib/issuePage'
 import { practiceSides } from '@/lib/solutionPage'
 import type { SolutionPractice } from '@/types'
-import { PartEmpty, SolutionPart } from './Parts'
+import { PartEmpty, SolutionPart, TwoColumns } from './Parts'
 
 const tp = t.solutionPage
 
@@ -70,7 +70,8 @@ function Side({ id, title, items, none, issueNumber }: {
 }
 
 /** The 相關政策 tab (design 3.12, decisions 103 and 104): 相關或類似的政策與
- * 做法, in two groups, 國內 and 國外, each in file order. issueNumber is the
+ * 做法, in two groups, 國內 and 國外, side by side from `lg` (decision 136),
+ * each in file order. issueNumber is the
  * issue of an issue solution, or null for a cross-issue solution (it has only
  * dependency rows, from the cross-issue file, which has no page). The
  * 「只看有資料根據」 filter does not change this tab, the same as the issue's
@@ -83,9 +84,11 @@ export function PoliciesTab({ practices, issueNumber }: { practices: SolutionPra
     <>
       <p className="text-sm text-muted-foreground">{tp.policiesIntro}</p>
       {hasPractice && <p className="mt-1 text-sm text-muted-foreground">{tp.practiceNote}</p>}
-      <div className="mt-6 space-y-10">
-        <Side id="policies-domestic" title={tp.policiesDomestic} items={sides.domestic} none={tp.policiesDomesticNone} issueNumber={issueNumber} />
-        <Side id="policies-foreign" title={tp.policiesForeign} items={sides.foreign} none={tp.policiesForeignNone} issueNumber={issueNumber} />
+      <div className="mt-6">
+        <TwoColumns>
+          <Side id="policies-domestic" title={tp.policiesDomestic} items={sides.domestic} none={tp.policiesDomesticNone} issueNumber={issueNumber} />
+          <Side id="policies-foreign" title={tp.policiesForeign} items={sides.foreign} none={tp.policiesForeignNone} issueNumber={issueNumber} />
+        </TwoColumns>
       </div>
     </>
   )

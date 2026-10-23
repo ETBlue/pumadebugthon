@@ -15,7 +15,7 @@ import {
 } from '@/lib/solutionPage'
 import { findStakeholder } from '@/lib/stakeholders'
 import type { IndexFile, IssueFile, Solution } from '@/types'
-import { PartEmpty } from './Parts'
+import { PartEmpty, TwoColumns } from './Parts'
 import { ItemKey } from '@/components/ItemKey'
 
 const tp = t.solutionPage
@@ -118,7 +118,8 @@ export interface StakeholderCoveragePartsProps {
 }
 
 /** The two parts of the 利害關係人 tab (design 3.12): 「涵蓋的利害關係人」 and
- * 「未涵蓋的利害關係人」, each in ID order (never by count). Each stakeholder
+ * 「未涵蓋的利害關係人」, side by side from `lg` (decision 136), each in ID
+ * order (never by count). Each stakeholder
  * is a compact StakeholderCard with its needs. The needs follow the
  * 「只看有資料根據」 setting; the stakeholder lists do not change, like the
  * tab counts (decision 49). */
@@ -137,9 +138,10 @@ export function StakeholderCoverageParts({
       ) : (
         <>
           <p className="mt-1 text-sm text-muted-foreground">{intro}</p>
-          <ul className="mt-3 grid gap-3 lg:grid-cols-2">
+          {/* One card per row: the part is only half of the tab from lg (decision 136). */}
+          <ul className="mt-3 space-y-3">
             {list.map((entry) => (
-              <li key={entry.id} className="min-w-0">
+              <li key={entry.id}>
                 <StakeholderCard variant="compact" stakeholder={findStakeholder(index.stakeholders, entry.id)}>
                   {cardExtra?.(entry.id)}
                   <dl className="mt-1 text-sm">
@@ -156,12 +158,12 @@ export function StakeholderCoverageParts({
   )
 
   return (
-    <div className="space-y-10">
+    <TwoColumns>
       {part('solution-stakeholders-covered', tp.coveredStakeholdersHeading, tp.coveredStakeholdersIntro,
         tp.coveredStakeholdersNone, covered)}
       {part('solution-stakeholders-not-covered', tp.notCoveredStakeholdersHeading, tp.notCoveredStakeholdersIntro,
         tp.notCoveredStakeholdersNone, notCovered)}
-    </div>
+    </TwoColumns>
   )
 }
 

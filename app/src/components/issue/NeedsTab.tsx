@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router'
 import { useDataBasisFilter } from '@/components/DataBasisToggle'
 import { NeedItem } from '@/components/NeedItem'
-import { proseClass } from '@/components/styles'
+import { cardGridClass, proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import { needsTabView } from '@/lib/issueTabs'
 import { issueNeeds } from '@/lib/needs'
@@ -64,10 +64,10 @@ export function NeedsTab({ index, issue }: IssueTabProps) {
         {view.groups.map((g) => (
           <section key={g.priority} aria-labelledby={`needs-${g.priority}`}>
             <h3 id={`needs-${g.priority}`} className="text-lg font-semibold">{priorityLabel(g.priority)}</h3>
-            <ul className="mt-3 space-y-4">
+            <ul className={`mt-3 ${cardGridClass}`}>
               {g.items.map((item) => (
                 <li key={item.need.id}>
-                  <NeedItem item={item} issueNumber={issue.number} stakeholders={index.stakeholders} />
+                  <NeedItem item={item} issueNumber={issue.number} stakeholders={index.stakeholders} className="h-full" />
                 </li>
               ))}
             </ul>

@@ -3,7 +3,7 @@ import { DataBasisToggle, useDataBasisFilter } from '@/components/DataBasisToggl
 import { CellText } from '@/components/CellText'
 import { FilterStatus } from '@/components/FilterStatus'
 import { IssueMenuBar } from '@/components/IssueMenuBar'
-import { linkClass, proseClass } from '@/components/styles'
+import { cardGridClass, linkClass, proseClass } from '@/components/styles'
 import { t } from '@/i18n/zh-TW'
 import type { SummaryTab as SummaryTabName } from '@/lib/issuePage'
 import { summaryItemsOf, summaryItemsShown, summaryRefTo } from '@/lib/summary'
@@ -44,7 +44,7 @@ export function SummaryTab({ tab, issue, summary }: IssueTabProps & { tab: Summa
       ) : shown.length === 0 ? (
         <p className="mt-4 text-muted-foreground">{ts.dataEmpty}</p>
       ) : (
-        <ul aria-label={t.issue.tabs[tab]} className={`mt-4 space-y-2 ${proseClass}`}>
+        <ul aria-label={t.issue.tabs[tab]} className={`mt-4 ${cardGridClass}`}>
           {shown.map((item) => (
             <li
               key={item.item}

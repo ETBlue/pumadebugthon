@@ -7,7 +7,7 @@ import { NeedSummaryLink } from '@/components/NeedItem'
 import { SolutionTitleLink } from '@/components/SolutionCard'
 import { CrossSolutionLink } from '@/components/solution/CrossSolutionCard'
 import { SpaceLinks } from '@/components/SpaceLinks'
-import { targetLinkClass } from '@/components/styles'
+import { cardGridClass, targetLinkClass } from '@/components/styles'
 import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { crossSolutionsOfIssue } from '@/lib/crossIssue'
@@ -109,13 +109,13 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
               : ts.noneData}
         </p>
       )}
-      <ul className="space-y-6">
+      <ul className={cardGridClass}>
         {view.map((item) => {
           const sol = item.solution
           const key = `solution-${sol.id}`
           return (
             <li key={sol.id}>
-              <article aria-labelledby={key} className="min-w-0 rounded-lg border p-3 md:p-4">
+              <article aria-labelledby={key} className="h-full min-w-0 rounded-lg border p-3 md:p-4">
                 <h3 id={key} className="text-lg font-semibold">
                   <SolutionTitleLink solution={sol} issueNumber={n} />
                 </h3>

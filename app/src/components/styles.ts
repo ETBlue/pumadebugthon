@@ -38,6 +38,13 @@ export const listBodyClass = `${containerClass} pb-6`
  * tables and grids do not use it. They use the full width. */
 export const proseClass = 'max-w-3xl'
 
+/** The card list of the issue tabs 需求, 解法 and the four 分析摘要 tabs
+ * (decision 130): 1 column on a phone, 2 from `lg`, 3 from `xl`. The tab
+ * menu takes 10 to 11rem on the left, so the second column starts at `lg`,
+ * not at `md` like the list pages (3.22). Grid items stretch, so the cards
+ * in one row have the same height. The card inside an item needs `h-full`. */
+export const cardGridClass = 'grid gap-4 lg:grid-cols-2 xl:grid-cols-3'
+
 /** A part of a page that ?focus= can scroll to (design 3.2). It gets
  * tabIndex={-1}. The page moves focus to it with a script, and
  * :focus-visible does not always match then, so the outline uses :focus.

@@ -102,6 +102,8 @@ export interface NeedItemProps {
   focusTarget?: boolean
   /** Extra content for one page, at the end. */
   children?: ReactNode
+  /** Extra classes for the card, for example `h-full` in a grid. */
+  className?: string
 }
 
 /** One need (需求) in a list (design 3.2, 3.3, 3.16): the summary with its
@@ -109,7 +111,7 @@ export interface NeedItemProps {
  * solutions in letter order, as NeedItem in src/lib/needs.ts gives them. */
 export function NeedItem({
   item, issueNumber, stakeholders, parts = ISSUE_NEED_PARTS, headingLevel = 4, summaryLink = false,
-  stakeholderLinks = true, others, ownStories, otherSolutionsThan, crossSolutions = [], focusTarget = true, children,
+  stakeholderLinks = true, others, ownStories, otherSolutionsThan, crossSolutions = [], focusTarget = true, children, className,
 }: NeedItemProps) {
   const [params] = useSearchParams()
   const { need, summary } = item
@@ -126,7 +128,7 @@ export function NeedItem({
     <article
       {...(focusTarget ? focusTargetProps(need.id) : {})}
       aria-labelledby={headingId}
-      className={cn('rounded-lg border p-3 md:p-4', focusTarget && focusTargetClass)}
+      className={cn('rounded-lg border p-3 md:p-4', focusTarget && focusTargetClass, className)}
     >
       <Heading level={headingLevel} id={headingId} className="font-semibold">
         {summaryLink ? (

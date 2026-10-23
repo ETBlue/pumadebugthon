@@ -11,6 +11,8 @@ other concerns:
 directions:
 * I want to have a UI to browse the issue analysis result in a structured way. as a hackathon submission, the content will come from the analysis folder of this repo. my raw idea is to retrieve structured data from the analysis result, and build a web page that can browse the structured data easily
 * the app can be named as "市政提案小幫手", since the goal is to help people with building proposals. I had built an app named "審稿小幫手", so I think it is easier for people to remember if we follow the same naming pattern
+* the app slogan is: "看見各方利害關係人，打造更體貼周到的市政規劃"
+* the app description is: "本站整理台北市政策的前期分析，從利害關係人盤點出發，找出市民的需求、訴求、衝突以及可能解法。"
 * license for source code: MIT. license for content I produced: CC-BY 4.0. license for content from the hackathon host: depends on the host
 
 information architecture:

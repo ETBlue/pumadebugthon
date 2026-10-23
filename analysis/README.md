@@ -22,7 +22,7 @@
 | 6 | 以「我想要…」為起點，並參考其他城市或國家的做法，發想能滿足優先需求的解法。每個解法列出它滿足的需求，以及成效衡量方式（含現況數值與資料來源）。「我想要…」之間有衝突時，先找能滿足雙方需求的解法；找不到時，再引入審議民主的方法 |
 | 7 | 評估每個解法需要的資料、API、資源、相關法規、隱私問題，以及負責局處 |
 
-#1、#2、#3、#4、#5、#8、#9 都用這個依需求排序的格式。2026-10-20 以前的版本是舊格式（依故事排序），讀法見[如何閱讀議題分析](docs/method.md#舊格式)。
+#1、#2、#3、#4、#5、#6、#8、#9 都用這個依需求排序的格式。2026-10-20 以前的版本是舊格式（依故事排序），讀法見[如何閱讀議題分析](docs/method.md#舊格式)。
 
 完成 7 個步驟後，每個議題檔案的開頭有一節「分析摘要」：整理難以取捨的決定、解法推動時可能的爭議、受影響較大的弱勢族群、法規上的障礙，以及相依事項與現行政策的關係。摘要不加入新的事實，每一項都列出它來自哪些故事、衝突或解法。
 
@@ -41,7 +41,7 @@
 | #3 鼠患四處跑，衛生安全怎麼辦 | [3-mice](3-mice/) | **試作完成**：[議題分析](3-mice/issue-analysis.md)、[使用者故事表](3-mice/user-stories.csv) |
 | #4 內湖尖峰車流好比停車場 | [4-neihutraffic](4-neihutraffic/) | **試作完成**：[議題分析](4-neihutraffic/issue-analysis.md)、[使用者故事表](4-neihutraffic/user-stories.csv) |
 | #5 公車路網如何即時反應需求 | [5-busroutes](5-busroutes/) | **試作完成**：[議題分析](5-busroutes/issue-analysis.md)、[使用者故事表](5-busroutes/user-stories.csv) |
-| #6 危老耐震如何查，風險評級怎麼找 | `6-oldbuildings` | 製作中 |
+| #6 危老耐震如何查，風險評級怎麼找 | [6-oldbuildings](6-oldbuildings/) | **試作完成**：[議題分析](6-oldbuildings/issue-analysis.md)、[使用者故事表](6-oldbuildings/user-stories.csv) |
 | #7 自由題：你看見的市政 bug | `7-misc` | 空白範本製作中 |
 | #8 無菸城市（非主辦單位題目，由參加者補充） | [8-smokefree](8-smokefree/) | **試作完成**：[議題分析](8-smokefree/issue-analysis.md)、[使用者故事表](8-smokefree/user-stories.csv) |
 | #9 將產品探索技巧運用到政策前期研究（非主辦單位題目，由參加者補充） | [9-policydiscovery](9-policydiscovery/) | **試作完成**：[議題分析](9-policydiscovery/issue-analysis.md)、[使用者故事表](9-policydiscovery/user-stories.csv) |

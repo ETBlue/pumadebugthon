@@ -266,6 +266,11 @@ class ScriptTest(unittest.TestCase):
         self.assertEqual(after[("解法", "2-A")]["更新日期"], "2026-10-16")
 
     def test_json_has_the_date_fields(self):
+        # Since 2026-10-23 every issue in issues.csv has an analysis. A fake issue #7
+        # with no folder and no 新增日期 is added to the copied issues.csv, so the
+        # test still checks that an issue without an analysis gets "added": null.
+        with open(os.path.join(self.dir, "data", "issues.csv"), "a", encoding="utf-8") as f:
+            f.write("7,7-test,測試用的議題（沒有分析）,主辦單位,\n")
         out = os.path.join(self._tmp.name, "out")
         p = subprocess.run([sys.executable, "-I", BUILD, self.dir, out], capture_output=True, text=True)
         self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
@@ -280,7 +285,8 @@ class ScriptTest(unittest.TestCase):
         self.assertEqual(by_num[3]["added"], "2026-10-23")
         self.assertEqual(by_num[4]["added"], "2026-10-23")
         self.assertEqual(by_num[5]["added"], "2026-10-23")
-        self.assertIsNone(by_num[6]["added"])
+        self.assertEqual(by_num[6]["added"], "2026-10-23")
+        self.assertIsNone(by_num[7]["added"])
         for s in index["stakeholders"]:
             want = None if s["movedTo"] else rows[("利害關係人", s["id"])]["更新日期"]
             self.assertEqual(s["updated"], want, s["id"])

@@ -8,6 +8,8 @@ edu,教育機構
 gov,政府
 gov-central,中央政府
 gov-central-ly,立法院
+gov-central-moi,內政部
+gov-central-moi-nlma,國土管理署
 gov-central-motc,交通部
 gov-central-motc-freeway,高速公路局
 gov-local,地方政府
@@ -22,6 +24,7 @@ gov-local-taipei-doh,衛生局
 gov-local-taipei-doit,資訊局
 gov-local-taipei-dol,勞動局
 gov-local-taipei-dorts,捷運工程局
+gov-local-taipei-dosw,社會局
 gov-local-taipei-dot,交通局
 gov-local-taipei-dot-parking,停車管理工程處
 gov-local-taipei-dot-traffic,交通管制工程處
@@ -44,6 +47,8 @@ gov-local-taipei-rdec-1999,1999 市民熱線
 gov-local-taipei-rdec-plan,綜合計畫室
 gov-local-taipei-rdec-rd,研究發展組
 gov-local-taipei-udd,都市發展局
+gov-local-taipei-udd-bmo,建築管理工程處
+gov-local-taipei-udd-uro,都市更新處
 ind,產業
 ind-assoc,產業團體
 ind-bus,公車客運業
@@ -61,6 +66,7 @@ mov,用路人
 ngo,公民團體
 ngo-animal,動物保護與生態保育團體
 ngo-environment,環保團體
+ngo-heritage,文化資產與社區保存團體
 ngo-labor,勞工團體
 res,居民
 soe,公營事業

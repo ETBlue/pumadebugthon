@@ -64,9 +64,12 @@ class CheckCrossIssueTest(unittest.TestCase):
 
     def test_title_names_issue_without_analysis(self):
         # The title names the issues the file compares (「#1、#2、#8、#9」).
-        # #6 has no issue-analysis.md yet (#3, #4 and #5 have one since 2026-10-23).
-        self.edit("# 跨議題分析：#1、#2、#8、#9（試作）", "# 跨議題分析：#1、#2、#6、#8、#9（試作）")
-        self.assertFails("title", "#6")
+        # Since 2026-10-23 every issue in issues.csv has an issue-analysis.md, so
+        # the test adds a fake issue #7 with no folder to the copied issues.csv.
+        with open(os.path.join(self.dir, "data", "issues.csv"), "a", encoding="utf-8") as f:
+            f.write("7,7-test,測試用的議題（沒有分析）,主辦單位,\n")
+        self.edit("# 跨議題分析：#1、#2、#8、#9（試作）", "# 跨議題分析：#1、#2、#7、#8、#9（試作）")
+        self.assertFails("title", "#7")
 
     def test_title_without_issue_numbers(self):
         self.edit("# 跨議題分析：#1、#2、#8、#9（試作）", "# 跨議題分析（試作）")
@@ -82,8 +85,8 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertIn("NOTE: issue #9", out)
         self.assertIn("O07", out)
 
-    def test_real_file_compares_9_and_notes_3_4_and_5(self):
-        # ETBlue added #9 on 2026-10-20, so #9 gets no note. #3, #4 and #5 (added
+    def test_real_file_compares_9_and_notes_3_to_6(self):
+        # ETBlue added #9 on 2026-10-20, so #9 gets no note. #3, #4, #5 and #6 (added
         # 2026-10-23) share stakeholders but are not compared yet, so each gets a
         # note; the owner decides whether to add them.
         code, out = self.run_check()
@@ -93,6 +96,7 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertIn("NOTE: issue #3", out)
         self.assertIn("NOTE: issue #4", out)
         self.assertIn("NOTE: issue #5", out)
+        self.assertIn("NOTE: issue #6", out)
 
     # ---------- tags and 待補 ----------
 

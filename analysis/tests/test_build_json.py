@@ -302,10 +302,9 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual([i["number"] for i in issues], [1, 2, 3, 4, 5, 6, 8, 9])
         available = [i["number"] for i in issues if i["available"]]
         self.assertTrue({1, 2} <= set(available))
-        self.assertTrue({1, 2, 3, 4, 5} <= set(available))
-        self.assertFalse({6} & set(available))
-        six = issues[5]
-        self.assertEqual((six["counts"], six["spaces"], six["updated"]), (None, [], None))
+        # Since 2026-10-23 every issue has an analysis. An issue without one is
+        # tested in test_index_issue_without_analysis.
+        self.assertEqual(available, [1, 2, 3, 4, 5, 6, 8, 9])
         # #9 uses no city space (「空間類型：無」), so its list is empty, but it is available.
         nine = issues[-1]
         self.assertEqual((nine["available"], nine["spaces"]), (True, []))
@@ -339,10 +338,31 @@ class BuildJsonOutputTest(unittest.TestCase):
                        "context": "外籍"}, trees["pending"])
 
     def test_index_focus_gaps(self):
-        # focusGaps: the groups with no stakeholder, in the fixed order. null for an issue without an analysis.
+        # focusGaps: the groups with no stakeholder, in the fixed order. null for an issue
+        # without an analysis (see test_index_issue_without_analysis).
         gaps = {i["number"]: i["focusGaps"] for i in self.index["issues"]}
         self.assertEqual(gaps, {1: ["呼吸道疾病", "外籍"], 2: ["呼吸道疾病"], 3: [], 4: ["經濟弱勢"],
-                                5: ["呼吸道疾病"], 6: None, 8: [], 9: []})
+                                5: ["呼吸道疾病"], 6: ["呼吸道疾病"], 8: [], 9: []})
+
+    def test_index_issue_without_analysis(self):
+        # Since 2026-10-23 every issue in issues.csv has an analysis. This test adds a
+        # fake issue #7 with no folder to a fresh copy of issues.csv. The issue is listed,
+        # but it is not available and has no counts, spaces, dates or focusGaps.
+        with tempfile.TemporaryDirectory() as tmp:
+            d = make_copy(tmp)
+            with open(os.path.join(d, "data", "issues.csv"), "a", encoding="utf-8") as f:
+                f.write("7,7-test,測試用的議題（沒有分析）,主辦單位,\n")
+            out = os.path.join(tmp, "out")
+            code, log = run_build(d, out)
+            self.assertEqual(code, 0, log)
+            with open(os.path.join(out, "index.json"), encoding="utf-8") as f:
+                index = json.load(f)
+        issues = {i["number"]: i for i in index["issues"]}
+        self.assertEqual(sorted(issues), [1, 2, 3, 4, 5, 6, 7, 8, 9])
+        seven = issues[7]
+        self.assertFalse(seven["available"])
+        self.assertEqual((seven["counts"], seven["spaces"], seven["updated"], seven["added"], seven["focusGaps"]),
+                         (None, [], None, None, None))
 
     def test_index_issue_source(self):
         # 來源 in issues.csv becomes "source": 主辦單位 for the host's issues,
@@ -478,13 +498,13 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_open_data(self):
         # open-data.csv becomes "openData" in index.json, in file order.
         rows = self.index["openData"]
-        self.assertEqual(len(rows), 21)
+        self.assertEqual(len(rows), 25)
         smoke = next(r for r in rows if r["url"] == "https://data.gov.tw/dataset/177504")
         self.assertEqual(smoke, {"name": "臺北市指定吸菸區", "url": "https://data.gov.tw/dataset/177504",
                                  "agency": "臺北市政府衛生局", "license": "政府資料開放授權條款第 1 版",
                                  "issues": [8]})
         petition = next(r for r in rows if "cb423c17" in r["url"])
-        self.assertEqual(petition["issues"], [2, 3, 4, 5, 8])
+        self.assertEqual(petition["issues"], [2, 3, 4, 5, 6, 8])
 
     def test_updated_is_date_or_null(self):
         for i in [self.issue] + self.index["issues"]:
@@ -812,11 +832,11 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("issues.csv: header: no column 來源")
 
     def test_bad_issue_value_in_csv(self):
-        self.edit("I05,高齡者,res,高齡,1 2 3 4 5 8 9,", "I05,高齡者,res,高齡,1、2、3、4、5、8、9,", "data/stakeholders.csv")
+        self.edit("I05,高齡者,res,高齡,1 2 3 4 5 6 8 9,", "I05,高齡者,res,高齡,1、2、3、4、5、6、8、9,", "data/stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:")
 
     def test_bad_stakeholder_date(self):
-        self.edit("I05,高齡者,res,高齡,1 2 3 4 5 8 9,,2026-10-18", "I05,高齡者,res,高齡,1 2 3 4 5 8 9,,2026/10/18", "data/stakeholders.csv")
+        self.edit("I05,高齡者,res,高齡,1 2 3 4 5 6 8 9,,2026-10-18", "I05,高齡者,res,高齡,1 2 3 4 5 6 8 9,,2026/10/18", "data/stakeholders.csv")
         self.assertFails("stakeholders.csv: I05:", "新增日期")
 
     def test_missing_stakeholder_date_column(self):

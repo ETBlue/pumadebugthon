@@ -80,8 +80,9 @@ information architecture:
   * a side menu
     * overview
     * stakeholders with count / disadvantaged count
-    * 訴求 with count and conflicting count
+    * 訴求 with count
     * 需求 with count
+    * conflicts with count
     * hard decisions with count
     * solutions with count
   * if there are filters, place filters in a menu bar in the content column
@@ -91,8 +92,9 @@ information architecture:
     * title in the same row with the back button
   * a side menu
     * overview
-    * 訴求 with count and conflicting count
+    * 訴求 with count
     * 需求 with count
+    * conflicts with count
     * solutions with count
 * the solution page should include
   * a full width container with background color, containing
@@ -100,9 +102,9 @@ information architecture:
     * title in the same row with the back button
   * a side menu
     * overview
-    * user needs with fulfilled / not fulfilled count
-    * user wants with covered / not covered count
     * stakeholders with covered / not covered count
+    * user wants with covered / not covered count
+    * user needs with fulfilled / not fulfilled count
     * conflicts with resolved / related count
     * potential controversies with count
     * legal blockers with count

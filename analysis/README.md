@@ -70,7 +70,7 @@
 analysis/scripts/build_all.sh
 ```
 
-這個指令會依序：更新 `stakeholders.csv` 的「議題」欄、為每個議題重建 `user-stories.csv` 並執行檢查、檢查跨議題分析（`check_cross_issue.py`）、執行單元測試、產生 app 用的 JSON（預設寫到 `app/public/data`，跨議題分析是 `cross-issue.json`）。任何一步失敗就會停止。修改 `cross-issue/cross-issue-analysis.md` 之後，也請執行這個指令。
+這個指令會依序：更新 `stakeholders.csv` 的「議題」欄、為每個議題重建 `user-stories.csv` 並執行檢查、檢查跨議題分析（`check_cross_issue.py`）、執行單元測試、產生 app 用的 JSON（預設寫到 `app/public/data`，跨議題分析是 `cross-issue.json`），最後產生整理好的資料表（`app/public/data/flat/`）。任何一步失敗就會停止。修改 `cross-issue/cross-issue-analysis.md` 之後，也請執行這個指令。
 
 檢查會確認編號（包含 `#2 O01-US01` 這種跨議題引用）、連結、標記、優先順序與 CSV 是否一致。指令更新了 CSV 時會提醒你，請一起提交。
 
@@ -78,6 +78,7 @@ analysis/scripts/build_all.sh
 
 - 「市長，你給我聽好了」資料只用來整理件數和改寫的摘要（標記 `[AI整理]`），不引用原始留言，原始檔案不公開，也不辨認任何個人。依活動規則，該資料僅限於此黑客松活動使用。`[AI整理]` 的件數是 AI 用關鍵字比對算出的估計，需要真人抽查。
 - 開放資料各數字的來源與計算方式，寫在每個議題檔案的附錄。
+- 想再利用資料：每一種有編號的項目（議題、利害關係人、故事、需求、衝突、解法、跨議題的編號等）都有一個整理好的 CSV 和 JSON 檔案，放在網站的 `data/flat/`。欄位、編號、標記與授權的說明見[資料說明](docs/data-guide.md)。
 
 ## 授權
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import type { IndexFile } from '@/types'
-import { dataFileLinks } from './dataFiles'
+import { dataFileLinks, FLAT_TYPES } from './dataFiles'
 
 const index = indexJson as IndexFile
 const repo = 'https://github.com/ETBlue/pumadebugthon'
@@ -38,6 +38,29 @@ describe('dataFileLinks', () => {
       { file: 'issues.csv', issue: null, href: `${blob}/data/issues.csv` },
       { file: 'open-data.csv', issue: null, href: `${blob}/data/open-data.csv` },
     ])
+  })
+
+  it('lists the flat files on the site: one CSV and one JSON file per type (decision 141)', () => {
+    const l = dataFileLinks(index, '/pumadebugthon/', repo, true)
+    expect(l.flat.map((x) => x.type)).toEqual([...FLAT_TYPES])
+    expect(l.flat.find((x) => x.type === 'stories')).toEqual({
+      type: 'stories',
+      csv: '/pumadebugthon/data/flat/stories.csv',
+      json: '/pumadebugthon/data/flat/stories.json',
+    })
+  })
+
+  it('lists the flat files in the order of the data guide', () => {
+    expect([...FLAT_TYPES]).toEqual([
+      'issues', 'stakeholders', 'issue-stakeholders', 'stories', 'wants', 'needs',
+      'conflicts', 'solutions', 'cross-need-groups', 'cross-conflicts', 'cross-solutions',
+      'space-types',
+    ])
+  })
+
+  it('leaves out the cross-issue flat files when there is no cross-issue.json', () => {
+    expect(links.flat.map((x) => x.type)).toEqual(FLAT_TYPES.filter((x) => !x.startsWith('cross-')))
+    expect(links.flat).toHaveLength(9)
   })
 
   it('takes new issues from index.json, and leaves out issues without an analysis', () => {

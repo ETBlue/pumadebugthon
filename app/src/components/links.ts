@@ -5,6 +5,9 @@ export const REPO_URL = 'https://github.com/ETBlue/pumadebugthon'
 /** analysis/docs/method.md: how to read the analysis, with the meaning of each tag. */
 export const METHOD_URL = `${REPO_URL}/blob/main/analysis/docs/method.md`
 
+/** analysis/docs/data-guide.md: the guide to the flat data files (design 3.13). */
+export const DATA_GUIDE_URL = `${REPO_URL}/blob/main/analysis/docs/data-guide.md`
+
 /** The MIT license of the code. */
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`
 

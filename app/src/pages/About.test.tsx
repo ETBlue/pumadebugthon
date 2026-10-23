@@ -54,3 +54,25 @@ describe('the 資料根據 part of #/about', () => {
     expect(html.indexOf('id="about-basis"')).toBeLessThan(html.indexOf('id="about-data"'))
   })
 })
+
+describe('the 下載資料 part of #/about (decision 141)', () => {
+  const data = part(render(), 'about-data')
+
+  it('links to the data guide on GitHub', () => {
+    expect(data).toContain('href="https://github.com/ETBlue/pumadebugthon/blob/main/analysis/docs/data-guide.md"')
+    expect(data).toContain(t.about.dataGuide)
+  })
+
+  it('lists each flat file type with a CSV and a JSON link (no cross-issue types without cross-issue.json)', () => {
+    expect(data).toContain(t.about.flat)
+    for (const type of ['issues', 'stories', 'needs', 'solutions', 'space-types']) {
+      expect(data).toContain(`href="/data/flat/${type}.csv"`)
+      expect(data).toContain(`href="/data/flat/${type}.json"`)
+    }
+    expect(data).not.toContain('cross-solutions')
+  })
+
+  it('puts the flat files before the JSON the site reads', () => {
+    expect(data.indexOf(t.about.flat)).toBeLessThan(data.indexOf(t.about.json))
+  })
+})

@@ -15,6 +15,8 @@
 #   5. check_cross_issue.py for cross-issue/cross-issue-analysis.md (if it exists).
 #   6. The unittest suite.
 #   7. build_json.py writes the JSON (also cross-issue.json).
+#   8. build_flat.py reads that JSON and writes one CSV and one JSON file per
+#      entity type into <output dir>/flat/ (analysis/docs/data-guide.md).
 # With CI=true, steps 1, 2 and 3 also fail when a rebuilt file differs from the
 # committed one. In CI the committed files must already be up to date.
 set -euo pipefail
@@ -87,5 +89,8 @@ python3 -I -m unittest discover -s analysis/tests -t .
 
 echo "== 7. build_json.py -> $out"
 python3 -I analysis/scripts/build_json.py analysis "$out"
+
+echo "== 8. build_flat.py -> $out/flat"
+python3 -I analysis/scripts/build_flat.py "$out"
 
 echo "== all steps passed"

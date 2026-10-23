@@ -1,12 +1,12 @@
 import type { ReactNode } from 'react'
-import { AUTHOR_POSTS, CONTENT_LICENSE_URL, EVENT_URL, LICENSE_URL, METHOD_URL, REPO_URL } from '@/components/links'
+import { AUTHOR_POSTS, CONTENT_LICENSE_URL, DATA_GUIDE_URL, EVENT_URL, LICENSE_URL, METHOD_URL, REPO_URL } from '@/components/links'
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { linkClass } from '@/components/styles'
 import { TagBadge, type TagKind } from '@/components/TagBadge'
 import { useCrossIssueOrNull, useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { dataFileLinks, type DataFileLink } from '@/lib/dataFiles'
+import { dataFileLinks, type DataFileLink, type FlatFileLink } from '@/lib/dataFiles'
 
 const ta = t.about
 const external = { rel: 'noopener noreferrer' }
@@ -38,6 +38,40 @@ function FileList({ label, links }: { label: string; links: DataFileLink[] }) {
   )
 }
 
+/** The flat files (decision 141): one row per type, with its name, the
+ * type (the file name without .csv or .json) and two links, CSV and JSON.
+ * Screen readers also hear the name in each link. */
+function FlatList({ links }: { links: FlatFileLink[] }) {
+  return (
+    <div className="mt-3">
+      <h3 className="font-semibold">{ta.flat}</h3>
+      <p className="mt-1">
+        {ta.flatIntro}
+        <a href={DATA_GUIDE_URL} {...external} className={linkClass}>{ta.dataGuide}</a>
+        {ta.flatIntroEnd}
+      </p>
+      <ul className="mt-1 space-y-1">
+        {links.map((l) => {
+          const name = ta.flatTypes[l.type]
+          return (
+            <li key={l.type} className="flex flex-wrap items-baseline gap-x-3">
+              <span>
+                {name} <code className="text-sm">{l.type}</code>
+              </span>
+              <a href={l.csv} {...external} className={linkClass}>
+                CSV<span className="sr-only">（{name}）</span>
+              </a>
+              <a href={l.json} {...external} className={linkClass}>
+                JSON<span className="sr-only">（{name}）</span>
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
 /** The app's own data files (design 3.13). The list comes from index.json,
  * plus cross-issue.json when it exists. */
 function DataFiles() {
@@ -47,6 +81,7 @@ function DataFiles() {
   const links = dataFileLinks(index.data, import.meta.env.BASE_URL, REPO_URL, cross !== null)
   return (
     <>
+      <FlatList links={links.flat} />
       <FileList label={ta.json} links={links.json} />
       <FileList label={ta.csv} links={links.csv} />
     </>

@@ -102,7 +102,8 @@ export type SolutionCardProps =
  * and name as a link to the solution page, and the one-line summary. The
  * detailed variant (#/solutions, design 3.23.9) also shows the issue,
  * 空間類型, 更新日期, the number of needs it covers (decision 54)
- * and 「涵蓋需求的資料根據」. children come last. */
+ * and 「涵蓋需求的資料根據」. children come last. The compact variant is a
+ * small card, so it shows no date (decision 132). */
 export function SolutionCard(props: SolutionCardProps) {
   const { solution: sol, issueNumber, showIssue = false, children } = props
   return (
@@ -130,10 +131,6 @@ export function SolutionCard(props: SolutionCardProps) {
         </>
       )}
       {children}
-      {/* The compact card shows 更新日期 last, after children (decision 131). */}
-      {props.variant === 'compact' && sol.updated && (
-        <dl className="mt-1 text-sm"><UpdatedField updated={sol.updated} /></dl>
-      )}
     </div>
   )
 }

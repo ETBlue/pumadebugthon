@@ -68,8 +68,9 @@ export function CrossIssueLinks({ solution, titles }: { solution: CrossSolution;
  * 3.23.9) also shows the badge 「跨議題解法」, 「也涵蓋 #1 的需求」 when it
  * covers needs of issues outside its parts, the space types, 更新日期,
  * the number of needs it covers and 「涵蓋需求的資料根據」. children come
- * next (for example 資料根據 on the home page). Without detailed, 更新日期
- * comes last, after children. A card never shows 新增日期 (decision 131). */
+ * last (for example 資料根據 on the home page). A card never shows 新增日期
+ * (decision 131). Without detailed, the card is small and shows no date
+ * (decision 132). */
 export function CrossSolutionCard({ solution: sol, issueTitles, detailed, children }: {
   solution: CrossSolution
   /** The titles of the issues (index.issues), for 「#1 把三千棵樹種回來」
@@ -110,10 +111,6 @@ export function CrossSolutionCard({ solution: sol, issueTitles, detailed, childr
         </dl>
       )}
       {children}
-      {/* Without detailed, 更新日期 is last, after children (decision 131). */}
-      {!detailed && sol.updated && (
-        <dl className="mt-1 text-sm"><UpdatedField updated={sol.updated} /></dl>
-      )}
     </div>
   )
 }

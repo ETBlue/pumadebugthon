@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { BasisField } from '@/components/BasisField'
+import { UpdatedField } from '@/components/DateFields'
 import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
@@ -115,8 +116,10 @@ function HomeBlocks({ index }: { index: IndexFile }) {
                         cells={issueFiles.status === 'ready' ? stakeholderCells(issueFiles.data, s.id) : null}
                         label={t.stakeholdersList.basis}
                       />
+                      {/* 更新日期 last, the date of the order (decision 131). The
+                          compact card has no date of its own (decision 132). */}
+                      <UpdatedField updated={s.updated} />
                     </dl>
-                    {/* The card adds 更新日期 last, the date of the order (decision 131). */}
                   </StakeholderCard>
                 </li>
               ))}
@@ -145,8 +148,9 @@ function HomeBlocks({ index }: { index: IndexFile }) {
 }
 
 /** The recent solutions. Each card shows 「涵蓋需求的資料根據」 (the
- * cells of the needs it covers, decision 112), then the card adds 更新日期
- * (decision 131). An issue
+ * cells of the needs it covers, decision 112), then 更新日期 (decision 131).
+ * The compact card has no date of its own (decision 132), so this list adds
+ * it as children. An issue
  * solution also shows its issue with the title: its code 「#2 A」 has only
  * the number (decision 112). The cross-issue card shows its issues itself. */
 function RecentSolutionList({ index, issues, cross }: {
@@ -166,6 +170,7 @@ function RecentSolutionList({ index, issues, cross }: {
               <CrossSolutionCard solution={item.solution} issueTitles={index.issues}>
                 <dl className="mt-1 space-y-1 text-sm">
                   {cells && <CoveredBasisField basis={{ cells, percent: null }} />}
+                  <UpdatedField updated={item.solution.updated} />
                 </dl>
               </CrossSolutionCard>
             </li>
@@ -182,6 +187,7 @@ function RecentSolutionList({ index, issues, cross }: {
                   </Link>
                 </Field>
                 {issue && <CoveredBasisField basis={{ cells: solutionCells(issue, item.solution), percent: null }} />}
+                <UpdatedField updated={item.solution.updated} />
               </dl>
             </SolutionCard>
           </li>

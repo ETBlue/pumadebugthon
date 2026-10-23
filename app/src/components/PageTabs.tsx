@@ -171,7 +171,7 @@ function SideMenu<T extends string>({ label, tabs, current, labelOf, pathOf, sea
       aria-label={label}
       className="hidden md:sticky md:top-4 md:col-start-1 md:row-start-1 md:block md:max-h-[calc(100vh-2rem)] md:overflow-y-auto md:py-1"
     >
-      <ul className="space-y-0.5 border-l border-border">
+      <ul className="space-y-0.5 border-r border-border">
         {tabs.map((name) => {
           const l = labelOf(name)
           const active = name === current
@@ -183,7 +183,7 @@ function SideMenu<T extends string>({ label, tabs, current, labelOf, pathOf, sea
                 aria-current={active ? 'page' : undefined}
                 aria-label={tabLabelText(l)}
                 className={cn(
-                  '-ml-px flex min-h-9 flex-col justify-center rounded-r-md border-l-2 py-1.5 pr-2 pl-3 text-sm hover:bg-muted',
+                  '-mr-px flex min-h-9 flex-col justify-center rounded-l-md border-r-2 py-1.5 pr-3 pl-2 text-sm hover:bg-muted',
                   active
                     ? 'border-foreground bg-muted font-semibold text-foreground'
                     : 'border-transparent text-muted-foreground hover:text-foreground',

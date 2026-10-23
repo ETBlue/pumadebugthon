@@ -9,7 +9,7 @@ import { solutionNeedCoverage, type CoveredNeed } from './solutionPage'
 import { compareIds } from './ids'
 import { conflictsForStakeholder, conflictsForStakeholderSet } from './wantList'
 
-/** The conflicts that the 訴求 tab shows with these filters. */
+/** The conflicts that the 衝突 tab shows with these filters. */
 function shownConflicts(issue: IssueFile, stakeholder: string | null, special: ReadonlySet<string> | null): Conflict[] {
   const bySpecial = new Set(conflictsForStakeholderSet(issue, special).map((c) => c.id))
   return conflictsForStakeholder(issue, stakeholder).filter((c) => bySpecial.has(c.id))
@@ -31,7 +31,7 @@ export interface NeedsTabView {
  * special: the 特別關注 filter (decision 75), the stakeholders of the picked
  * groups. Keep a need only when it has a story of one of them. null: off.
  * With a stakeholder or special, each need's conflicts are only the ones
- * that the 訴求 tab shows with the same filters.
+ * that the 衝突 tab shows with the same filters.
  * needsFilters (decision 127): priorities keeps only the needs of these
  * priorities (empty or missing: off). conflictOnly keeps only the needs that
  * list at least one conflict, after the conflicts are filtered as above. */
@@ -45,7 +45,7 @@ export function needsTabView(
   const oldFormat = issue.format === 'stories'
   let items = needsForStakeholderSet(needsForStakeholder(issueNeeds(issue), stakeholder), special)
   if (dataBased) items = dataBasedNeeds(items)
-  // With a filter, a need lists only the conflicts that the 訴求 tab shows
+  // With a filter, a need lists only the conflicts that the 衝突 tab shows
   // with the same filter. The links 「出現在衝突」 keep ?stakeholder=, so a
   // conflict with no story of the stakeholder would point to nothing.
   if (stakeholder !== null || special !== null) {
@@ -95,7 +95,7 @@ export function solutionsTabView(
   const solutions = [...issue.solutions].sort((a, b) => compareIds(a.id, b.id))
   const filtered = stakeholder !== null || special !== null
   // The conflict links keep the filters, so list only the conflicts that
-  // the 訴求 tab shows with the same filters.
+  // the 衝突 tab shows with the same filters.
   const conflicts = shownConflicts(issue, stakeholder, special)
   for (const solution of solutions) {
     const covered = solutionNeedCoverage(issue, solution).covered

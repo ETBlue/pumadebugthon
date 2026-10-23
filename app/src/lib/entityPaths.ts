@@ -6,15 +6,18 @@ import { FOCUS_PARAM } from './focus'
 import { tabPath, type IssueTab } from './issuePage'
 import { keptSearch } from './stakeholderFilter'
 
-/** The tabs of the stakeholder page, in display order. The first one is the default. */
-export const STAKEHOLDER_TABS = ['overview', 'wants', 'needs', 'solutions'] as const
+/** The tabs of the stakeholder page, in display order. The first one is the
+ * default. 衝突 has its own tab after 需求 (decision 142). */
+export const STAKEHOLDER_TABS = ['overview', 'wants', 'needs', 'conflicts', 'solutions'] as const
 
 export type StakeholderTab = (typeof STAKEHOLDER_TABS)[number]
 
 /** The tabs of the solution page, in display order. The first one is the
- * default (design 3.12, decisions 103 and 140). A cross-issue solution has the same tabs. */
+ * default (design 3.12, decisions 103, 140 and 142). The order of 利害關係人,
+ * 訴求, 需求 and 衝突 is the same as on the issue page (decision 142). A
+ * cross-issue solution has the same tabs. */
 export const SOLUTION_TABS = [
-  'overview', 'needs', 'wants', 'stakeholders', 'conflicts', 'controversies', 'legal', 'plan', 'measures', 'policies',
+  'overview', 'stakeholders', 'wants', 'needs', 'conflicts', 'controversies', 'legal', 'plan', 'measures', 'policies',
 ] as const
 
 export type SolutionTab = (typeof SOLUTION_TABS)[number]
@@ -74,8 +77,9 @@ export function issueFocusPath(
   return { pathname: tabPath(issueNumber, tab), search: `?${params.toString()}` }
 }
 
-/** A link to one conflict on the issue's 訴求 tab, for example
- * { pathname: "/issues/2/wants", search: "?focus=C9" } (design 3.2).
+/** A link to one conflict on the issue's 衝突 tab, for example
+ * { pathname: "/issues/2/conflicts", search: "?focus=C9" } (design 3.2,
+ * decision 142; before, the conflicts were on the 訴求 tab).
  * The third argument is either dataBasedOnly (adds evidence=1), or the
  * params of the current URL: then evidence and stakeholder are kept, the
  * same as a tab change (keptSearch), and pick and the old focus are dropped. */
@@ -84,7 +88,7 @@ export function conflictFocusPath(
   conflictId: string,
   filters: boolean | URLSearchParams = false,
 ): PathTarget {
-  return issueFocusPath(issueNumber, 'wants', conflictId, filters)
+  return issueFocusPath(issueNumber, 'conflicts', conflictId, filters)
 }
 
 /** A link to one want on the issue's 訴求 tab, for example

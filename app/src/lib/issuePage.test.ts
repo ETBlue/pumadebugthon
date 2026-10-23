@@ -14,8 +14,8 @@ describe('parseTab', () => {
     expect(parseTab(undefined)).toBe('overview')
   })
 
-  it('accepts every tab name: six tabs, 利害關係人 right after 總覽 (decision 116), 難以取捨 before 解法 (decision 140)', () => {
-    expect(ISSUE_TABS).toEqual(['overview', 'stakeholders', 'wants', 'needs', 'decisions', 'solutions'])
+  it('accepts every tab name: seven tabs, 利害關係人 right after 總覽 (decision 116), 衝突 after 需求 (decision 142), 難以取捨 before 解法 (decision 140)', () => {
+    expect(ISSUE_TABS).toEqual(['overview', 'stakeholders', 'wants', 'needs', 'conflicts', 'decisions', 'solutions'])
     for (const tab of ISSUE_TABS) expect(parseTab(tab)).toBe(tab)
   })
 
@@ -40,8 +40,12 @@ describe('parseTab', () => {
 
   it('the old tab names are not tabs (they show 「tab not found」)', () => {
     expect(parseTab('opinion')).toBeNull()
-    expect(parseTab('conflicts')).toBeNull()
     expect(parseTab('disadvantaged')).toBeNull()
+  })
+
+  it('conflicts is a tab again, right after needs (decision 142)', () => {
+    expect(parseTab('conflicts')).toBe('conflicts')
+    expect(ISSUE_TABS.indexOf('conflicts')).toBe(ISSUE_TABS.indexOf('needs') + 1)
   })
 
   it('stakeholders is a tab again (decision 109)', () => {

@@ -14,9 +14,11 @@ export type SummaryTab = (typeof SUMMARY_TABS)[number]
 
 /** The tabs of the issue page, in display order (design 3.2). The first one
  * is the default. 利害關係人 is second, right after 總覽 (decision 116).
- * 難以取捨 is before 解法 (decision 140). The old tabs controversies, legal
- * and dependencies are gone: their URLs show 「找不到這個分頁」. */
-export const ISSUE_TABS = ['overview', 'stakeholders', 'wants', 'needs', 'decisions', 'solutions'] as const
+ * 衝突 has its own tab after 需求 (decision 142). Before, the conflicts were
+ * in the 訴求 tab. 難以取捨 is before 解法 (decision 140). The old tabs
+ * controversies, legal and dependencies are gone: their URLs show
+ * 「找不到這個分頁」. */
+export const ISSUE_TABS = ['overview', 'stakeholders', 'wants', 'needs', 'conflicts', 'decisions', 'solutions'] as const
 
 export type IssueTab = (typeof ISSUE_TABS)[number]
 

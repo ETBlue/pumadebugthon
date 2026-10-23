@@ -1,4 +1,4 @@
-// Wants (訴求) and conflicts on the 訴求 tab (design 3.2, 3.16).
+// Wants (訴求) and conflicts on the 訴求 and 衝突 tabs (design 3.2, 3.16).
 // There is no want page (design decision 45), so there is no findWant or wantView.
 import type { Cell, Conflict, IssueFile, Need, Solution, Story } from '@/types'
 import { compareIds } from './ids'
@@ -75,7 +75,7 @@ export function conflictsForStakeholderSet(issue: IssueFile, ids: ReadonlySet<st
   return issue.conflicts.filter((c) => has(c.sideA) || has(c.sideB))
 }
 
-/** What the 訴求 tab shows for one conflict (design 3.2). */
+/** What the 衝突 tab shows for one conflict (design 3.2). */
 export interface ConflictView {
   conflict: Conflict
   /** The stories of each side, in the order of the conflict row. */

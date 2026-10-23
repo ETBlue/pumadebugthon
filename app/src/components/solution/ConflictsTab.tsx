@@ -170,7 +170,7 @@ function CrossConflictCard({ view, data, index, issues, dataBasedOnly }: {
 /** The 衝突 tab of an issue solution (design 3.12, decision 103): the
  * 「只看有資料根據」 toggle, then 解開的衝突 (each conflict whose way out lists
  * the solution, as ConflictView, with a link to the conflict on the issue's
- * 訴求 tab) and 相關的衝突 (the other conflicts with a covered story). Both
+ * 衝突 tab, decision 142) and 相關的衝突 (the other conflicts with a covered story). Both
  * moved here from the 總覽 tab. The filter hides the stories with no data
  * basis in the sides of 解開的衝突, as before. */
 export function ConflictsTab({ index, issue, solution: sol }: { index: IndexFile; issue: IssueFile; solution: Solution }) {
@@ -191,7 +191,7 @@ export function ConflictsTab({ index, issue, solution: sol }: { index: IndexFile
               <ul className="mt-4 space-y-4">
                 {wayOut.map((view) => (
                   <li key={view.conflict.id}>
-                    {/* focusTarget off: the same conflict ID is on the issue's 訴求 tab, not here. */}
+                    {/* focusTarget off: the same conflict ID is on the issue's 衝突 tab, not here. */}
                     <ConflictView
                       view={view}
                       issue={issue}
@@ -233,7 +233,7 @@ export function ConflictsTab({ index, issue, solution: sol }: { index: IndexFile
             </>
           )}
           <p className="mt-3">
-            <Link to={issueFocusPath(n, 'wants', 'conflicts', dataBasedOnly)} className={targetLinkClass}>{tp.conflictsLink(n)}</Link>
+            <Link to={issueFocusPath(n, 'conflicts', 'conflicts', dataBasedOnly)} className={targetLinkClass}>{tp.conflictsLink(n)}</Link>
           </p>
         </SolutionPart>
       </div>

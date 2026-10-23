@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
+import { ConflictsTab } from '@/components/issue/ConflictsTab'
 import { NeedsTab } from '@/components/issue/NeedsTab'
 import { OverviewTab } from '@/components/issue/OverviewTab'
 import { SolutionsTab } from '@/components/issue/SolutionsTab'
@@ -36,6 +37,7 @@ const TAB_CONTENT: Record<IssueTab, (props: IssueTabProps) => ReactNode> = {
   overview: OverviewTab,
   wants: WantsTab,
   needs: NeedsTab,
+  conflicts: ConflictsTab,
   solutions: SolutionsTab,
   decisions: summaryTab('decisions'),
   stakeholders: StakeholdersTab,
@@ -48,7 +50,6 @@ type IssueCounts = TabCounts & { summary: Record<SummaryTopicKey, number>; stake
 function tabLabel(tab: IssueTab, c: IssueCounts | null): TabLabel {
   if (c === null || tab === 'overview') return { main: ti.tabs[tab] }
   if (isSummaryTab(tab)) return ti.tabLabels.summary(ti.tabs[tab], c.summary[tab])
-  if (tab === 'wants') return ti.tabLabels.wants(c.wants, c.conflicts)
   if (tab === 'stakeholders') return ti.tabLabels.stakeholders(c.stakeholders.stakeholders, c.stakeholders.disadvantaged)
   return ti.tabLabels[tab](c[tab])
 }
@@ -65,9 +66,9 @@ function BackHome() {
  * sort, filters and search the reader last used there in this session. */
 const backToIssues = (): BackTarget => ({ to: backListPath('issues'), label: t.backLink.issues })
 
-/** Issue page (design 3.2): #/issues/:number/:tab? with six tabs: 總覽,
- * 利害關係人 (decisions 109, 115 and 116), 訴求, 需求, 難以取捨 (a 分析摘要
- * topic, decision 102) and 解法 (decision 140). Every tab but 總覽 has a menu
+/** Issue page (design 3.2): #/issues/:number/:tab? with seven tabs: 總覽,
+ * 利害關係人 (decisions 109, 115 and 116), 訴求, 需求, 衝突 (decision 142),
+ * 難以取捨 (a 分析摘要 topic, decision 102) and 解法 (decision 140). Every tab but 總覽 has a menu
  * bar with its filters (IssueMenuBar, decision 116). */
 export default function Issue() {
   const index = useIndex()

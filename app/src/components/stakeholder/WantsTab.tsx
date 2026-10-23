@@ -1,10 +1,8 @@
-import { ConflictView } from '@/components/ConflictView'
 import { DataBasisEmpty, useDataBasisFilter } from '@/components/DataBasisToggle'
 import { cardGridClass } from '@/components/styles'
 import { WantItem, type WantPart } from '@/components/WantItem'
 import { t } from '@/i18n/zh-TW'
 import { dataBasedPickList } from '@/lib/dataBasis'
-import { stakeholderConflictViews } from '@/lib/stakeholderPage'
 import { wantsOfStakeholder } from '@/lib/wantList'
 import { Empty, IssueSection, Part, type StakeholderTabProps } from './IssueSection'
 
@@ -13,9 +11,9 @@ const tp = t.stakeholderPage
 /** The want parts on the stakeholder page (design 3.3). */
 const WANT_PARTS: readonly WantPart[] = ['stakeholders', 'conflicts', 'pickLink']
 
-/** 訴求 (design 3.3). Per issue: its wants in the order of the pick list,
- * then its conflicts with the other side's stories. The same want key or
- * conflict ID can show under two issues, so the items get no focus ID. */
+/** 訴求 (design 3.3). Per issue: its wants in the order of the pick list.
+ * The conflicts are on the 衝突 tab (decision 142). The same want key can
+ * show under two issues, so the items get no focus ID. */
 export function WantsTab({ index, issues, id }: StakeholderTabProps) {
   const [dataBasedOnly] = useDataBasisFilter()
   return (
@@ -26,7 +24,6 @@ export function WantsTab({ index, issues, id }: StakeholderTabProps) {
         // stories has a data-based tag.
         const keep = new Set(dataBasedPickList(all, issue.stories).map((w) => w.key))
         const wants = dataBasedOnly ? all.filter((w) => keep.has(w.key)) : all
-        const conflicts = stakeholderConflictViews(issue, id)
         const p = `stakeholder-wants-${issue.number}`
         return (
           <IssueSection key={issue.number} issue={issue} tab="wants">
@@ -48,28 +45,6 @@ export function WantsTab({ index, issues, id }: StakeholderTabProps) {
                         others={id}
                         focusTarget={false}
                         className="h-full"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </Part>
-
-            {/* One conflict per row: a conflict card has two sides in it. */}
-            <Part id={`${p}-conflicts`} title={tp.conflicts}>
-              {conflicts.length === 0 ? (
-                <Empty>{tp.conflictsNone}</Empty>
-              ) : (
-                <ul className="space-y-4">
-                  {conflicts.map((c) => (
-                    <li key={c.view.conflict.id}>
-                      <ConflictView
-                        view={c.view}
-                        issue={issue}
-                        stakeholders={index.stakeholders}
-                        otherStories={c.otherStories}
-                        dataBasedOnly={dataBasedOnly}
-                        focusTarget={false}
                       />
                     </li>
                   ))}

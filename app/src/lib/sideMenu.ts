@@ -109,12 +109,13 @@ export function groupKeysAbove(tree: SideMenuGroup[], id: string | null): string
 }
 
 /** The pages with stakeholder counts, and so the meaning of the count
- * (design 3.21): the stakeholder picker of the 訴求, 需求 and 解法 tabs of
- * the issue page (decision 116; before, their side menu). #/stakeholders and
+ * (design 3.21): the stakeholder picker of the 訴求, 需求, 衝突 (decision
+ * 142) and 解法 tabs of the issue page (decision 116; before, their side menu). #/stakeholders and
  * the stakeholder page have no side bar (decisions 87 and 94). */
 export const SIDE_MENU_CONTEXTS = [
   'issue-wants',
   'issue-needs',
+  'issue-conflicts',
   'issue-solutions',
 ] as const
 
@@ -134,6 +135,8 @@ function countIn(
       return wantsTabView(issue, id, dataBased, special).wants.length
     case 'issue-needs':
       return needsTabView(issue, id, dataBased, special).shown
+    case 'issue-conflicts':
+      return wantsTabView(issue, id, dataBased, special).conflicts.length
     case 'issue-solutions':
       return solutionsTabView(issue, id, dataBased, special).length
   }

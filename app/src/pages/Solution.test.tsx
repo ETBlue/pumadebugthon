@@ -51,9 +51,9 @@ const titleOf = (html: string) => /data-title="([^"]*)"/.exec(html)?.[1]
 const activeTab = (html: string) => /role="tab" aria-selected="true"[^>]*aria-label="([^"]+)"/.exec(html)?.[1]
 
 describe('the solution page tabs (decision 103)', () => {
-  it('has ten tabs in order, with their counts (#2 A)', () => {
+  it('has ten tabs in order, with their counts (#2 A); 利害關係人, 訴求, 需求, 衝突 in the order of the issue page (decision 142)', () => {
     expect(tabNames(render('/solutions/2-A'))).toEqual([
-      '總覽', '需求　涵蓋 9・未涵蓋 13', '訴求　涵蓋 28・未涵蓋 25', '利害關係人　涵蓋 14・未涵蓋 13',
+      '總覽', '利害關係人　涵蓋 14・未涵蓋 13', '訴求　涵蓋 28・未涵蓋 25', '需求　涵蓋 9・未涵蓋 13',
       '衝突　解開 5・相關 3', '可能爭議 4', '法規障礙 2', '執行計畫', '成效衡量 4', '相關政策　國內 2・國外 2',
     ])
   })
@@ -155,7 +155,7 @@ describe('the solution page tabs (decision 103)', () => {
 describe('the cross-issue solution page tabs (decision 103)', () => {
   it('has the same ten tabs (X-A)', () => {
     expect(tabNames(render('/solutions/X-A'))).toEqual([
-      '總覽', '需求　涵蓋 17・未涵蓋 60', '訴求　涵蓋 44・未涵蓋 123', '利害關係人　涵蓋 21・未涵蓋 30',
+      '總覽', '利害關係人　涵蓋 21・未涵蓋 30', '訴求　涵蓋 44・未涵蓋 123', '需求　涵蓋 17・未涵蓋 60',
       '衝突　解開 1・相關 1', '可能爭議 4', '法規障礙 2', '執行計畫', '成效衡量 4', '相關政策　國內 2・國外 0',
     ])
   })
@@ -165,6 +165,16 @@ describe('the cross-issue solution page tabs (decision 103)', () => {
     expect(html).not.toContain('id="cross-detail"')
     expect(html).not.toContain('主責單位、法規、隱私與風險')
     expect(html).not.toContain('>相關法規<')
+  })
+
+  it('the 衝突 tab links each conflict to the 衝突 tab of the issue (decision 142)', () => {
+    const html = render('/solutions/2-A/conflicts')
+    expect(html).toContain('href="/issues/2/conflicts?focus=C1"')
+    expect(html).toContain('href="/issues/2/conflicts?focus=conflicts"')
+    expect(html).toContain('到 #2 的衝突分頁看所有衝突')
+    expect(html).not.toMatch(/href="\/issues\/\d+\/wants\?focus=C/)
+    // A cross-issue conflict links to the conflicts of each issue.
+    expect(render('/solutions/X-A/conflicts')).toMatch(/href="\/issues\/\d+\/conflicts\?focus=C\d+"/)
   })
 
   it('moves 解開的衝突 and 成效衡量 out of 總覽', () => {
@@ -363,7 +373,7 @@ describe('the 可能爭議 and 法規障礙 tabs (decision 140)', () => {
     expect(html).not.toContain('rounded-md border p-3')
     expect(html).not.toMatch(/<ul aria-label="可能爭議" class="[^"]*grid/)
     expect(html).toContain('相關：')
-    expect(html).toContain('href="/issues/2/wants?focus=C1"')
+    expect(html).toContain('href="/issues/2/conflicts?focus=C1"')
     expect(html).toContain('來源：議題分析步驟 7 這個解法的評估表。')
   })
 

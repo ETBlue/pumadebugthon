@@ -109,7 +109,7 @@ export interface RefTarget {
  * - group (W08): the 訴求 tab with the group picked in the opinion check.
  * - need (N01): the 需求 tab with ?focus= on the N group.
  * - stakeholder: the stakeholder page.
- * - conflict: the 訴求 tab with ?focus= on the conflict.
+ * - conflict: the 衝突 tab with ?focus= on the conflict (decision 142).
  * - solution: the solution page (/solutions/2-E).
  * A reference to another issue gets the same kind of target in that issue.
  * Every target is built from the IDs, so the other issue's file is not needed.

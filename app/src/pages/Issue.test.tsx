@@ -79,14 +79,17 @@ describe('the band, the side menu and the metadata (decision 111)', () => {
     const html = render('/issues/1/needs?evidence=1&pick=W08')
     const nav = /<nav aria-label="議題內容"[^>]*>([\s\S]*?)<\/nav>/.exec(html)?.[1] ?? ''
     const links = [...nav.matchAll(/<a ([^>]*)>/g)].map((m) => m[1])
-    expect(links).toHaveLength(6)
+    expect(links).toHaveLength(7)
     // The same URLs as the tabs: ?evidence= is kept, ?pick= is dropped.
     expect(links[0]).toContain('href="/issues/1?evidence=1"')
     expect(links[3]).toContain('href="/issues/1/needs?evidence=1"')
     expect(links.filter((a) => a.includes('aria-current="page"'))).toEqual([links[3]])
     // 利害關係人 is second, right after 總覽 (decision 116).
     expect(links[1]).toContain('aria-label="利害關係人 28・弱勢 4"')
-    expect(links[2]).toContain('aria-label="訴求 50・衝突 9"')
+    // Decision 142: 訴求 has only its own count, and 衝突 is its own tab after 需求.
+    expect(links[2]).toContain('aria-label="訴求 50"')
+    expect(links[4]).toContain('href="/issues/1/conflicts?evidence=1"')
+    expect(links[4]).toContain('aria-label="衝突 9"')
   })
 
   it('shows the metadata at the top of 總覽 only', () => {
@@ -104,7 +107,8 @@ describe('the band, the side menu and the metadata (decision 111)', () => {
 
 describe('old issue URLs (decision 110: no redirects)', () => {
   it('an old tab name shows 「找不到這個分頁」, like any unknown tab', () => {
-    for (const tab of ['opinion', 'conflicts', 'disadvantaged']) {
+    // conflicts is a tab again since decision 142.
+    for (const tab of ['opinion', 'disadvantaged']) {
       const html = render(`/issues/1/${tab}`)
       expect(html).toContain('找不到這個分頁。')
       expect(activeTab(html)).toBeUndefined()
@@ -126,9 +130,9 @@ describe('old issue URLs (decision 110: no redirects)', () => {
 })
 
 describe('the issue page tabs', () => {
-  it('has six tabs: 利害關係人 right after 總覽 (decision 116), 難以取捨 before 解法 (decision 140), with their counts (#1)', () => {
+  it('has seven tabs: 利害關係人 right after 總覽 (decision 116), 衝突 after 需求 (decision 142), 難以取捨 before 解法 (decision 140), with their counts (#1)', () => {
     expect(tabNames(render('/issues/1'))).toEqual([
-      '總覽', '利害關係人 28・弱勢 4', '訴求 50・衝突 9', '需求 31', '難以取捨 5', '解法 5',
+      '總覽', '利害關係人 28・弱勢 4', '訴求 50', '需求 31', '衝突 9', '難以取捨 5', '解法 5',
     ])
   })
 
@@ -139,7 +143,7 @@ describe('the issue page tabs', () => {
     expect(tabNames(render('/issues/9'))).toContain('利害關係人 20・弱勢 6')
   })
 
-  it('the 利害關係人 label has two parts, like 訴求 N・衝突 M', () => {
+  it('the 利害關係人 label has two parts: 利害關係人 N・弱勢 M', () => {
     const html = render('/issues/1')
     expect(html).toMatch(/利害關係人 28<\/span>/)
     expect(html).toMatch(/弱勢 4<\/span>/)
@@ -159,7 +163,7 @@ describe('the issue page tabs', () => {
     expect(render('/issues/9/decisions?evidence=1')).toContain('href="/solutions/9-A?evidence=1"')
     expect(render('/issues/9/decisions')).toContain('href="/solutions/9-A"')
     state.override = {}
-    expect(render('/issues/2/decisions')).toContain('href="/issues/2/wants?focus=C6"')
+    expect(render('/issues/2/decisions')).toContain('href="/issues/2/conflicts?focus=C6"')
   })
 
   it('總覽 does not show 難以取捨 or the 弱勢 rows', () => {
@@ -366,7 +370,7 @@ function menuBar(html: string): string | null {
 
 describe('the menu bar of the issue tabs (decision 116)', () => {
   it('every tab with a filter has the menu bar; 總覽 has none', () => {
-    for (const tab of ['stakeholders', 'wants', 'needs', 'decisions', 'solutions']) {
+    for (const tab of ['stakeholders', 'wants', 'needs', 'conflicts', 'decisions', 'solutions']) {
       const html = render(`/issues/1/${tab}`)
       expect(html.match(/data-slot="issue-menu-bar"/g), tab).toHaveLength(1)
       expect(menuBar(html), tab).toContain('只看有資料根據')
@@ -379,8 +383,8 @@ describe('the menu bar of the issue tabs (decision 116)', () => {
     expect(cls).toEqual(expect.arrayContaining(['flex-wrap', 'rounded-lg', 'border', 'bg-muted', 'min-w-0']))
   })
 
-  it('訴求, 需求 and 解法 have the stakeholder picker in the bar and no side menu', () => {
-    for (const tab of ['wants', 'needs', 'solutions']) {
+  it('訴求, 需求, 衝突 and 解法 have the stakeholder picker in the bar and no side menu', () => {
+    for (const tab of ['wants', 'needs', 'conflicts', 'solutions']) {
       const html = render(`/issues/1/${tab}`)
       const bar = menuBar(html) ?? ''
       expect(bar, tab).toContain('role="combobox"')
@@ -654,7 +658,7 @@ describe('the 需求 tab filters: 優先順序 and 只看有衝突的需求 (dec
     expect(bar.indexOf('只看有衝突的需求')).toBeLessThan(bar.indexOf('只看有資料根據'))
     // #2 has a 這次不做 need, so it has 4 toggles.
     expect(menuBar(render('/issues/2/needs'))).toContain('這次不做</button>')
-    for (const tab of ['stakeholders', 'wants', 'solutions', 'decisions']) {
+    for (const tab of ['stakeholders', 'wants', 'conflicts', 'solutions', 'decisions']) {
       const other = menuBar(render(`/issues/1/${tab}?priority=M&conflict=1`)) ?? ''
       expect(other, tab).not.toContain('優先順序')
       expect(other, tab).not.toContain('只看有衝突的需求')
@@ -736,6 +740,71 @@ describe('the 需求 tab filters: 優先順序 and 只看有衝突的需求 (dec
   })
 })
 
+/** The conflict IDs on a tab, from the element IDs focus-C<n>, in page order. */
+const conflictIds = (html: string) => [...html.matchAll(/id="focus-(C\d+)"/g)].map((m) => m[1])
+
+describe('the 衝突 tab (decision 142)', () => {
+  const trashcans = trashcansJson as IssueFile
+
+  it('opens from its URL, with the tab name in the page title and the label 衝突 N', () => {
+    const html = render('/issues/2/conflicts')
+    expect(activeTab(html)).toBe(`衝突 ${trashcans.conflicts.length}`)
+    expect(titleOf(html)).toContain('衝突')
+  })
+
+  it('shows every conflict in file order, each with the focus ID, one per row (not a grid)', () => {
+    const html = render('/issues/2/conflicts')
+    expect(conflictIds(html)).toEqual(trashcans.conflicts.map((c) => c.id))
+    expect(html).toContain('id="focus-conflicts"')
+    expect(html).toContain('<ul class="space-y-6">')
+    // Each conflict still has its two sides.
+    expect(html).toContain(t.conflict.sideA)
+    expect(html).toContain(t.conflict.sideB)
+  })
+
+  it('the 訴求 tab has no conflict cards any more, but a want still links to its conflicts on the 衝突 tab', () => {
+    const html = render('/issues/2/wants')
+    expect(conflictIds(html)).toEqual([])
+    expect(html).not.toContain('id="focus-conflicts"')
+    expect(html).toMatch(/href="\/issues\/2\/conflicts\?focus=C\d+"/)
+    expect(html).not.toMatch(/href="\/issues\/2\/wants\?focus=C\d+"/)
+  })
+
+  it('?stakeholder= keeps only the conflicts with a story of that stakeholder on either side', () => {
+    // I06 has the story I06-US01 on side B of C6 only.
+    const html = render('/issues/2/conflicts?stakeholder=I06')
+    expect(conflictIds(html)).toEqual(['C6'])
+    expect(html).toContain('顯示 1 個衝突。')
+    // The picker counts the conflicts.
+    expect(menuBar(html)).toContain('<span class="sr-only">，衝突 </span>')
+  })
+
+  it('a stakeholder in no conflict gets the empty message', () => {
+    const inConflict = new Set(trashcans.conflicts.flatMap((c) => [...c.sideA, ...c.sideB]).map((s) => s.split('-')[0]))
+    const id = trashcans.stakeholders.map((s) => s.id).find((s) => !inConflict.has(s))!
+    const html = render(`/issues/2/conflicts?stakeholder=${id}`)
+    expect(conflictIds(html)).toEqual([])
+    expect(html).toContain(t.wantsTab.conflictsNoneFiltered)
+  })
+
+  it('「只看有資料根據」 hides no conflict, and the status line counts the conflicts', () => {
+    const html = render('/issues/2/conflicts?evidence=1')
+    expect(conflictIds(html)).toEqual(trashcans.conflicts.map((c) => c.id))
+    expect(html).toContain(`篩選：只看有資料根據。顯示 ${trashcans.conflicts.length} 個衝突。`)
+  })
+
+  it('特別關注 (?special=) filters the conflicts too', () => {
+    const html = render('/issues/2/conflicts?special=身心障礙')
+    expect(html).toContain('特別關注：身心障礙')
+    expect(conflictIds(html)).toContain('C6')
+    expect(conflictIds(html).length).toBeLessThanOrEqual(trashcans.conflicts.length)
+  })
+
+  it('the 訴求 status line counts only the wants', () => {
+    expect(render('/issues/2/wants?evidence=1')).toMatch(/篩選：只看有資料根據。顯示 \d+ 個訴求。 </)
+  })
+})
+
 describe('the card grids of the 需求 and 解法 tabs (decisions 130 and 139)', () => {
   const GRID = /<ul class="(?:mt-3 )?grid gap-4 lg:grid-cols-2">/
 
@@ -778,8 +847,8 @@ describe('the 分析摘要 rows with no solution on 總覽 (decision 140)', () =
     const on = unlinkedSection(render('/issues/8?evidence=1'))
     expect(on).not.toContain('rounded-md border')
     expect(on).toContain('相關：')
-    expect(on).toContain('href="/issues/8/wants?focus=C3&amp;evidence=1"')
-    expect(on).toContain('href="/issues/1/wants?focus=C7&amp;evidence=1"')
+    expect(on).toContain('href="/issues/8/conflicts?focus=C3&amp;evidence=1"')
+    expect(on).toContain('href="/issues/1/conflicts?focus=C7&amp;evidence=1"')
     // 總覽 has no filter: every row shows, also with ?evidence=1.
     expect([...on.matchAll(/<h5 /g)]).toHaveLength(3)
     expect(render('/issues/8')).not.toContain('data-slot="issue-menu-bar"')

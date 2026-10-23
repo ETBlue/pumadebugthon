@@ -25,7 +25,8 @@ describe('parseStakeholderTab', () => {
   })
 
   it('accepts every tab name', () => {
-    expect(STAKEHOLDER_TABS).toEqual(['overview', 'wants', 'needs', 'solutions'])
+    // Decision 142: 衝突 is its own tab, after 需求.
+    expect(STAKEHOLDER_TABS).toEqual(['overview', 'wants', 'needs', 'conflicts', 'solutions'])
     for (const tab of STAKEHOLDER_TABS) expect(parseStakeholderTab(tab)).toBe(tab)
   })
 
@@ -82,23 +83,24 @@ describe('wantFocusPath and needFocusPath', () => {
 describe('issueFocusPath and conflictFocusPath', () => {
   it('link to a part of an issue tab with ?focus=', () => {
     expect(issueFocusPath(2, 'overview', 'stakeholders')).toEqual({ pathname: '/issues/2', search: '?focus=stakeholders' })
-    expect(issueFocusPath(2, 'wants', 'conflicts')).toEqual({ pathname: '/issues/2/wants', search: '?focus=conflicts' })
-    expect(conflictFocusPath(2, 'C9')).toEqual({ pathname: '/issues/2/wants', search: '?focus=C9' })
+    expect(issueFocusPath(2, 'conflicts', 'conflicts')).toEqual({ pathname: '/issues/2/conflicts', search: '?focus=conflicts' })
+    // Decision 142: a conflict is on the 衝突 tab, not on the 訴求 tab.
+    expect(conflictFocusPath(2, 'C9')).toEqual({ pathname: '/issues/2/conflicts', search: '?focus=C9' })
   })
 
   it('keeps the data filter when it is on', () => {
     expect(issueFocusPath(1, 'needs', 'N03', true).search).toBe('?focus=N03&evidence=1')
-    expect(conflictFocusPath(1, 'C7', true)).toEqual({ pathname: '/issues/1/wants', search: '?focus=C7&evidence=1' })
+    expect(conflictFocusPath(1, 'C7', true)).toEqual({ pathname: '/issues/1/conflicts', search: '?focus=C7&evidence=1' })
   })
 
   it('conflictFocusPath with the URL params keeps evidence and stakeholder, like a tab change', () => {
     const params = new URLSearchParams('stakeholder=I06&evidence=1&pick=W08&focus=W08')
     expect(conflictFocusPath(2, 'C6', params)).toEqual({
-      pathname: '/issues/2/wants',
+      pathname: '/issues/2/conflicts',
       search: '?evidence=1&stakeholder=I06&focus=C6',
     })
     expect(conflictFocusPath(2, 'C6', new URLSearchParams('pick=W08'))).toEqual({
-      pathname: '/issues/2/wants',
+      pathname: '/issues/2/conflicts',
       search: '?focus=C6',
     })
   })
@@ -110,8 +112,9 @@ describe('parseSolutionTab', () => {
   })
 
   it('accepts every tab name', () => {
+    // Decision 142: 利害關係人, 訴求, 需求, 衝突, in the order of the issue page.
     expect(SOLUTION_TABS).toEqual([
-      'overview', 'needs', 'wants', 'stakeholders', 'conflicts', 'controversies', 'legal', 'plan', 'measures', 'policies',
+      'overview', 'stakeholders', 'wants', 'needs', 'conflicts', 'controversies', 'legal', 'plan', 'measures', 'policies',
     ])
     for (const tab of SOLUTION_TABS) expect(parseSolutionTab(tab)).toBe(tab)
   })

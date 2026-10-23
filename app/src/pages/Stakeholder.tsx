@@ -9,6 +9,7 @@ import { LoadState } from '@/components/LoadState'
 import { PageBand, PageBody, type BackTarget } from '@/components/PageBand'
 import { PageTabs } from '@/components/PageTabs'
 import { PageTitle } from '@/components/PageTitle'
+import { ConflictsTab } from '@/components/stakeholder/ConflictsTab'
 import type { StakeholderTabProps } from '@/components/stakeholder/IssueSection'
 import { NeedsTab } from '@/components/stakeholder/NeedsTab'
 import { OverviewTab } from '@/components/stakeholder/OverviewTab'
@@ -36,7 +37,6 @@ const tl = t.stakeholdersList
 /** The tab label with its count. While the issues load, the name only. */
 function tabLabel(tab: StakeholderTab, c: TabCounts | null): TabLabel {
   if (c === null || tab === 'overview') return { main: tp.tabs[tab] }
-  if (tab === 'wants') return tp.tabLabels.wants(c.wants, c.conflicts)
   return tp.tabLabels[tab](c[tab])
 }
 
@@ -82,6 +82,7 @@ const TAB_CONTENT: Record<StakeholderTab, ComponentType<StakeholderTabProps>> = 
   overview: OverviewTab,
   wants: WantsTab,
   needs: NeedsTab,
+  conflicts: ConflictsTab,
   solutions: SolutionsTab,
 }
 

@@ -355,13 +355,17 @@ describe('the card grids of the stakeholder tabs (decision 139)', () => {
     expect(html).toContain('class="rounded-lg border p-3 md:p-4 h-full"')
   })
 
-  it('訴求: the wants are a grid, but the conflicts keep one card per row', () => {
+  it('訴求: the wants are a grid', () => {
     const html = renderPage('/stakeholders/I06/wants')
     expect(grids(html)).toBeGreaterThanOrEqual(3)
     expect(html).toContain('class="rounded-lg border p-3 md:p-4 h-full"')
+  })
+
+  it('衝突: one card per row, not a grid (decision 142)', () => {
+    const html = renderPage('/stakeholders/I06/conflicts')
     // A conflict card has two sides in it, so its list is not a grid.
-    const conflicts = html.split('id="stakeholder-wants-1-conflicts"')[1]
-    const list = conflicts.slice(0, conflicts.indexOf('</ul>'))
+    const section = html.split('id="stakeholder-conflicts-1"')[1]
+    const list = section.slice(0, section.indexOf('</ul>'))
     expect(list).toContain('<ul class="space-y-4">')
     expect(list).not.toContain('grid gap-4 lg:grid-cols-2')
   })
@@ -375,8 +379,40 @@ describe('the card grids of the stakeholder tabs (decision 139)', () => {
   })
 
   it('never uses 3 columns', () => {
-    for (const tab of ['', '/needs', '/wants', '/solutions']) {
+    for (const tab of ['', '/needs', '/wants', '/conflicts', '/solutions']) {
       expect(renderPage(`/stakeholders/I06${tab}`)).not.toContain('xl:grid-cols-3')
     }
+  })
+})
+
+/** The accessible names of the tabs, in order. */
+const tabNames = (html: string) => [...html.matchAll(/role="tab"[^>]*aria-label="([^"]+)"/g)].map((m) => m[1])
+
+describe('the 衝突 tab of the stakeholder page (decision 142)', () => {
+  beforeEach(() => {
+    state.loading = false
+    state.cross = 'none'
+    state.crossFile = null
+    state.override = {}
+  })
+
+  it('has its own tab after 需求; 訴求 shows only its own count', () => {
+    // I06 (fixtures #1, #2, #8, #9): 6 want keys, 5 need keys, 4 conflicts
+    // (C1 and C7 in #1, C6 in #2, C3 in #8), 5 issue solutions.
+    expect(tabNames(renderPage('/stakeholders/I06'))).toEqual(['總覽', '訴求 6', '需求 5', '衝突 4', '解法 5'])
+  })
+
+  it('shows the conflicts per issue, with the other side\'s stories', () => {
+    const html = renderPage('/stakeholders/I06/conflicts')
+    expect(html).toContain('id="stakeholder-conflicts-2"')
+    expect(html).toContain(t.conflict.otherSide)
+    expect(html).toMatch(/<span class="mr-2 font-mono">C6<\/span>/)
+  })
+
+  it('the 訴求 tab has no conflict cards, but a want still links to its conflict on the issue\'s 衝突 tab', () => {
+    const html = renderPage('/stakeholders/I06/wants')
+    expect(html).not.toContain(t.conflict.otherSide)
+    expect(html).not.toMatch(/<span class="mr-2 font-mono">C\d+<\/span>/)
+    expect(html).toContain('href="/issues/2/conflicts?focus=C6"')
   })
 })

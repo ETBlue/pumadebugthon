@@ -75,7 +75,7 @@ export interface StakeholderConflictView {
   otherStories: Story[]
 }
 
-/** The conflicts of the stakeholder page's 訴求 tab (design 3.3): every
+/** The conflicts of the stakeholder page's 衝突 tab (design 3.3, decision 142): every
  * conflict with one of its stories on a side, in file order. The list has
  * the same conflicts as the tab count (conflictsForStakeholder). */
 export function stakeholderConflictViews(issue: IssueFile, id: string): StakeholderConflictView[] {
@@ -85,7 +85,7 @@ export function stakeholderConflictViews(issue: IssueFile, id: string): Stakehol
   return conflictsForStakeholder(issue, id).map((conflict) => {
     const onA = conflict.sideA.some(isOwn)
     const onB = conflict.sideB.some(isOwn)
-    // Side A first, then side B, so the order matches the issue's 訴求 tab.
+    // Side A first, then side B, so the order matches the issue's 衝突 tab.
     const other = [...(onB ? conflict.sideA : []), ...(onA ? conflict.sideB : [])].filter((s) => !isOwn(s))
     return { view: conflictView(issue, conflict), otherStories: other.flatMap((s) => byId.get(s) ?? []) }
   })

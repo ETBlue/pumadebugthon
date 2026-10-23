@@ -233,6 +233,8 @@ export const t = {
       overview: '總覽',
       wants: '訴求',
       needs: '需求',
+      // The conflicts have their own tab (decision 142).
+      conflicts: '衝突',
       solutions: '解法',
       // The 分析摘要 topic 難以取捨的決定 (decision 102), with a short name
       // so the tab list is shorter on a phone (ETBlue, 2026-10-22). The full
@@ -250,8 +252,10 @@ export const t = {
     /** The tab labels with the counts of the issue (issueTabCounts and
      * summaryTabCounts). A count is a plain number, not a score. */
     tabLabels: {
-      wants: (wants: number, conflicts: number): TabLabel => ({ main: `訴求 ${wants}`, sep: '・', sub: `衝突 ${conflicts}` }),
+      wants: (n: number): TabLabel => ({ main: `訴求 ${n}` }),
       needs: (n: number): TabLabel => ({ main: `需求 ${n}` }),
+      /** The number of conflicts (decision 142). */
+      conflicts: (n: number): TabLabel => ({ main: `衝突 ${n}` }),
       solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
       /** 「利害關係人 28・弱勢 4」 (decision 109): the stakeholders of the
        * issue and the filled rows of 受影響較大的弱勢族群. */
@@ -330,7 +334,7 @@ export const t = {
     noWants: '這位利害關係人在這個議題沒有訴求。',
     /** With a 特別關注 chip on (decision 75). */
     noWantsFiltered: '沒有符合目前篩選的訴求。',
-    conflictsHeading: '衝突',
+    // The empty messages of the 衝突 tab (ConflictsTab, decision 142).
     conflictsNone: '這個議題沒有列出衝突。',
     /** No conflict has a story of the picked stakeholder on a side. */
     conflictsNoneFiltered: '這位利害關係人沒有出現在衝突的任何一方。',
@@ -419,6 +423,7 @@ export const t = {
     /** 訴求 tab (design 3.3). */
     wantsHeading: '訴求',
     wantsNone: '這個議題沒有這位利害關係人的訴求。',
+    /** 衝突 tab (design 3.3, decision 142). */
     conflicts: '衝突',
     conflictsNone: '分析裡沒有和這位利害關係人的故事衝突的項目。',
     /** 需求 tab (design 3.3). */
@@ -445,12 +450,15 @@ export const t = {
       overview: '總覽',
       wants: '訴求',
       needs: '需求',
+      conflicts: '衝突',
       solutions: '解法',
     },
     /** The tab labels with the counts summed over the issues (decision 48). */
     tabLabels: {
-      wants: (wants: number, conflicts: number): TabLabel => ({ main: `訴求 ${wants}`, sep: '・', sub: `衝突 ${conflicts}` }),
+      wants: (n: number): TabLabel => ({ main: `訴求 ${n}` }),
       needs: (n: number): TabLabel => ({ main: `需求 ${n}` }),
+      /** The conflicts with one of its stories on a side (decision 142). */
+      conflicts: (n: number): TabLabel => ({ main: `衝突 ${n}` }),
       solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
     },
     tabNotFound: '找不到這個分頁。',
@@ -581,12 +589,12 @@ export const t = {
     wayOutHeading: '解開的衝突',
     wayOutIntro: '這些衝突的「以需求為本的解方」用到這個解法。',
     wayOutNone: '沒有衝突的「以需求為本的解方」用到這個解法。',
-    wayOutLink: (n: number, id: string) => `到 #${n} 的訴求分頁看 ${id}`,
+    wayOutLink: (n: number, id: string) => `到 #${n} 的衝突分頁看 ${id}`,
     conflictsHeading: '相關的衝突',
     conflictsIntro: '衝突的一方或另一方，有這個解法涵蓋的故事，但衝突的解方沒有用到這個解法。',
     conflictsNone: '沒有其他和這個解法涵蓋的故事有關的衝突。',
     conflictCovered: (ids: string[]) => `這個解法涵蓋的故事：${ids.join('、')}`,
-    conflictsLink: (n: number) => `到 #${n} 的訴求分頁看所有衝突`,
+    conflictsLink: (n: number) => `到 #${n} 的衝突分頁看所有衝突`,
     /** The 需求 tab. */
     coveredNeedsHeading: '涵蓋的需求',
     coveredNeedsNone: '這個解法沒有列出涵蓋的需求。',
@@ -759,7 +767,7 @@ export const t = {
    * decision 116; before, the side menu, design 3.21) and the filter status
    * line (FilterStatus, decision 68). */
   sideMenu: {
-    /** The name of the menu bar of the 訴求, 需求, 解法 and 分析摘要 tabs
+    /** The name of the menu bar of the 訴求, 需求, 衝突, 解法 and 分析摘要 tabs
      * (IssueMenuBar, decision 116). */
     filters: '篩選',
     special: '特別關注',
@@ -776,6 +784,7 @@ export const t = {
     countLine: {
       'issue-wants': '數字：在本議題的訴求數',
       'issue-needs': '數字：在本議題的需求數',
+      'issue-conflicts': '數字：在本議題的衝突數',
       'issue-solutions': '數字：在本議題的解法數',
     },
     /** Hidden text before a count, for screen readers. The link name is then
@@ -783,6 +792,7 @@ export const t = {
     countUnit: {
       'issue-wants': '，訴求 ',
       'issue-needs': '，需求 ',
+      'issue-conflicts': '，衝突 ',
       'issue-solutions': '，解法 ',
     },
     /** Hidden text before the number of stakeholders of a group: 「臺北市，利害關係人 12」. */
@@ -793,7 +803,9 @@ export const t = {
     statusStakeholder: (id: string, name: string) => `${id} ${name}`,
     statusDataBased: '只看有資料根據',
     statusSpecial: (groups: string[]) => `特別關注：${groups.join('、')}`,
-    shownWants: (wants: number, conflicts: number) => `顯示 ${wants} 個訴求、${conflicts} 個衝突。`,
+    shownWants: (n: number) => `顯示 ${n} 個訴求。`,
+    /** The end of the status line of the 衝突 tab (decision 142). */
+    shownConflicts: (n: number) => `顯示 ${n} 個衝突。`,
     shownNeeds: (n: number) => `顯示 ${n} 個需求。`,
     shownSolutions: (n: number) => `顯示 ${n} 個解法。`,
     /** 只看跨議題 in the status line of the 利害關係人 tab (decision 121). */

@@ -1,6 +1,7 @@
-// The 訴求 tab of the issue page (design 3.2, section 4): the wants (the
-// opinion check pick list) and the conflicts, with the stakeholder filter
-// and the 「只看有資料根據」 filter. The lists keep the order of the file.
+// The 訴求 and 衝突 tabs of the issue page (design 3.2, section 4,
+// decision 142): the wants (the opinion check pick list) and the conflicts,
+// with the stakeholder filter and the 「只看有資料根據」 filter. Both tabs use
+// the same view, so a want lists only the conflicts the 衝突 tab shows. The lists keep the order of the file.
 // Nothing here sorts by a count.
 import type { IssueFile } from '@/types'
 import { dataBasedPickList } from './dataBasis'
@@ -17,7 +18,7 @@ export interface WantsTabView {
   conflicts: ConflictView[]
 }
 
-/** What the 訴求 tab shows.
+/** What the 訴求 tab (wants) and the 衝突 tab (conflicts) show.
  * - stakeholder: only the wants with a story of this stakeholder, and only
  *   the conflicts with a story of this stakeholder on either side. null: all.
  * - dataBasedOnly: only the wants with at least one story that has a

@@ -80,16 +80,16 @@ describe('summaryRefTo', () => {
     expect(summaryRefTo('I05', 2, trashcans, true)).toEqual({ pathname: '/stakeholders/I05', search: '' })
   })
 
-  it('links a conflict to the 訴求 tab with ?focus= and a solution to its page, keeping the filter', () => {
-    expect(summaryRefTo('C9', 2, trashcans, false)).toEqual({ pathname: '/issues/2/wants', search: '?focus=C9' })
-    expect(summaryRefTo('C9', 2, trashcans, true)).toEqual({ pathname: '/issues/2/wants', search: '?focus=C9&evidence=1' })
+  it('links a conflict to the 衝突 tab with ?focus= (decision 142) and a solution to its page, keeping the filter', () => {
+    expect(summaryRefTo('C9', 2, trashcans, false)).toEqual({ pathname: '/issues/2/conflicts', search: '?focus=C9' })
+    expect(summaryRefTo('C9', 2, trashcans, true)).toEqual({ pathname: '/issues/2/conflicts', search: '?focus=C9&evidence=1' })
     expect(summaryRefTo('解法 E', 2, trashcans, false)).toEqual({ pathname: '/solutions/2-E', search: '' })
     expect(summaryRefTo('解法 E', 2, trashcans, true)).toEqual({ pathname: '/solutions/2-E', search: '?evidence=1' })
   })
 
   it('links a reference to another issue into that issue', () => {
     expect(summaryRefTo('#8 解法 B', 2, trashcans, false)).toEqual({ pathname: '/solutions/8-B', search: '' })
-    expect(summaryRefTo('#1 C7', 2, trashcans, false)).toEqual({ pathname: '/issues/1/wants', search: '?focus=C7' })
+    expect(summaryRefTo('#1 C7', 2, trashcans, false)).toEqual({ pathname: '/issues/1/conflicts', search: '?focus=C7' })
     expect(summaryRefTo('#1 I06-US02', 2, trashcans, false)).toEqual({
       pathname: '/stakeholders/I06/stories/1/I06-US02',
       search: '',

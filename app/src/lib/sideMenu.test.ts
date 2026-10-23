@@ -199,8 +199,8 @@ describe('groupKeysAbove', () => {
 })
 
 describe('sideMenuCounts', () => {
-  it('has only the three issue page contexts (decisions 87 and 94)', () => {
-    expect(SIDE_MENU_CONTEXTS).toEqual(['issue-wants', 'issue-needs', 'issue-solutions'])
+  it('has only the four issue page contexts (decisions 87, 94 and 142)', () => {
+    expect(SIDE_MENU_CONTEXTS).toEqual(['issue-wants', 'issue-needs', 'issue-conflicts', 'issue-solutions'])
   })
 
   it('gives one count per ID, for every ID', () => {
@@ -209,11 +209,22 @@ describe('sideMenuCounts', () => {
     expect(counts.get('I99')).toBe(0)
   })
 
-  it('I06 on #2: wants W08 and W11, needs N07 and N08, solutions A and C', () => {
+  it('I06 on #2: wants W08 and W11, needs N07 and N08, conflict C6, solutions A and C', () => {
     const of = (c: (typeof SIDE_MENU_CONTEXTS)[number]) => sideMenuCounts(c, [trashcans], ['I06'], false).get('I06')
     expect(of('issue-wants')).toBe(2)
     expect(of('issue-needs')).toBe(2)
+    expect(of('issue-conflicts')).toBe(1)
     expect(of('issue-solutions')).toBe(2)
+  })
+
+  it('the 衝突 count equals the conflicts the 衝突 tab shows (decision 142)', () => {
+    for (const issue of issues) {
+      const ids = issue.stakeholders.map((s) => s.id)
+      const counts = sideMenuCounts('issue-conflicts', [issue], ids, false)
+      for (const id of ids) {
+        expect(counts.get(id), `#${issue.number} ${id}`).toBe(wantsTabView(issue, id, false).conflicts.length)
+      }
+    }
   })
 
   // Decision 74: with 只看有資料根據 on, a solution counts for a stakeholder

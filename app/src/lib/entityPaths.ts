@@ -1,5 +1,5 @@
-// URL paths of the entity pages: stakeholder, story and solution
-// (design 3.3, 3.12, 3.15, 3.16, 3.19). Wants and needs have no page of
+// URL paths of the entity pages: stakeholder, story, solution and space
+// (design 3.3, 3.6, 3.12, 3.15, 3.16, 3.19). Wants and needs have no page of
 // their own (decision 45). A link to one goes to the issue tab with ?focus=.
 import { withDataBasisFilter } from './dataBasis'
 import { FOCUS_PARAM } from './focus'
@@ -136,4 +136,23 @@ export function parseSolutionSlug(segment: string | undefined): SolutionSlug | n
   const m = /^([1-9]\d*)-([A-Z])$/.exec(segment)
   if (!m) return null
   return { kind: 'issue', issueNumber: Number(m[1]), code: m[2] }
+}
+
+/** The tabs of the space page, in display order. The first one is the
+ * default (design 3.6, decision 129). */
+export const SPACE_TABS = ['overview', 'issues', 'solutions', 'stakeholders'] as const
+
+export type SpaceTab = (typeof SPACE_TABS)[number]
+
+/** The space tab of the URL segment. No segment is the overview, so an old
+ * link to "/spaces/sidewalk" opens the first tab. An unknown name returns null. */
+export function parseSpaceTab(segment: string | undefined): SpaceTab | null {
+  if (segment === undefined) return 'overview'
+  return (SPACE_TABS as readonly string[]).includes(segment) ? (segment as SpaceTab) : null
+}
+
+/** The URL path of a space tab, for example "/spaces/sidewalk/solutions".
+ * The overview has no tab segment: "/spaces/sidewalk". */
+export function spaceTabPath(code: string, tab: SpaceTab): string {
+  return withTab(`/spaces/${code}`, tab)
 }

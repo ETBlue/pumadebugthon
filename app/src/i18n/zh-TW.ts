@@ -651,6 +651,22 @@ export const t = {
     /** The issues of a stakeholder in 「在多個議題都出現的利害關係人」. */
     sharedIssues: '出現的議題',
     byIssueHeading: '各議題的利害關係人',
+    /** The tabs (design 3.6, decision 129). The names are also for the page title. */
+    tabsLabel: '空間內容',
+    tabs: {
+      overview: '總覽',
+      issues: '議題',
+      solutions: '解法',
+      stakeholders: '利害關係人',
+    },
+    /** The tab labels with the counts: the same numbers as the card on #/spaces. */
+    tabLabels: {
+      issues: (n: number): TabLabel => ({ main: `議題 ${n}` }),
+      solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
+      stakeholders: (n: number): TabLabel => ({ main: `利害關係人 ${n}` }),
+    },
+    tabNotFound: '找不到這個分頁。',
+    goToOverview: '回到總覽',
   },
   /** #/spaces (design 3.9, decision 120). */
   spacesList: {

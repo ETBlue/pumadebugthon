@@ -7,9 +7,12 @@ import {
   needFocusPath,
   parseSolutionSlug,
   parseSolutionTab,
+  parseSpaceTab,
   parseStakeholderTab,
   SOLUTION_TABS,
   solutionPath,
+  SPACE_TABS,
+  spaceTabPath,
   STAKEHOLDER_TABS,
   stakeholderTabPath,
   storyPath,
@@ -162,5 +165,22 @@ describe('keyStoryPath', () => {
 
   it('is null for a group key or anything else', () => {
     for (const key of ['W08', 'N07', 'C1', 'X-N01', 'I01', 'i01-us09', 'I01-US', '']) expect(keyStoryPath(2, key)).toBeNull()
+  })
+})
+
+describe('parseSpaceTab and spaceTabPath (decision 129)', () => {
+  it('no tab is the overview, so an old space link opens the first tab', () => {
+    expect(SPACE_TABS).toEqual(['overview', 'issues', 'solutions', 'stakeholders'])
+    expect(parseSpaceTab(undefined)).toBe('overview')
+    for (const tab of SPACE_TABS) expect(parseSpaceTab(tab)).toBe(tab)
+  })
+
+  it('returns null for an unknown tab', () => {
+    for (const s of ['wants', '', 'Issues', 'people']) expect(parseSpaceTab(s)).toBeNull()
+  })
+
+  it('the overview has no tab segment', () => {
+    expect(spaceTabPath('sidewalk', 'overview')).toBe('/spaces/sidewalk')
+    expect(spaceTabPath('sidewalk', 'solutions')).toBe('/spaces/sidewalk/solutions')
   })
 })

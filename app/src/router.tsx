@@ -48,7 +48,7 @@ export const router = createHashRouter([
       // 2-A: a solution of an issue. X-A: a cross-issue solution (Task N11).
       { path: 'solutions/:slug/:tab?', element: <Solution />, handle: { fullWidth: true } },
       { path: 'spaces', element: <Spaces />, handle: { fullWidth: true } },
-      { path: 'spaces/:code', element: <Space />, handle: { fullWidth: true } },
+      { path: 'spaces/:code/:tab?', element: <Space />, handle: { fullWidth: true } },
       { path: 'about', element: <About /> },
       // Unknown pages, also the removed #/wants and #/needs (design 3.7).
       { path: '*', element: <Placeholder /> },

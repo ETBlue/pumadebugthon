@@ -19,7 +19,7 @@
 
 分析結果成為結構化資料之後，也可以由市府當成開放資料釋出。公民科技社群與企業的研究或產品規劃，如果遇到相似的利害關係人或關注，可以參考這些資料。例如叫車或計程車派遣服務，可以參考人行道周邊的利害關係人，向乘客建議比較合適的上車地點。
 
-目前有這些議題的分析：#1 把三千棵樹種回來、#2 找回消失的垃圾桶、#3 鼠患四處跑，衛生安全怎麼辦、#4 內湖尖峰車流好比停車場、#5 公車路網如何即時反應需求、#6 危老耐震如何查，風險評級怎麼找、#8 無菸城市、#9 將產品探索技巧運用到政策前期研究、#10 噪音（#8、#9、#10 是非主辦單位題目，由參加者補充）。另外有一份跨議題分析，比較以上所有議題，合併的解法也有自己的頁面。
+目前有這些議題的分析：#1 把三千棵樹種回來、#2 找回消失的垃圾桶、#3 鼠患四處跑，衛生安全怎麼辦、#4 內湖尖峰車流好比停車場、#5 公車路網如何即時反應需求、#6 危老耐震如何查，風險評級怎麼找、#8 無菸城市、#9 將產品探索技巧運用到政策前期研究、#10 噪音、#11 大型廢棄物清運（#8、#9、#10、#11 是非主辦單位題目，由參加者補充）。另外有一份跨議題分析，比較 #1–#10，合併的解法也有自己的頁面。#11 還沒有加入跨議題分析。
 
 ## 2. 功能
 
@@ -71,7 +71,7 @@
 | #1 | [土壤液化潛勢圖（data.gov.tw 28708）](https://data.gov.tw/dataset/28708) | 經濟部地質調查及礦業管理中心 |
 | #1 | [臺北市土壤液化分析鑽井圖層資料（data.gov.tw 128222）](https://data.gov.tw/dataset/128222) | 工務局 |
 | #2 | [臺北市行人專用清潔箱（data.gov.tw 121355）](https://data.gov.tw/dataset/121355) | 環境保護局 |
-| #2、#3、#4、#5、#6、#8、#10 | [臺北市陳情系統類別資料](https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf) | 研究發展考核委員會 |
+| #2、#3、#4、#5、#6、#8、#10、#11 | [臺北市陳情系統類別資料](https://data.taipei/dataset/detail?id=cb423c17-88eb-4231-a725-f1b93247d1bf) | 研究發展考核委員會 |
 | #2、#4 | [臺北捷運各站分時進出量](https://data.taipei/dataset/detail?id=63f31c7e-7fc3-418b-bd82-b95158755b4d) | 臺北大眾捷運股份有限公司 |
 | #2、#3、#4、#5 | [臺北市降雨積水模擬圖（112年更新版）（data.gov.tw 121550）](https://data.gov.tw/dataset/121550) | 工務局水利工程處 |
 | #3 | [臺北市食品業者登錄數](https://data.taipei/dataset/detail?id=9431f450-57d6-4c23-aca6-0ff50de49f0d) | 衛生局 |
@@ -89,13 +89,14 @@
 | #6 | [臺北市政府消防局消防通道清冊](https://data.taipei/dataset/detail?id=7a800e92-eb22-461f-b29d-8def2127a1bc) | 消防局 |
 | #8 | [臺北市指定吸菸區（data.gov.tw 177504）](https://data.gov.tw/dataset/177504) | 衛生局 |
 | #8 | [臺北市火災起火原因及損失情形（data.gov.tw 133055）](https://data.gov.tw/dataset/133055) | 主計處 |
-| #10 | [臺北市政府1999派工資料](https://data.taipei/dataset/detail?id=b796f87a-0ed8-4e57-89f6-225a4941b1ed) | 研究發展考核委員會 |
+| #10、#11 | [臺北市政府1999派工資料](https://data.taipei/dataset/detail?id=b796f87a-0ed8-4e57-89f6-225a4941b1ed) | 研究發展考核委員會 |
+| #11 | [臺北市巨大廢棄物清運](https://data.taipei/dataset/detail?id=d47fe546-e26e-4079-9eca-73c2d45a8575) | 環境保護局 |
 
 完整的清單（含提供機關與授權）在 [`analysis/data/open-data.csv`](../analysis/data/open-data.csv)。
 
 #1 的部分解法參考了新加坡的做法。出處是新加坡政府的網頁與新聞報導，列在 #1 附錄（其他議題參考的城市與國家，也列在各議題的附錄）；新聞的內容標記 `[AI整理]`，需要真人查證。這些解法本身仍是 `[AI模擬]`。
 
-完整的資料說明：[#1 附錄](../analysis/1-trees/issue-analysis.md#附錄資料來源與計算方式)、[#2 附錄](../analysis/2-trashcans/issue-analysis.md#附錄資料來源與計算方式)、[#3 附錄](../analysis/3-mice/issue-analysis.md#附錄資料來源與計算方式)、[#4 附錄](../analysis/4-neihutraffic/issue-analysis.md#附錄資料來源與計算方式)、[#5 附錄](../analysis/5-busroutes/issue-analysis.md#附錄資料來源與計算方式)、[#6 附錄](../analysis/6-oldbuildings/issue-analysis.md#附錄資料來源與計算方式)、[#8 附錄](../analysis/8-smokefree/issue-analysis.md#附錄資料來源與計算方式)、[#9 附錄](../analysis/9-policydiscovery/issue-analysis.md#附錄資料來源)、[#10 附錄](../analysis/10-noise/issue-analysis.md#附錄資料來源與計算方式)。#9 沒有使用開放資料集的數字。
+完整的資料說明：[#1 附錄](../analysis/1-trees/issue-analysis.md#附錄資料來源與計算方式)、[#2 附錄](../analysis/2-trashcans/issue-analysis.md#附錄資料來源與計算方式)、[#3 附錄](../analysis/3-mice/issue-analysis.md#附錄資料來源與計算方式)、[#4 附錄](../analysis/4-neihutraffic/issue-analysis.md#附錄資料來源與計算方式)、[#5 附錄](../analysis/5-busroutes/issue-analysis.md#附錄資料來源與計算方式)、[#6 附錄](../analysis/6-oldbuildings/issue-analysis.md#附錄資料來源與計算方式)、[#8 附錄](../analysis/8-smokefree/issue-analysis.md#附錄資料來源與計算方式)、[#9 附錄](../analysis/9-policydiscovery/issue-analysis.md#附錄資料來源)、[#10 附錄](../analysis/10-noise/issue-analysis.md#附錄資料來源與計算方式)、[#11 附錄](../analysis/11-bulkywaste/issue-analysis.md#附錄資料來源與計算方式)。#9 沒有使用開放資料集的數字。
 
 **「市長，你給我聽好了」資料只用來整理件數和改寫的摘要（標記 `[AI整理]`），不引用原始留言，原始檔案不公開，也不辨認任何個人。依活動規則，該資料僅限於此黑客松活動使用。**
 

@@ -85,13 +85,15 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertIn("NOTE: issue #9", out)
         self.assertIn("O07", out)
 
-    def test_real_file_compares_all_issues_without_notes(self):
+    def test_real_file_compares_all_issues_but_11(self):
         # ETBlue added #9 on 2026-10-20, #3, #4, #5 and #6 on 2026-10-23 and #10 on
-        # 2026-10-24. Every issue with an analysis is compared, so the check prints no note.
+        # 2026-10-24, so they get no note. #11 (added 2026-10-24) shares stakeholders
+        # but is not compared yet, so it gets a note; the owner decides whether to add it.
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
         self.assertIn("issues: [1, 2, 3, 4, 5, 6, 8, 9, 10]", out)
-        self.assertNotIn("NOTE:", out)
+        self.assertIn("NOTE: issue #11", out)
+        self.assertEqual(out.count("NOTE:"), 1, out)
 
     # ---------- tags and 待補 ----------
 

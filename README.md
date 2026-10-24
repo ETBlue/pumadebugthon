@@ -33,7 +33,7 @@
 
 ## 議題清單
 
-#1–#6 是主辦單位的題目。#8、#9、#10 是本專案自行新增的議題。題目名稱來自 [`analysis/data/issues.csv`](analysis/data/issues.csv)。
+#1–#6 是主辦單位的題目。#8、#9、#10、#11 是本專案自行新增的議題。題目名稱來自 [`analysis/data/issues.csv`](analysis/data/issues.csv)。
 
 | 編號 | 題目 | 來源 | 議題分析 | 網站 |
 |---|---|---|---|---|
@@ -46,8 +46,9 @@
 | #8 | 無菸城市 | 自行新增 | [議題分析](analysis/8-smokefree/issue-analysis.md) | [議題頁](https://etblue.github.io/pumadebugthon/#/issues/8) |
 | #9 | 將產品探索技巧運用到政策前期研究 | 自行新增 | [議題分析](analysis/9-policydiscovery/issue-analysis.md) | [議題頁](https://etblue.github.io/pumadebugthon/#/issues/9) |
 | #10 | 噪音 | 自行新增 | [議題分析](analysis/10-noise/issue-analysis.md) | [議題頁](https://etblue.github.io/pumadebugthon/#/issues/10) |
+| #11 | 大型廢棄物清運 | 自行新增 | [議題分析](analysis/11-bulkywaste/issue-analysis.md) | [議題頁](https://etblue.github.io/pumadebugthon/#/issues/11) |
 
-**跨議題分析：** [`analysis/cross-issue/cross-issue-analysis.md`](analysis/cross-issue/cross-issue-analysis.md) 比較 #1、#2、#3、#4、#5、#6、#8、#9、#10。它列出共用的利害關係人、跨議題的共同需求與衝突，以及合併的解法。合併的解法在網站上也有自己的頁面，例如 [`#/solutions/X-A`](https://etblue.github.io/pumadebugthon/#/solutions/X-A)。
+**跨議題分析：** [`analysis/cross-issue/cross-issue-analysis.md`](analysis/cross-issue/cross-issue-analysis.md) 比較 #1、#2、#3、#4、#5、#6、#8、#9、#10（#11 還沒有加入）。它列出共用的利害關係人、跨議題的共同需求與衝突，以及合併的解法。合併的解法在網站上也有自己的頁面，例如 [`#/solutions/X-A`](https://etblue.github.io/pumadebugthon/#/solutions/X-A)。
 
 ## 再利用資料
 

@@ -303,13 +303,30 @@ function policyWithEvidenceRow(): IssueFile {
   }
 }
 
+describe('the 「只看有資料根據」 hint is not visible text on a tab (decision 146)', () => {
+  it('has the hint only as the title and an sr-only text, not as visible text', () => {
+    const html = render('/issues/2/decisions')
+    const hint = '顯示標記 [實證] 或 [AI整理] 的內容。'
+    expect(html).toContain(`title="${hint}"`)
+    // Every copy of the hint is the title or the sr-only text.
+    const all = html.split(hint).length - 1
+    const title = html.split(`title="${hint}"`).length - 1
+    const srOnly = html.split(`class="sr-only">${hint}`).length - 1
+    expect(all).toBe(title + srOnly)
+    expect(srOnly).toBeGreaterThan(0)
+    // aria-describedby points to the sr-only text.
+    const id = html.match(/aria-describedby="([^"]+)"[^>]*title="顯示標記/)?.[1]
+    expect(id).toBeTruthy()
+    expect(html).toContain(`<span id="${id}" class="sr-only">${hint}</span>`)
+  })
+})
+
 describe('「只看有資料根據」 on the 難以取捨 tab (decision 108)', () => {
   afterEach(() => { state.override = {} })
 
-  it('has the toggle above the rows, with the same label and hint, off by default', () => {
+  it('has the toggle above the rows, with the same label, off by default', () => {
     const html = render('/issues/2/decisions')
     expect(html).toContain('只看有資料根據')
-    expect(html).toContain('顯示標記 [實證] 或 [AI整理] 的內容。')
     expect(html).toMatch(/aria-pressed="false"/)
     expect(html.indexOf('只看有資料根據')).toBeLessThan(html.indexOf('<ul aria-label='))
     expect(html).not.toContain('清除篩選')

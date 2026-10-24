@@ -138,6 +138,9 @@ export default function About() {
               </div>
             ))}
           </dl>
+          {/* What the 「只看有資料根據」 toggle does. It is shown here once,
+              not next to the toggle on every tab (decision 146). */}
+          <p className="mt-3">{`「${t.dataBasisFilter.label}」只${t.dataBasisFilter.hint}`}</p>
         </Part>
 
         <Part id="about-data" title={ta.dataHeading}>

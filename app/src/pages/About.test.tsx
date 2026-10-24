@@ -46,6 +46,12 @@ describe('the 資料根據 part of #/about', () => {
     for (const text of Object.values(t.overview.legend)) expect(basis).toContain(text)
   })
 
+  it('says once what the 「只看有資料根據」 toggle does (decision 146)', () => {
+    const text = '「只看有資料根據」只顯示標記 [實證] 或 [AI整理] 的內容。'
+    expect(basis).toContain(text)
+    expect(html.split(text).length - 1).toBe(1)
+  })
+
   it('has no links inside', () => {
     expect(basis).not.toContain('<a ')
   })

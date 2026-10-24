@@ -38,33 +38,33 @@ I would like to patch hackathon issues with feature analysis skills I'm using in
 * then evaluate solutions
 
 ## steps to analyze the issues
-step 1 gather possible stakeholders
+### step 1 gather possible stakeholders
 * list all possible stakeholders for each issue
 * the stakeholder list should consider but not limited to the following: people from organizations (industry, government, academic, non-profit) and individuals (residents, elderly, people with disabilities, parents with strollers, night-shift workers, tourists, foreigners living in Taiwan... etc.)
 * the stakeholder definition should be as specific as possible
 * list possible input sources for each stakeholder, e.g. "市長，你給我聽好了" messages, "[台北市陳情系統 1999](https://1999.gov.taipei)" for people who know how to use 1999 and who complain often, citizen-made report tools, foreign resident groups and community pages, 里長 and 里辦公處, a short survey, or watching the place in person... etc.
 * "主辦方／政策組" should be excluded from stakeholders, as their inputs represent various stakeholders participated in the "市長，你給我聽好了" event
-step 2 gather raw ideas and real user needs from stakeholders
+### step 2 gather raw ideas and real user needs from stakeholders
 * collect user stories for each stakeholder with "as a... (stakeholder), I want to... (what the stakeholder thinks the solution should be), so that I can... (the real world benefit the stakeholder can get by implementing the solution)" format, presented in a table. caution: it's very easy for human to misplace "I want to (wants)" and "so that I can (needs)". if the original input put "wants" in "so that I can" or vice versa, rewrite the content into the right format and mark as [AI整理]
 * the content in the issue text becomes a story under the stakeholder it most likely speaks for. tag it [實證] with the source "題目原文"
 * when an "I want to" belongs to multiple stakeholders, file user story under all stakeholders to make sure the solution-stakeholder mapping stays alive when people need to trace the decision making process in the future
 * each user story keeps the stakeholder's own "so that I can"
-step 3 discover real user needs and gather more stakeholders
+### step 3 discover real user needs and gather more stakeholders
 * take the "I want to" part as a possible solution, and the "so that I can" part as the starting point of digging in real user needs
 * discuss and explore the "so that I can" part with the stakeholder. if new stakeholders pop up during the exploration, add them to the stakeholder list and collect user stories from them too
-step 4 finalize user stories
+### step 4 finalize user stories
 * add the extended user stories gathered during the exploration to the table, and give every user story a number, grouped by stakeholder. e.g. O03-US02 (organization stakeholder 3, user story 2) or I01-US04 (individual stakeholder 1, user story 4)
 * a stakeholder found in step 3 gets the next free number in its own group
-step 5 clarify priority by evaluating the importance of user needs
+### step 5 clarify priority by evaluating the importance of user needs
 * prioritize the user needs by discussing with stakeholders about their needs
 * when there are multiple stakeholders asking for the same user need ("so that I can"), consider all of them for priority arrangement and group them into a shared user need
 * do not use quantitative methods like scores, weights, ranks, or formulas when prioritizing qualitative inputs
-step 6 brainstorm solutions based on raw ideas and prioritized user needs
+### step 6 brainstorm solutions based on raw ideas and prioritized user needs
 * brainstorm solutions that can fulfill as many prioritized user needs as possible. take stakeholders' raw ideas (user wants) as a starting point, and search on the internet to see if other cities or countries have innovative approaches that we can borrow. when mentioning solutions from other countries, always mention country name. exclude countries under totalitarian regimes like China, Iran, North Korea, as their information is not transparent and may be fake on purpose. Hong Kong before July 1st 1997 is counted as Hong Kong itself, while after July 1st 1997 counted as China
 * when there are conflicts between user wants from different stakeholders, find a way to resolve the conflicts by forging a solution based on user needs and bypass the disagreed user wants (aka raw ideas of the solution). if the disagreement can't be resolved, introduce deliberative democracy methods to grow consensus. the appropriate deliberative democracy methods may vary, depends on the nature of the issue. in real world city governance, the team needs to consult professionals
 * each solution should include the user needs it maps to and the methods for success measure. for each measure, add the current value (baseline) and the data source
 * ideas from 沈伯洋 go straight into this step, with the source cited
-step 7 evaluate solutions
+### step 7 evaluate solutions
 * for each solution, calculate
   * related laws
   * privacy issues

@@ -3,7 +3,6 @@ import { Link, useParams, useSearchParams } from 'react-router'
 import { BasisField } from '@/components/BasisField'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { DateFields } from '@/components/DateFields'
-import { IssueCardGrid } from '@/components/IssueCardGrid'
 import { Field } from '@/components/Field'
 import { FilterStatus } from '@/components/FilterStatus'
 import { LoadState } from '@/components/LoadState'
@@ -13,7 +12,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { ConflictsTab } from '@/components/stakeholder/ConflictsTab'
 import type { StakeholderTabProps } from '@/components/stakeholder/IssueSection'
 import { NeedsTab } from '@/components/stakeholder/NeedsTab'
-import { OverviewTab } from '@/components/stakeholder/OverviewTab'
+import { IssuesTab } from '@/components/stakeholder/IssuesTab'
 import { SolutionsTab } from '@/components/stakeholder/SolutionsTab'
 import { WantsTab } from '@/components/stakeholder/WantsTab'
 import { linkClass } from '@/components/styles'
@@ -22,7 +21,6 @@ import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { parseStakeholderTab, STAKEHOLDER_TABS, stakeholderTabPath, type StakeholderTab } from '@/lib/entityPaths'
 import { backListPath } from '@/lib/backLink'
-import { tabPath } from '@/lib/issuePage'
 import { stakeholderCells } from '@/lib/coverage'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
@@ -82,9 +80,9 @@ export default function Stakeholder() {
   return <StakeholderContent key={id} index={index.data} stakeholder={stakeholder} />
 }
 
-/** The tabs that need the issue files. 議題 needs only index.json. */
-const TAB_CONTENT: Record<Exclude<StakeholderTab, 'issues'>, ComponentType<StakeholderTabProps>> = {
-  overview: OverviewTab,
+/** The tabs that show only issue file content. 總覽 has only the metadata,
+ * and 議題 shows its cards before the issue files load (decision 147). */
+const TAB_CONTENT: Record<Exclude<StakeholderTab, 'overview' | 'issues'>, ComponentType<StakeholderTabProps>> = {
   wants: WantsTab,
   needs: NeedsTab,
   conflicts: ConflictsTab,
@@ -175,10 +173,21 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
 
   const body = (name: StakeholderTab) => {
     if (shown.length === 0) return <p>{tp.noIssues}</p>
-    // 議題 (decision 145): the issue cards of the space page's 議題 tab. No
-    // filter row: the 「只看有資料根據」 toggle does not change these cards.
-    if (name === 'issues') return <IssueCardGrid index={index} issues={shown} />
+    // 議題 (decisions 145 and 147): one section per issue with its card,
+    // then its parts. The cards need only index.json, so they show while the
+    // issue files load. The filter row is for the stories.
+    if (name === 'issues') {
+      return (
+        <>
+          <FilterRow />
+          <IssuesTab index={index} shown={shown} issues={issues.status === 'ready' ? issues.data : null} id={s.id} />
+          {issues.status !== 'ready' && <div className="mt-6"><LoadState state={issues} /></div>}
+        </>
+      )
+    }
     if (issues.status !== 'ready') return <LoadState state={issues} />
+    // 總覽 has only the metadata since decision 147.
+    if (name === 'overview') return null
     const Content = TAB_CONTENT[name]
     return (
       <>
@@ -225,9 +234,10 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
   )
 }
 
-/** The metadata at the top of 總覽 (decisions 111 and 118): the ID,
- * 分類路徑, 特別關注, the issues the stakeholder is in (links), 資料根據
- * over every analyzed issue, 新增日期 and 更新日期. 分類路徑, 資料根據 and
+/** The metadata at 總覽 (decisions 111, 118 and 147): the ID, 分類路徑,
+ * 特別關注, 資料根據 over every analyzed issue, 新增日期 and 更新日期. The
+ * issue links are not here since decision 147: the 議題 tab lists the
+ * issues. 分類路徑, 資料根據 and
  * the dates look the same as on the card of #/stakeholders. cells is null
  * while the issue files load: then BasisField keeps an invisible row. A
  * stakeholder with no shown issue has no 資料根據 row. */
@@ -249,21 +259,6 @@ function StakeholderMeta({ index, stakeholder: s, shown, cells }: {
           </ul>
         </Field>
       )}
-      <Field label={tp.issues}>
-        {shown.length === 0 ? (
-          tp.noIssues
-        ) : (
-          <ul className="flex flex-wrap gap-x-3 gap-y-1">
-            {shown.map((i) => (
-              <li key={i.number}>
-                <Link to={tabPath(i.number, 'overview')} className={linkClass}>
-                  {t.issueCard.numberTitle(i.number, i.title)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Field>
       {shown.length > 0 && <BasisField cells={cells} label={tl.basis} />}
       <DateFields added={s.added} updated={s.updated} />
     </dl>

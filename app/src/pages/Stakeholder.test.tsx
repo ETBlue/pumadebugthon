@@ -1,6 +1,6 @@
-// The stakeholder page. (1) The metadata at the top of 總覽 (decisions 111
-// and 118): 分類路徑, 資料根據 and the dates are the same as on the card of
-// #/stakeholders. (2) The 解法 tab (design 3.3, decision 119): the tab label
+// The stakeholder page. (1) The metadata of 總覽 (decisions 111, 118 and
+// 147): 分類路徑, 資料根據 and the dates are the same as on the card of
+// #/stakeholders. 總覽 has nothing else since decision 147. (2) The 解法 tab (design 3.3, decision 119): the tab label
 // and the tree view of #/stakeholders count the same solutions
 // (stakeholderSolutionCount), and the tab lists every counted solution: the
 // issue solutions per issue, then 「跨議題解法」. The data hooks and the page
@@ -342,8 +342,8 @@ describe('the card grids of the stakeholder tabs (decision 139)', () => {
     state.override = {}
   })
 
-  it('總覽: the stories of each issue are a grid, with cards of equal height', () => {
-    const html = renderPage('/stakeholders/I06')
+  it('議題: the stories of each issue are a grid, with cards of equal height', () => {
+    const html = renderPage('/stakeholders/I06/issues')
     expect(grids(html)).toBeGreaterThanOrEqual(3)
     // StoryCard gets h-full, so the cards in one row have the same height.
     expect(html).toContain('<article class="rounded-md border text-sm p-4 h-full">')
@@ -425,19 +425,26 @@ describe('the 議題 tab of the stakeholder page (decision 145)', () => {
     state.override = {}
   })
 
-  /** The issue numbers of the issue cards, in order. */
+  /** The issue numbers of the compact issue cards, in order. */
   const cardIssues = (html: string) =>
-    [...html.matchAll(/<article[\s\S]*?href="\/issues\/(\d+)"/g)].map((m) => Number(m[1]))
+    [...html.matchAll(/<article class="h-full rounded-md border p-3"><p class="font-medium"><a[^>]*href="\/issues\/(\d+)"/g)]
+      .map((m) => Number(m[1]))
 
   it('comes right after 總覽, with the number of issues', () => {
     // I05 is in #1, #2, #8 and #9 of the fixtures.
     expect(tabNames(renderPage('/stakeholders/I05')).slice(0, 2)).toEqual(['總覽', '議題 4'])
   })
 
-  it('lists the issues of I05 as compact issue cards in the 2-column grid', () => {
+  it('lists the issues of I05 as compact issue cards, one section per issue (decision 147)', () => {
     const html = renderPage('/stakeholders/I05/issues')
     expect(cardIssues(html)).toEqual([1, 2, 8, 9])
-    expect(html).toMatch(/<ul class="grid gap-4 lg:grid-cols-2">/)
+    // Each card is the first thing in its own section, before its parts.
+    for (const n of [1, 2, 8, 9]) {
+      const section = html.split(`id="stakeholder-issues-${n}"`)[1]
+      const card = section.indexOf('<article class="h-full rounded-md border p-3">')
+      expect(card).toBeGreaterThan(-1)
+      expect(card).toBeLessThan(section.indexOf(`id="stakeholder-issues-${n}-relation"`))
+    }
     // The same count as the tab label.
     expect(tabNames(html)[1]).toBe(`議題 ${cardIssues(html).length}`)
   })
@@ -453,5 +460,68 @@ describe('the 議題 tab of the stakeholder page (decision 145)', () => {
     const html = renderPage('/stakeholders/I05/issues')
     expect(cardIssues(html)).toEqual([1, 2, 8, 9])
     expect(tabNames(html)).toEqual(['總覽', '議題 4', '訴求', '需求', '衝突', '解法'])
+    // The parts come when the issue files are ready.
+    expect(html).not.toContain(`>${t.stakeholderPage.relation}</h3>`)
+  })
+})
+
+describe('the issue parts moved from 總覽 to 議題 (decision 147)', () => {
+  beforeEach(() => {
+    state.loading = false
+    state.cross = 'none'
+    state.crossFile = null
+    state.override = {}
+  })
+
+  const tp = t.stakeholderPage
+  const PARTS = ['relation', 'counts', 'sources', 'stories'] as const
+  const STORY_CARD = /<article class="rounded-md border text-sm p-4 h-full">/g
+  const storyCards = (html: string) => (html.match(STORY_CARD) ?? []).length
+
+  it('總覽 has no 與本題的關係, priority counts, input sources or stories', () => {
+    const html = renderPage('/stakeholders/I05')
+    for (const title of [tp.relation, tp.priorityCounts, tp.inputSources, tp.stories]) {
+      expect(html).not.toContain(`>${title}</h3>`)
+    }
+    expect(storyCards(html)).toBe(0)
+    expect(html).not.toContain('id="stakeholder-overview-')
+    // No issue links in the metadata: the 議題 tab lists the issues.
+    expect(html).not.toContain('>出現的議題</dt>')
+    expect(html).not.toMatch(/href="\/issues\/\d+"/)
+    // The metadata stays.
+    expect(html).toContain(`>${t.stakeholdersList.basis}</dt>`)
+    expect(html).toContain(`>${tp.path}</dt>`)
+  })
+
+  it('議題 has every part for each issue of I05 (#1, #2, #8, #9), in issue order', () => {
+    const html = renderPage('/stakeholders/I05/issues')
+    let last = -1
+    for (const n of [1, 2, 8, 9]) {
+      for (const part of PARTS) {
+        const at = html.indexOf(`id="stakeholder-issues-${n}-${part}"`)
+        expect(at).toBeGreaterThan(last)
+        last = at
+      }
+    }
+    expect(html).not.toContain('id="stakeholder-overview-')
+    // The legend of the priority counts shows once per page.
+    expect(html.split(t.priorityCounts.legend).length - 1).toBe(1)
+  })
+
+  it('議題 lists the stories of each issue under that issue', () => {
+    const html = renderPage('/stakeholders/I05/issues')
+    for (const n of [1, 2, 8, 9]) {
+      const stories = html.split(`id="stakeholder-issues-${n}-stories"`)[1].split('id="stakeholder-issues-')[0]
+      expect(stories).toContain(`href="/stakeholders/I05/stories/${n}/I05-US`)
+      expect(stories).not.toMatch(new RegExp(`href="/stakeholders/I05/stories/(?!${n}/)`))
+    }
+  })
+
+  it('議題 has the 「只看有資料根據」 toggle, and it hides the stories with no data basis', () => {
+    const all = renderPage('/stakeholders/I05/issues')
+    const based = renderPage('/stakeholders/I05/issues?evidence=1')
+    expect(all).toContain(t.dataBasisFilter.label)
+    expect(storyCards(all)).toBeGreaterThan(0)
+    expect(storyCards(based)).toBeLessThan(storyCards(all))
   })
 })

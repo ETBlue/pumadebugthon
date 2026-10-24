@@ -159,7 +159,7 @@ function SpaceOverview({ space }: { space: SpaceType }) {
 
 /** The 議題 tab: the issues that use the space, as compact cards in the
  * card grid of the tabs (cardGridClass, decision 138). The stakeholder page
- * uses the same IssueCardGrid (decision 145). */
+ * used the same IssueCardGrid from decision 145 until decision 147. */
 function IssuesTab({ index, summaries }: { index: IndexFile; summaries: AvailableIssueSummary[] }) {
   if (summaries.length === 0) return <p>{tp.issuesNone}</p>
   return <IssueCardGrid index={index} issues={summaries} />

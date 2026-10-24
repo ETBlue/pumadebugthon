@@ -247,7 +247,7 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
                       issueLine={
                         <>
                           {tx.issueLine}
-                          <CrossIssueLinks solution={sol} />
+                          <CrossIssueLinks solution={sol} titles={index.issues} />
                         </>
                       }
                     />

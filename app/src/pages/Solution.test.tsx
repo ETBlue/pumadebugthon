@@ -11,6 +11,7 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { t } from '@/i18n/zh-TW'
+import { crossIssueNumbers } from '@/lib/crossIssue'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import Solution from './Solution'
 
@@ -208,6 +209,17 @@ describe('the dates in the metadata of 總覽 (decision 131)', () => {
     const html = render('/solutions/X-A')
     expect(html).toContain(field(t.dates.added, sol.added))
     expect(html).toContain(field(t.dates.updated, sol.updated!))
+  })
+
+  it('a cross-issue solution names its issues with their titles in the first line', () => {
+    const sol = cross.solutions.find((s) => s.code === 'X-A')!
+    const html = render('/solutions/X-A')
+    const numbers = crossIssueNumbers(sol)
+    expect(numbers.length).toBeGreaterThan(1)
+    for (const n of numbers) {
+      const issue = indexJson.issues.find((i) => i.number === n)!
+      expect(html).toContain(t.issueCard.numberTitle(n, issue.title))
+    }
   })
 
   it('the other tabs have no 新增日期', () => {

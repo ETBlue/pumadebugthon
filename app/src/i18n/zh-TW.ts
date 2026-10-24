@@ -449,6 +449,7 @@ export const t = {
     tabsLabel: '利害關係人內容',
     tabs: {
       overview: '總覽',
+      issues: '議題',
       wants: '訴求',
       needs: '需求',
       conflicts: '衝突',
@@ -456,6 +457,8 @@ export const t = {
     },
     /** The tab labels with the counts summed over the issues (decision 48). */
     tabLabels: {
+      /** The issues the stakeholder is in (decision 145). */
+      issues: (n: number): TabLabel => ({ main: `議題 ${n}` }),
       wants: (n: number): TabLabel => ({ main: `訴求 ${n}` }),
       needs: (n: number): TabLabel => ({ main: `需求 ${n}` }),
       /** The conflicts with one of its stories on a side (decision 142). */

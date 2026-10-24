@@ -379,7 +379,7 @@ describe('the card grids of the stakeholder tabs (decision 139)', () => {
   })
 
   it('never uses 3 columns', () => {
-    for (const tab of ['', '/needs', '/wants', '/conflicts', '/solutions']) {
+    for (const tab of ['', '/issues', '/needs', '/wants', '/conflicts', '/solutions']) {
       expect(renderPage(`/stakeholders/I06${tab}`)).not.toContain('xl:grid-cols-3')
     }
   })
@@ -399,7 +399,7 @@ describe('the 衝突 tab of the stakeholder page (decision 142)', () => {
   it('has its own tab after 需求; 訴求 shows only its own count', () => {
     // I06 (fixtures #1, #2, #8, #9): 6 want keys, 5 need keys, 4 conflicts
     // (C1 and C7 in #1, C6 in #2, C3 in #8), 5 issue solutions.
-    expect(tabNames(renderPage('/stakeholders/I06'))).toEqual(['總覽', '訴求 6', '需求 5', '衝突 4', '解法 5'])
+    expect(tabNames(renderPage('/stakeholders/I06'))).toEqual(['總覽', '議題 4', '訴求 6', '需求 5', '衝突 4', '解法 5'])
   })
 
   it('shows the conflicts per issue, with the other side\'s stories', () => {
@@ -414,5 +414,44 @@ describe('the 衝突 tab of the stakeholder page (decision 142)', () => {
     expect(html).not.toContain(t.conflict.otherSide)
     expect(html).not.toMatch(/<span class="mr-2 font-mono">C\d+<\/span>/)
     expect(html).toContain('href="/issues/2/conflicts?focus=C6"')
+  })
+})
+
+describe('the 議題 tab of the stakeholder page (decision 145)', () => {
+  beforeEach(() => {
+    state.loading = false
+    state.cross = 'none'
+    state.crossFile = null
+    state.override = {}
+  })
+
+  /** The issue numbers of the issue cards, in order. */
+  const cardIssues = (html: string) =>
+    [...html.matchAll(/<article[\s\S]*?href="\/issues\/(\d+)"/g)].map((m) => Number(m[1]))
+
+  it('comes right after 總覽, with the number of issues', () => {
+    // I05 is in #1, #2, #8 and #9 of the fixtures.
+    expect(tabNames(renderPage('/stakeholders/I05')).slice(0, 2)).toEqual(['總覽', '議題 4'])
+  })
+
+  it('lists the issues of I05 as compact issue cards in the 2-column grid', () => {
+    const html = renderPage('/stakeholders/I05/issues')
+    expect(cardIssues(html)).toEqual([1, 2, 8, 9])
+    expect(html).toMatch(/<ul class="grid gap-4 lg:grid-cols-2">/)
+    // The same count as the tab label.
+    expect(tabNames(html)[1]).toBe(`議題 ${cardIssues(html).length}`)
+  })
+
+  it('lists one issue for a stakeholder in one issue', () => {
+    const html = renderPage('/stakeholders/O08/issues')
+    expect(cardIssues(html)).toEqual([2])
+    expect(tabNames(html)[1]).toBe('議題 1')
+  })
+
+  it('shows the cards and the count while the issue files load (it needs only index.json)', () => {
+    state.loading = true
+    const html = renderPage('/stakeholders/I05/issues')
+    expect(cardIssues(html)).toEqual([1, 2, 8, 9])
+    expect(tabNames(html)).toEqual(['總覽', '議題 4', '訴求', '需求', '衝突', '解法'])
   })
 })

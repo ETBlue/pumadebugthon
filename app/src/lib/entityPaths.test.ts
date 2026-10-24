@@ -26,7 +26,7 @@ describe('parseStakeholderTab', () => {
 
   it('accepts every tab name', () => {
     // Decision 142: 衝突 is its own tab, after 需求.
-    expect(STAKEHOLDER_TABS).toEqual(['overview', 'wants', 'needs', 'conflicts', 'solutions'])
+    expect(STAKEHOLDER_TABS).toEqual(['overview', 'issues', 'wants', 'needs', 'conflicts', 'solutions'])
     for (const tab of STAKEHOLDER_TABS) expect(parseStakeholderTab(tab)).toBe(tab)
   })
 

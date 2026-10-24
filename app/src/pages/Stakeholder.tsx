@@ -3,6 +3,7 @@ import { Link, useParams, useSearchParams } from 'react-router'
 import { BasisField } from '@/components/BasisField'
 import { DataBasisToggle } from '@/components/DataBasisToggle'
 import { DateFields } from '@/components/DateFields'
+import { IssueCardGrid } from '@/components/IssueCardGrid'
 import { Field } from '@/components/Field'
 import { FilterStatus } from '@/components/FilterStatus'
 import { LoadState } from '@/components/LoadState'
@@ -27,15 +28,18 @@ import { isDataBasisFilterOn } from '@/lib/dataBasis'
 import { availableIssues } from '@/lib/issues'
 import { movedFrom, movedNoteSearch, pathTrail, stakeholderIssueNumbers } from '@/lib/stakeholderPage'
 import { hasNoIssue, resolveId } from '@/lib/stakeholders'
-import { stakeholderTabCounts, type TabCounts } from '@/lib/tabCounts'
+import { stakeholderTabCounts, type StakeholderTabCounts } from '@/lib/tabCounts'
 import type { TabLabel } from '@/lib/tabLabel'
 import type { AvailableIssueSummary, CellCounts, IndexFile, Stakeholder as StakeholderType } from '@/types'
 
 const tp = t.stakeholderPage
 const tl = t.stakeholdersList
 
-/** The tab label with its count. While the issues load, the name only. */
-function tabLabel(tab: StakeholderTab, c: TabCounts | null): TabLabel {
+/** The tab label with its count. While the issues load, the name only.
+ * 議題 is the exception: it needs only index.json, so while the issues load
+ * it counts the issue cards (issueCount), as on the space page (decision 145). */
+function tabLabel(tab: StakeholderTab, c: StakeholderTabCounts | null, issueCount: number): TabLabel {
+  if (tab === 'issues') return tp.tabLabels.issues(c?.issues ?? issueCount)
   if (c === null || tab === 'overview') return { main: tp.tabs[tab] }
   return tp.tabLabels[tab](c[tab])
 }
@@ -78,7 +82,8 @@ export default function Stakeholder() {
   return <StakeholderContent key={id} index={index.data} stakeholder={stakeholder} />
 }
 
-const TAB_CONTENT: Record<StakeholderTab, ComponentType<StakeholderTabProps>> = {
+/** The tabs that need the issue files. 議題 needs only index.json. */
+const TAB_CONTENT: Record<Exclude<StakeholderTab, 'issues'>, ComponentType<StakeholderTabProps>> = {
   overview: OverviewTab,
   wants: WantsTab,
   needs: NeedsTab,
@@ -170,6 +175,9 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
 
   const body = (name: StakeholderTab) => {
     if (shown.length === 0) return <p>{tp.noIssues}</p>
+    // 議題 (decision 145): the issue cards of the space page's 議題 tab. No
+    // filter row: the 「只看有資料根據」 toggle does not change these cards.
+    if (name === 'issues') return <IssueCardGrid index={index} issues={shown} />
     if (issues.status !== 'ready') return <LoadState state={issues} />
     const Content = TAB_CONTENT[name]
     return (
@@ -204,7 +212,7 @@ function StakeholderContent({ index, stakeholder: s }: { index: IndexFile; stake
           tabs={STAKEHOLDER_TABS}
           current={tab}
           nameOf={(name) => tp.tabs[name]}
-          labelOf={(name) => tabLabel(name, counts)}
+          labelOf={(name) => tabLabel(name, counts, shown.length)}
           pathOf={(name) => stakeholderTabPath(s.id, name)}
           notFound={tp.tabNotFound}
           overviewPath={stakeholderTabPath(s.id, 'overview')}

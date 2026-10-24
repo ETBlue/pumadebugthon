@@ -7,8 +7,9 @@ import { tabPath, type IssueTab } from './issuePage'
 import { keptSearch } from './stakeholderFilter'
 
 /** The tabs of the stakeholder page, in display order. The first one is the
- * default. 衝突 has its own tab after 需求 (decision 142). */
-export const STAKEHOLDER_TABS = ['overview', 'wants', 'needs', 'conflicts', 'solutions'] as const
+ * default. 衝突 has its own tab after 需求 (decision 142). 議題 comes right
+ * after 總覽 (decision 145). */
+export const STAKEHOLDER_TABS = ['overview', 'issues', 'wants', 'needs', 'conflicts', 'solutions'] as const
 
 export type StakeholderTab = (typeof STAKEHOLDER_TABS)[number]
 

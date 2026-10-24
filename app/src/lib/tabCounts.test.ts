@@ -56,11 +56,11 @@ describe('stakeholderTabCounts', () => {
   it('sums the counts over the issues (I06: 訴求 5・衝突 4, 需求 4, 解法 4)', () => {
     // #1: W06, W08 / C1, C7 / N08 / D. #2: W08, W11 / C6 / N07, N08 / A, C.
     // #8: W07 / C3 / I06-US01 / A. Design 3.3.
-    expect(stakeholderTabCounts(issues, null, 'I06')).toEqual({ wants: 5, conflicts: 4, needs: 4, solutions: 4 })
+    expect(stakeholderTabCounts(issues, null, 'I06')).toEqual({ issues: 3, wants: 5, conflicts: 4, needs: 4, solutions: 4 })
   })
 
   it('counts one issue on its own', () => {
-    expect(stakeholderTabCounts([trashcans], null, 'I06')).toEqual({ wants: 2, conflicts: 1, needs: 2, solutions: 2 })
+    expect(stakeholderTabCounts([trashcans], null, 'I06')).toEqual({ issues: 1, wants: 2, conflicts: 1, needs: 2, solutions: 2 })
   })
 
   it('counts an N group once, however many stories of the stakeholder it has', () => {
@@ -69,9 +69,16 @@ describe('stakeholderTabCounts', () => {
   })
 
   it('gives zeros for an unknown stakeholder or no issues', () => {
-    const zero = { wants: 0, conflicts: 0, needs: 0, solutions: 0 }
+    const zero = { issues: 0, wants: 0, conflicts: 0, needs: 0, solutions: 0 }
     expect(stakeholderTabCounts(issues, null, 'I99')).toEqual(zero)
     expect(stakeholderTabCounts([], null, 'I06')).toEqual(zero)
+  })
+
+  it('議題 counts only the issues whose 利害關係人 table has the stakeholder (decision 145)', () => {
+    // I05 is in #1, #2, #8 and #9. O99 is in none of them.
+    expect(stakeholderTabCounts([...issues, policyJson as IssueFile], null, 'I05').issues).toBe(4)
+    expect(stakeholderTabCounts([trees, trashcans], null, 'I05').issues).toBe(2)
+    expect(stakeholderTabCounts(issues, null, 'O99').issues).toBe(0)
   })
 
   // 解法 has one source, stakeholderSolutionCount (decision 119).

@@ -5,7 +5,7 @@ import { DateFields } from '@/components/DateFields'
 import { Field } from '@/components/Field'
 import { LabelledSection } from '@/components/LabelledSection'
 import { AlsoInLine } from '@/components/issue/AlsoIn'
-import { IssueCard } from '@/components/IssueCard'
+import { IssueCardGrid } from '@/components/IssueCardGrid'
 import { IssueTitleLinks } from '@/components/IssueTitleLinks'
 import type { ListBarFilter } from '@/components/ListBar'
 import { LoadState } from '@/components/LoadState'
@@ -24,7 +24,7 @@ import { PageTitle } from '@/components/PageTitle'
 import { backListPath } from '@/lib/backLink'
 import { solutionCells, stakeholderCells } from '@/lib/coverage'
 import { parseSpaceTab, SPACE_TABS, spaceTabPath, type SpaceTab } from '@/lib/entityPaths'
-import { availableIssues, sharedForCard } from '@/lib/issues'
+import { availableIssues } from '@/lib/issues'
 import {
   findSpaceType, issuesBySpace, otherSpaces, solutionsBySpace, spaceStakeholderCount, stakeholdersBySpace,
 } from '@/lib/spaces'
@@ -158,18 +158,11 @@ function SpaceOverview({ space }: { space: SpaceType }) {
 }
 
 /** The 議題 tab: the issues that use the space, as compact cards in the
- * card grid of the tabs (cardGridClass, decision 138). */
+ * card grid of the tabs (cardGridClass, decision 138). The stakeholder page
+ * uses the same IssueCardGrid (decision 145). */
 function IssuesTab({ index, summaries }: { index: IndexFile; summaries: AvailableIssueSummary[] }) {
   if (summaries.length === 0) return <p>{tp.issuesNone}</p>
-  return (
-    <ul className={cardGridClass}>
-      {summaries.map((i) => (
-        <li key={i.number}>
-          <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} shared={sharedForCard(index, i)} />
-        </li>
-      ))}
-    </ul>
-  )
+  return <IssueCardGrid index={index} issues={summaries} />
 }
 
 /** 「#2 找回消失的垃圾桶」: the heading of the group of one issue. */

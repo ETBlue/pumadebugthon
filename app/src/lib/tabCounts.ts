@@ -49,14 +49,29 @@ export function issueStakeholderTabCounts(
   }
 }
 
+/** The counts of the stakeholder page tab labels: the issue page counts,
+ * plus 議題 (decision 145). */
+export interface StakeholderTabCounts extends TabCounts {
+  issues: number
+}
+
 /** The tab counts of the stakeholder page, summed over the issues
- * (decision 48). Per issue: its different want keys, the conflicts with one
- * of its stories on a side (decision 44) and its different need keys. 解法
- * is stakeholderSolutionCount (decision 119): the issue solutions that
- * cover at least one of its needs, plus the cross-issue solutions that do.
+ * (decision 48). 議題: the issues whose 利害關係人 table has the
+ * stakeholder (decision 145). Per issue:
+ * its different want keys, the conflicts with one of its stories on a side
+ * (decision 44) and its different need keys. 解法 is
+ * stakeholderSolutionCount (decision 119): the issue solutions that cover at
+ * least one of its needs, plus the cross-issue solutions that do.
  * cross is null when cross-issue.json does not exist or fails to load. */
-export function stakeholderTabCounts(issues: IssueFile[], cross: CrossIssueFile | null, id: string): TabCounts {
-  const out: TabCounts = { wants: 0, conflicts: 0, needs: 0, solutions: stakeholderSolutionCount(issues, cross, id) }
+export function stakeholderTabCounts(
+  issues: IssueFile[],
+  cross: CrossIssueFile | null,
+  id: string,
+): StakeholderTabCounts {
+  const out: StakeholderTabCounts = {
+    issues: issues.filter((i) => i.stakeholders.some((s) => s.id === id)).length,
+    wants: 0, conflicts: 0, needs: 0, solutions: stakeholderSolutionCount(issues, cross, id),
+  }
   for (const issue of issues) {
     out.wants += wantsOfStakeholder(issue, id).length
     out.conflicts += conflictsForStakeholder(issue, id).length

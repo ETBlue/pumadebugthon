@@ -68,11 +68,11 @@ class CheckCrossIssueTest(unittest.TestCase):
         # the test adds a fake issue #7 with no folder to the copied issues.csv.
         with open(os.path.join(self.dir, "data", "issues.csv"), "a", encoding="utf-8") as f:
             f.write("7,7-test,測試用的議題（沒有分析）,主辦單位,\n")
-        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10（試作）", "# 跨議題分析：#1、#2、#3、#4、#5、#6、#7、#8、#9、#10（試作）")
+        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10、#11、#12（試作）", "# 跨議題分析：#1、#2、#3、#4、#5、#6、#7、#8、#9、#10、#11、#12（試作）")
         self.assertFails("title", "#7")
 
     def test_title_without_issue_numbers(self):
-        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10（試作）", "# 跨議題分析（試作）")
+        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10、#11、#12（試作）", "# 跨議題分析（試作）")
         self.assertFails("title")
 
     @unittest.skipUnless(os.path.isfile(os.path.join(ANALYSIS, "9-policydiscovery", "issue-analysis.md")), "needs #9")
@@ -80,21 +80,19 @@ class CheckCrossIssueTest(unittest.TestCase):
         # #9 shares stakeholders with the other issues. When the title does not name it,
         # the check prints a note for a person (the owner decides). The #9 column of 1.1
         # then is an error, but the note is still there.
-        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10（試作）", "# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#10（試作）")
+        self.edit("# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#9、#10、#11、#12（試作）", "# 跨議題分析：#1、#2、#3、#4、#5、#6、#8、#10、#11、#12（試作）")
         code, out = self.run_check()
         self.assertIn("NOTE: issue #9", out)
         self.assertIn("O07", out)
 
-    def test_real_file_compares_all_issues_but_11_and_12(self):
-        # ETBlue added #9 on 2026-10-20, #3, #4, #5 and #6 on 2026-10-23 and #10 on
-        # 2026-10-24, so they get no note. #11 and #12 (added 2026-10-24) share stakeholders
-        # but are not compared yet, so each gets a note; the owner decides whether to add them.
+    def test_real_file_compares_all_issues_without_notes(self):
+        # ETBlue added #9 on 2026-10-20, #3, #4, #5 and #6 on 2026-10-23, and #10, #11
+        # and #12 on 2026-10-24. Every issue with an analysis is compared, so the check
+        # prints no note.
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
-        self.assertIn("issues: [1, 2, 3, 4, 5, 6, 8, 9, 10]", out)
-        self.assertIn("NOTE: issue #11", out)
-        self.assertIn("NOTE: issue #12", out)
-        self.assertEqual(out.count("NOTE:"), 2, out)
+        self.assertIn("issues: [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12]", out)
+        self.assertNotIn("NOTE:", out)
 
     # ---------- tags and 待補 ----------
 
@@ -127,7 +125,7 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("#2 解法 Z")
 
     def test_summary_ref_not_in_file(self):
-        self.edit("| X-N06、X-N07、X-N08 |\n", "| X-N06、X-N99 |\n")
+        self.edit("| X-N06、X-N07、X-N08、X-N16、X-N20 |\n", "| X-N06、X-N99 |\n")
         self.assertFails("X-N99")
 
     def test_summary_topics_order(self):
@@ -139,17 +137,21 @@ class CheckCrossIssueTest(unittest.TestCase):
     # ---------- shared stakeholders ----------
 
     def test_shared_stakeholder_missing(self):
-        self.edit("| I19 | 無家者 | 經濟弱勢 | #1、#3、#8 | #1 I19-US01 | — | #3 I19-US01 | — | — | — | #8 I19-US01 | — | — |\n", "")
+        self.edit("| I19 | 無家者 | 經濟弱勢 | #1、#3、#8 | #1 I19-US01 | — | #3 I19-US01 | — | — | — | #8 I19-US01 | — | — | — | — |\n", "")
         self.assertFails("I19")
 
     def test_shared_stakeholder_story_missing(self):
-        self.edit("| #8 O03-US01 | — | — |\n", "| — | — | — |\n")
+        self.edit("| #8 O03-US01 | — | — | #11 O03-US01 | — |\n", "| — | — | — | #11 O03-US01 | — |\n")
         self.assertFails("O03", "#8")
+
+    # The 外籍 row of 1.3 (it has a note since #11 and #12 were added on 2026-10-24).
+    FOREIGN_ROW = ("| 外籍 | I03、I04 | `[AI模擬]` I04 在 #11 需要看得懂大型廢棄物的預約方式（#11 I04-US01）。"
+                   "【待補：#12 的 1.3 把這一類列為待補，請真人判斷 #12 是否需要納入外籍族群】 |\n")
 
     def test_focus_group_order(self):
         # Move the 外籍 row of 1.3 to the top of the table.
-        self.edit("| 外籍 | I03、I04 | — |\n", "")
-        self.edit("| 高齡 | I05 | — |\n", "| 外籍 | I03、I04 | — |\n| 高齡 | I05 | — |\n")
+        self.edit(self.FOREIGN_ROW, "")
+        self.edit("| 高齡 | I05、I11 | — |\n", "| 外籍 | I03、I04 | — |\n| 高齡 | I05、I11 | — |\n")
         self.assertFails("fixed order")
 
     # ---------- X-N groups ----------
@@ -160,7 +162,7 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-N05")
 
     def test_need_group_one_issue(self):
-        self.edit("| #2 N06、#8 N08 | #2 I01-US02、#2 I01-US08、#2 I09-US01、#2 I09-US02、#2 I09-US03、#2 I23-US01、#8 O03-US01、#8 I01-US09 | I01、I09、I23、O03 |",
+        self.edit("| #2 N06、#8 N08、#11 N06 | #2 I01-US02、#2 I01-US08、#2 I09-US01、#2 I09-US02、#2 I09-US03、#2 I23-US01、#8 O03-US01、#8 I01-US09、#11 O05-US01、#11 O12-US01、#11 O24-US01、#11 I60-US01 | I01、I09、I23、O03、O05、O12、O24、I60 |",
                   "| #2 N06 | #2 I01-US02、#2 I01-US08、#2 I09-US01、#2 I09-US02、#2 I09-US03、#2 I23-US01 | I01、I09、I23 |")
         self.assertFails("X-N06", "2 or more issues")
 
@@ -174,16 +176,16 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-N06", "各議題不同")
 
     def test_priority_not_from_issues(self):
-        self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S | `[AI模擬]` S |", "| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S | `[AI模擬]` M |")
+        self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S、#11 N05 S | `[AI模擬]` S |", "| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S、#11 N05 S | `[AI模擬]` M |")
         self.assertFails("X-N03")
 
     def test_priority_listed_wrong(self):
-        self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S |", "| #1 N15 M、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S |")
+        self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S、#11 N05 S |", "| #1 N15 M、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S、#11 N05 S |")
         self.assertFails("#1 N15")
 
     def test_need_group_not_covered(self):
         # X-N12 is covered only by X-G.
-        self.edit("、#6 O57-US01 | X-N12 |", "、#6 O57-US01 | — |")
+        self.edit("、#6 O57-US01、#11 N05 | X-N03、X-N12 |", "、#6 O57-US01、#11 N05 | X-N03 |")
         self.assertFails("X-N12", "not covered")
 
     # ---------- conflicts ----------
@@ -208,8 +210,8 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-E", "2 or more issues")
 
     def test_combined_space_not_in_parts(self):
-        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A | `sidewalk`、`park`、`mrt-exit`、`indoor` |",
-                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A | `sidewalk`、`park`、`mrt-exit`、`indoor`、`utility` |")
+        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk`、`park`、`mrt-exit`、`indoor` |",
+                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk`、`park`、`mrt-exit`、`indoor`、`utility` |")
         self.assertFails("X-C", "utility")
 
     def test_must_column_priority_wrong(self):

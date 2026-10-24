@@ -59,7 +59,7 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(self.out, "issues", "2-trashcans.json")))
 
     def test_top_level_fields(self):
-        self.assertEqual(self.data["issues"], [1, 2, 3, 4, 5, 6, 8, 9, 10])
+        self.assertEqual(self.data["issues"], [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12])
         for key in ("title", "updated", "spaces", "summary", "sharedStakeholders", "repeatedNeeds", "focusGroups",
                     "needGroups", "conflicts", "solutions", "solutionFocus", "pending"):
             self.assertIn(key, self.data)
@@ -68,26 +68,30 @@ class CrossIssueJsonTest(unittest.TestCase):
 
     def test_shared_stakeholders(self):
         shared = self.data["sharedStakeholders"]
-        self.assertEqual(len(shared), 44)
+        self.assertEqual(len(shared), 54)
         o03 = next(s for s in shared if s["id"] == "O03")
-        self.assertEqual(o03["issues"], [2, 3, 8])
+        self.assertEqual(o03["issues"], [2, 3, 8, 11])
         self.assertIn({"issue": 8, "id": "O03-US01"}, o03["stories"])
         self.assertIn({"issue": 3, "id": "O03-US02"}, o03["stories"])
-        # I04 is in #2, #4, #5, #6, #9 and #10 (one story in each).
+        # I04 is in #2, #4, #5, #6, #9, #10 and #11 (one story in each).
         i04 = next(s for s in shared if s["id"] == "I04")
-        self.assertEqual(i04["issues"], [2, 4, 5, 6, 9, 10])
-        self.assertEqual(i04["stories"], [{"issue": n, "id": "I04-US01"} for n in (2, 4, 5, 6, 9, 10)])
+        self.assertEqual(i04["issues"], [2, 4, 5, 6, 9, 10, 11])
+        self.assertEqual(i04["stories"], [{"issue": n, "id": "I04-US01"} for n in (2, 4, 5, 6, 9, 10, 11)])
         # I27 is in #3, #4, #8 and #9 (#9 added it for the 呼吸道疾病 group, 2026-10-20).
         i27 = next(s for s in shared if s["id"] == "I27")
         self.assertEqual(i27["issues"], [3, 4, 8, 9])
         self.assertIn({"issue": 9, "id": "I27-US02"}, i27["stories"])
-        # I37 is shared by #3 and #6 only (added with #3–#6 on 2026-10-23).
+        # I37 was shared by #3 and #6 (added with #3–#6 on 2026-10-23); #11 and #12 have it too.
         i37 = next(s for s in shared if s["id"] == "I37")
-        self.assertEqual(i37["issues"], [3, 6])
+        self.assertEqual(i37["issues"], [3, 6, 11, 12])
         # I49 is shared by #6 and #10 only (added with #10 on 2026-10-24).
         i49 = next(s for s in shared if s["id"] == "I49")
         self.assertEqual(i49["issues"], [6, 10])
         self.assertEqual(i49["stories"], [{"issue": 6, "id": "I49-US01"}, {"issue": 10, "id": "I49-US01"}])
+        # I43 is shared by #5 and #12 only (added with #11 and #12 on 2026-10-24).
+        i43 = next(s for s in shared if s["id"] == "I43")
+        self.assertEqual(i43["issues"], [5, 12])
+        self.assertIn({"issue": 12, "id": "I43-US01"}, i43["stories"])
 
     def test_issue_9_part_has_no_space(self):
         # #9 uses no city space. X-D gets its spaces from its other parts.
@@ -143,8 +147,9 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertEqual(a[1]["content"]["tag"], "AI模擬")
         self.assertEqual(a[1]["refs"], ["#2 O04-US04", "解法 X-A"])
         self.assertEqual([p["name"] for p in self.solution("X-E")["practices"]], ["以各議題的解法為基礎"])
-        # X-C has the #10 row too (added with #10 on 2026-10-24).
-        self.assertEqual([p["name"] for p in self.solution("X-C")["practices"]], ["以各議題的解法為基礎", "現行的 1999 噪音派工"])
+        # X-C has the #10 row and the #11 row too (added on 2026-10-24).
+        self.assertEqual([p["name"] for p in self.solution("X-C")["practices"]],
+                         ["以各議題的解法為基礎", "現行的 1999 噪音派工", "現行的大型廢棄物電話預約"])
 
     def test_measures(self):
         measures = self.solution("X-B")["measures"]

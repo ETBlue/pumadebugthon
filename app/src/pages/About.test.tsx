@@ -76,3 +76,23 @@ describe('the 下載資料 part of #/about (decision 141)', () => {
     expect(data.indexOf(t.about.flat)).toBeLessThan(data.indexOf(t.about.json))
   })
 })
+
+describe('the 作者的黑客松展示簡報 part of #/about (decision 144)', () => {
+  const html = render()
+  const slides = part(html, 'about-slides')
+
+  it('has the heading and the link to the demo slides with the date', () => {
+    expect(slides).toContain(`<h2 id="about-slides" class="text-xl font-bold">作者的黑客松展示簡報</h2>`)
+    expect(slides).toContain(
+      'href="https://docs.google.com/presentation/d/1HC_7ajRGpkBqUxn-nwBCaCWixWJHvudiaeranYaBLiM/edit?usp=sharing"',
+    )
+    expect(slides).toContain('台北市政小幫手')
+    expect(slides).toContain('2026-10-24')
+  })
+
+  it('comes right after the blog posts part', () => {
+    const posts = html.indexOf('id="about-posts"')
+    expect(posts).toBeGreaterThan(-1)
+    expect(html.indexOf('<h2 ', posts + 1)).toBe(html.indexOf('<h2 id="about-slides"'))
+  })
+})

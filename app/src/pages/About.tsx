@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { AUTHOR_POSTS, CONTENT_LICENSE_URL, DATA_GUIDE_URL, EVENT_URL, LICENSE_URL, METHOD_URL, REPO_URL } from '@/components/links'
+import { AUTHOR_POSTS, AUTHOR_SLIDES,CONTENT_LICENSE_URL, DATA_GUIDE_URL, EVENT_URL, LICENSE_URL, METHOD_URL, REPO_URL } from '@/components/links'
 import { LoadState } from '@/components/LoadState'
 import { PageTitle } from '@/components/PageTitle'
 import { linkClass } from '@/components/styles'
@@ -90,7 +90,7 @@ function DataFiles() {
 
 /** #/about: 關於本站 (design 3.13). The event page, the source code, the
  * licenses, the 資料根據 explanation (decision 128), the data files and the
- * author's related posts. The header has no link here; the footer has. */
+ * author's related posts and demo slides (decision 144). The header has no link here; the footer has. */
 export default function About() {
   return (
     <>
@@ -156,6 +156,17 @@ export default function About() {
               <li key={p.url} className="flex flex-wrap items-baseline gap-x-3">
                 <a href={p.url} {...external} className={linkClass}>{p.title}</a>
                 <time dateTime={p.date} className="text-sm text-muted-foreground">{p.date}</time>
+              </li>
+            ))}
+          </ul>
+        </Part>
+
+        <Part id="about-slides" title={ta.slidesHeading}>
+          <ul className="space-y-2">
+            {AUTHOR_SLIDES.map((s) => (
+              <li key={s.url} className="flex flex-wrap items-baseline gap-x-3">
+                <a href={s.url} {...external} className={linkClass}>{s.title}</a>
+                <time dateTime={s.date} className="text-sm text-muted-foreground">{s.date}</time>
               </li>
             ))}
           </ul>

@@ -27,3 +27,14 @@ export const AUTHOR_POSTS: readonly { title: string; date: string; url: string }
     url: 'https://etblue.blogspot.com/2026/10/puma-taipei-debug-hackathon-issue-analysis.html',
   },
 ]
+
+/** The author's hackathon demo slides, for the about page (design 3.13,
+ * decision 144). Newest first. The title is the slides' own title, like a
+ * post title, so it is not in the i18n file. */
+export const AUTHOR_SLIDES: readonly { title: string; date: string; url: string }[] = [
+  {
+    title: '台北市政小幫手',
+    date: '2026-10-24',
+    url: 'https://docs.google.com/presentation/d/1HC_7ajRGpkBqUxn-nwBCaCWixWJHvudiaeranYaBLiM/edit?usp=sharing',
+  },
+]

@@ -84,6 +84,7 @@ export const t = {
     contentLicenseFile: 'LICENSE-CONTENT.md',
     dataLicenseEnd: '：主辦單位的內容依主辦單位的規定使用；從主辦單位的市民資料整理出的內容，只限於這次黑客松使用。',
     postsHeading: '作者的相關文章',
+    slidesHeading: '作者的黑客松展示簡報',
   },
   /** The list pages (design 3.9). */
   lists: {

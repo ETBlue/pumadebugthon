@@ -32,6 +32,8 @@ information architecture:
   * links to the open data used by the app (the json/csv files in the issue analysis folders)
   * related blog posts from the author
     1. https://etblue.blogspot.com/2026/10/puma-taipei-debug-hackathon-issue-analysis.html
+  * hackathon demo slides from the author
+    1. https://docs.google.com/presentation/d/1HC_7ajRGpkBqUxn-nwBCaCWixWJHvudiaeranYaBLiM/edit?usp=sharing
 * the issues page should include
   * no page title. the highlighted top bar item represents the title of the page
   * a sort / filter / search submenu bar right under the top bar, allowing user to

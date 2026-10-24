@@ -94,6 +94,7 @@ information architecture:
     * title in the same row with the back button
   * a side menu
     * overview
+    * issues with count
     * 訴求 with count
     * 需求 with count
     * conflicts with count

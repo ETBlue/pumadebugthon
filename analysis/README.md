@@ -44,7 +44,7 @@
 | #4 內湖尖峰車流好比停車場 | [4-neihutraffic](4-neihutraffic/) | **試作完成**：[議題分析](4-neihutraffic/issue-analysis.md)、[使用者故事表](4-neihutraffic/user-stories.csv) |
 | #5 公車路網如何即時反應需求 | [5-busroutes](5-busroutes/) | **試作完成**：[議題分析](5-busroutes/issue-analysis.md)、[使用者故事表](5-busroutes/user-stories.csv) |
 | #6 危老耐震如何查，風險評級怎麼找 | [6-oldbuildings](6-oldbuildings/) | **試作完成**：[議題分析](6-oldbuildings/issue-analysis.md)、[使用者故事表](6-oldbuildings/user-stories.csv) |
-| #7 自由題：你看見的市政 bug | — | 本專案沒有分析這一題 |
+| #7 自由題：你看見的市政 bug | — | |
 | #8 無菸城市（非主辦單位題目，由參加者補充） | [8-smokefree](8-smokefree/) | **試作完成**：[議題分析](8-smokefree/issue-analysis.md)、[使用者故事表](8-smokefree/user-stories.csv) |
 | #9 將產品探索技巧運用到政策前期研究（非主辦單位題目，由參加者補充） | [9-policydiscovery](9-policydiscovery/) | **試作完成**：[議題分析](9-policydiscovery/issue-analysis.md)、[使用者故事表](9-policydiscovery/user-stories.csv) |
 | #10 噪音（非主辦單位題目，由參加者補充） | [10-noise](10-noise/) | **試作完成**：[議題分析](10-noise/issue-analysis.md)、[使用者故事表](10-noise/user-stories.csv) |

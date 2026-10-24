@@ -173,10 +173,13 @@ describe('the 解法 tab of the stakeholder page (decision 119)', () => {
     }
   })
 
-  it('lists the cross-issue solutions under 「跨議題解法」, after the issues', () => {
+  it('lists the cross-issue solutions under 「跨議題解法」, above the issues (decision 149)', () => {
     const html = render('I06')
     expect(html).toContain('跨議題解法')
-    expect(html.indexOf('跨議題解法</h2>')).toBeGreaterThan(html.lastIndexOf('stakeholder-solutions-'))
+    const crossAt = html.indexOf('id="stakeholder-solutions-cross"')
+    const firstIssueAt = html.search(/id="stakeholder-solutions-\d+"/)
+    expect(crossAt).toBeGreaterThan(-1)
+    expect(firstIssueAt).toBeGreaterThan(crossAt)
     expect(html).toContain('href="/solutions/X-B"')
     expect(html).toContain('href="/solutions/X-D"')
     // The 資料根據 of each card.

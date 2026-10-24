@@ -433,13 +433,13 @@ export const t = {
     solutionsNone: '還沒有解法涵蓋這位利害關係人的需求。',
     /** No issue solution covers its needs in this issue, but a cross-issue
      * solution covers some of them (decision 124). */
-    solutionsNoneCrossOnly: '這個議題的解法沒有涵蓋這位利害關係人的需求。有些需求由下方的跨議題解法涵蓋。',
+    solutionsNoneCrossOnly: '這個議題的解法沒有涵蓋這位利害關係人的需求。有些需求由上方的跨議題解法涵蓋。',
     coveredNeeds: '涵蓋的需求：',
     uncoveredNeeds: '尚未有解法涵蓋的需求',
     uncoveredNeedsNone: '這位利害關係人的需求都有解法涵蓋。',
     /** The cross-issue part of the 解法 tab, after the issues (decision 119). */
     crossSolutionsHeading: '跨議題解法',
-    crossSolutionsIntro: '這些跨議題解法涵蓋這位利害關係人在上面議題裡的需求。',
+    crossSolutionsIntro: '這些跨議題解法涵蓋這位利害關係人在下面議題裡的需求。',
     inputSources: '可能的輸入來源',
     inputSourcesNone: '分析裡沒有為這位利害關係人列出輸入來源。',
     inputFit: '適合的利害關係人：',

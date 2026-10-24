@@ -22,8 +22,8 @@ const tp = t.stakeholderPage
  * That list leaves out the needs that a cross-issue solution covers
  * (stakeholderUncoveredNeeds, decision 124), because they are listed under
  * 「跨議題解法」.
- * Then 「跨議題解法」: the cross-issue solutions that cover at least one of
- * its needs (decision 119). The tab label counts the same solutions
+ * 「跨議題解法」 comes first, above the issues (decision 149): the
+ * cross-issue solutions that cover at least one of its needs (decision 119). The tab label counts the same solutions
  * (stakeholderSolutionCount). Without cross-issue.json, or while it loads or
  * when it fails to load, the cross-issue part is left out.
  * The same need key can show under two issues, so the items get no focus ID. */
@@ -34,6 +34,7 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
   const shownCross = dataBasedOnly ? stakeholderCrossSolutions(issues, cross, id, true) : allCross
   return (
     <div className="space-y-10">
+      {allCross.length > 0 && <CrossSolutionsSection index={index} shown={shownCross} />}
       {issues.map((issue) => {
         const hasNeeds = needsOfStakeholder(issue, id).length > 0
         const v = stakeholderSolutionsView(issue, id, dataBasedOnly)
@@ -112,7 +113,6 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
           </IssueSection>
         )
       })}
-      {allCross.length > 0 && <CrossSolutionsSection index={index} shown={shownCross} />}
     </div>
   )
 }
@@ -129,7 +129,7 @@ function CrossSolutionsSection({ index, shown }: { index: StakeholderTabProps['i
   const allIssues = useIssues(folders)
   const headingId = 'stakeholder-solutions-cross'
   return (
-    <LabelledSection headingId={headingId} className="space-y-6 border-t pt-6">
+    <LabelledSection headingId={headingId} className="space-y-6">
       <h2 id={headingId} className="text-xl font-bold">{tp.crossSolutionsHeading}</h2>
       {shown.length === 0 ? (
         <DataBasisEmpty />

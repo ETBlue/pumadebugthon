@@ -30,6 +30,7 @@ This file holds the rules for Claude Code and other AI agents that work on this 
 - No examples from China, Iran or North Korea in practices from other places.
 - No scores, weights, ranks or formulas. Counts never change MoSCoW. Never sort by counts. Lists sort by date, then ID.
 - #6: never rate or rank a building or district, and never identify a private building.
+- Public policy and proposal sources (the policy list, the hackathon works, the code wall): only `analysis/related-proposals/` may name them or link to them. The issue analysis, `analysis/cross-issue/` and the app never do. Ideas from them go into the analysis only as neutral ideas in our own words.
 
 ## Same rules for every issue
 

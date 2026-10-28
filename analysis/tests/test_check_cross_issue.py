@@ -215,12 +215,12 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-C", "utility")
 
     def test_must_column_priority_wrong(self):
-        self.edit("| `[AI模擬]` #2 N01、#6 N02、#9 N02、#9 N05 | #1 N06、", "| `[AI模擬]` #2 N01、#6 N02、#9 N02、#9 N05、#1 N06 | ")
+        self.edit("#9 N02、#9 N05、#12 N02 | #1 N06、", "#9 N02、#9 N05、#12 N02、#1 N06 | ")
         self.assertFails("#1 N06", "Must")
 
     def test_issue_9_need_not_covered_by_its_part(self):
         # #9 解法 D (the #9 part of X-D) does not cover #9 N03 in #9 6.2.
-        self.edit("| `[AI模擬]` #2 N01、#6 N02、#9 N02、#9 N05 |", "| `[AI模擬]` #2 N01、#6 N02、#9 N02、#9 N03、#9 N05 |")
+        self.edit("#6 N02、#9 N02、#9 N05、#12 N02 |", "#6 N02、#9 N02、#9 N03、#9 N05、#12 N02 |")
         self.assertFails("#9 N03", "X-D")
 
     def test_issue_9_need_with_one_issue_priority_changed(self):

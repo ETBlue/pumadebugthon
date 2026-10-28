@@ -85,10 +85,19 @@ I would like to patch hackathon issues with feature analysis skills I'm using in
 * when it comes to step 5, use the same prioritization method for all issues (MoSCoW for now)
 * write all artifacts in zh-TW
 * take issue #2 as pilot and then expand all other 5 issues. use the #2 pilot as the format model for the other issues, including the CSV file
-* place template files (.md and .csv) in issue #7 folder, and a README file in the analysis folder as a quick intro for other hackathon participants
-* the hackathon host provided their data collected from "市長，你給我聽好了" event. the data is confidential and cannot be shared with the public. I put the data in folder `.confidential` and ignored it in git. use the data in the issue analysis process
-* there is an extra folder `8-smokefree` which is for the "無菸城市" policy from current Taipei City government. because it's related to issue #1, #2 and #5, I would like the AI agent to gather information from the internet and do the analysis for this issue too
+* place template files (.md and .csv) in `0-template` folder, and a README file in the analysis folder as a quick intro for other hackathon participants
 * for each issue, when the analysis is done, check if any stakeholder shared with other issues. if yes, run an extra analysis against multiple issues with shared stakeholders and put results in the `analysis/cross-issue` folder. when running cross issue analysis, combine sulutions from individual issues if possible. for example, the 參與式選址 events for trees, trash cans and smoke areas could be planned together
+
+## data sources
+### citizens' needs
+* the hackathon host provided their data collected from "市長，你給我聽好了" event. the data is confidential and cannot be shared with the public. I put the data in folder `.confidential` and ignored it in git. use the data in the issue analysis process
+### issues
+* besides the issues defined by the hackathon host, there is an extra folder `8-smokefree` which is for the "無菸城市" policy from current Taipei City government. because it's related to issue #1, #2 and #5, I would like the AI agent to gather information from the internet and do the analysis for this issue too
+### solutions
+* for each issue, see if any of current Puma's policies could fit. if yes, add the policy to solutions. fetch Puma's policies data from: https://github.com/SansWord/puma_heart_island_navigator
+* for each issue, see if any of citizen contributed proposals could fit. if yes, add the proposal to solutions. fetch citizen contributed proposals from:
+  * https://puma.taipei/hackathon/vote
+  * https://moat.taipei/code-wall
 
 ## what ETBlue wants to do with the analysis output
 I would like to share the results on hackathon Discord before the event, so that other participants have time to read the content if they want to. I want the hackathon to have the best possible outcome -- becoming a successful demo of future open government initiative in Taipei

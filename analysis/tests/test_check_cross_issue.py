@@ -16,7 +16,8 @@ CROSS = os.path.join("cross-issue", "cross-issue-analysis.md")
 def issue_folders():
     """Names of the issue folders in the working tree that have an issue-analysis.md."""
     return sorted(n for n in os.listdir(ANALYSIS)
-                  if os.path.isfile(os.path.join(ANALYSIS, n, "issue-analysis.md")))
+                  if n != "0-template"  # the template folder is not an issue
+                  and os.path.isfile(os.path.join(ANALYSIS, n, "issue-analysis.md")))
 
 
 class CheckCrossIssueTest(unittest.TestCase):

@@ -21,7 +21,8 @@ OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
 def issue_folders():
     """Names of the issue folders in the working tree that have an issue-analysis.md."""
     return sorted(n for n in os.listdir(ANALYSIS)
-                  if os.path.isfile(os.path.join(ANALYSIS, n, "issue-analysis.md")))
+                  if n != "0-template"  # the template folder is not an issue
+                  and os.path.isfile(os.path.join(ANALYSIS, n, "issue-analysis.md")))
 
 
 class CheckAnalysisTest(unittest.TestCase):
@@ -77,6 +78,15 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_issue_2_passes(self):
         code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_folder_not_in_issues_csv_is_skipped(self):
+        # A folder with an issue-analysis.md that is not in issues.csv (the
+        # template folder 0-template) is not an issue. The 議題 column check of
+        # stakeholders.csv must not count it. A copy of #2 lists many stakeholders,
+        # so the check would fail if it counted the folder.
+        shutil.copytree(os.path.join(self.dir, ISSUE), os.path.join(self.dir, "0-template"))
+        code, out = self.run_check(dates=False)
         self.assertEqual(code, 0, out)
         self.assertIn("PASS", out)
 

@@ -23,6 +23,8 @@ def make_copy(root):
         os.makedirs(os.path.join(d, os.path.dirname(name)), exist_ok=True)
         shutil.copy(os.path.join(ANALYSIS, name), os.path.join(d, name))
     for n in os.listdir(ANALYSIS):
+        if n == "0-template":  # the template folder is not an issue
+            continue
         if os.path.isfile(os.path.join(ANALYSIS, n, "issue-analysis.md")) or n == "cross-issue":
             shutil.copytree(os.path.join(ANALYSIS, n), os.path.join(d, n))
     return d

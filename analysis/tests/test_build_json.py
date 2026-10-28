@@ -25,7 +25,8 @@ def head_issue_folders():
     names = subprocess.run(["git", "ls-tree", "-r", "--name-only", "HEAD", "--", "analysis"], cwd=REPO,
                            capture_output=True, text=True, check=True).stdout.splitlines()
     return sorted({os.path.dirname(n) for n in names
-                   if n.endswith("/issue-analysis.md") and n.count("/") == 2})
+                   if n.endswith("/issue-analysis.md") and n.count("/") == 2
+                   and n != "analysis/0-template/issue-analysis.md"})  # the template is not an issue
 
 
 def make_copy(root):

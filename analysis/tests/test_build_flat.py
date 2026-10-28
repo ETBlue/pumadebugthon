@@ -54,6 +54,8 @@ def make_copy(root):
     shutil.copy(os.path.join(ANALYSIS, "docs", "method.md"), os.path.join(d, "docs", "method.md"))
     open(os.path.join(d, "docs", "human-inputs.md"), "w").close()
     for n in os.listdir(ANALYSIS):
+        if n == "0-template":  # the template folder is not an issue
+            continue
         if os.path.isfile(os.path.join(ANALYSIS, n, "issue-analysis.md")) or n == "cross-issue":
             shutil.copytree(os.path.join(ANALYSIS, n), os.path.join(d, n))
     return d

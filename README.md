@@ -26,7 +26,7 @@
 
 | 路徑 | 內容 |
 |---|---|
-| [`analysis/`](analysis/) | 各議題的分析（`<編號>-<名稱>/issue-analysis.md`、`user-stories.csv`）、跨議題分析（`cross-issue/`）、公開提案的來源對照（`related-proposals/`，不在網站上）、共用的資料表（`data/`）、說明文件（`docs/`）、檢查與轉換程式（`scripts/`）與測試（`tests/`） |
+| [`analysis/`](analysis/) | 各議題的分析（`<編號>-<名稱>/issue-analysis.md`、`user-stories.csv`）、跨議題分析（`cross-issue/`）、公開提案的來源對照（`related-proposals/`，不在網站上）、給其他參加者用的分析範本（`0-template/`）、共用的資料表（`data/`）、說明文件（`docs/`）、檢查與轉換程式（`scripts/`）與測試（`tests/`） |
 | [`app/`](app/) | 網站「市政提案小幫手」的原始碼（React、Vite）。推送到 `main` 之後，GitHub Actions 會自動檢查、建置並發布到 GitHub Pages |
 | [`LICENSE`](LICENSE) | 原始碼的授權（MIT） |
 | [`LICENSE-CONTENT.md`](LICENSE-CONTENT.md) | 內容的授權（CC BY 4.0）與例外 |

@@ -11,7 +11,7 @@ This file holds the rules for Claude Code and other AI agents that work on this 
 ## Owner files
 
 - `human-inputs.md` files (`analysis/docs/`, `app/docs/`, `analysis/<n>-…/`) are written by ETBlue. Never rewrite them. Commit an edit only after ETBlue says it is finished. A changed file in `git status` is not enough.
-- `doc/` (not in git) is ETBlue's own work in progress. Do not read, edit, stage or commit it.
+- `docs/` holds ETBlue's own notes from the hackathon events. Do not edit them. Commit a file there only when ETBlue asks. Before a commit, read it and check it for citizen data, personal details and campaign wording, because the repo is public.
 - Stage files by name. Never use `git add -A` or `git add .`.
 
 ## Citizen data (「市長，你給我聽好了」)

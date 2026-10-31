@@ -24,7 +24,12 @@
 10. A shared stakeholder with different needs (the X-L case) does not make a candidate. People can still add such an X- solution by hand.
 11. Both lists have exactly 2 levels. Only level 2 codes go on issues and solutions. The level 1 code comes from the parent.
 12. Matching (rule R3) uses level 2 codes only.
-13. Cross-issue IDs all use `X-`, one capital letter and a number with no zero padding (ETBlue, 2026-10-31): solutions `X-S1`, `X-S2` …; needs `X-N1`, `X-N2` …; conflicts `X-C1` … (already this format). Solutions map in today's order: X-A → X-S1 … X-M → X-S13. Needs keep their numbers: X-N01 → X-N1 … X-N20 → X-N20. No redirects; the old links were not shared. Issue-level IDs (`1-A`, `N01`, `C1` …) do not change.
+13. Solution, need and conflict IDs use one capital letter and a number with no zero padding (ETBlue, 2026-10-31).
+    - Cross-issue: solutions `X-S1`, `X-S2` …; needs `X-N1`, `X-N2` …; conflicts `X-C1` … (already this format). Solutions map in today's order: X-A → X-S1 … X-M → X-S13. Needs keep their numbers: X-N01 → X-N1 … X-N20 → X-N20.
+    - Issue solutions: `解法 S1`, `S2` … inside an issue; the full ID is `1-S1`, `6-S3`. Letters map in order: A → S1, B → S2 …
+    - Other issue-level IDs (`N01`, `W01`, `O01`, `I01-US01`, `C1` …) do not change.
+    - No redirects; the old links were not shared.
+14. A solution's own 領域 replaces the issue's 領域 (ETBlue, 2026-10-31). So `domains` = `ownDomains`, or else the issue's domains. Rule R3 gives 133 candidates, 63 not in any X- solution.
 
 ## Global constraints
 
@@ -208,15 +213,21 @@
 - [ ] **Step 5:** Run the script on the real data. Compare with spec R3.4: about 139 candidates and 69 not in any X-. Small differences can come from Task 3 edits; explain each one in the report. Do not tune the rule to match.
 - [ ] **Step 6:** Add the build step, the docs, the README line. All checks. **Commit.**
 
-### Task 7: new cross-issue ID format (decision 13)
+### Task 7: new solution and need ID format (decision 13)
 
 Runs after Task 6 is merged, so the candidate list uses the new IDs too.
 
-**Rename everywhere** except `human-inputs.md` files and `docs/`: solutions `X-A…X-M` → `X-S1…X-S13`, needs `X-N01…` → `X-N1…`. Places: the cross-issue file (tables, headings, every reference), `analysis/README.md`, the root `README.md`, `analysis/docs/*`, `app/docs/*`, scripts, tests, app code, app fixtures, i18n text and `candidates.csv`. History notes keep their meaning but use the new IDs.
+**Rename everywhere** except `human-inputs.md` files and `docs/`:
+- issue solutions `A`, `B` … → `S1`, `S2` … (full IDs `1-A` → `1-S1`; references 「解法 A」 → 「解法 S1」, 「解法 A、B」 → 「解法 S1、S2」, 「#1 解法 A」 → 「#1 解法 S1」);
+- cross-issue solutions `X-A…X-M` → `X-S1…X-S13`;
+- cross-issue needs `X-N01…` → `X-N1…`.
+
+Places: all 11 issue files and the 0-template, the cross-issue file, `analysis/related-proposals/`, `analysis/README.md`, the root `README.md`, `analysis/docs/*`, `app/docs/*`, scripts, tests, app code, app fixtures, i18n text, `candidates.csv`. History notes keep their meaning but use the new IDs.
 
 **Rules:**
-- New patterns: solutions `X-S[1-9]\d*`, needs `X-N[1-9]\d*`, conflicts `X-C[1-9]\d*`. Old IDs (`X-A`, `X-N01`) must fail the check with a clear message.
-- Sort by number: `X-S2` before `X-S10`, `X-N2` before `X-N10`. Check every sort in the scripts and in `app/src/lib/` (for example `listSort.ts`), with tests. Zero padding used to make text sorting work for needs, so this is the main risk.
+- New patterns: issue solutions `S[1-9]\d*` (full `\d+-S[1-9]\d*`), cross-issue solutions `X-S[1-9]\d*`, needs `X-N[1-9]\d*`, conflicts `X-C[1-9]\d*`. Old IDs (`A`, `1-A`, `X-A`, `X-N01`) must fail the check with a clear message.
+- Do not mix up the kinds: `S1` (solution) vs `N01` (need) vs `C1` (conflict); `X-S1` vs `X-N1` vs `X-C1`. Tests for each.
+- Sort by number: `S2` before `S10`, `X-S2` before `X-S10`, `X-N2` before `X-N10`. Check every sort in the scripts and in `app/src/lib/` (for example `listSort.ts`), with tests. Today letters and zero padding make text sorting work, so this is the main risk.
 - `analysis/data/updated-dates.csv`: move each row from the old key to the new key, so the dates do not change only because of the rename.
 - Add a numbered decision to `app/docs/design.md`.
 - End with a `git grep` for the old IDs (outside `human-inputs.md`, `docs/` and the history in `analysis/docs/types-research.md`) that prints nothing.

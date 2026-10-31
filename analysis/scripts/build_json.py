@@ -161,7 +161,7 @@ id, priority}], stories, stakeholders, priority (null when the issues
 differ), priorityTag, prioritiesDiffer, reason}], conflicts [{id, text,
 issueConflicts, sideA, sideB, needsA, needsB, wayOut, wayOutSolutions,
 method, result}], solutions [{code, name, tag, parts [{issue, code}],
-spaces, added, summary, updated, needs {must, shouldCould, crossIssue}, measures
+spaces, solutionTypes, added, summary, updated, needs {must, shouldCould, crossIssue}, measures
 [{indicator, baseline, source, from [{issue, code}], isNew}], evaluation
 {laws, privacy, risks, disasters, feasibility}, plan {owner, resources, cost,
 steps} (the tables of its 「### 4.5.n 解法 X-A：…」 section, the same shape

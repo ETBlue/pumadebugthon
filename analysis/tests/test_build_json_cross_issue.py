@@ -99,7 +99,7 @@ class CrossIssueJsonTest(unittest.TestCase):
         # #9 uses no city space. X-D gets its spaces from its other parts.
         d = self.solution("X-D")
         self.assertIn({"issue": 9, "code": "D"}, d["parts"])
-        self.assertEqual(d["spaces"], ["sidewalk-walkway", "sidewalk-furniture", "crossing", "arcade", "park", "mrt-exit"])
+        self.assertEqual(d["spaces"], ["sidewalk-walkway", "sidewalk-furniture", "arcade", "park", "mrt-exit"])
         self.assertIn({"issue": 9, "id": "N05"}, d["needs"]["must"])
         self.assertIn("X-N08", d["needs"]["crossIssue"])
 
@@ -111,6 +111,13 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertIn("X-N01", a["needs"]["crossIssue"])
         self.assertEqual(a["tag"], "AI模擬")
         self.assertEqual(a["plan"]["owner"][0]["tag"], "AI模擬")
+
+    def test_solution_types(self):
+        # Each X- solution has its 4.1 解法類型 cell as a list, in cell order.
+        self.assertEqual(self.solution("X-E")["solutionTypes"], ["facility", "planning"])
+        self.assertEqual(self.solution("X-G")["solutionTypes"], ["service"])
+        for s in self.data["solutions"]:
+            self.assertTrue(1 <= len(s["solutionTypes"]) <= 3, s["code"])
 
     def test_evaluation_and_plan(self):
         # The tables of the 「### 4.5.n 解法 X-A：…」 section: the same keys as

@@ -211,9 +211,30 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-E", "2 or more issues")
 
     def test_combined_space_not_in_parts(self):
-        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk-walkway`、`sidewalk-furniture`、`crossing`、`park`、`mrt-exit`、`indoor-home`、`indoor-business` |",
-                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk-walkway`、`sidewalk-furniture`、`crossing`、`park`、`mrt-exit`、`indoor-home`、`indoor-business`、`utility` |")
+        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk-walkway`、`sidewalk-furniture`、`park`、`mrt-exit`、`indoor-home`、`indoor-business` |",
+                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk-walkway`、`sidewalk-furniture`、`park`、`mrt-exit`、`indoor-home`、`indoor-business`、`utility` |")
         self.assertFails("X-C", "utility")
+
+    # X-E joins #2 解法 A (digital-tool, planning), #2 解法 B (digital-tool,
+    # intake) and #8 解法 B (facility, intake). Its 解法類型 cell is
+    # `facility`、`planning`.
+    X_E_TYPES = "`park` | `facility`、`planning` | 2026-10-20 |"
+
+    def test_combined_solution_type_unknown(self):
+        self.edit(self.X_E_TYPES, "`park` | `facility`、`foo` | 2026-10-20 |")
+        self.assertFails("4.1 X-E", "foo")
+
+    def test_combined_solution_type_not_in_parts(self):
+        self.edit(self.X_E_TYPES, "`park` | `facility`、`subsidy` | 2026-10-20 |")
+        self.assertFails("4.1 X-E", "subsidy", "not a 解法類型 of its issue solutions")
+
+    def test_combined_solution_too_many_types(self):
+        self.edit(self.X_E_TYPES, "`park` | `digital-tool`、`facility`、`intake`、`planning` | 2026-10-20 |")
+        self.assertFails("4.1 X-E", "at most 3")
+
+    def test_combined_solution_types_empty(self):
+        self.edit(self.X_E_TYPES, "`park` |  | 2026-10-20 |")
+        self.assertFails("4.1 X-E", "解法類型")
 
     def test_must_column_priority_wrong(self):
         self.edit("#9 N02、#9 N05、#12 N02 | #1 N06、", "#9 N02、#9 N05、#12 N02、#1 N06 | ")

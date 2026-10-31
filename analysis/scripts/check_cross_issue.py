@@ -37,7 +37,9 @@ Rules checked (see method.md, 跨議題分析):
   The 6.4 rules apply (one 「 vs 」, needs on both sides, a way out with
   combined solution codes or 「未找到」 plus a 審議 method).
 - 4.1: each combined solution joins 2 or more issue solutions from 2 or
-  more issues; its spaces are spaces of those solutions.
+  more issues; its spaces are spaces of those solutions. Its 解法類型 cell
+  has 1 to 3 codes from solution-types.csv, and each code is a 解法類型 of
+  at least one of those solutions.
 - 4.2: a need is listed only if one of the solution's parts covers it in
   the issue's 6.2, in the column of its issue priority. Every X-N group is
   covered by at least one combined solution.
@@ -82,7 +84,7 @@ FOCUS_HEADER = ["特別關注", "共用的利害關係人", "說明"]
 XN_HEADER = ["群組", "以便（摘要）", "各議題的需求", "故事編號", "利害關係人"]
 XP_HEADER = ["群組", "各議題的優先順序", "跨議題的優先順序", "理由"]
 XC_HEADER = ["#", "衝突", "相關的議題衝突", "相關故事", "雙方的需求", "以需求為本的解方", "可能的審議方法", "模擬結果"]
-XS_HEADER = ["代號", "解法", "合併的議題解法", "空間類型", "新增日期", "一句話說明"]
+XS_HEADER = ["代號", "解法", "合併的議題解法", "空間類型", "解法類型", "新增日期", "一句話說明"]
 XMAP_HEADER = ["代號", "解法", "涵蓋的 Must 需求", "涵蓋的 Should / Could 需求", "涵蓋的跨議題共同需求"]
 XM_HEADER = ["解法", "指標", "目前數值（基準值）", "資料來源", "來自"]
 XF_HEADER = ["特別關注", "相關的合併解法", "說明"]
@@ -124,13 +126,16 @@ class Issue:
                     m = re.search(r"\b([MSCW])$", r[3]) if len(r) == len(h) else None
                     if m:
                         self.need_prio[r[0]] = m.group(1)
-        # Solution code -> its space codes (6.1), and the needs it covers (6.2).
-        self.spaces = {}
+        # Solution code -> its space codes and its solution types (6.1), and
+        # the needs it covers (6.2).
+        self.spaces, self.types = {}, {}
         for h, rows in common.tables(common.section(text, "### 6.1") or []):
             if h and h[0] == "代號" and "空間類型" in h:
                 for r in rows:
                     if len(r) == len(h) and re.fullmatch(r"[A-Z]", r[0]):
                         self.spaces[r[0]] = re.findall(r"`([^`]+)`", r[h.index("空間類型")])
+                        if "解法類型" in h:
+                            self.types[r[0]] = re.findall(r"`([^`]+)`", r[h.index("解法類型")])
         self.covers = {}
         for h, rows in common.tables(common.section(text, "### 6.2") or []):
             if h == common.NEED_MAP_HEADER:
@@ -167,8 +172,8 @@ class Issue:
 
 
 def load_context(analysis_dir):
-    """The issues (number -> Issue), the active stakeholders.csv rows (ID -> row)
-    and the space codes."""
+    """The issues (number -> Issue), the active stakeholders.csv rows (ID -> row),
+    the space codes and the solution-types.csv rows (code -> row)."""
     def read_csv(name):
         with open(common.data_file(analysis_dir, name), encoding="utf-8-sig", newline="") as f:
             return list(csv.DictReader(f))
@@ -181,7 +186,8 @@ def load_context(analysis_dir):
     stake = {r["利害關係人編號"]: r for r in read_csv("stakeholders.csv") if not r["備註"].startswith("已改為")}
     # Only the level 2 space codes are tags (ETBlue, 2026-10-31).
     spaces = set(common.leaf_codes(common.space_types(analysis_dir)))
-    return {"issues": issues, "stakeholders": stake, "spaces": spaces, "dir": analysis_dir}
+    return {"issues": issues, "stakeholders": stake, "spaces": spaces,
+            "solutionTypes": common.solution_types(analysis_dir), "dir": analysis_dir}
 
 
 # ---------- helpers ----------
@@ -660,10 +666,21 @@ def read_cross_issue(text, ctx):
             if s not in ctx["spaces"]: err(f"{where}: unknown space code {s}")
             elif s not in part_spaces: err(f"{where}: space {s} is not a space of its issue solutions ({'、'.join(sorted(part_spaces))})")
             if s not in file_spaces: err(f"{where}: space {s} is not in the 空間類型 line")
+        # 解法類型: the same format and code rules as a 6.1 cell. Each code
+        # must also be a type of one of the parts.
+        types, problems = common.type_codes(r["解法類型"], ctx["solutionTypes"], common.SOLUTION_TYPES_FILE)
+        if not types and not problems:
+            err(f"{where}: the 解法類型 cell is empty; write 1 to {common.MAX_TYPES} codes from {common.SOLUTION_TYPES_FILE}")
+        for p in problems: err(f"{where}: 解法類型: {p}")
+        part_types = {t for n, c in parts for t in issues[n].types.get(c, [])}
+        for t in dict.fromkeys(types):
+            if t in ctx["solutionTypes"] and t not in part_types:
+                err(f"{where}: 解法類型 {t} is not a 解法類型 of its issue solutions ({'、'.join(sorted(part_types))})")
         why = date_problem(r["新增日期"])
         if why: err(f"{where}: 新增日期 {why}")
         solutions.append({"code": code, "name": name_cell["text"], "tag": name_cell["tag"],
                           "parts": [{"issue": n, "code": c} for n, c in parts], "spaces": spaces,
+                          "solutionTypes": types,
                           "added": r["新增日期"], "summary": r["一句話說明"],
                           "needs": {"must": [], "shouldCould": [], "crossIssue": []},
                           "measures": [], "evaluation": None, "plan": None, "dependencies": []})

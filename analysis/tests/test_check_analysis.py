@@ -204,7 +204,10 @@ class CheckAnalysisTest(unittest.TestCase):
         """Put the copied #2 in the new format with known values: 「領域：`environment`」,
         解法類型 `participation` on every 6.1 row and an empty 領域 cell. Another
         copied issue without the new format gets it too (with the same values), so
-        update_dates.py can read every file."""
+        update_dates.py can read every file. The 解法類型 cells of the cross-issue
+        4.1 table must be types of their issue solutions, and `participation`
+        on every #2 row breaks that. So the copied cross-issue folder is removed."""
+        self.no_cross_issue()
         for folder in issue_folders():
             path = os.path.join(self.dir, folder, "issue-analysis.md")
             with open(path, encoding="utf-8") as f:

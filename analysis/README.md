@@ -58,6 +58,7 @@
 - 列出共用的利害關係人、跨議題的共同需求（X-N01…）、跨議題的衝突（X-C1…），以及合併的解法（解法 X-A…）。
 - 合併的解法由各議題的解法組成，例如樹、清潔箱與吸菸區的參與式選址一起辦（解法 X-A）。它不取代各議題的解法。
 - 優先順序沿用各議題的結果，不重新排序。
+- [cross-issue/candidates.csv](cross-issue/candidates.csv) 是可以合併的解法的候選清單，由 `cross_candidates.py` 依規則產生。清單只是建議，要不要合併由真人決定。規則見[如何閱讀議題分析](docs/method.md#跨議題分析)。
 - #9 在 2026-10-20 依作者的決定加入。#9 評估的是分析方法與網站，不是街道設施，所以它和其他議題相同的需求不多：#9 的需求加入 X-N04 與 X-N08，#9 解法 D 加入解法 X-D（開放資料）。規則見[如何閱讀議題分析](docs/method.md#跨議題分析)。
 - #3、#4、#5、#6 在 2026-10-23 依作者的決定加入，用相同的規則。新增的跨議題的共同需求是 X-N09–X-N15，新增的衝突是 X-C3（同一條道路的空間），新增的合併的解法是解法 X-F–X-K，例如老舊公寓的到府診斷（防鼠與耐震，解法 X-G），以及通勤公車與接駁的共同規劃（解法 X-H）。
 - #10 在 2026-10-24 依作者的決定加入，用相同的規則。#10 的需求加入 X-N03 與 X-N13，新增的跨議題的共同需求是 X-N16（陳情之後看得見處理的結果）與 X-N17（住戶之間的糾紛有調解的管道）。#10 解法 A 加入解法 X-C（共用的通報入口），新增的合併的解法是解法 X-L（鄰近工地的通知與施工噪音）與解法 X-M（菸味與噪音糾紛的規約範本）。沒有新的跨議題衝突。
@@ -104,11 +105,12 @@ analysis/scripts/build_all.sh
 | 3 | `update_dates.py` | 更新 `data/updated-dates.csv`（利害關係人、解法、故事與空間類型的更新日期） |
 | 4 | `check_analysis.py` | 檢查每個議題的 `issue-analysis.md` 與 `user-stories.csv` |
 | 5 | `check_cross_issue.py` | 檢查跨議題分析 |
-| 6 | （unittest） | 執行 `tests/` 的單元測試 |
-| 7 | `build_json.py` | 產生 app 用的 JSON（預設寫到 `app/public/data`，跨議題分析是 `cross-issue.json`） |
-| 8 | `build_flat.py` | 從這些 JSON 產生整理好的資料表：每一種項目一個 CSV 和一個 JSON 檔，寫到 `<輸出資料夾>/flat/`（說明見[資料說明](docs/data-guide.md)） |
+| 6 | `cross_candidates.py` | 重建 `cross-issue/candidates.csv`（可以合併的解法的候選清單） |
+| 7 | （unittest） | 執行 `tests/` 的單元測試 |
+| 8 | `build_json.py` | 產生 app 用的 JSON（預設寫到 `app/public/data`，跨議題分析是 `cross-issue.json`） |
+| 9 | `build_flat.py` | 從這些 JSON 產生整理好的資料表：每一種項目一個 CSV 和一個 JSON 檔，寫到 `<輸出資料夾>/flat/`（說明見[資料說明](docs/data-guide.md)） |
 
-可以指定輸出資料夾，例如 `analysis/scripts/build_all.sh /tmp/out`。加上 `CI=true` 時，如果步驟 1–3 重新產生的檔案和最後一次提交不同，指令會失敗（GitHub Actions 用這個模式）。
+可以指定輸出資料夾，例如 `analysis/scripts/build_all.sh /tmp/out`。加上 `CI=true` 時，如果步驟 1–3 與步驟 6 重新產生的檔案和最後一次提交不同，指令會失敗（GitHub Actions 用這個模式）。
 
 檢查會確認編號（包含 `#2 O01-US01` 這種跨議題引用）、連結、標記、優先順序與 CSV 是否一致。指令更新了 CSV 時會提醒你，請一起提交。
 

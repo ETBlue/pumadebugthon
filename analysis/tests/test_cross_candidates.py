@@ -4,7 +4,7 @@ The tests use small in-memory inputs. They do not read any file.
 Run from the repo root:
 python3 -I -m unittest discover -s analysis/tests -t . -p 'test_cross_candidates.py' -v
 """
-import importlib.util, os, sys, unittest
+import importlib.util, os, sys, tempfile, unittest
 
 SCRIPTS = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "scripts")
 
@@ -20,10 +20,11 @@ def load_module():
 cc = load_module()
 
 
-def sol(code, types, domains=(), spaces=(), needs=(), stories=()):
-    """One issue solution with only the fields the rule reads."""
+def sol(code, types, domains=(), spaces=(), needs=(), stories=(), should_could=()):
+    """One issue solution with only the fields the rule reads. needs are
+    the Must needs, should_could the Should / Could needs."""
     return {"id": code, "solutionTypes": list(types), "domains": list(domains), "spaces": list(spaces),
-            "stories": list(stories), "needs": {"must": list(needs), "shouldCould": []}}
+            "stories": list(stories), "needs": {"must": list(needs), "shouldCould": list(should_could)}}
 
 
 def issue(num, *solutions):
@@ -76,6 +77,29 @@ class CandidateTest(unittest.TestCase):
                       issue(4, sol("C", [platform], ["transport"], ["car-lane"], needs=["N03"]))]
             c = cross([group("X-N01", (1, "N01"), (4, "N03"))])
             self.assertEqual(pairs(cc.candidates(issues, c)), ["1-A~4-C"], platform)
+
+    def test_platform_type_only_counts_when_shared(self):
+        # s has open-data, t does not. The shared type is facility, so a
+        # shared domain or space is needed, and there is none.
+        issues = [issue(1, sol("A", ["open-data", "facility"], ["environment"], ["park"], needs=["N01"])),
+                  issue(4, sol("C", ["facility"], ["transport"], ["car-lane"], needs=["N03"]))]
+        c = cross([group("X-N01", (1, "N01"), (4, "N03"))])
+        self.assertEqual(cc.candidates(issues, c), [])
+
+    def test_shared_space_without_shared_domain_is_a_pair(self):
+        issues = [issue(4, sol("E", ["facility"], ["transport"], ["car-lane", "alley"], needs=["N02"])),
+                  issue(10, sol("F", ["facility"], ["environment"], ["park", "car-lane"], needs=["N04"]))]
+        c = cross([group("X-N13", (4, "N02"), (10, "N04"))])
+        rows = cc.candidates(issues, c)
+        self.assertEqual(pairs(rows), ["4-E~10-F"])
+        self.assertEqual(rows[0]["spaces"], ["car-lane"])
+        self.assertEqual(rows[0]["domains"], [])
+
+    def test_need_in_should_could_counts(self):
+        issues = [issue(1, sol("A", ["facility"], ["environment"], should_could=["N07"])),
+                  issue(2, sol("B", ["facility"], ["environment"], should_could=["N03"]))]
+        c = cross([group("X-N05", (1, "N07"), (2, "N03"))])
+        self.assertEqual(pairs(cc.candidates(issues, c)), ["1-A~2-B"])
 
     def test_domain_and_need_without_shared_type_is_no_pair(self):
         issues = [issue(1, sol("A", ["facility"], ["environment"], needs=["N01"])),
@@ -144,6 +168,23 @@ class CandidateTest(unittest.TestCase):
             "解法甲,解法乙,共同解法類型,共同領域,共同空間類型,共同需求,已在跨議題解法",
             "1-A,2-A,facility、planning,environment,park、arcade,X-N01,",
         ])
+
+
+class CheckModeTest(unittest.TestCase):
+    def test_file_must_have_the_bom(self):
+        text = cc.csv_text([])
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "candidates.csv")
+            self.assertFalse(cc.file_is_current(path, text))  # no file
+            with open(path, "w", encoding="utf-8", newline="") as f:
+                f.write(text)
+            self.assertFalse(cc.file_is_current(path, text))  # no BOM
+            with open(path, "w", encoding="utf-8-sig", newline="") as f:
+                f.write(text)
+            self.assertTrue(cc.file_is_current(path, text))
+            with open(path, "w", encoding="utf-8-sig", newline="") as f:
+                f.write(text + "1-A,2-A,,,,,\n")
+            self.assertFalse(cc.file_is_current(path, text))  # other rows
 
 
 if __name__ == "__main__":

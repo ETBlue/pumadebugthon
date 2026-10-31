@@ -114,6 +114,19 @@ def csv_text(rows):
     return out.getvalue()
 
 
+BOM = "﻿"
+
+
+def file_is_current(path, text):
+    """True when the file at path is exactly text with a BOM in front.
+    It reads with plain utf-8, so a file without the BOM is not current."""
+    try:
+        with open(path, encoding="utf-8", newline="") as f:
+            return f.read() == BOM + text
+    except FileNotFoundError:
+        return False
+
+
 def main(analysis_dir, out_path, check=False):
     try:
         _, issue_files = build_json.build(analysis_dir)
@@ -128,12 +141,7 @@ def main(analysis_dir, out_path, check=False):
     text = csv_text(rows)
     new = sum(1 for r in rows if not r["crossSolutions"])
     if check:
-        try:
-            with open(out_path, encoding="utf-8-sig", newline="") as f:
-                old = f.read()
-        except FileNotFoundError:
-            old = None
-        if old != text:
+        if not file_is_current(out_path, text):
             print(f"ERROR: {out_path} is not up to date. Run cross_candidates.py without --check and commit it.")
             return 1
         print(f"{out_path} is up to date: {len(rows)} candidates, {new} not in any X- solution")

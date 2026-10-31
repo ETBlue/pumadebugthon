@@ -112,7 +112,7 @@ describe('index.json', () => {
       }
     }
     const codes = index.spaceTypes.map((t) => t.code)
-    expect(codes).toContain('sidewalk')
+    expect(codes).toContain('sidewalk-furniture')
     for (const i of index.issues) for (const c of i.spaces) expect(codes).toContain(c)
   })
 })

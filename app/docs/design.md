@@ -360,7 +360,7 @@ Rules:
 
 ### 3.6 Space page
 
-URL: `#/spaces/<code>/<tab>`, for example `#/spaces/sidewalk/solutions`. The 總覽 tab has no tab segment: `#/spaces/sidewalk` (decision 129). An unknown tab shows 「找不到這個分頁。」 and a link 「回到總覽」.
+URL: `#/spaces/<code>/<tab>`, for example `#/spaces/sidewalk-walkway/solutions`. The 總覽 tab has no tab segment: `#/spaces/sidewalk-walkway` (decision 129). An unknown tab shows 「找不到這個分頁。」 and a link 「回到總覽」.
 
 City space is limited, so this page shows what competes for the same space. Since decision 129 each group is a tab (`PageTabs`, the same as the issue page):
 
@@ -375,7 +375,7 @@ The counts are the same numbers as the card on `#/spaces` (3.9): `issuesBySpace`
 
 **Menu bar of the 解法 and 利害關係人 tabs (decision 138).** Each of these tabs starts with a menu bar (`SpaceTabMenu`). It has the look of the issue tab menu bar (`IssueMenuBar`): a box in the content column. Its controls are the ones of the list bar (`ListBar`): the sort `<select>`, the filter popover buttons and toggles, the stakeholder picker, and the search box. The filters show at every width (no phone sheet), and the bar wraps. Under the bar: the result line with 「清除篩選」 (`ResultLine`), then the sort note while a share sort is on. The URL params are the ones of the list page (`q`, `sort`, `issue`, `who`, `specialonly`). The groups stay: the solutions stay grouped by issue, and the stakeholders stay in 「在多個議題都出現的利害關係人」 and 「各議題的利害關係人」. The sort works inside each group. The tab counts stay the totals (decision 49). The card lists of the 議題, 解法 and 利害關係人 tabs use the card grid of the tabs (`cardGridClass`, decision 138 (9)).
 
-For example, under 人行道: #2 解法 A (bins), the #1 solutions about tree pits, and I06 身心障礙者, who needs sidewalk width in both issues.
+For example, under 人行道設施帶: #2 解法 A (bins), the #1 solutions about tree pits, and I06 身心障礙者, who needs sidewalk width in both issues.
 
 
 Space types have no `[實證]` / `[AI整理]` / `[AI模擬]` tag. They are a classification, like 分類路徑.
@@ -1521,8 +1521,10 @@ New file `analysis/data/space-types.csv`: columns 代碼, 名稱, 分組, 說明
 | 建築 | `indoor` | 建築物內（室內） |
 | 建築 | `building-shell` | 建築物外牆與結構 |
 
+*Changed by decision 150: `sidewalk` and `indoor` are split into exact types, and the list has 2 levels. The file now has the columns 代碼, 名稱, 上層, 說明. See `analysis/data/space-types.csv` for the current list.*
+
 Two levels of tags:
-- **Issue:** a line under the title of each `issue-analysis.md`, using codes: 「空間類型：`sidewalk`、`arcade`、…」.
+- **Issue:** a line under the title of each `issue-analysis.md`, using codes: 「空間類型：`sidewalk-walkway`、`arcade`、…」.
 - **Solution:** 6.1 gets a 空間類型 column, using codes. Each solution lists the spaces it uses.
 
 6.1 also has a 新增日期 column, right after 空間類型: the date the solution was added to 6.1, `YYYY-MM-DD`. A new solution gets today's date. In the issue JSON it is `added`. The 構想 table in 6.1 has no date. Added 2026-10-18; the first values come from git history (the first commit where the code is in 6.1).
@@ -1530,7 +1532,7 @@ Two levels of tags:
 Rules:
 - Every space type of a solution must also be in its issue's list.
 - The Markdown uses codes, never names. A rename changes only `space-types.csv`, not the issue files. The app shows the names.
-- A code never changes and is never reused, so shared links such as `#/spaces/sidewalk` keep working.
+- A code never changes and is never reused, so shared links such as `#/spaces/sidewalk-walkway` keep working. *Exception, decision 150: the old codes `sidewalk` and `indoor` were split, so `#/spaces/sidewalk` and `#/spaces/indoor` stopped working.*
 - Moving a type to another 分組 does not change its code.
 
 ### 5.4 Changes in each issue file
@@ -1821,6 +1823,7 @@ Phase L, search and breadcrumb (2026-10-22). From ETBlue's notes in `human-input
 147. The per-issue parts of the stakeholder page move from 總覽 to 議題 (ETBlue, 2026-10-24: 「For stakeholder page, move issue related content from overview to issues tab.」 and 「drop old links」). (1) **議題.** One section per issue, in issue number order, in one column. Each section starts with the compact `IssueCard` of the issue, as in decision 145. Then come the parts that were on 總覽: 與本題的關係, the priority counts (the legend once per page), the input sources and 「使用者故事」 (the stories, still in the card grid `cardGridClass`). The component is `IssuesTab` in `src/components/stakeholder/IssuesTab.tsx` (before: `OverviewTab.tsx`). The h2 of a section is `sr-only`, because the card shows the title. The cards need only `index.json`, so they show while the issue files load; the parts come when the files are ready. The tab now has the filter row with 「只看有資料根據」, because it shows stories. (2) **IDs.** The part IDs are now `stakeholder-issues-<n>-relation`, `-counts`, `-sources` and `-stories`. The old IDs `stakeholder-overview-<n>-…` are dropped, with no fallback. No link in the app pointed to them. (3) **總覽.** Only the metadata: ID, 分類路徑, 特別關注, 資料根據 over every analyzed issue, and the dates. The field 出現的議題 is removed (and its text `t.stakeholderPage.issues`), because the 議題 tab lists the issues. 總覽 has no filter row. (4) `IssueCardGrid` is now used only by the space page's 議題 tab. This changes 3.3, 3.23.10 and decision 145 (2).
 148. On a cross-issue solution page, the first line of 總覽 names each issue with its title, for example 「跨議題解法・議題：#8 無菸城市、#10 噪音」, not only 「#8、#10」 (ETBlue, 2026-10-24). `CrossIssueLinks` gets `titles={index.issues}`, the same as the cross-issue solution cards.
 149. On the stakeholder 解法 tab, 「跨議題解法」 comes first, above the per-issue sections (ETBlue, 2026-10-24). It changes the order in decision 119. The part has no top border now, because each issue section below has one. The texts that point to it say 「上方」 and 「下面議題」.
+150. The space types `sidewalk` and `indoor` are split, and the space types have 2 levels (ETBlue, 2026-10-30 and 2026-10-31; decisions 5, 6 and 7 of `app/docs/plan-types.md`). (1) **Split.** `sidewalk` (人行道) is split into `sidewalk-walkway` (人行道通行帶) and `sidewalk-furniture` (人行道設施帶). `indoor` (建築物內（室內）) is split into `indoor-home` (住家), `indoor-common` (公寓共用空間), `indoor-business` (營業場所) and `indoor-public` (公共設施室內). Two new types are added: `crossing` (路口與行人穿越道) and `alley` (巷弄). The list is in `analysis/data/space-types.csv`. (2) **2 levels.** The file now has a column 上層 in place of 分組. The 4 level 1 rows are `road` (道路), `underground` (地下), `public-space` (公共空間) and `building` (建築), the 4 groups of before. The `sidewalk-…`, `crossing` and `alley` codes are under `road`. The `indoor-…` codes are under `building`. There is no group 「人行道」 or 「室內」. Only level 2 codes go on issues and solutions. (3) **JSON.** `spaceTypes` in `index.json` has only the level 2 rows. Each row keeps `group` (the 名稱 of its parent, for example 道路) and has a new `parent` (the parent's code, for example `road`). A new list `spaceGroups` has the 4 level 1 rows (`code`, `name`, `description`). The types in `src/types.ts` have these fields as optional (`SpaceType.parent`, `IndexFile.spaceGroups`, `SpaceGroup`). (4) **App.** No UI change. `#/spaces` still groups the cards by `group`, and the 空間分類 filter (`group=<group name>`) still uses the 4 group names, so the headings and the filter look the same as before. The app does not use `parent` or `spaceGroups` yet. (5) **Old links.** `#/spaces/sidewalk` and `#/spaces/indoor` (also with a tab, and `space=sidewalk` or `space=indoor` in a list URL) stop working. A space page shows the normal not-found page, and a list drops the unknown code, the same as any unknown code. There are no redirects, because one old code now has several new codes. (6) **Tests.** The test fixtures use `sidewalk-furniture` in place of `sidewalk` (the fixture issues are #1 trees, #2 trash cans and #8 smoking areas, which use the 設施帶) and `indoor-home` in place of `indoor`. The tests check the same things as before. The search test for 「建築物」 now uses 「站」, because no new `indoor-…` name has 「建築物」 in it. The JSON also has new optional fields for 領域 and 解法類型 (`domains` on an issue, `solutionTypes`, `ownDomains` and `domains` on a solution, `solutionTypes` on a cross-issue solution). They are in `src/types.ts` but not used by the UI yet; a later plan designs that UI. This changes 3.6 and 5.3.
 
 ## 14. Open questions
 

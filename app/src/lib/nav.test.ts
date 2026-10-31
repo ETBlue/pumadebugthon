@@ -25,7 +25,7 @@ describe('activeNavItem', () => {
     // Decision 120: the space list and the space pages belong to 空間.
     ['/spaces', 'spaces'],
     ['/spaces/', 'spaces'],
-    ['/spaces/sidewalk', 'spaces'],
+    ['/spaces/sidewalk-furniture', 'spaces'],
   ] as const)('%s is %s', (path, item) => {
     expect(activeNavItem(path)).toBe(item)
   })
@@ -52,6 +52,6 @@ describe('isNavListPage', () => {
     expect(isNavListPage('/solutions/2-A')).toBe(false)
     expect(isNavListPage('/')).toBe(false)
     expect(isNavListPage('/spaces')).toBe(true)
-    expect(isNavListPage('/spaces/sidewalk')).toBe(false)
+    expect(isNavListPage('/spaces/sidewalk-furniture')).toBe(false)
   })
 })

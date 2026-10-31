@@ -87,11 +87,11 @@ describe('parseMarkdown', () => {
   })
 
   it('turns `text` into a code token and keeps a lone backtick as text', () => {
-    expect(parseMarkdown('地下管線空間 `utility`，見 **`sidewalk`**')).toEqual([
+    expect(parseMarkdown('地下管線空間 `utility`，見 **`sidewalk-furniture`**')).toEqual([
       { type: 'text', text: '地下管線空間 ' },
       { type: 'code', text: 'utility' },
       { type: 'text', text: '，見 ' },
-      { type: 'strong', children: [{ type: 'code', text: 'sidewalk' }] },
+      { type: 'strong', children: [{ type: 'code', text: 'sidewalk-furniture' }] },
     ])
     expect(parseMarkdown('a ` b')).toEqual([{ type: 'text', text: 'a ` b' }])
   })

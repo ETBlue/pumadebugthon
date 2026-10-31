@@ -187,7 +187,7 @@ describe('parseSpaceTab and spaceTabPath (decision 129)', () => {
   })
 
   it('the overview has no tab segment', () => {
-    expect(spaceTabPath('sidewalk', 'overview')).toBe('/spaces/sidewalk')
-    expect(spaceTabPath('sidewalk', 'solutions')).toBe('/spaces/sidewalk/solutions')
+    expect(spaceTabPath('sidewalk-furniture', 'overview')).toBe('/spaces/sidewalk-furniture')
+    expect(spaceTabPath('sidewalk-furniture', 'solutions')).toBe('/spaces/sidewalk-furniture/solutions')
   })
 })

@@ -16,7 +16,7 @@ import { findStakeholder } from './stakeholders'
 
 const index = indexJson as IndexFile
 const issues = [treesJson, trashcansJson, smokefreeJson, policyJson] as IssueFile[]
-const CODE = 'sidewalk'
+const CODE = 'sidewalk-furniture'
 const state = (part: Partial<ListState>): ListState => ({ ...DEFAULT_LIST_STATE, issues: [], spaces: [], groups: [], ...part })
 /** 「2-A」 for each issue solution of the list. */
 const keys = (list: RecentSolution[]) => list.map((x) => (x.kind === 'issue' ? `${x.issueNumber}-${x.solution.id}` : x.solution.code))
@@ -25,7 +25,7 @@ describe('spaceTabParams', () => {
   const numbers = spaceSolutionIssues(issues, CODE)
 
   it('the issues of the tab are the issues with a solution in the space', () => {
-    // #9 is analyzed but does not use the sidewalk.
+    // #9 is analyzed but does not use sidewalk-furniture.
     expect(numbers).toEqual([1, 2, 8])
     expect(spaceStakeholderIssues(issues, CODE)).toEqual([1, 2, 8])
   })
@@ -38,7 +38,7 @@ describe('spaceTabParams', () => {
   it('drops what the tab does not offer, and asks for a replace', () => {
     // #9 has no solution here, 跨議題 is not offered, and every solution
     // already uses the space.
-    const p = spaceTabParams('solutions', new URLSearchParams('issue=9&issue=X&issue=1&space=sidewalk'), index, numbers)
+    const p = spaceTabParams('solutions', new URLSearchParams('issue=9&issue=X&issue=1&space=sidewalk-furniture'), index, numbers)
     expect(p).toMatchObject({ issues: [1], crossChoice: false, spaces: [], replace: true })
     // The 解法 tab has no 解法涵蓋比例 sort.
     expect(spaceTabParams('solutions', new URLSearchParams('sort=solutions'), index, numbers)).toMatchObject({

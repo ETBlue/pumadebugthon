@@ -91,15 +91,15 @@ describe('usedSpaceTypes', () => {
   it('lists the space types of analyzed issues, in space-types.csv order', () => {
     const codes = usedSpaceTypes(index).map((s) => s.code)
     const all = index.spaceTypes.map((s) => s.code)
-    expect(new Set(codes)).toEqual(new Set(['sidewalk', 'arcade', 'bus-stop', 'park', 'mrt-exit', 'indoor', 'utility', 'bike-lane']))
+    expect(new Set(codes)).toEqual(new Set(['sidewalk-furniture', 'arcade', 'bus-stop', 'park', 'mrt-exit', 'indoor-home', 'utility', 'bike-lane']))
     expect(codes).toEqual(all.filter((c) => codes.includes(c)))
   })
 })
 
 describe('spaceTypeNames', () => {
   it('gives the name of each code, and the code when it is unknown', () => {
-    expect(spaceTypeNames(index.spaceTypes, ['sidewalk', 'nope'])).toEqual([
-      { code: 'sidewalk', name: '人行道' },
+    expect(spaceTypeNames(index.spaceTypes, ['sidewalk-furniture', 'nope'])).toEqual([
+      { code: 'sidewalk-furniture', name: '人行道設施帶' },
       { code: 'nope', name: 'nope' },
     ])
   })

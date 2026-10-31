@@ -140,17 +140,17 @@ describe('filterSpaces (decision 122)', () => {
 
   it('keeps the spaces of any picked group', () => {
     expect(codes({ groups: ['地下'] })).toEqual(['sewer', 'utility'])
-    expect(codes({ groups: ['地下', '建築'] })).toEqual(['sewer', 'utility', 'indoor', 'building-shell'])
+    expect(codes({ groups: ['地下', '建築'] })).toEqual(['sewer', 'utility', 'indoor-home', 'building-shell'])
   })
 
   it('keeps the spaces that any picked issue uses, and hides the unused spaces', () => {
-    expect(codes({ issues: [1] })).toEqual(['sidewalk', 'bike-lane', 'utility', 'park'])
-    expect(codes({ issues: [1, 2] })).toEqual(['sidewalk', 'arcade', 'bike-lane', 'utility', 'park', 'mrt-exit'])
+    expect(codes({ issues: [1] })).toEqual(['sidewalk-furniture', 'bike-lane', 'utility', 'park'])
+    expect(codes({ issues: [1, 2] })).toEqual(['sidewalk-furniture', 'arcade', 'bike-lane', 'utility', 'park', 'mrt-exit'])
     expect(codes({ issues: [1] })).not.toContain('parking')
   })
 
   it('needs both filters to match', () => {
-    expect(codes({ issues: [1], groups: ['道路'] })).toEqual(['sidewalk', 'bike-lane'])
+    expect(codes({ issues: [1], groups: ['道路'] })).toEqual(['sidewalk-furniture', 'bike-lane'])
     expect(codes({ issues: [1], groups: ['建築'] })).toEqual([])
   })
 })

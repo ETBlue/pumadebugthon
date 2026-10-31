@@ -7,7 +7,7 @@
       "source": "主辦單位",
       "available": true,
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "park",
         "utility",
         "bike-lane"
@@ -39,7 +39,7 @@
       "source": "主辦單位",
       "available": true,
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "arcade",
         "park",
         "mrt-exit"
@@ -118,12 +118,12 @@
       "source": "參加者補充",
       "available": true,
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "arcade",
         "bus-stop",
         "park",
         "mrt-exit",
-        "indoor"
+        "indoor-home"
       ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
@@ -1071,82 +1071,117 @@
   },
   "spaceTypes": [
     {
-      "code": "sidewalk",
-      "name": "人行道",
+      "code": "sidewalk-furniture",
+      "name": "人行道設施帶",
       "group": "道路",
-      "description": "道路兩側供行人通行的空間。"
+      "parent": "road",
+      "description": "人行道上放置行道樹、樹穴、垃圾桶、電桿、箱體、標誌、公車站牌與吸菸區的帶狀空間。"
     },
     {
       "code": "arcade",
       "name": "騎樓",
       "group": "道路",
+      "parent": "road",
       "description": "建築物一樓臨街、供行人通行的有頂空間。"
     },
     {
       "code": "bike-lane",
       "name": "單車道",
       "group": "道路",
+      "parent": "road",
       "description": "道路上專供自行車行駛的車道。"
     },
     {
       "code": "scooter-lane",
       "name": "機車道",
       "group": "道路",
+      "parent": "road",
       "description": "道路上供機車行駛的車道。"
     },
     {
       "code": "car-lane",
       "name": "汽車道",
       "group": "道路",
+      "parent": "road",
       "description": "道路上供汽車行駛的車道。"
     },
     {
       "code": "bus-stop",
       "name": "公車站與候車亭",
       "group": "道路",
+      "parent": "road",
       "description": "乘客上下公車與等車的地方。"
     },
     {
       "code": "sewer",
       "name": "下水道",
       "group": "地下",
+      "parent": "underground",
       "description": "地面下排放雨水與污水的管道。"
     },
     {
       "code": "utility",
       "name": "地下管線",
       "group": "地下",
+      "parent": "underground",
       "description": "埋在地面下的水、電、瓦斯與通訊管線。"
     },
     {
       "code": "park",
       "name": "公園綠地",
       "group": "公共空間",
+      "parent": "public-space",
       "description": "供民眾休憩的公園與綠地。"
     },
     {
       "code": "mrt-exit",
       "name": "捷運站出口與周邊",
       "group": "公共空間",
+      "parent": "public-space",
       "description": "捷運站出入口與附近的人行空間。"
     },
     {
       "code": "parking",
       "name": "停車場",
       "group": "公共空間",
+      "parent": "public-space",
       "description": "供汽車或機車停放的場地。"
     },
     {
-      "code": "indoor",
-      "name": "建築物內（室內）",
+      "code": "indoor-home",
+      "name": "住家",
       "group": "建築",
-      "description": "建築物裡面的空間。"
+      "parent": "building",
+      "description": "住家的室內空間。"
     },
     {
       "code": "building-shell",
       "name": "建築物外牆與結構",
       "group": "建築",
+      "parent": "building",
       "description": "建築物的外牆、樑柱等結構部分。"
+    }
+  ],
+  "spaceGroups": [
+    {
+      "code": "road",
+      "name": "道路",
+      "description": "道路與路邊供行人和車輛通行的空間。"
+    },
+    {
+      "code": "underground",
+      "name": "地下",
+      "description": "地面下的管道與管線。"
+    },
+    {
+      "code": "public-space",
+      "name": "公共空間",
+      "description": "供民眾使用的公園、捷運站周邊與停車場等場地。"
+    },
+    {
+      "code": "building",
+      "name": "建築",
+      "description": "建築物的室內空間與外牆、結構。"
     }
   ],
   "openData": [

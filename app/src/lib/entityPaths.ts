@@ -152,14 +152,14 @@ export const SPACE_TABS = ['overview', 'issues', 'solutions', 'stakeholders'] as
 export type SpaceTab = (typeof SPACE_TABS)[number]
 
 /** The space tab of the URL segment. No segment is the overview, so an old
- * link to "/spaces/sidewalk" opens the first tab. An unknown name returns null. */
+ * link to "/spaces/sidewalk-walkway" opens the first tab. An unknown name returns null. */
 export function parseSpaceTab(segment: string | undefined): SpaceTab | null {
   if (segment === undefined) return 'overview'
   return (SPACE_TABS as readonly string[]).includes(segment) ? (segment as SpaceTab) : null
 }
 
-/** The URL path of a space tab, for example "/spaces/sidewalk/solutions".
- * The overview has no tab segment: "/spaces/sidewalk". */
+/** The URL path of a space tab, for example "/spaces/sidewalk-walkway/solutions".
+ * The overview has no tab segment: "/spaces/sidewalk-walkway". */
 export function spaceTabPath(code: string, tab: SpaceTab): string {
   return withTab(`/spaces/${code}`, tab)
 }

@@ -8,7 +8,7 @@
     9
   ],
   "spaces": [
-    "sidewalk",
+    "sidewalk-furniture",
     "arcade",
     "park",
     "mrt-exit",
@@ -1849,7 +1849,7 @@
         }
       ],
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "arcade",
         "park"
       ],
@@ -2149,7 +2149,7 @@
         }
       ],
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "utility"
       ],
       "added": "2026-10-20",
@@ -2448,7 +2448,7 @@
         }
       ],
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "park",
         "mrt-exit"
       ],
@@ -2720,7 +2720,7 @@
         }
       ],
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "arcade",
         "park",
         "mrt-exit"
@@ -3047,7 +3047,7 @@
         }
       ],
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "mrt-exit",
         "park"
       ],

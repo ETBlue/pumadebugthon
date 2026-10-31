@@ -41,10 +41,10 @@ describe('listParamsOf', () => {
   })
 
   it('reads the used space types only, in the order of space-types.csv', () => {
-    expect(read('issues', 'space=sidewalk&space=park')).toMatchObject({ spaces: ['sidewalk', 'park'], replace: false })
-    expect(read('solutions', 'space=park&space=sidewalk')).toMatchObject({ spaces: ['sidewalk', 'park'], replace: true })
+    expect(read('issues', 'space=sidewalk-furniture&space=park')).toMatchObject({ spaces: ['sidewalk-furniture', 'park'], replace: false })
+    expect(read('solutions', 'space=park&space=sidewalk-furniture')).toMatchObject({ spaces: ['sidewalk-furniture', 'park'], replace: true })
     expect(read('issues', 'space=parking&space=nope')).toMatchObject({ spaces: [], replace: true })
-    expect(read('stakeholders', 'space=sidewalk')).toMatchObject({ spaces: [], replace: true })
+    expect(read('stakeholders', 'space=sidewalk-furniture')).toMatchObject({ spaces: [], replace: true })
   })
 
   it('reads who, and drops a moved, unknown or unlisted ID (decision 113: a moved ID is not changed)', () => {
@@ -99,14 +99,14 @@ describe('listParamsOf', () => {
 
 describe('listUrlSearch', () => {
   const state: ListState = {
-    sort: 'evidence', issues: [2], crossChoice: true, spaces: ['sidewalk'], who: 'I06', specialOnly: true, view: 'tree', q: '無菸',
+    sort: 'evidence', issues: [2], crossChoice: true, spaces: ['sidewalk-furniture'], who: 'I06', specialOnly: true, view: 'tree', q: '無菸',
     groups: ['道路'],
   }
 
   it('writes only the params of the page, in a fixed order', () => {
-    expect(listUrlSearch('issues', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&space=sidewalk&who=I06')
+    expect(listUrlSearch('issues', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&space=sidewalk-furniture&who=I06')
     expect(listUrlSearch('stakeholders', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&issue=X&issue=2&specialonly=1&view=tree')
-    expect(listUrlSearch('solutions', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&issue=X&issue=2&space=sidewalk&who=I06')
+    expect(listUrlSearch('solutions', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&issue=X&issue=2&space=sidewalk-furniture&who=I06')
     // #/spaces: no sort and no 「跨議題」 (decision 122).
     expect(listUrlSearch('spaces', { ...state, crossChoice: false })).toBe('?q=%E7%84%A1%E8%8F%B8&issue=2&group=%E9%81%93%E8%B7%AF')
   })

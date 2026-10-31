@@ -60,55 +60,55 @@ const menuLinks = (html: string) => {
   return [...nav.matchAll(/<a ([^>]*)>/g)].map((m) => m[1])
 }
 
-const sidewalkIssues = issuesBySpace(index, 'sidewalk').length
+const sidewalkIssues = issuesBySpace(index, 'sidewalk-furniture').length
 
 describe('the space page tabs (decision 129)', () => {
   it('has four tabs with counts: the same numbers as the card on #/spaces', () => {
     expect(sidewalkIssues).toBeGreaterThan(0)
-    // 50 and 14: the numbers of the sidewalk card test in Spaces.test.tsx.
-    expect(tabNames(render('/spaces/sidewalk'))).toEqual(['總覽', `議題 ${sidewalkIssues}`, '解法 14', '利害關係人 50'])
+    // 50 and 14: the numbers of the sidewalk-furniture card test in Spaces.test.tsx.
+    expect(tabNames(render('/spaces/sidewalk-furniture'))).toEqual(['總覽', `議題 ${sidewalkIssues}`, '解法 14', '利害關係人 50'])
   })
 
   it('while the issues load, 議題 has its count and the others the name only', () => {
     state.issuesReady = false
-    const html = render('/spaces/sidewalk/solutions')
+    const html = render('/spaces/sidewalk-furniture/solutions')
     expect(tabNames(html)).toEqual(['總覽', `議題 ${sidewalkIssues}`, '解法', '利害關係人'])
     expect(html).toContain('載入中…')
   })
 
   it('an old link with no tab opens 總覽, with 分組, 說明 and the intro', () => {
-    const html = render('/spaces/sidewalk')
+    const html = render('/spaces/sidewalk-furniture')
     expect(activeTab(html)).toBe('總覽')
     expect(html).toContain('分組')
-    expect(html).toContain('道路兩側供行人通行的空間。')
+    expect(html).toContain('人行道上放置行道樹、樹穴、垃圾桶、電桿、箱體、標誌、公車站牌與吸菸區的帶狀空間。')
     expect(html).toContain('城市的空間有限')
     // The other groups are on their own tabs.
     expect(html).not.toContain('在多個議題都出現的利害關係人')
   })
 
   it('has a side menu: a nav with the tab links, the current one marked', () => {
-    const links = menuLinks(render('/spaces/sidewalk/stakeholders?evidence=1&pick=W08'))
+    const links = menuLinks(render('/spaces/sidewalk-furniture/stakeholders?evidence=1&pick=W08'))
     expect(links).toHaveLength(4)
     // The same URLs as the tabs: ?evidence= is kept, ?pick= is dropped.
-    expect(links[0]).toContain('href="/spaces/sidewalk?evidence=1"')
-    expect(links[1]).toContain('href="/spaces/sidewalk/issues?evidence=1"')
-    expect(links[2]).toContain('href="/spaces/sidewalk/solutions?evidence=1"')
-    expect(links[3]).toContain('href="/spaces/sidewalk/stakeholders?evidence=1"')
+    expect(links[0]).toContain('href="/spaces/sidewalk-furniture?evidence=1"')
+    expect(links[1]).toContain('href="/spaces/sidewalk-furniture/issues?evidence=1"')
+    expect(links[2]).toContain('href="/spaces/sidewalk-furniture/solutions?evidence=1"')
+    expect(links[3]).toContain('href="/spaces/sidewalk-furniture/stakeholders?evidence=1"')
     expect(links.filter((a) => a.includes('aria-current="page"'))).toEqual([links[3]])
   })
 
   it('shows one content group per tab, with the old heading as the hidden h2', () => {
-    const issues = render('/spaces/sidewalk/issues')
+    const issues = render('/spaces/sidewalk-furniture/issues')
     expect(issues).toContain('<h2 class="sr-only">使用這個空間的議題</h2>')
     expect(issues).not.toContain('分組')
     expect([...issues.matchAll(/<article/g)]).toHaveLength(sidewalkIssues)
 
-    const solutions = render('/spaces/sidewalk/solutions')
+    const solutions = render('/spaces/sidewalk-furniture/solutions')
     expect(solutions).toContain('<h2 class="sr-only">使用這個空間的解法</h2>')
     expect(solutions).toContain('id="space-solutions-2"')
     expect(solutions).not.toContain('在多個議題都出現的利害關係人')
 
-    const people = render('/spaces/sidewalk/stakeholders')
+    const people = render('/spaces/sidewalk-furniture/stakeholders')
     expect(people).toContain('<h2 class="sr-only">相關的利害關係人</h2>')
     expect(people).toContain('>在多個議題都出現的利害關係人</h3>')
     expect(people).toContain('>各議題的利害關係人</h3>')
@@ -116,21 +116,21 @@ describe('the space page tabs (decision 129)', () => {
   })
 
   it('adds the tab name to the page title, but not for 總覽', () => {
-    expect(titleOf(render('/spaces/sidewalk'))).toMatch(/^人行道/)
-    expect(titleOf(render('/spaces/sidewalk'))).not.toContain('總覽')
-    expect(titleOf(render('/spaces/sidewalk/solutions'))).toMatch(/^人行道.*解法/)
+    expect(titleOf(render('/spaces/sidewalk-furniture'))).toMatch(/^人行道設施帶/)
+    expect(titleOf(render('/spaces/sidewalk-furniture'))).not.toContain('總覽')
+    expect(titleOf(render('/spaces/sidewalk-furniture/solutions'))).toMatch(/^人行道設施帶.*解法/)
   })
 
   it('keeps the band with the back button and the h1 on every tab', () => {
     for (const tab of ['', '/issues', '/solutions', '/stakeholders']) {
-      expect(render(`/spaces/sidewalk${tab}`)).toMatch(/<a [^>]*href="\/spaces"[^>]*>[\s\S]*?回到空間列表<\/span><\/a><h1[^>]*>人行道/)
+      expect(render(`/spaces/sidewalk-furniture${tab}`)).toMatch(/<a [^>]*href="\/spaces"[^>]*>[\s\S]*?回到空間列表<\/span><\/a><h1[^>]*>人行道設施帶/)
     }
   })
 
   it('an unknown tab shows 「找不到這個分頁。」 and a link to 總覽', () => {
-    const html = render('/spaces/sidewalk/people')
+    const html = render('/spaces/sidewalk-furniture/people')
     expect(html).toContain('找不到這個分頁。')
-    expect(html).toMatch(/href="\/spaces\/sidewalk"[^>]*>回到總覽/)
+    expect(html).toMatch(/href="\/spaces\/sidewalk-furniture"[^>]*>回到總覽/)
     expect(activeTab(html)).toBeUndefined()
   })
 
@@ -145,7 +145,7 @@ describe('the space page tabs (decision 129)', () => {
   })
 
   it('has the same phone tab list as the issue page: one row that scrolls sideways', () => {
-    const list = /role="tablist"[^>]*class="([^"]*)"|class="([^"]*)"[^>]*role="tablist"/.exec(render('/spaces/sidewalk'))
+    const list = /role="tablist"[^>]*class="([^"]*)"|class="([^"]*)"[^>]*role="tablist"/.exec(render('/spaces/sidewalk-furniture'))
     const cls = (list?.[1] ?? list?.[2] ?? '').split(' ')
     expect(cls).toEqual(expect.arrayContaining(['flex-nowrap', 'overflow-x-auto', 'md:hidden']))
   })
@@ -163,7 +163,7 @@ const solutionOrder = (html: string, n: number) =>
 
 describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', () => {
   it('the 解法 tab has the bar of the issue tabs with the sorts of #/solutions, 議題, 利害關係人 and the search', () => {
-    const html = render('/spaces/sidewalk/solutions')
+    const html = render('/spaces/sidewalk-furniture/solutions')
     expect(menuBar(html)).not.toBe('')
     expect(sortOptions(html)).toEqual(['最近更新', '最近新增', '資料根據比例'])
     expect(html).toContain('議題：全部')
@@ -172,7 +172,7 @@ describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', (
   })
 
   it('the 利害關係人 tab has the sorts of #/stakeholders, 議題, 只看特別關注族群 and the search, but no view switch', () => {
-    const html = render('/spaces/sidewalk/stakeholders')
+    const html = render('/spaces/sidewalk-furniture/stakeholders')
     expect(sortOptions(html)).toEqual(['最近更新', '最近新增', '資料根據比例', '解法涵蓋比例'])
     expect(html).toContain('議題：全部')
     expect(html).toContain('只看特別關注族群')
@@ -182,15 +182,15 @@ describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', (
   })
 
   it('the 總覽 and 議題 tabs have no bar', () => {
-    expect(menuBar(render('/spaces/sidewalk'))).toBe('')
-    expect(menuBar(render('/spaces/sidewalk/issues'))).toBe('')
+    expect(menuBar(render('/spaces/sidewalk-furniture'))).toBe('')
+    expect(menuBar(render('/spaces/sidewalk-furniture/issues'))).toBe('')
   })
 
   it('sort=evidence changes the order inside an issue group: the order of #/solutions', () => {
     // 最近更新: all on the same date, so the highest letter first.
-    expect(solutionOrder(render('/spaces/sidewalk/solutions'), 1)).toEqual(['1-E', '1-D', '1-C', '1-B', '1-A'])
-    const html = render('/spaces/sidewalk/solutions?sort=evidence')
-    const items = spaceSolutionItems(issueFiles, 'sidewalk')
+    expect(solutionOrder(render('/spaces/sidewalk-furniture/solutions'), 1)).toEqual(['1-E', '1-D', '1-C', '1-B', '1-A'])
+    const html = render('/spaces/sidewalk-furniture/solutions?sort=evidence')
+    const items = spaceSolutionItems(issueFiles, 'sidewalk-furniture')
     const expected = spaceSolutionsView(items, { ...DEFAULT_LIST_STATE, sort: 'evidence' }, issueFiles)
       .filter((x) => x.kind === 'issue' && x.issueNumber === 1)
       .map((x) => `1-${'id' in x.solution ? x.solution.id : ''}`)
@@ -200,30 +200,30 @@ describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', (
   })
 
   it('issue=8 shows only the #8 group, with the result line and 清除篩選; the tab count stays the total', () => {
-    const html = render('/spaces/sidewalk/solutions?issue=8&evidence=1')
+    const html = render('/spaces/sidewalk-furniture/solutions?issue=8&evidence=1')
     expect(html).toContain('id="space-solutions-8"')
     expect(html).not.toContain('id="space-solutions-1"')
     expect(resultLine(html)).toBe('顯示 4 個解法，共 14 個。篩選：議題：#8。 清除篩選')
     // 「清除篩選」 removes the filter and keeps evidence.
-    expect(html).toMatch(/href="\/spaces\/sidewalk\/solutions\?evidence=1"[^>]*>清除篩選/)
+    expect(html).toMatch(/href="\/spaces\/sidewalk-furniture\/solutions\?evidence=1"[^>]*>清除篩選/)
     expect(tabNames(html)).toEqual(['總覽', `議題 ${sidewalkIssues}`, '解法 14', '利害關係人 50'])
   })
 
   it('the search finds by code and name, with an empty state', () => {
-    expect(resultLine(render('/spaces/sidewalk/solutions?q=2a'))).toContain('顯示 1 個解法，共 14 個。')
-    const none = render('/spaces/sidewalk/stakeholders?q=不會有這個字')
+    expect(resultLine(render('/spaces/sidewalk-furniture/solutions?q=2a'))).toContain('顯示 1 個解法，共 14 個。')
+    const none = render('/spaces/sidewalk-furniture/stakeholders?q=不會有這個字')
     expect(none).toContain('找不到符合「不會有這個字」的利害關係人。')
     expect(none).not.toContain('>各議題的利害關係人</h3>')
   })
 
   it('specialonly=1 keeps the stakeholders with a 特別關注 group', () => {
-    const html = render('/spaces/sidewalk/stakeholders?specialonly=1')
+    const html = render('/spaces/sidewalk-furniture/stakeholders?specialonly=1')
     expect(resultLine(html)).toBe('顯示 9 位利害關係人，共 50 位。篩選：只看特別關注族群。 清除篩選')
     expect(tabNames(html)[3]).toBe('利害關係人 50')
   })
 
   it('a share sort shows the sort note, linked to the <select>', () => {
-    const html = render('/spaces/sidewalk/stakeholders?sort=solutions')
+    const html = render('/spaces/sidewalk-furniture/stakeholders?sort=solutions')
     const id = /<select id="[^"]*"[^>]*aria-describedby="([^"]+)"/.exec(html)?.[1]
     expect(id).toBeDefined()
     expect(html).toContain(`<p id="${id}"`)
@@ -231,15 +231,15 @@ describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', (
   })
 
   it('a tab change drops the sort, filters and search, and keeps evidence (as decisions 121 and 127)', () => {
-    const links = menuLinks(render('/spaces/sidewalk/solutions?sort=added&issue=2&who=I06&q=a&evidence=1'))
-    expect(links[3]).toContain('href="/spaces/sidewalk/stakeholders?evidence=1"')
+    const links = menuLinks(render('/spaces/sidewalk-furniture/solutions?sort=added&issue=2&who=I06&q=a&evidence=1'))
+    expect(links[3]).toContain('href="/spaces/sidewalk-furniture/stakeholders?evidence=1"')
   })
 
   it('the card lists of 議題, 解法 and 利害關係人 use the card grid of the tabs, with cards of the same height', () => {
     const lists = (html: string) => [...html.matchAll(/<ul class="([^"]*)"/g)].map((m) => m[1])
     const grid = (cls: string) => cls.split(' ').includes('grid') && cls.includes('lg:grid-cols-2')
     for (const [tab, groups] of [['issues', 1], ['solutions', 3], ['stakeholders', 4]] as const) {
-      const html = render(`/spaces/sidewalk/${tab}`)
+      const html = render(`/spaces/sidewalk-furniture/${tab}`)
       // The issue group lists, plus the 在多個議題都出現 list on 利害關係人.
       expect(lists(html).filter(grid)).toHaveLength(groups)
       // Every card in a grid item has h-full, so a row has one height.
@@ -250,7 +250,7 @@ describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', (
   })
 
   it('the block 在多個議題都出現的利害關係人 has its heading but no border box', () => {
-    const html = render('/spaces/sidewalk/stakeholders')
+    const html = render('/spaces/sidewalk-furniture/stakeholders')
     const section = /<section [^>]*aria-labelledby="space-shared"[^>]*>/.exec(html)?.[0] ?? ''
     expect(section).not.toBe('')
     expect(section).not.toMatch(/border|rounded|p-4/)

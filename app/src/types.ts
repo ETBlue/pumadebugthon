@@ -65,8 +65,12 @@ interface IssueSummaryBase {
 /** An issue with an analysis. */
 export interface AvailableIssueSummary extends IssueSummaryBase {
   available: true
-  /** Space type codes, for example "sidewalk". */
+  /** Space type codes (level 2 only), for example "sidewalk-walkway". */
   spaces: string[]
+  /** 領域 codes from the issue's 「領域：」 line (level 2 only), for example
+   * "environment". Optional so test data and older JSON still fit. Not used by
+   * the UI yet. */
+  domains?: string[]
   /** 新增日期 in issues.csv: the day the issue's analysis was first committed
    * (YYYY-MM-DD). Optional in the type so test data and older JSON still fit (design 3.23.8). */
   added?: string | null
@@ -83,6 +87,7 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
 export interface UnavailableIssueSummary extends IssueSummaryBase {
   available: false
   spaces: []
+  domains?: []
   added?: null
   updated: null
   counts: null
@@ -112,11 +117,16 @@ export interface Stakeholder {
   updated?: string | null
 }
 
-/** A row of analysis/data/space-types.csv. */
+/** A level 2 row of analysis/data/space-types.csv. The level 1 rows are in
+ * IndexFile.spaceGroups. */
 export interface SpaceType {
   code: string
   name: string
+  /** The 名稱 of the parent row, for example "道路". The space list groups by it. */
   group: string
+  /** The code of the parent row (上層), for example "road". Optional so test
+   * data and older JSON still fit. Not used by the UI yet. */
+  parent?: string
   description: string
   /** 新增日期 from analysis/data/updated-dates.csv (YYYY-MM-DD): the day the
    * row was added to space-types.csv. null when the file has no row for it.
@@ -148,7 +158,18 @@ export interface IndexFile {
   /** 分類路徑 prefix -> name, for example "gov" -> "政府". */
   pathLabels: Record<string, string>
   spaceTypes: SpaceType[]
+  /** The level 1 rows of space-types.csv (the groups), for example
+   * {code: "road", name: "道路", ...}. Optional so test data and older JSON
+   * still fit. Not used by the UI yet. */
+  spaceGroups?: SpaceGroup[]
   openData: OpenDataset[]
+}
+
+/** A level 1 row of analysis/data/space-types.csv. */
+export interface SpaceGroup {
+  code: string
+  name: string
+  description: string
 }
 
 // ---------- issues/<folder>.json ----------
@@ -279,6 +300,15 @@ export interface Solution {
   summary: string
   /** Space type codes. */
   spaces: string[]
+  /** 解法類型 codes from the 6.1 cell (1 to 3), for example "open-data".
+   * Optional so test data and older JSON still fit. Not used by the UI yet. */
+  solutionTypes?: string[]
+  /** 領域 codes from the 6.1 cell: only when they differ from the issue's
+   * 領域. Often []. Optional, not used by the UI yet. */
+  ownDomains?: string[]
+  /** The solution's 領域: ownDomains when it is not empty, else the issue's
+   * 領域. Optional, not used by the UI yet. */
+  domains?: string[]
   /** 新增日期: the date the solution was added to 6.1 (YYYY-MM-DD). */
   added: string
   /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null when
@@ -447,6 +477,9 @@ export interface IssueFile {
   title: string
   spaces: string[]
   updated: string | null
+  /** 領域 codes from the 「領域：」 line (level 2 only). Optional so test data
+   * and older JSON still fit. Not used by the UI yet. */
+  domains?: string[]
   /** "needs": the needs-based format (has 相同需求群組). "stories": the old
    * format. #1, #2 and #8 use "needs". */
   format: 'needs' | 'stories'
@@ -574,6 +607,9 @@ export interface CrossSolution {
   /** The issue solutions it combines. */
   parts: CrossPart[]
   spaces: string[]
+  /** 解法類型 codes, for example "open-data". Optional so test data and
+   * older JSON still fit. Not used by the UI yet. */
+  solutionTypes?: string[]
   /** 新增日期 (YYYY-MM-DD). */
   added: string
   /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null when

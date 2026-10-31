@@ -48,7 +48,7 @@ describe('the header nav', () => {
   })
 
   it('makes 空間 active on a space page, as a page under it', () => {
-    const html = render('/spaces/sidewalk')
+    const html = render('/spaces/sidewalk-furniture')
     expect(link(html, '/spaces')).toContain('aria-current="true"')
     expect(link(html, '/spaces')).toContain('font-semibold underline')
     expect(link(html, '/issues')).not.toContain('aria-current')

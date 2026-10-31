@@ -132,8 +132,8 @@ describe('pickerKey', () => {
 
 describe('whoSearch', () => {
   it('sets who and keeps the other params', () => {
-    const params = new URLSearchParams('sort=evidence&space=sidewalk&who=I01')
-    expect(whoSearch(params, 'I06')).toBe('?sort=evidence&space=sidewalk&who=I06')
+    const params = new URLSearchParams('sort=evidence&space=sidewalk-furniture&who=I01')
+    expect(whoSearch(params, 'I06')).toBe('?sort=evidence&space=sidewalk-furniture&who=I06')
   })
 
   it('null removes who', () => {

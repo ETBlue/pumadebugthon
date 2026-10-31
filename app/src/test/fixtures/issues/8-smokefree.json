@@ -3,12 +3,12 @@
   "folder": "8-smokefree",
   "title": "無菸城市",
   "spaces": [
-    "sidewalk",
+    "sidewalk-furniture",
     "arcade",
     "bus-stop",
     "park",
     "mrt-exit",
-    "indoor"
+    "indoor-home"
   ],
   "updated": "2026-10-22",
   "format": "needs",
@@ -2515,7 +2515,7 @@
       },
       "summary": "把設置及管理要點的距離與淨寬規定，加上公車站與住家窗戶，做成每個候選點的檢查清單；設置或移動前在地圖上公告，經里民工作坊討論，也邀請吸菸者參加。人行道的設施帶和 #1、#2 一起規劃",
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "arcade",
         "bus-stop",
         "park",
@@ -2824,7 +2824,7 @@
       },
       "summary": "在幾個人多的地點，比較負壓式、綠籬式等不同設計對周邊菸味的影響；吸菸區附設菸蒂收集設備，排入清理路線",
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "park",
         "mrt-exit"
       ],
@@ -3076,7 +3076,7 @@
       },
       "summary": "每個公告的禁菸範圍有一致的現場標示（含英文與圖示）；把禁菸範圍和吸菸區一起做成開放資料與地圖。學校、幼兒園、公園、公車站與騎樓等常被提到的地點，列入公告範圍的討論",
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "arcade",
         "bus-stop",
         "park",
@@ -3366,7 +3366,7 @@
       },
       "summary": "通報帶有地點與時段，轉給負責的單位；稽查人力排在通報最多的地點與時段；對經濟弱勢者先勸導與轉介；違規吸菸與亂丟菸蒂的稽查分工清楚；定期公開勸導、開罰與通報件數",
       "spaces": [
-        "sidewalk",
+        "sidewalk-furniture",
         "arcade",
         "bus-stop",
         "park",
@@ -3683,7 +3683,7 @@
       },
       "summary": "提供公寓大廈規約的範本與法規說明，協助住戶處理樓梯間、出入口的菸味爭議；在吸菸區與社區提供戒菸服務的資訊",
       "spaces": [
-        "indoor",
+        "indoor-home",
         "arcade"
       ],
       "added": "2026-10-18",

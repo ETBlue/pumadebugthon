@@ -19,8 +19,8 @@ const pairs = (list: { issueNumber: number; solution: { id: string } }[]) =>
   list.map((x) => `#${x.issueNumber} ${x.solution.id}`)
 
 describe('issuesBySpace', () => {
-  it('sidewalk: issues 1, 2 and 8', () => {
-    expect(issuesBySpace(index, 'sidewalk').map((i) => i.number)).toEqual([1, 2, 8])
+  it('sidewalk-furniture: issues 1, 2 and 8', () => {
+    expect(issuesBySpace(index, 'sidewalk-furniture').map((i) => i.number)).toEqual([1, 2, 8])
   })
 
   it('arcade: issues 2 and 8; an unused or unknown code: none', () => {
@@ -31,8 +31,8 @@ describe('issuesBySpace', () => {
 })
 
 describe('solutionsBySpace', () => {
-  it('sidewalk: every solution of both issues, by issue number then solution ID', () => {
-    const list = solutionsBySpace([trashcans, trees], 'sidewalk')
+  it('sidewalk-furniture: every solution of both issues, by issue number then solution ID', () => {
+    const list = solutionsBySpace([trashcans, trees], 'sidewalk-furniture')
     expect(pairs(list)).toEqual(['#1 A', '#1 B', '#1 C', '#1 D', '#1 E', '#2 A', '#2 B', '#2 C', '#2 D', '#2 E'])
     expect(list.find((x) => x.issueNumber === 2 && x.solution.id === 'A')?.solution.summary).toBe(
       trashcans.solutions[0].summary,
@@ -48,16 +48,16 @@ describe('solutionsBySpace', () => {
 describe('sameSpaceIssues', () => {
   it('#2 shares spaces with #1 and #8, in the order of the #2 space list', () => {
     expect(sameSpaceIssues(index, 2)).toEqual([
-      { code: 'sidewalk', issues: [1, 8] },
+      { code: 'sidewalk-furniture', issues: [1, 8] },
       { code: 'arcade', issues: [8] },
       { code: 'park', issues: [1, 8] },
       { code: 'mrt-exit', issues: [8] },
     ])
   })
 
-  it('#1 shares sidewalk and park with #2 and #8', () => {
+  it('#1 shares sidewalk-furniture and park with #2 and #8', () => {
     expect(sameSpaceIssues(index, 1)).toEqual([
-      { code: 'sidewalk', issues: [2, 8] },
+      { code: 'sidewalk-furniture', issues: [2, 8] },
       { code: 'park', issues: [2, 8] },
     ])
   })
@@ -83,31 +83,31 @@ describe('stakeholdersBySpace', () => {
     ])
   })
 
-  it('sidewalk: an entry for each issue, by issue number; unused code: none', () => {
-    expect(stakeholdersBySpace([trashcans, trees], 'sidewalk').map((x) => x.issueNumber)).toEqual([1, 2])
+  it('sidewalk-furniture: an entry for each issue, by issue number; unused code: none', () => {
+    expect(stakeholdersBySpace([trashcans, trees], 'sidewalk-furniture').map((x) => x.issueNumber)).toEqual([1, 2])
     expect(stakeholdersBySpace([trashcans, trees], 'parking')).toEqual([])
   })
 })
 
 describe('findSpaceType', () => {
   it('finds a known code and returns null for an unknown one', () => {
-    expect(findSpaceType(index.spaceTypes, 'sidewalk')?.name).toBe('人行道')
+    expect(findSpaceType(index.spaceTypes, 'sidewalk-furniture')?.name).toBe('人行道設施帶')
     expect(findSpaceType(index.spaceTypes, 'nope')).toBeNull()
   })
 })
 
 describe('otherSpaces', () => {
   it('gives the other space types of a solution, in its own order', () => {
-    expect(otherSpaces({ ...trashcans.solutions[2], spaces: ['sidewalk', 'mrt-exit', 'park'] }, 'sidewalk')).toEqual([
+    expect(otherSpaces({ ...trashcans.solutions[2], spaces: ['sidewalk-furniture', 'mrt-exit', 'park'] }, 'sidewalk-furniture')).toEqual([
       'mrt-exit', 'park',
     ])
-    expect(otherSpaces({ ...trashcans.solutions[0], spaces: ['sidewalk'] }, 'sidewalk')).toEqual([])
+    expect(otherSpaces({ ...trashcans.solutions[0], spaces: ['sidewalk-furniture'] }, 'sidewalk-furniture')).toEqual([])
   })
 })
 
 describe('stakeholdersInSeveralIssues', () => {
-  it('sidewalk: the stakeholders in 2 or more issues, in ID order, with their issues', () => {
-    const list = stakeholdersInSeveralIssues(stakeholdersBySpace([trashcans, trees], 'sidewalk'))
+  it('sidewalk-furniture: the stakeholders in 2 or more issues, in ID order, with their issues', () => {
+    const list = stakeholdersInSeveralIssues(stakeholdersBySpace([trashcans, trees], 'sidewalk-furniture'))
     const ids = list.map((x) => x.id)
     expect(ids).toContain('I06')
     expect(ids).toContain('I07')
@@ -153,7 +153,7 @@ describe('spaceGroups (decision 120)', () => {
   it('keeps the order in which the groups first appear, and the order of spaceTypes inside a group', () => {
     const groups = spaceGroups(index.spaceTypes)
     expect(groups.map((g) => g.group)).toEqual(['道路', '地下', '公共空間', '建築'])
-    expect(groups[0].spaces.map((s) => s.code)).toEqual(['sidewalk', 'arcade', 'bike-lane', 'scooter-lane', 'car-lane', 'bus-stop'])
+    expect(groups[0].spaces.map((s) => s.code)).toEqual(['sidewalk-furniture', 'arcade', 'bike-lane', 'scooter-lane', 'car-lane', 'bus-stop'])
     expect(groups[2].spaces.map((s) => s.code)).toEqual(['park', 'mrt-exit', 'parking'])
     expect(groups.flatMap((g) => g.spaces)).toHaveLength(13)
   })

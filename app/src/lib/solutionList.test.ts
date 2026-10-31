@@ -157,9 +157,9 @@ describe('solutionSpaceOptions', () => {
   })
 
   it('adds the space types of the cross-issue solutions, once each, in the same order', () => {
-    const cross = { solutions: [{ spaces: ['utility', 'sidewalk'] }] } as unknown as CrossIssueFile
+    const cross = { solutions: [{ spaces: ['utility', 'sidewalk-furniture'] }] } as unknown as CrossIssueFile
     const codes = solutionSpaceOptions(index.spaceTypes, [trashcans], cross).map((s) => s.code)
-    const used = new Set([...trashcans.solutions.flatMap((s) => s.spaces), 'utility', 'sidewalk'])
+    const used = new Set([...trashcans.solutions.flatMap((s) => s.spaces), 'utility', 'sidewalk-furniture'])
     expect(codes).toEqual(index.spaceTypes.map((s) => s.code).filter((c) => used.has(c)))
     expect(solutionSpaceOptions(index.spaceTypes, [trashcans], null)).toEqual(solutionSpaceOptions(index.spaceTypes, [trashcans]))
   })

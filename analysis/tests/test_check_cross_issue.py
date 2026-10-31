@@ -222,7 +222,7 @@ class CheckCrossIssueTest(unittest.TestCase):
 
     def test_combined_solution_type_unknown(self):
         self.edit(self.X_E_TYPES, "`park` | `facility`、`foo` | 2026-10-20 |")
-        self.assertFails("4.1 X-E", "foo")
+        self.assertFails("4.1 X-E: 解法類型: unknown code foo")
 
     def test_combined_solution_type_not_in_parts(self):
         self.edit(self.X_E_TYPES, "`park` | `facility`、`subsidy` | 2026-10-20 |")
@@ -234,7 +234,7 @@ class CheckCrossIssueTest(unittest.TestCase):
 
     def test_combined_solution_types_empty(self):
         self.edit(self.X_E_TYPES, "`park` |  | 2026-10-20 |")
-        self.assertFails("4.1 X-E", "解法類型")
+        self.assertFails("4.1 X-E: the 解法類型 cell is empty")
 
     def test_must_column_priority_wrong(self):
         self.edit("#9 N02、#9 N05、#12 N02 | #1 N06、", "#9 N02、#9 N05、#12 N02、#1 N06 | ")

@@ -133,9 +133,9 @@ class Issue:
             if h and h[0] == "代號" and "空間類型" in h:
                 for r in rows:
                     if len(r) == len(h) and re.fullmatch(r"[A-Z]", r[0]):
-                        self.spaces[r[0]] = re.findall(r"`([^`]+)`", r[h.index("空間類型")])
+                        self.spaces[r[0]] = common.cell_codes(r[h.index("空間類型")])
                         if "解法類型" in h:
-                            self.types[r[0]] = re.findall(r"`([^`]+)`", r[h.index("解法類型")])
+                            self.types[r[0]] = common.cell_codes(r[h.index("解法類型")])
         self.covers = {}
         for h, rows in common.tables(common.section(text, "### 6.2") or []):
             if h == common.NEED_MAP_HEADER:
@@ -352,7 +352,7 @@ def read_cross_issue(text, ctx):
     file_spaces = []
     if len(lines) > 2 and lines[1] == "" and lines[2].startswith("空間類型："):
         body = lines[2][len("空間類型："):]
-        file_spaces = re.findall(r"`([^`]+)`", body)
+        file_spaces = common.cell_codes(body)
         if not file_spaces or "、".join(f"`{c}`" for c in file_spaces) != body.strip():
             err(f"空間類型 line must be codes in backticks separated by 、: {lines[2]}")
         for c in file_spaces:
@@ -659,7 +659,7 @@ def read_cross_issue(text, ctx):
         if len(parts) < 2: err(f"{where}: a combined solution joins 2 or more issue solutions")
         if len({n for n, _ in parts}) < 2: err(f"{where}: a combined solution joins solutions of 2 or more issues")
         parts_of[code] = parts
-        spaces = re.findall(r"`([^`]+)`", r["空間類型"])
+        spaces = common.cell_codes(r["空間類型"])
         if not spaces: err(f"{where}: no space type")
         part_spaces = {s for n, c in parts for s in issues[n].spaces.get(c, [])}
         for s in spaces:
@@ -675,7 +675,8 @@ def read_cross_issue(text, ctx):
         part_types = {t for n, c in parts for t in issues[n].types.get(c, [])}
         for t in dict.fromkeys(types):
             if t in ctx["solutionTypes"] and t not in part_types:
-                err(f"{where}: 解法類型 {t} is not a 解法類型 of its issue solutions ({'、'.join(sorted(part_types))})")
+                have = f"({'、'.join(sorted(part_types))})" if part_types else "(its issue solutions have no 解法類型)"
+                err(f"{where}: 解法類型 {t} is not a 解法類型 of its issue solutions {have}")
         why = date_problem(r["新增日期"])
         if why: err(f"{where}: 新增日期 {why}")
         solutions.append({"code": code, "name": name_cell["text"], "tag": name_cell["tag"],

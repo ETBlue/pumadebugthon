@@ -668,7 +668,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
         raise ReadError("title", "the first line is not a 「# 」 title")
     if len(lines) < 3 or not lines[2].startswith("空間類型："):
         raise ReadError("空間類型", "no 「空間類型：」 line right under the title")
-    spaces = re.findall(r"`([^`]+)`", lines[2])
+    spaces = common.cell_codes(lines[2])
     # 「空間類型：無」: the issue uses no city space, so spaces is [] (see analysis_common).
     no_space = lines[2][len("空間類型："):].strip() == common.NO_SPACE_LINE
     if not spaces and not no_space:
@@ -808,7 +808,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
     # The old format may use the 6.1 header without 解法類型 and 領域.
     with_types = needs_format or any(all(c in h for c in common.SOLUTION_HEADER) for h, _ in tables61)
     for r in table_rows(tables61, "6.1", common.SOLUTION_HEADER if with_types else common.OLD_SOLUTION_HEADER):
-        sol, codes = r["代號"], re.findall(r"`([^`]+)`", r["空間類型"])
+        sol, codes = r["代號"], common.cell_codes(r["空間類型"])
         solution_types, own_domains = [], []
         if with_types:
             solution_types, own_domains, problems = common.solution_type_problems(

@@ -11,7 +11,7 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              split_refs, step1_tables, step7_sections, summary_lines, summary_topics, tables, without_cross_refs,
                              DEPENDENCY_HEADER, DEPENDENCY_TOPIC, NO_DISASTER, PENDING_ONLY, PLAN_HEADER, PLAN_ROWS, STEP7_HEADER,
                              STEP7_ROWS, ref_solutions, step7_tables,
-                             OLD_SOLUTION_HEADER, SOLUTION_HEADER, ReadError, domain_line, domain_types,
+                             OLD_SOLUTION_HEADER, SOLUTION_HEADER, ReadError, cell_codes, domain_line, domain_types,
                              solution_type_problems, solution_types, space_problem, space_types)
 STEP7_TAG = re.compile(rf"`\[(?:{TAG_NAMES})\]`")  # a tag in a step 7 cell (16b-2)
 STEP7_SOLUTION = re.compile(r"^### 7\.\d+ 解法 ([A-Z])：")  # the heading of a step 7 solution table
@@ -603,7 +603,7 @@ def main(md_path, csv_path):
     no_space = False
     if len(lines) > 2 and lines[0].startswith("# ") and lines[1] == "" and lines[2].startswith("空間類型："):
         body = lines[2][len("空間類型："):]
-        issue_spaces = re.findall(r"`([^`]+)`", body)
+        issue_spaces = cell_codes(body)
         no_space = body.strip() == NO_SPACE_LINE
         if not no_space and (not issue_spaces or "、".join(f"`{c}`" for c in issue_spaces) != body.strip()):
             err(f"空間類型 line must be codes in backticks separated by 、, or 「{NO_SPACE_LINE}」: {lines[2]}")
@@ -647,7 +647,7 @@ def main(md_path, csv_path):
         for line in sec61.splitlines():
             if not re.match(r"^\| [A-Z] \|", line): continue
             c = cells(line); sol = c[0]
-            codes = re.findall(r"`([^`]+)`", c[col]) if len(c) > col else []
+            codes = cell_codes(c[col]) if len(c) > col else []
             dash = len(c) > col and c[col].strip() == NO_SPACE_CELL
             if no_space and not dash:
                 err(f"6.1 solution {sol}: the 空間類型 line is 「{NO_SPACE_LINE}」, so the 空間類型 cell must be 「{NO_SPACE_CELL}」")

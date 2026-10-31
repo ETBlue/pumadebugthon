@@ -239,6 +239,12 @@ def space_types(analysis_dir):
     return rows
 
 
+def cell_codes(cell):
+    """The codes in backticks in a table cell or a line, in order. Repeats
+    stay in the list, so a caller can report them."""
+    return re.findall(r"`([^`]+)`", cell)
+
+
 def tag_problem(code, rows, file_name):
     """Why a code cannot be a tag, or None. rows: {代碼: row} of a type list.
     The code must be in the list. In a list with 2 levels (rows with a 上層
@@ -271,7 +277,7 @@ def type_codes(value, rows, file_name, max_count=MAX_TYPES):
     v = value.strip()
     if not v:
         return [], []
-    codes = re.findall(r"`([^`]+)`", v)
+    codes = cell_codes(v)
     problems = []
     if not codes or "、".join(f"`{c}`" for c in codes) != v:
         problems.append(f"must be codes in backticks separated by 「、」: {v}")

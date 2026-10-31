@@ -9,7 +9,7 @@ Writes analysis/data/updated-dates.csv (UTF-8 with BOM). Columns:
   解法類型.
 - 編號: the stakeholder ID (I06), the cross-issue solution code (X-A), the
   issue number and the solution code (2-A), the issue number and the story
-  ID (2-O01-US01), or the code of a space type (sidewalk), a domain type
+  ID (2-O01-US01), or the code of a space type (sidewalk-walkway), a domain type
   (transport) or a solution type (intake).
 - 新增日期: only for 使用者故事, 空間類型, 領域類型 and 解法類型, because
   they have no other place for it (YYYY-MM-DD). Empty for the other types: their 新增日期 is in
@@ -40,7 +40,8 @@ The content of each item (design 3.23.8):
 - 使用者故事: its row in the step 4 table (我想要…, 以便…, their tags, 來源,
   優先順序 and its tag, 相同訴求編號, 相同需求編號). The same fields as in
   the stakeholder's content.
-- 空間類型: its row in space-types.csv (名稱, 分組, 說明).
+- 空間類型: its row in space-types.csv (名稱, 上層, 說明). Level 1 rows
+  (an empty 上層) have a row too.
 - 領域類型: its row in domain-types.csv (名稱, 上層, 說明, 政事別,
   陳情系統主類別).
 - 解法類型: its row in solution-types.csv (名稱, 說明, 判斷方式, 政策工具).
@@ -84,7 +85,7 @@ TYPES = (STAKEHOLDER, CROSS, SOLUTION, STORY, SPACE, DOMAIN_TYPE, SOLUTION_TYPE)
 # The types whose 新增日期 is kept in this file (they have no other place for it).
 OWN_ADDED = (STORY, SPACE, DOMAIN_TYPE, SOLUTION_TYPE)
 # The columns of space-types.csv that are the space type's own content.
-SPACE_COLS = ("名稱", "分組", "說明")
+SPACE_COLS = common.SPACE_TYPE_COLS[1:]
 # The columns of domain-types.csv and solution-types.csv that are the type's
 # own content: every column except 代碼.
 DOMAIN_CONTENT_COLS = common.DOMAIN_TYPE_COLS[1:]
@@ -154,10 +155,8 @@ def items(analysis_dir):
             content = without_pending({k: s[k] for k in STORY_KEYS})
             out.append({"type": STORY, "id": f"{d['number']}-{s['id']}", "added": None,
                         "fingerprint": common.fingerprint(content)})
-    for r in build_json.read_csv(analysis_dir, "space-types.csv", ("代碼",) + SPACE_COLS):
-        content = {c: r[c].strip() for c in SPACE_COLS}
-        out.append({"type": SPACE, "id": r["代碼"].strip(), "added": None, "fingerprint": common.fingerprint(content)})
-    for type_, rows, cols in ((DOMAIN_TYPE, common.domain_types(analysis_dir), DOMAIN_CONTENT_COLS),
+    for type_, rows, cols in ((SPACE, common.space_types(analysis_dir), SPACE_COLS),
+                              (DOMAIN_TYPE, common.domain_types(analysis_dir), DOMAIN_CONTENT_COLS),
                               (SOLUTION_TYPE, common.solution_types(analysis_dir), SOLUTION_CONTENT_COLS)):
         for code, r in rows.items():
             content = {c: r[c] for c in cols}

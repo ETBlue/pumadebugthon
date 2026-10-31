@@ -46,7 +46,9 @@ Rules:
   An issue that uses no city space (for example #9) writes 「空間類型：無」
   (NO_SPACE_LINE) and 「—」 (NO_SPACE_CELL) in every 6.1 空間類型 cell.
   Both give an empty list of codes. 「—」 is allowed only with 「無」, and
-  「無」 only with 「—」 (ETBlue, 2026-10-20).
+  「無」 only with 「—」 (ETBlue, 2026-10-20). The space codes are the
+  level 2 codes of data/space-types.csv (ETBlue, 2026-10-31): a level 1
+  code (road, underground, public-space, building) is not a tag.
 - Folders: the scripts get the analysis folder (the folder with the issue
   folders). The shared CSV files are in its data/ folder (data_file) and
   method.md is in its docs/ folder (doc_file).
@@ -69,7 +71,8 @@ Rules:
 - Type lists (ETBlue, 2026-10-31): data/domain-types.csv (領域, the 政事別
   list of Taipei) and data/solution-types.csv (解法類型). domain_types() and
   solution_types() read them. A code must not repeat. A list with 2 levels
-  (domain types; space types later) has a 上層 column: empty on a level 1
+  (domain types, and space types in data/space-types.csv, read by
+  space_types()) has a 上層 column: empty on a level 1
   row, the code of a level 1 row on a level 2 row (check_two_levels). Only
   level 2 codes (leaf_codes) are tags on issues and solutions. Types are
   labels only: no scores, weights or ranks.
@@ -139,7 +142,7 @@ DOMAIN_TYPE_COLS = ("代碼", "名稱", "上層", "說明", "政事別", "陳情
 SOLUTION_TYPES_FILE = "solution-types.csv"
 SOLUTION_TYPE_COLS = ("代碼", "名稱", "說明", "判斷方式", "政策工具")
 SPACE_TYPES_FILE = "space-types.csv"
-SPACE_TYPE_COLS = ("代碼", "名稱", "分組", "說明")
+SPACE_TYPE_COLS = ("代碼", "名稱", "上層", "說明")
 # The 領域 line of an issue file: the line right under the 空間類型 line.
 DOMAIN_LINE = "領域："
 # A 領域 line, a 解法類型 cell and a 領域 cell list 1 to MAX_TYPES codes.
@@ -226,9 +229,11 @@ def solution_types(analysis_dir):
 
 
 def space_types(analysis_dir):
-    """{代碼: row} of data/space-types.csv (空間類型), in file order.
-    A ReadError when the file cannot be read or a code repeats."""
-    return code_rows(analysis_dir, SPACE_TYPES_FILE, SPACE_TYPE_COLS)
+    """{代碼: row} of data/space-types.csv (空間類型), in file order. Runs
+    check_two_levels. A ReadError when the file cannot be read or is wrong."""
+    rows = code_rows(analysis_dir, SPACE_TYPES_FILE, SPACE_TYPE_COLS)
+    check_two_levels(rows, SPACE_TYPES_FILE)
+    return rows
 
 
 def tag_problem(code, rows, file_name):

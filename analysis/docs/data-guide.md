@@ -37,7 +37,7 @@
 
 每個檔案的 `id` 欄在該檔案中不重複。
 
-- **全站共用的編號**：利害關係人（`O01`、`I06`）、空間類型（`sidewalk`）、跨議題分析的編號（`X-N01`、`X-C1`、`X-A`）。它們的 `id` 就是原本的編號。
+- **全站共用的編號**：利害關係人（`O01`、`I06`）、空間類型（`sidewalk-walkway`）、跨議題分析的編號（`X-N01`、`X-C1`、`X-A`）。它們的 `id` 就是原本的編號。
 - **議題的編號**：故事（`O01-US01`）、相同訴求群組（`W01`）、相同需求群組（`N01`）、衝突（`C1`）、解法（`A`）只在一個議題裡不重複。例如 #1 和 #2 都有 `N01`。所以 `id` 是「議題編號-原本的編號」，例如 `2-N01`、`2-O01-US01`、`2-W01`、`2-C1`、`2-A`。這和網站解法網址的寫法相同（`#/solutions/2-A`）。
 - 議題的編號另外有兩欄：`issue`（議題編號，例如 `2`）和 `local_id`（原本的編號，例如 `N01`）。
 - 議題的 `id` 是議題編號，例如 `2`。
@@ -78,6 +78,7 @@
 | `source` | `主辦單位` 或 `參加者補充` |
 | `available` | `true`：已經有分析。`false`：製作中，其他檔案沒有它的資料 |
 | `spaces` | 空間類型 → `space-types` |
+| `domains` | 領域：議題的「領域：」那一行，1 到 3 個代碼，例如 `environment`。代碼見 `analysis/data/domain-types.csv` |
 | `added`、`updated` | 新增日期、更新日期 |
 
 ### stakeholders：利害關係人
@@ -174,6 +175,9 @@
 | `name`、`name_tag` | 解法名稱 |
 | `summary` | 一句話說明 |
 | `spaces` | 空間類型 → `space-types` |
+| `solution_types` | 解法類型，1 到 3 個代碼，例如 `open-data`。代碼見 `analysis/data/solution-types.csv` |
+| `own_domains` | 6.1 的「領域」欄：只有解法的領域和議題不同時才有，通常是空的 |
+| `domains` | 解法的領域：有 `own_domains` 時就是它，沒有時就是議題的 `domains` |
 | `needs_must` | 涵蓋的 Must 需求 → `needs` |
 | `needs_should_could` | 涵蓋的 Should／Could 需求 → `needs` |
 | `stories` | 涵蓋的故事 → `stories` |
@@ -233,9 +237,10 @@
 
 | 欄位 | 意思 |
 |---|---|
-| `id` | 代碼，例如 `sidewalk` |
-| `name` | 名稱，例如 `人行道` |
-| `group` | 分組，例如 `道路` |
+| `id` | 代碼，例如 `sidewalk-walkway` |
+| `name` | 名稱，例如 `人行道通行帶` |
+| `group` | 上層的名稱，例如 `道路` |
+| `parent` | 上層的代碼，例如 `road` |
 | `description` | 說明 |
 | `added`、`updated` | 新增日期、更新日期 |
 
@@ -245,6 +250,8 @@
 
 - 分析摘要、可能的輸入來源（步驟 1.2）、特別關注族群檢查、【待補】清單：`data/issues/<資料夾>.json`。
 - 步驟 7 的評估表、執行計畫表、成效衡量、相關政策：`data/issues/<資料夾>.json` 的 `solutions[]`，以及 `data/cross-issue.json` 的 `solutions[]`。
+- 空間類型的第 1 層（`road` 道路、`underground` 地下、`public-space` 公共空間、`building` 建築）：`data/index.json` 的 `spaceGroups`，或 `analysis/data/space-types.csv` 中「上層」是空的列。`space-types` 檔案只有第 2 層，也就是會寫在議題與解法上的代碼。
+- 領域與解法類型的清單：`analysis/data/domain-types.csv`（臺北市歲出政事別的大分類與中分類，2 層）與 `analysis/data/solution-types.csv`。它們是標籤，不是分數或排名。
 - 分類路徑的名稱：`data/index.json` 的 `pathLabels`，或 `analysis/data/path-labels.csv`。
 - 分析引用的開放資料集：`data/index.json` 的 `openData`，或 `analysis/data/open-data.csv`。
 

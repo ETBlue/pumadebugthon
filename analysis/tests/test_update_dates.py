@@ -111,7 +111,8 @@ class ItemsTest(unittest.TestCase):
         self.assertIn(("解法", "2-A"), keys)
         self.assertIn(("跨議題解法", "X-A"), keys)
         self.assertIn(("使用者故事", "2-O01-US01"), keys)
-        self.assertIn(("空間類型", "sidewalk"), keys)
+        self.assertIn(("空間類型", "sidewalk-walkway"), keys)
+        self.assertIn(("空間類型", "road"), keys)  # a level 1 row has a row too
         # Stories: by issue number, then in the order of the step 4 table.
         stories = [i["id"] for i in items if i["type"] == "使用者故事"]
         self.assertEqual([int(x.split("-")[0]) for x in stories], sorted(int(x.split("-")[0]) for x in stories))
@@ -143,7 +144,8 @@ class ItemsTest(unittest.TestCase):
     def test_layout_change_keeps_every_fingerprint(self):
         before = self.prints()
         swap_columns(self.md, "| 故事編號 | 身為… | 我想要… | 相同訴求編號 | 以便… | 相同需求編號 | 來源 | 優先順序 |", "來源", "優先順序")
-        swap_columns(self.md, "| 代號 | 解法 | 空間類型 | 新增日期 | 一句話說明 |", "空間類型", "一句話說明")
+        swap_columns(self.md, "| 代號 | 解法 | 空間類型 | 解法類型 | 領域 | 新增日期 | 一句話說明 |", "空間類型", "一句話說明")
+        swap_columns(self.md, "| 代號 | 解法 | 一句話說明 | 解法類型 | 領域 | 新增日期 | 空間類型 |", "解法類型", "領域")
         # Two spaces inside a cell are one space after parsing.
         edit(self.md, "`[AI模擬]` 商圈有足夠的清潔箱 |", "`[AI模擬]`  商圈有足夠的清潔箱 |")
         self.assertEqual(before, self.prints())
@@ -164,9 +166,9 @@ class ItemsTest(unittest.TestCase):
 
     def test_space_type_change_changes_only_that_space_type(self):
         before = self.prints()
-        edit(os.path.join(self.dir, "data", "space-types.csv"), "sidewalk,人行道,道路,", "sidewalk,人行道,道路,測試。")
+        edit(os.path.join(self.dir, "data", "space-types.csv"), "sidewalk-walkway,人行道通行帶,road,", "sidewalk-walkway,人行道通行帶,road,測試。")
         after = self.prints()
-        self.assertEqual({k for k in before if before[k] != after[k]}, {("空間類型", "sidewalk")})
+        self.assertEqual({k for k in before if before[k] != after[k]}, {("空間類型", "sidewalk-walkway")})
 
     def test_domain_and_solution_type_change_changes_only_that_row(self):
         before = self.prints()
@@ -198,7 +200,7 @@ class ItemsTest(unittest.TestCase):
 
     def test_solution_added_date_is_not_content(self):
         before = self.prints()
-        edit(self.md, "| `sidewalk`、`mrt-exit` | 2026-10-16 | 結合清潔箱位置", "| `sidewalk`、`mrt-exit` | 2026-10-17 | 結合清潔箱位置")
+        edit(self.md, "| `sidewalk-furniture`、`mrt-exit` | `digital-tool`、`planning` |  | 2026-10-16 | 結合清潔箱位置", "| `sidewalk-furniture`、`mrt-exit` | `digital-tool`、`planning` |  | 2026-10-17 | 結合清潔箱位置")
         self.assertEqual(before, self.prints())
 
 
@@ -247,11 +249,11 @@ class UpdatedRowsTest(unittest.TestCase):
 
     def test_old_row_without_added_column(self):
         # A row of the file before the 新增日期 column (2026-10-23).
-        old = [{"類型": "空間類型", "編號": "sidewalk", "更新日期": "2026-10-18", "內容指紋": "aaa"},
+        old = [{"類型": "空間類型", "編號": "sidewalk-walkway", "更新日期": "2026-10-18", "內容指紋": "aaa"},
                {"類型": "利害關係人", "編號": "O01", "更新日期": "2026-10-20", "內容指紋": "aaa"}]
-        rows = self.mod.updated_rows([self.item("sidewalk", "aaa", added=None, type_="空間類型"), self.item("O01", "aaa")],
+        rows = self.mod.updated_rows([self.item("sidewalk-walkway", "aaa", added=None, type_="空間類型"), self.item("O01", "aaa")],
                                      old, self.today)
-        self.assertEqual(rows, [self.row("sidewalk", "2026-10-18", "aaa", type_="空間類型", added=self.today),
+        self.assertEqual(rows, [self.row("sidewalk-walkway", "2026-10-18", "aaa", type_="空間類型", added=self.today),
                                 self.row("O01", "2026-10-20", "aaa")])
 
     def test_same_id_of_another_type_is_another_item(self):
@@ -346,7 +348,7 @@ class ScriptTest(unittest.TestCase):
         # A story or a space type has no 新增日期 in another file, so it gets today.
         today = load("analysis_common").today().isoformat()
         self.assertEqual(after[("使用者故事", "2-O01-US01")]["新增日期"], today)
-        self.assertEqual(after[("空間類型", "sidewalk")]["更新日期"], today)
+        self.assertEqual(after[("空間類型", "sidewalk-walkway")]["更新日期"], today)
 
     def test_json_has_the_date_fields(self):
         # Since 2026-10-23 every issue in issues.csv has an analysis. A fake issue #7
@@ -390,9 +392,11 @@ class ScriptTest(unittest.TestCase):
         for s in index["spaceTypes"]:
             r = rows[("空間類型", s["code"])]
             self.assertEqual((s["added"], s["updated"]), (r["新增日期"], r["更新日期"]), s["code"])
-        # First values from git history (2026-10-23): the space types were all
-        # added on 2026-10-18; O01-US01 of #2 was first committed on 2026-10-16.
-        self.assertEqual(rows[("空間類型", "sidewalk")]["新增日期"], "2026-10-18")
+        # First values from git history (2026-10-23): the first space types
+        # (arcade is one of them; the split of sidewalk and indoor came on
+        # 2026-10-31) were added on 2026-10-18; O01-US01 of #2 was first
+        # committed on 2026-10-16.
+        self.assertEqual(rows[("空間類型", "arcade")]["新增日期"], "2026-10-18")
         self.assertEqual(rows[("使用者故事", "2-O01-US01")]["新增日期"], "2026-10-16")
 
     def test_analyzed_issue_without_added_date_stops_build_json(self):

@@ -76,7 +76,7 @@ def issue_rows(index):
         "source": i["source"],
         "available": i["available"],
         "spaces": i["spaces"],
-        "domains": i.get("domains", []),
+        "domains": i["domains"],
         "added": i.get("added"),
         "updated": i["updated"],
     } for i in index["issues"]]
@@ -100,6 +100,7 @@ def space_type_rows(index):
         "id": s["code"],
         "name": s["name"],
         "group": s["group"],
+        "parent": s["parent"],
         "description": s["description"],
         "added": s.get("added"),
         "updated": s.get("updated"),

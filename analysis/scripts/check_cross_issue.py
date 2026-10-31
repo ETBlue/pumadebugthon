@@ -179,7 +179,8 @@ def load_context(analysis_dir):
             with open(md, encoding="utf-8") as f:
                 issues[int(r["編號"])] = Issue(int(r["編號"]), r["資料夾"], f.read())
     stake = {r["利害關係人編號"]: r for r in read_csv("stakeholders.csv") if not r["備註"].startswith("已改為")}
-    spaces = {r["代碼"] for r in read_csv("space-types.csv")}
+    # Only the level 2 space codes are tags (ETBlue, 2026-10-31).
+    spaces = set(common.leaf_codes(common.space_types(analysis_dir)))
     return {"issues": issues, "stakeholders": stake, "spaces": spaces, "dir": analysis_dir}
 
 

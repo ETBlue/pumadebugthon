@@ -12,7 +12,8 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              DEPENDENCY_HEADER, DEPENDENCY_TOPIC, NO_DISASTER, PENDING_ONLY, PLAN_HEADER, PLAN_ROWS, STEP7_HEADER,
                              STEP7_ROWS, ref_solutions, step7_tables,
                              DOMAIN_LINE, DOMAIN_TYPES_FILE, MAX_TYPES, OLD_SOLUTION_HEADER, SOLUTION_HEADER,
-                             SOLUTION_TYPES_FILE, ReadError, domain_types, solution_types, type_codes)
+                             SOLUTION_TYPES_FILE, SPACE_TYPES_FILE, ReadError, domain_types, solution_types, space_types,
+                             tag_problem, type_codes)
 STEP7_TAG = re.compile(rf"`\[(?:{TAG_NAMES})\]`")  # a tag in a step 7 cell (16b-2)
 STEP7_SOLUTION = re.compile(r"^### 7\.\d+ 解法 ([A-Z])：")  # the heading of a step 7 solution table
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
@@ -592,7 +593,14 @@ def main(md_path, csv_path):
         if r["議題"].strip() != want: err(f"stakeholders.csv: {sid} 議題 is {r['議題']!r}, expected {want!r}")
 
     # 15. the 空間類型 line right under the title
-    space_codes = {r["代碼"] for r in read_csv("space-types.csv")}
+    # Only level 2 codes are tags (ETBlue, 2026-10-31; see analysis_common).
+    try:
+        space_rows = space_types(analysis_dir)
+    except ReadError as e:
+        err(str(e)); space_rows = {}
+    def space_problem(code):
+        if code not in space_rows: return f"unknown space code {code} (not in space-types.csv)"
+        return tag_problem(code, space_rows, SPACE_TYPES_FILE)
     lines = text.splitlines()
     issue_spaces = []
     # 「空間類型：無」: the issue uses no city space (see analysis_common).
@@ -606,7 +614,8 @@ def main(md_path, csv_path):
         for code in sorted({x for x in issue_spaces if issue_spaces.count(x) > 1}):
             err(f"空間類型 line: space code {code} is listed twice")
         for code in issue_spaces:
-            if code not in space_codes: err(f"空間類型 line: unknown space code {code} (not in space-types.csv)")
+            why = space_problem(code)
+            if why: err(f"空間類型 line: {why}")
     else:
         err("no 「空間類型：」 line right under the title (title, blank line, then the line)")
 
@@ -659,7 +668,8 @@ def main(md_path, csv_path):
             for code in sorted({x for x in codes if codes.count(x) > 1}):
                 err(f"6.1 solution {sol}: space code {code} is listed twice")
             for code in codes:
-                if code not in space_codes: err(f"6.1 solution {sol}: unknown space code {code}")
+                why = space_problem(code)
+                if why: err(f"6.1 solution {sol}: {why}")
                 elif code not in issue_spaces: err(f"6.1 solution {sol}: space {code} is not in the issue's 空間類型 line")
 
     # 16a. the 6.1 header is SOLUTION_HEADER (the old format may use

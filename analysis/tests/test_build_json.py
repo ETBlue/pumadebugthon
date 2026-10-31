@@ -48,6 +48,9 @@ def use_old_format(analysis_dir):
     with open(path, encoding="utf-8") as f:
         text = f.read()
     text = re.sub(r"^(\| 其他顧慮與風險 \|.*\n)", r"\1| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n", text, flags=re.M)
+    # The fixture still has the space codes from before the split of
+    # 2026-10-31. Rename them in this copy too.
+    text = load_helper().new_space_codes(text)
     with open(path, "w", encoding="utf-8") as f:
         f.write(text)
 
@@ -110,7 +113,7 @@ class BuildJsonOutputTest(unittest.TestCase):
                                           "conflicts": 10, "solutions": 5,
                                           "cells": {"evidence": 9, "aiSummary": 24, "aiSimulated": 72,
                                                     "pending": 1}})
-        self.assertEqual(item["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
+        self.assertEqual(item["spaces"], ["sidewalk-furniture", "arcade", "park", "mrt-exit"])
         self.assertEqual(item["title"], "找回消失的垃圾桶")
         self.assertEqual(item["folder"], ISSUE)
 
@@ -136,7 +139,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertIn("I06-US01", a["stories"])
         self.assertIn("O01-US01", a["stories"])  # from the Should / Could column
         self.assertEqual(a["name"], {"text": "清潔箱佈建建議地圖", "tag": "AI模擬", "pending": False})
-        self.assertEqual(a["spaces"], ["sidewalk", "mrt-exit"])
+        self.assertEqual(a["spaces"], ["sidewalk-furniture", "mrt-exit"])
         self.assertTrue(a["summary"].startswith("結合清潔箱位置"))
 
     def solution(self, code, issue=None):
@@ -248,7 +251,7 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_solution_keys(self):
         self.assertEqual(list(self.solution("A")),
-                         ["id", "name", "summary", "spaces", "added", "updated", "stories", "needs",
+                         ["id", "name", "summary", "spaces", "solutionTypes", "ownDomains", "domains", "added", "updated", "stories", "needs",
                           "measures", "evaluation", "plan", "overview", "ideas", "controversies", "legal",
                           "practices", "pending"])
 
@@ -454,16 +457,38 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_index_shared_lists(self):
         self.assertEqual(self.index["pathLabels"]["gov"], "政府")
+        # Only the level 2 space types (ETBlue, 2026-10-31): 19 codes. group is
+        # the 名稱 of the parent, as before the 2 levels; parent its code.
         codes = [s["code"] for s in self.index["spaceTypes"]]
-        self.assertEqual(len(codes), 13)
-        self.assertEqual(self.index["spaceTypes"][0]["name"], "人行道")
+        self.assertEqual(len(codes), 19)
+        self.assertNotIn("road", codes)
+        self.assertEqual(self.index["spaceTypes"][0]["name"], "人行道通行帶")
+        self.assertEqual((self.index["spaceTypes"][0]["group"], self.index["spaceTypes"][0]["parent"]), ("道路", "road"))
         # Each space type has its 新增日期 and 更新日期 from updated-dates.csv.
         # This copy has no updated-dates.csv, so both are null (ScriptTest in
         # test_update_dates.py checks the values).
         for s in self.index["spaceTypes"]:
-            self.assertEqual(list(s), ["code", "name", "group", "description", "added", "updated"])
+            self.assertEqual(list(s), ["code", "name", "group", "parent", "description", "added", "updated"])
             self.assertIsNone(s["added"])
             self.assertIsNone(s["updated"])
+        # The level 1 rows, in file order.
+        self.assertEqual([(g["code"], g["name"]) for g in self.index["spaceGroups"]],
+                         [("road", "道路"), ("underground", "地下"), ("public-space", "公共空間"), ("building", "建築")])
+        self.assertEqual({s["group"] for s in self.index["spaceTypes"]}, {g["name"] for g in self.index["spaceGroups"]})
+
+    def test_domains_and_solution_types(self):
+        # 領域 and 解法類型 of the real files (spec analysis/docs/types-research.md, R2.2 and R3.3).
+        domains = {i["number"]: i["domains"] for i in self.index["issues"]}
+        self.assertEqual(domains[2], ["environment"])
+        self.assertEqual(domains[6], ["industry", "community-development", "civil-affairs"])
+        self.assertEqual(domains[9], ["administration", "civil-affairs"])
+        self.assertEqual(self.issue["domains"], ["environment"])
+        a = self.solution("A")
+        self.assertEqual((a["solutionTypes"], a["ownDomains"], a["domains"]), (["digital-tool", "planning"], [], ["environment"]))
+        with open(os.path.join(self.out, "issues", "6-oldbuildings.json"), encoding="utf-8") as f:
+            c = self.solution("C", json.load(f))
+        self.assertEqual((c["solutionTypes"], c["ownDomains"], c["domains"]),
+                         (["service", "subsidy"], ["welfare-services"], ["welfare-services"]))
 
     def test_story_shape(self):
         # added and updated come from updated-dates.csv. This copy has no
@@ -928,13 +953,18 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.edit("| D | 參與式選址流程 |", "| D 參與式選址流程 | 參與式選址流程 |")
         self.assertFails("2-trashcans: 6.2:", "bad solution code")
 
+    def test_level_1_space_code_fails(self):
+        # Only level 2 space codes are tags (ETBlue, 2026-10-31).
+        self.edit("`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`road`\n")
+        self.assertFails("2-trashcans: 空間類型:", "road is a level 1 code", "sidewalk-walkway")
+
     def test_unknown_space_code_in_title_line(self):
         self.edit("`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`moon`\n")
         self.assertFails("2-trashcans: 空間類型:", "moon")
 
     def test_unknown_space_code_in_solution(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |",
-                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`moon` |")
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |",
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`moon` |")
         self.assertFails("2-trashcans: 6.1:", "moon")
 
     def make_no_space(self):
@@ -942,7 +972,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         path = os.path.join(self.dir, ISSUE, "issue-analysis.md")
         with open(path, encoding="utf-8") as f:
             text = f.read()
-        text = text.replace("空間類型：`sidewalk`、`arcade`、`park`、`mrt-exit`\n", "空間類型：無\n", 1)
+        text = text.replace("空間類型：`sidewalk-furniture`、`arcade`、`park`、`mrt-exit`\n", "空間類型：無\n", 1)
         sec = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0]
         new_sec = re.sub(r"^(\| [A-Z] \| [^|]+ \| )`[^|]+` \|", r"\1— |", sec, flags=re.M)
         self.assertEqual(new_sec.count("| — |"), 5)
@@ -967,7 +997,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.1:", "solution D", "無")
 
     def test_dash_solution_space_in_issue_with_spaces_fails(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |", "| D | `[AI模擬]` 參與式選址流程 | — |")
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |", "| D | `[AI模擬]` 參與式選址流程 | — |")
         self.assertFails("2-trashcans: 6.1:", "solution D", "無")
 
     def test_two_tables_with_step_4_header(self):
@@ -1005,8 +1035,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("stakeholders.csv: header: no column 新增日期")
 
     def test_bad_solution_date(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 2026-10-16 |",
-                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 10/16 |")
+        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` | `participation` |  | 2026-10-16 |",
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` | `participation` |  | 10/16 |")
         self.assertFails("2-trashcans: 6.1:", "solution D", "新增日期")
 
     def test_open_data_bad_issue_value(self):

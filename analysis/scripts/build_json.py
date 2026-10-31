@@ -40,6 +40,13 @@ Lists of IDs (1.2, 相同訴求群組, 5.4 相關故事, 6.2) hold IDs of this i
 A reference to another issue there, like 「#2 O01-US01」, stops the script.
 In other text it stays as written; check_analysis.py checks that it exists.
 
+Space types (ETBlue, 2026-10-31): space-types.csv has 2 levels (上層).
+index.json spaceTypes lists only the level 2 rows, the codes that are tags:
+{code, name, group (the 名稱 of the parent, as before), parent (the code
+of the parent), description, added, updated}. spaceGroups lists the level 1
+rows: {code, name, description}. A level 1 code on an issue or a solution
+stops the script.
+
 領域 and 解法類型 (ETBlue, 2026-10-31; the rules are in analysis_common.py):
 - domains on the issue (issue JSON and index.json): the codes of the
   「領域：」 line, the line right under the 空間類型 line. [] for an issue
@@ -658,10 +665,18 @@ def type_list(value, rows, file_name, section_name, where):
     return codes
 
 
-def parse_issue(text, space_codes, domain_rows, solution_type_rows):
-    """The content of one issue file. space_codes: the space codes;
-    domain_rows and solution_type_rows: {代碼: row} of domain-types.csv and
-    solution-types.csv (analysis_common.domain_types, solution_types)."""
+def space_problem(code, space_rows):
+    """Why a code cannot be a space tag, or None: unknown, or a level 1 code."""
+    if code not in space_rows:
+        return f"unknown space code {code} (not in space-types.csv)"
+    return common.tag_problem(code, space_rows, common.SPACE_TYPES_FILE)
+
+
+def parse_issue(text, space_rows, domain_rows, solution_type_rows):
+    """The content of one issue file. space_rows, domain_rows and
+    solution_type_rows: {代碼: row} of space-types.csv, domain-types.csv and
+    solution-types.csv (analysis_common.space_types, domain_types,
+    solution_types)."""
     lines = text.splitlines()
     needs_format = common.needs_format(text)
 
@@ -675,8 +690,9 @@ def parse_issue(text, space_codes, domain_rows, solution_type_rows):
     if not spaces and not no_space:
         raise ReadError("空間類型", f"no space codes in backticks (or 「{common.NO_SPACE_LINE}」)")
     for code in spaces:
-        if code not in space_codes:
-            raise ReadError("空間類型", f"unknown space code {code} (not in space-types.csv)")
+        why = space_problem(code, space_rows)
+        if why:
+            raise ReadError("空間類型", why)
 
     # 領域: the line right under the 空間類型 line (see analysis_common). Only
     # the old format may leave it out.
@@ -831,8 +847,9 @@ def parse_issue(text, space_codes, domain_rows, solution_type_rows):
         if not codes and not dash:
             raise ReadError("6.1", f"solution {sol}: no space code")
         for code in codes:
-            if code not in space_codes:
-                raise ReadError("6.1", f"solution {sol}: unknown space code {code} (not in space-types.csv)")
+            why = space_problem(code, space_rows)
+            if why:
+                raise ReadError("6.1", f"solution {sol}: {why}")
             if code not in spaces:
                 raise ReadError("6.1", f"solution {sol}: space code {code} is not in the issue's 空間類型 line")
         solutions.append({"id": sol, "name": cell(r["解法"], "6.1", sol), "summary": r["一句話說明"],
@@ -1033,8 +1050,7 @@ def parse_issue(text, space_codes, domain_rows, solution_type_rows):
 def build(analysis_dir):
     issues_csv = read_csv(analysis_dir, "issues.csv", ["編號", "資料夾", "題目", "來源", "新增日期"])
     dates = read_updated_dates(analysis_dir)
-    space_rows = read_csv(analysis_dir, "space-types.csv", ["代碼", "名稱", "分組", "說明"])
-    space_codes = {r["代碼"] for r in space_rows}
+    space_rows = common.space_types(analysis_dir)
     domain_rows = common.domain_types(analysis_dir)
     solution_type_rows = common.solution_types(analysis_dir)
     label_rows = read_csv(analysis_dir, "path-labels.csv", ["分類路徑", "名稱"])
@@ -1057,7 +1073,7 @@ def build(analysis_dir):
         with open(md, encoding="utf-8") as f:
             text = f.read()
         try:
-            data = parse_issue(text, space_codes, domain_rows, solution_type_rows)
+            data = parse_issue(text, space_rows, domain_rows, solution_type_rows)
         except ReadError as e:
             raise ReadError(f"{folder}: {e.section}", e.reason)
         ids = [s["id"] for s in data["stakeholders"]]
@@ -1137,9 +1153,14 @@ def build(analysis_dir):
         "issues": index_issues,
         "stakeholders": stakeholders,
         "pathLabels": {r["分類路徑"]: r["名稱"] for r in label_rows},
-        "spaceTypes": [{"code": r["代碼"], "name": r["名稱"], "group": r["分組"], "description": r["說明"],
-                        **dates_of(dates, "空間類型", r["代碼"])}
-                       for r in space_rows],
+        # Only the level 2 space types are tags. group is the 名稱 of the
+        # parent (the app filters by it), parent its code. The level 1 rows
+        # are in spaceGroups.
+        "spaceTypes": [{"code": code, "name": r["名稱"], "group": space_rows[r["上層"]]["名稱"], "parent": r["上層"],
+                        "description": r["說明"], **dates_of(dates, "空間類型", code)}
+                       for code, r in space_rows.items() if r["上層"]],
+        "spaceGroups": [{"code": code, "name": r["名稱"], "description": r["說明"]}
+                        for code, r in space_rows.items() if not r["上層"]],
         "openData": open_data,
     }
     return index, issue_files

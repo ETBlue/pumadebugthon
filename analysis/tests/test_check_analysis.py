@@ -109,14 +109,22 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit("data/path-labels.csv", "gov-local-taipei-epb,環保局\n", "")
         self.assertFails("gov-local-taipei-epb")
 
+    def test_level_1_space_code_fails(self):
+        # Only level 2 space codes are tags (ETBlue, 2026-10-31).
+        self.edit(f"{ISSUE}/issue-analysis.md", "`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`building`\n")
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、",
+                  "| D | `[AI模擬]` 參與式選址流程 | `building`、`sidewalk-furniture`、")
+        self.assertFails("空間類型 line: building is a level 1 code", "solution D: building is a level 1 code",
+                         "indoor-home、indoor-common")
+
     def test_unknown_space_code_in_issue_line(self):
         self.edit(f"{ISSUE}/issue-analysis.md", "`park`、`mrt-exit`\n", "`park`、`mrt-exit`、`moon`\n")
         self.assertFails("moon")
 
     def test_solution_space_not_in_issue_list(self):
         self.edit(f"{ISSUE}/issue-analysis.md",
-                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |",
-                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park`、`parking` |")
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |",
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park`、`parking` |")
         self.assertFails("solution D", "parking")
 
     def test_wrong_issue_value(self):
@@ -163,7 +171,7 @@ class CheckAnalysisTest(unittest.TestCase):
         「空間類型：無」 and 「—」 in every 6.1 空間類型 cell."""
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
-        text = text.replace("空間類型：`sidewalk`、`arcade`、`park`、`mrt-exit`\n", "空間類型：無\n", 1)
+        text = text.replace("空間類型：`sidewalk-furniture`、`arcade`、`park`、`mrt-exit`\n", "空間類型：無\n", 1)
         sec = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0]
         new_sec = re.sub(r"^(\| [A-Z] \| [^|]+ \| )`[^|]+` \|", r"\1— |", sec, flags=re.M)
         self.assertEqual(new_sec.count("| — |"), 5)
@@ -183,7 +191,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("solution D", "無")
 
     def test_dash_solution_space_in_issue_with_spaces_fails(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |",
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |",
                   "| D | `[AI模擬]` 參與式選址流程 | — |")
         self.assertFails("solution D", "無")
 
@@ -193,9 +201,9 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_repeated_space_code_in_solution(self):
         self.edit(f"{ISSUE}/issue-analysis.md",
-                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |",
-                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`sidewalk` |")
-        self.assertFails("solution D: space code sidewalk is listed twice")
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |",
+                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`sidewalk-furniture` |")
+        self.assertFails("solution D: space code sidewalk-furniture is listed twice")
 
     # 領域 and 解法類型 (ETBlue, 2026-10-31; plan-types.md, Task 2).
     def to_new_format(self):
@@ -211,7 +219,7 @@ class CheckAnalysisTest(unittest.TestCase):
                 with open(path, "w", encoding="utf-8") as f:
                     f.write(NEW_FORMAT.set_types(text))
 
-    SOL_A_TYPES = "| `sidewalk`、`mrt-exit` | `participation` |  | 2026-10-16 |"
+    SOL_A_TYPES = "| `sidewalk-furniture`、`mrt-exit` | `participation` |  | 2026-10-16 |"
 
     def test_new_format_passes(self):
         self.to_new_format()
@@ -235,36 +243,36 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_empty_solution_type_cell_fails(self):
         self.to_new_format()
-        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES, "| `sidewalk`、`mrt-exit` |  |  | 2026-10-16 |")
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES, "| `sidewalk-furniture`、`mrt-exit` |  |  | 2026-10-16 |")
         self.assertFails("solution A", "解法類型")
 
     def test_four_solution_types_fail(self):
         self.to_new_format()
         self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
-                  "| `sidewalk`、`mrt-exit` | `participation`、`planning`、`facility`、`intake` |  | 2026-10-16 |")
+                  "| `sidewalk-furniture`、`mrt-exit` | `participation`、`planning`、`facility`、`intake` |  | 2026-10-16 |")
         self.assertFails("solution A", "at most 3")
 
     def test_unknown_solution_type_fails(self):
         self.to_new_format()
-        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES, "| `sidewalk`、`mrt-exit` | `magic` |  | 2026-10-16 |")
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES, "| `sidewalk-furniture`、`mrt-exit` | `magic` |  | 2026-10-16 |")
         self.assertFails("solution A", "magic")
 
     def test_own_domain_that_repeats_the_issue_domain_fails(self):
         self.to_new_format()
         self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
-                  "| `sidewalk`、`mrt-exit` | `participation` | `environment` | 2026-10-16 |")
+                  "| `sidewalk-furniture`、`mrt-exit` | `participation` | `environment` | 2026-10-16 |")
         self.assertFails("solution A", "environment", "only when")
 
     def test_level_1_own_domain_fails(self):
         self.to_new_format()
         self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
-                  "| `sidewalk`、`mrt-exit` | `participation` | `social-welfare` | 2026-10-16 |")
+                  "| `sidewalk-furniture`、`mrt-exit` | `participation` | `social-welfare` | 2026-10-16 |")
         self.assertFails("solution A", "social-welfare is a level 1 code")
 
     def test_valid_own_domain_passes(self):
         self.to_new_format()
         self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
-                  "| `sidewalk`、`mrt-exit` | `participation` | `welfare-services` | 2026-10-16 |")
+                  "| `sidewalk-furniture`、`mrt-exit` | `participation` | `welfare-services` | 2026-10-16 |")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
@@ -288,7 +296,7 @@ class CheckAnalysisTest(unittest.TestCase):
         # A code like E or K is fine when 6.1 has it too.
         self.no_cross_issue()
         md = f"{ISSUE}/issue-analysis.md"
-        self.edit(md, "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`", "| K | `[AI模擬]` 參與式選址流程 | `sidewalk`")
+        self.edit(md, "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`", "| K | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`")
         self.edit(md, "| D | 參與式選址流程 |", "| K | 參與式選址流程 |")
         self.edit(md, "### 7.4 解法 D：", "### 7.4 解法 K：")
         self.edit(md, "| D | `[AI模擬]` 參與式選址流程 | 中 |", "| K | `[AI模擬]` 參與式選址流程 | 中 |")
@@ -445,12 +453,24 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(out.count("6.4 C4: #2 O01-US01 refers to another issue"), 1, out)
         self.assertNotIn("5.4", out)
 
+    def use_old_format(self):
+        """Put the old-format fixture in place of the copied #8. The copy gets
+        the space codes of 2026-10-31 (new_format.new_space_codes); the
+        fixture file stays as it is."""
+        for name in ("issue-analysis.md", "user-stories.csv"):
+            shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(self.dir, "8-smokefree", name))
+        path = os.path.join(self.dir, "8-smokefree", "issue-analysis.md")
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(NEW_FORMAT.new_space_codes(text))
+
     def test_cross_issue_reference_in_old_format_conflict(self):
         # In the old format (the fixture in place of #8), the conflicts are in 5.4.
         path = os.path.join(self.dir, "8-smokefree", "issue-analysis.md")
         shutil.copy(os.path.join(OLD_FORMAT, "user-stories.csv"), os.path.join(self.dir, "8-smokefree", "user-stories.csv"))
         with open(os.path.join(OLD_FORMAT, "issue-analysis.md"), encoding="utf-8") as f:
-            text = f.read()
+            text = NEW_FORMAT.new_space_codes(f.read())
         m = re.search(r"^\| C1 \| .*? \| `\[AI模擬\]` ([OI]\d\d-US\d\d)", text, re.M)
         self.assertIsNotNone(m)
         with open(path, "w", encoding="utf-8") as f:
@@ -535,7 +555,7 @@ class CheckAnalysisTest(unittest.TestCase):
 
     # 新增日期 (owner decision 2026-10-18): stakeholders.csv and each 6.1 table
     # have a date column for the app's "recent" lists. YYYY-MM-DD, not in the future.
-    SOL_D = "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` | 2026-10-16 |"
+    SOL_D = "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` | `participation` |  | 2026-10-16 |"
 
     def test_stakeholders_csv_has_date_column(self):
         with open(os.path.join(self.dir, "data", "stakeholders.csv"), encoding="utf-8-sig") as f:
@@ -568,8 +588,8 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_solution_without_date_column_fails(self):
-        self.edit(f"{ISSUE}/issue-analysis.md", "| 代號 | 解法 | 空間類型 | 新增日期 | 一句話說明 |\n|---|---|---|---|---|",
-                  "| 代號 | 解法 | 空間類型 | 一句話說明 |\n|---|---|---|---|")
+        self.edit(f"{ISSUE}/issue-analysis.md", "| 代號 | 解法 | 空間類型 | 解法類型 | 領域 | 新增日期 | 一句話說明 |\n|---|---|---|---|---|---|---|",
+                  "| 代號 | 解法 | 空間類型 | 解法類型 | 領域 | 一句話說明 |\n|---|---|---|---|---|---|")
         self.assertFails("6.1: no 新增日期 column")
 
     def test_solution_bad_date_fails(self):
@@ -822,8 +842,8 @@ class CheckAnalysisTest(unittest.TestCase):
 
     def test_two_tags_outside_step_7_fail(self):
         # A cell outside the step 7 solution tables keeps one tag: here a 6.1 row.
-        self.edit(f"{ISSUE}/issue-analysis.md", "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`",
-                  "| D | `[AI模擬]` 參與式選址流程 `[實證]` 官方 | `sidewalk`")
+        self.edit(f"{ISSUE}/issue-analysis.md", "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`",
+                  "| D | `[AI模擬]` 參與式選址流程 `[實證]` 官方 | `sidewalk-furniture`")
         self.assertFails("a cell has 2 tags; only the cells of the step 7 solution tables may have more than one")
 
     def test_step_7_every_issue_has_all_rows(self):
@@ -1099,8 +1119,7 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_old_format_still_passes(self):
         # The fixture takes the place of #8. Its stakeholders are the same as in #8 now.
         self.no_cross_issue()
-        for name in ("issue-analysis.md", "user-stories.csv"):
-            shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(self.dir, "8-smokefree", name))
+        self.use_old_format()
         # The fixture is older than the 災害風險 row (2026-10-22). The check now
         # requires the row in every file, so add it after each 其他顧慮與風險 row of
         # this copy. The fixture file itself stays as it was.
@@ -1122,8 +1141,7 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_old_format_without_disaster_row_fails(self):
         # The row is required in an old-format file too.
         self.no_cross_issue()
-        for name in ("issue-analysis.md", "user-stories.csv"):
-            shutil.copy(os.path.join(OLD_FORMAT, name), os.path.join(self.dir, "8-smokefree", name))
+        self.use_old_format()
         self.assertFails("步驟 7 #8 解法 A: no 「災害風險」 row", folder="8-smokefree")
 
     def test_need_group_with_one_story_fails(self):

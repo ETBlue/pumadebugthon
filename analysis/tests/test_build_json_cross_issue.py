@@ -13,7 +13,7 @@ SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "d
           "docs/method.md", "docs/human-inputs.md")
 CROSS = os.path.join("cross-issue", "cross-issue-analysis.md")
 # The fields of index.json. The cross-issue data must not change them (the app reads them).
-INDEX_KEYS = {"issues", "stakeholders", "pathLabels", "spaceTypes", "openData"}
+INDEX_KEYS = {"issues", "stakeholders", "pathLabels", "spaceTypes", "spaceGroups", "openData"}
 
 
 def make_copy(root):
@@ -99,7 +99,7 @@ class CrossIssueJsonTest(unittest.TestCase):
         # #9 uses no city space. X-D gets its spaces from its other parts.
         d = self.solution("X-D")
         self.assertIn({"issue": 9, "code": "D"}, d["parts"])
-        self.assertEqual(d["spaces"], ["sidewalk", "arcade", "park", "mrt-exit"])
+        self.assertEqual(d["spaces"], ["sidewalk-walkway", "sidewalk-furniture", "crossing", "arcade", "park", "mrt-exit"])
         self.assertIn({"issue": 9, "id": "N05"}, d["needs"]["must"])
         self.assertIn("X-N08", d["needs"]["crossIssue"])
 

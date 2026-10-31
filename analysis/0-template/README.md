@@ -44,7 +44,8 @@
 | 公開的政策與提案構想 | 也檢查公開的政策與提案構想。採用的想法用自己的話寫進解法，標記 `[AI模擬]`，不寫出來源的名稱，也不連結到來源。本 repo 把來源與解法的對照記錄在 [related-proposals/](../related-proposals/README.md) | [步驟 6](../docs/method.md#步驟-6解法與需求對照) |
 | 衝突 | 衝突只在「我想要…」之間。先找以需求為本的解方；找不到時，再引入審議民主的方法 | [衝突](../docs/method.md#衝突與以需求為本的解方) |
 | 評估 | 每個解法一節，有評估表與執行計畫表，項目與順序固定。也檢查相關的災害 | [步驟 7](../docs/method.md#步驟-7評估解法) |
-| 空間類型 | 標題下方與 6.1 只寫 [space-types.csv](../data/space-types.csv) 的代碼 | [空間類型](../docs/method.md#空間類型) |
+| 空間類型 | 標題下方與 6.1 只寫 [space-types.csv](../data/space-types.csv) 的代碼，而且只用第 2 層（有「上層」）的代碼 | [空間類型](../docs/method.md#空間類型) |
+| 領域與解法類型 | 空間類型的下一行寫「領域：」，用 [domain-types.csv](../data/domain-types.csv) 第 2 層的代碼 1 到 3 個。6.1 的「解法類型」寫 [solution-types.csv](../data/solution-types.csv) 的代碼 1 到 3 個。6.1 的「領域」通常留空，只有解法的領域和議題不同時才填。類型只是標籤，不是分數或排名 | [領域與解法類型](../docs/method.md#領域與解法類型) |
 | 日期 | 6.1 的「新增日期」填當天，之後不再改。`updated-dates.csv` 由程式產生 | [新增日期與更新日期](../docs/method.md#新增日期與更新日期) |
 
 其他規則：

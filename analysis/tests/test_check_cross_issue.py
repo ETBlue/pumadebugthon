@@ -122,7 +122,7 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("I01-US09", "#n")
 
     def test_unknown_cross_ref(self):
-        self.edit("| #1 解法 C、#2 解法 D、#8 解法 A | `sidewalk`", "| #1 解法 C、#2 解法 Z、#8 解法 A | `sidewalk`")
+        self.edit("| #1 解法 C、#2 解法 D、#8 解法 A | `sidewalk-furniture`", "| #1 解法 C、#2 解法 Z、#8 解法 A | `sidewalk-furniture`")
         self.assertFails("#2 解法 Z")
 
     def test_summary_ref_not_in_file(self):
@@ -211,8 +211,8 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("X-E", "2 or more issues")
 
     def test_combined_space_not_in_parts(self):
-        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk`、`park`、`mrt-exit`、`indoor` |",
-                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk`、`park`、`mrt-exit`、`indoor`、`utility` |")
+        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk-walkway`、`sidewalk-furniture`、`crossing`、`park`、`mrt-exit`、`indoor-home`、`indoor-business` |",
+                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk-walkway`、`sidewalk-furniture`、`crossing`、`park`、`mrt-exit`、`indoor-home`、`indoor-business`、`utility` |")
         self.assertFails("X-C", "utility")
 
     def test_must_column_priority_wrong(self):

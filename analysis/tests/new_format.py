@@ -19,6 +19,14 @@ NEW_HEADER = "| 代號 | 解法 | 空間類型 | 解法類型 | 領域 | 新增�
 DOMAIN_LINE = "領域："
 
 
+def new_space_codes(text):
+    """The text with the space codes that were split on 2026-10-31 renamed:
+    `sidewalk` -> `sidewalk-walkway`, `indoor` -> `indoor-home`. The
+    old-format fixture still has the old codes, and the fixture file stays
+    as it is, so the tests rename them in their copy only."""
+    return text.replace("`sidewalk`", "`sidewalk-walkway`").replace("`indoor`", "`indoor-home`")
+
+
 def join_cells(cells):
     """One table line from its cells. An empty cell is written as 「|  |」."""
     return "| " + " | ".join(cells) + " |"

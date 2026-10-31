@@ -144,8 +144,7 @@ class SameStep1IdsTest(unittest.TestCase):
         cls.check = load("check_analysis")
         cls.sync = load("sync_stakeholders")
         cls.build = load("build_json")
-        with open(os.path.join(ANALYSIS, "data", "space-types.csv"), encoding="utf-8-sig", newline="") as f:
-            cls.space_codes = {r["代碼"] for r in csv.DictReader(f)}
+        cls.space_codes = cls.build.common.space_types(ANALYSIS)
         cls.domains = cls.build.common.domain_types(ANALYSIS)
         cls.solution_types = cls.build.common.solution_types(ANALYSIS)
 
@@ -203,6 +202,12 @@ class TypeListsTest(unittest.TestCase):
         self.assertEqual(list(domains)[:2], ["general-affairs", "administration"])
         self.assertEqual(domains["transport"]["上層"], "economic-development")
         self.assertEqual(domains["transport"]["政事別"], "交通支出")
+        spaces = self.common.space_types(ANALYSIS)
+        self.assertEqual(len(spaces), 23)
+        self.assertEqual([c for c, r in spaces.items() if not r["上層"]], ["road", "underground", "public-space", "building"])
+        self.assertEqual(len(self.common.leaf_codes(spaces)), 19)
+        self.assertNotIn("sidewalk", spaces)
+        self.assertNotIn("indoor", spaces)
         types = self.common.solution_types(ANALYSIS)
         self.assertEqual(len(types), 13)
         self.assertEqual(list(types)[0], "digital-tool")

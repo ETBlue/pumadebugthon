@@ -230,12 +230,58 @@ class TypeListsTest(unittest.TestCase):
             self.common.check_two_levels(self.rows("a,", "a1,a", "a11,a1"), "x.csv")
         self.assertIn("x.csv", str(e.exception))
         self.assertIn("a11", str(e.exception))
+        self.assertIn("is a level 2 code", str(e.exception))
 
     def test_level_1_without_child_fails(self):
         with self.assertRaises(self.common.ReadError) as e:
-            self.common.check_two_levels(self.rows("a,", "a1,a", "b,"), "x.csv")
+            self.common.check_two_levels(self.rows("parent-a,", "child-a,parent-a", "parent-b,"), "x.csv")
         self.assertIn("x.csv", str(e.exception))
-        self.assertIn("b", str(e.exception))
+        self.assertIn("level 1 code parent-b has no child", str(e.exception))
+
+    def test_child_before_parent_passes(self):
+        self.common.check_two_levels(self.rows("a1,a", "a,", "b,", "b1,b"), "x.csv")
+
+    def test_list_with_repeated_code_fails(self):
+        with self.assertRaises(self.common.ReadError) as e:
+            self.common.check_two_levels(self.rows("a,", "a1,a", "a1,a"), "x.csv")
+        self.assertIn("x.csv", str(e.exception))
+        self.assertIn("code a1 is repeated", str(e.exception))
+
+    def test_list_with_empty_code_fails(self):
+        with self.assertRaises(self.common.ReadError) as e:
+            self.common.check_two_levels(self.rows("a,", ",a", "a1,a"), "x.csv")
+        self.assertIn("x.csv", str(e.exception))
+        self.assertIn("empty 代碼", str(e.exception))
+
+    def test_spaces_are_stripped(self):
+        # Spaces around 代碼 and 上層 are not part of the code.
+        rows = self.rows(" a ,", " a1 , a ")
+        self.common.check_two_levels(rows, "x.csv")
+        self.assertEqual(self.common.leaf_codes(rows), ["a1"])
+        self.edit("domain-types.csv", lambda t: t.replace("\ntransport,交通,economic-development,",
+                                                          "\n transport , 交通 , economic-development ,", 1))
+        domains = self.common.domain_types(self.dir)
+        self.assertIn("transport", domains)
+        self.assertEqual(domains["transport"]["上層"], "economic-development")
+        self.assertEqual(domains["transport"]["名稱"], "交通")
+
+    def test_empty_code_in_file_fails_with_row_number(self):
+        # transport is on row 15 of the file (row 1 is the header).
+        self.edit("domain-types.csv", lambda t: t.replace("\ntransport,交通,", "\n,交通,", 1))
+        with self.assertRaises(self.common.ReadError) as e:
+            self.common.domain_types(self.dir)
+        self.assertIn("domain-types.csv", str(e.exception))
+        self.assertIn("row 15: empty 代碼", str(e.exception))
+
+    def test_file_with_no_rows_fails(self):
+        for name, reader in (("domain-types.csv", self.common.domain_types),
+                             ("solution-types.csv", self.common.solution_types)):
+            with self.subTest(name=name):
+                self.edit(name, lambda t: t.split("\n", 1)[0] + "\n")
+                with self.assertRaises(self.common.ReadError) as e:
+                    reader(self.dir)
+                self.assertIn(name, str(e.exception))
+                self.assertIn("no rows", str(e.exception))
 
     def test_domain_reader_runs_the_two_level_check(self):
         self.edit("domain-types.csv", lambda t: t.replace("\ntransport,交通,economic-development,", "\ntransport,交通,zz,", 1))

@@ -232,7 +232,7 @@ class UpdatedRowsTest(unittest.TestCase):
         rows = self.mod.updated_rows([self.item("O01", "aaa")], old, self.today)
         self.assertEqual(rows, [self.row("O01", "2026-10-20", "aaa")])
 
-    def test_new_story_or_space_type_gets_today_for_both_dates(self):
+    def test_new_own_added_item_gets_today_for_both_dates(self):
         for type_ in OWN_ADDED:
             with self.subTest(type_=type_):
                 rows = self.mod.updated_rows([self.item("x", "aaa", added=None, type_=type_)], [], self.today)
@@ -290,7 +290,7 @@ class ScriptTest(unittest.TestCase):
         self.assertTrue(raw.startswith(b"\xef\xbb\xbf"))
         self.assertEqual(raw[3:].decode("utf-8").split("\n")[0], "類型,編號,新增日期,更新日期,內容指紋")
 
-    def test_added_column_only_for_stories_and_space_types(self):
+    def test_added_column_only_for_own_added_types(self):
         for (type_, iid), r in self.rows().items():
             if type_ in OWN_ADDED:
                 self.assertRegex(r["新增日期"], r"^\d{4}-\d\d-\d\d$", iid)

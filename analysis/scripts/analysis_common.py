@@ -132,9 +132,13 @@ SOLUTION_TYPE_COLS = ("代碼", "名稱", "說明", "判斷方式", "政策工�
 
 def code_rows(analysis_dir, name, columns):
     """{代碼: row} of a type list, in file order. The values are stripped.
-    A missing column, an empty code or a repeated code is a ReadError."""
+    A missing column, a file with no rows, an empty code or a repeated code
+    is a ReadError."""
+    rows = read_csv(analysis_dir, name, columns)
+    if not rows:
+        raise ReadError(name, "the file has no rows (only a header)")
     out = {}
-    for i, r in enumerate(read_csv(analysis_dir, name, columns), start=2):
+    for i, r in enumerate(rows, start=2):
         row = {k: (v or "").strip() for k, v in r.items()}
         code = row["代碼"]
         if not code:
@@ -159,10 +163,19 @@ def leaf_codes(rows):
 def check_two_levels(rows, file_name):
     """Check a list with 2 levels. Every 上層 is empty (level 1) or the code
     of a level 1 row (level 2). Every level 1 row has at least one child.
-    Otherwise a ReadError that names the file and the code. rows is a
-    {code: row} dict or a list of rows with 代碼 and 上層."""
+    A child row may come before its parent row. Otherwise a ReadError that
+    names the file and the code. rows is a {code: row} dict or a list of
+    rows with 代碼 and 上層. A list must not have an empty or a repeated
+    代碼 (a dict from code_rows is already checked)."""
     rows = _row_list(rows)
-    parent = {r["代碼"].strip(): r["上層"].strip() for r in rows}
+    parent = {}
+    for n, r in enumerate(rows, start=1):
+        code = r["代碼"].strip()
+        if not code:
+            raise ReadError(file_name, f"row {n} (data row, not counting the header): empty 代碼")
+        if code in parent:
+            raise ReadError(file_name, f"code {code} is repeated")
+        parent[code] = r["上層"].strip()
     for r in rows:
         code, up = r["代碼"].strip(), r["上層"].strip()
         if not up:

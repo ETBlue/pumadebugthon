@@ -85,8 +85,8 @@ OWN_ADDED = (STORY, SPACE, DOMAIN_TYPE, SOLUTION_TYPE)
 SPACE_COLS = ("名稱", "分組", "說明")
 # The columns of domain-types.csv and solution-types.csv that are the type's
 # own content: every column except 代碼.
-DOMAIN_TYPE_COLS = common.DOMAIN_TYPE_COLS[1:]
-SOLUTION_TYPE_COLS = common.SOLUTION_TYPE_COLS[1:]
+DOMAIN_CONTENT_COLS = common.DOMAIN_TYPE_COLS[1:]
+SOLUTION_CONTENT_COLS = common.SOLUTION_TYPE_COLS[1:]
 # The columns of stakeholders.csv that are the stakeholder's own content.
 STAKE_COLS = ("利害關係人", "分類路徑", "特別關注", "議題", "備註")
 # The fields of a story that are the stakeholder's content.
@@ -155,8 +155,8 @@ def items(analysis_dir):
     for r in build_json.read_csv(analysis_dir, "space-types.csv", ("代碼",) + SPACE_COLS):
         content = {c: r[c].strip() for c in SPACE_COLS}
         out.append({"type": SPACE, "id": r["代碼"].strip(), "added": None, "fingerprint": common.fingerprint(content)})
-    for type_, rows, cols in ((DOMAIN_TYPE, common.domain_types(analysis_dir), DOMAIN_TYPE_COLS),
-                              (SOLUTION_TYPE, common.solution_types(analysis_dir), SOLUTION_TYPE_COLS)):
+    for type_, rows, cols in ((DOMAIN_TYPE, common.domain_types(analysis_dir), DOMAIN_CONTENT_COLS),
+                              (SOLUTION_TYPE, common.solution_types(analysis_dir), SOLUTION_CONTENT_COLS)):
         for code, r in rows.items():
             content = {c: r[c] for c in cols}
             out.append({"type": type_, "id": code, "added": None, "fingerprint": common.fingerprint(content)})
@@ -218,8 +218,8 @@ def date_problem(value):
 def problems(analysis_dir):
     """The problems of updated-dates.csv, as a list of messages ([] when it is right).
     Every current item has exactly one row and there are no other rows. A
-    使用者故事, 空間類型, 領域類型 or 解法類型 has a 新增日期 that is a real date, not after
-    today; the other types leave it empty. Each 更新日期 is a real date, not
+    使用者故事, 空間類型, 領域類型 or 解法類型 has a 新增日期 that is a
+    real date, not after today; the other types leave it empty. Each 更新日期 is a real date, not
     after today, and not before the item's 新增日期. Each 內容指紋 matches
     the current content."""
     try:

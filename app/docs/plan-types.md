@@ -230,7 +230,7 @@ Places: all 11 issue files and the 0-template, the cross-issue file, `analysis/r
 - Sort by number: `S2` before `S10`, `X-S2` before `X-S10`, `X-N2` before `X-N10`. Check every sort in the scripts and in `app/src/lib/` (for example `listSort.ts`), with tests. Today letters and zero padding make text sorting work, so this is the main risk.
 - `analysis/data/updated-dates.csv`: move each row from the old key to the new key, so the dates do not change only because of the rename.
 - Add a numbered decision to `app/docs/design.md`.
-- End with a `git grep` for the old IDs (outside `human-inputs.md`, `docs/` and the history in `analysis/docs/types-research.md`) that prints nothing.
+- End with a `git grep` for the old IDs (outside `human-inputs.md`, `docs/`, the history in `analysis/docs/types-research.md`, and this plan, which keeps the old IDs as a record) that prints nothing.
 - All checks. **Commit.**
 
 - [ ] **GATE: Part 2 review.** Report the counts and the X- check (found, partly found, missed) to ETBlue. Push only after ETBlue says OK.

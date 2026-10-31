@@ -241,4 +241,4 @@ Places: all 11 issue files and the 0-template, the cross-issue file, `analysis/r
 
 Not planned yet. It needs a design session with ETBlue first (`superpowers:brainstorming`): where the types show (issue and solution pages, cards, list filters, maybe `#/domains` and `#/solution-types` pages like `#/spaces`), how level 1 shows (a page per parent, or only a filter), and whether `candidates.csv` shows in the app. After that session, write `app/docs/plan-types-ui.md`.
 
-- [ ] **GATE: design session with ETBlue.**
+- [x] **GATE: design session with ETBlue.** Done on 2026-11-01. The plan is `app/docs/plan-types-ui.md`.

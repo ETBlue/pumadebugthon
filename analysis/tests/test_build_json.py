@@ -131,7 +131,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertFalse(c6["text"]["text"].startswith("`"))
 
     def test_solution_a(self):
-        a = next(s for s in self.issue["solutions"] if s["id"] == "A")
+        a = next(s for s in self.issue["solutions"] if s["id"] == "S1")
         self.assertIn("I06-US01", a["stories"])
         self.assertIn("O01-US01", a["stories"])  # from the Should / Could column
         self.assertEqual(a["name"], {"text": "清潔箱佈建建議地圖", "tag": "AI模擬", "pending": False})
@@ -142,8 +142,8 @@ class BuildJsonOutputTest(unittest.TestCase):
         return next(s for s in (issue or self.issue)["solutions"] if s["id"] == code)
 
     def test_solution_measures(self):
-        # 6.3 rows whose 解法 cell lists the code. A row for 「A、D」 belongs to both.
-        a = self.solution("A")
+        # 6.3 rows whose 解法 cell lists the code. A row for 「S1、S4」 belongs to both.
+        a = self.solution("S1")
         self.assertEqual([m["metric"] for m in a["measures"]],
                          ["清潔箱總數", "無清潔箱資料的行政區數", "高人流捷運站的「每處每日出站人次」",
                           "家用垃圾違規棄置件數（試點區）"])
@@ -151,7 +151,7 @@ class BuildJsonOutputTest(unittest.TestCase):
                                             "baseline": {"text": "1 區（北投區，主表 0 筆；130 點總表有 49 處）",
                                                          "tag": "實證", "pending": False},
                                             "source": "data.gov.tw 121355"})
-        d = self.solution("D")
+        d = self.solution("S4")
         self.assertEqual(d["measures"][0]["metric"], "家用垃圾違規棄置件數（試點區）")
         self.assertEqual(d["measures"][0]["baseline"],
                          {"text": "【待補：環保局稽查資料】", "tag": None, "pending": True})
@@ -160,7 +160,7 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_solution_evaluation_and_plan(self):
         # The two tables of the step 7 section 「### 7.n 解法 X：…」 (ETBlue,
         # 2026-10-23), with their rows by key.
-        a = self.solution("A")
+        a = self.solution("S1")
         self.assertEqual(list(a["evaluation"]), ["laws", "privacy", "risks", "disasters", "feasibility"])
         self.assertEqual(list(a["plan"]), ["owner", "resources", "cost", "steps"])
         # A cell is a list of parts; a cell with one tag is a list of one Cell.
@@ -178,11 +178,11 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(a["plan"]["steps"][0]["tag"], "AI模擬")
         self.assertTrue(a["plan"]["steps"][0]["text"].startswith("第一步："))
         # A solution with no related disaster says so in its 災害風險 row.
-        self.assertEqual(self.solution("C")["evaluation"]["disasters"], cell("無明顯相關災害風險"))
+        self.assertEqual(self.solution("S3")["evaluation"]["disasters"], cell("無明顯相關災害風險"))
 
     def test_split_cost_feasibility_cell_with_several_parts(self):
-        # #2 解法 B had 「QR 回報：成本低、可行性高。感測器試點…：成本中等…，可行性中；…」.
-        b = self.solution("B")
+        # #2 解法 S2 had 「QR 回報：成本低、可行性高。感測器試點…：成本中等…，可行性中；…」.
+        b = self.solution("S2")
         self.assertEqual(b["evaluation"]["feasibility"][0]["text"], "QR 回報：可行性高。感測器試點（沈伯洋構想）：可行性中")
         self.assertTrue(b["plan"]["cost"][0]["text"].startswith("QR 回報：成本低。感測器試點（沈伯洋構想）：成本中等【待補：市場詢價】"))
         self.assertEqual(b["plan"]["cost"][0]["tag"], "AI模擬")
@@ -199,10 +199,10 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertGreater(found, 0)
 
     def test_mixed_step_7_cell(self):
-        # #2 解法 E: the 災害風險 cell is split into parts with their own tags
+        # #2 解法 S5: the 災害風險 cell is split into parts with their own tags
         # (ETBlue, 2026-10-22): official sources [實證], news and a plan copied
         # on a school website [AI整理], AI judgement [AI模擬].
-        e = self.solution("E")["evaluation"]["disasters"]
+        e = self.solution("S5")["evaluation"]["disasters"]
         self.assertEqual([p["tag"] for p in e],
                          ["AI模擬", "實證", "AI整理", "AI模擬", "實證", "AI模擬", "實證", "AI整理"])
         self.assertTrue(e[1]["text"].startswith("傳染病防治法第 25 條規定"))
@@ -212,19 +212,19 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_solution_overview(self):
         # The solution's row of the 總覽 table, found by its 代號 cell. The row tag (in the 解法 cell) is on every field.
-        b = self.solution("B")
+        b = self.solution("S2")
         cell = lambda t: {"text": t, "tag": "AI模擬", "pending": False}
         self.assertEqual(b["overview"], {"cost": cell("低（QR）／中（感測器）"), "feasibility": cell("中"),
                                          "risk": cell("維護、資安、勞動條件"), "owner": cell("環保局")})
 
     def test_solution_ideas(self):
-        # Rows of the 6.1 構想 table whose 本文件的處理 cell names the solution (「併入解法 B」).
-        b = self.solution("B")
+        # Rows of the 6.1 構想 table whose 本文件的處理 cell names the solution (「併入解法 S2」).
+        b = self.solution("S2")
         self.assertEqual(len(b["ideas"]), 2)
         self.assertEqual(b["ideas"][0]["idea"],
                          {"text": "設偵測系統，偵測到垃圾桶滿了才派人去收，不用一直定時巡邏",
                           "tag": "實證", "pending": False})
-        self.assertTrue(b["ideas"][0]["handling"]["text"].startswith("併入解法 B"))
+        self.assertTrue(b["ideas"][0]["handling"]["text"].startswith("併入解法 S2"))
         self.assertEqual(b["ideas"][0]["handling"]["tag"], "AI模擬")
         self.assertEqual(list(b["ideas"][0]), ["idea", "handling"])
         for code in "ACDE":
@@ -232,21 +232,21 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_solution_pending(self):
         # 待補 items in the solution's 7.n section or in its 6.3 rows. The global list stays.
-        a = self.solution("A")
+        a = self.solution("S1")
         texts = [(p["section"], p["text"]) for p in a["pending"]]
         self.assertIn(("6.3 成效衡量", "【待補：環保局稽查資料】"), texts)
-        self.assertIn(("7.1 解法 A：清潔箱佈建建議地圖", "【待補：法務確認】"), texts)
-        self.assertNotIn(("6.3 成效衡量", "【待補：短問卷】"), texts)  # a C row
-        self.assertTrue(all(p["section"] in ("6.3 成效衡量", "7.1 解法 A：清潔箱佈建建議地圖")
+        self.assertIn(("7.1 解法 S1：清潔箱佈建建議地圖", "【待補：法務確認】"), texts)
+        self.assertNotIn(("6.3 成效衡量", "【待補：短問卷】"), texts)  # an S3 row
+        self.assertTrue(all(p["section"] in ("6.3 成效衡量", "7.1 解法 S1：清潔箱佈建建議地圖")
                             for p in a["pending"]), texts)
-        d = self.solution("D")
+        d = self.solution("S4")
         self.assertIn("【待補：環保局稽查資料】", [p["text"] for p in d["pending"]])
         for p in a["pending"]:
             self.assertIn(p, self.issue["pending"])
         self.assertEqual(list(a["pending"][0]), ["section", "text", "context"])
 
     def test_solution_keys(self):
-        self.assertEqual(list(self.solution("A")),
+        self.assertEqual(list(self.solution("S1")),
                          ["id", "name", "summary", "spaces", "solutionTypes", "ownDomains", "domains", "added", "updated", "stories", "needs",
                           "measures", "evaluation", "plan", "overview", "ideas", "controversies", "legal",
                           "practices", "pending"])
@@ -254,19 +254,19 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_solution_summary_rows(self):
         # The 分析摘要 rows of 可能的爭議 and 法規上的障礙 whose 相關編號 names the
         # solution (ETBlue, 2026-10-23), the same objects as in summary.
-        b = self.solution("B")
+        b = self.solution("S2")
         self.assertEqual([i["item"] for i in b["controversies"]], ["試點的採購與資料", "清潔隊員的手機回報"])
         self.assertEqual([i["item"] for i in b["legal"]], ["感測器的採購與認證", "照片與定位的個資"])
         self.assertEqual(b["controversies"][0], self.summary_item("可能的爭議", "試點的採購與資料"))
-        self.assertEqual([i["item"] for i in self.solution("C")["legal"]], [])
-        # 「#8 解法 B」 in 「收集點與清潔箱的位置」 is not a solution of this issue.
-        self.assertEqual([i["item"] for i in self.solution("E")["controversies"]], ["收集點與清潔箱的位置"])
+        self.assertEqual([i["item"] for i in self.solution("S3")["legal"]], [])
+        # 「#8 解法 S2」 in 「收集點與清潔箱的位置」 is not a solution of this issue.
+        self.assertEqual([i["item"] for i in self.solution("S5")["controversies"]], ["收集點與清潔箱的位置"])
 
     def test_solution_practices(self):
         # The 6.1 practice rows that name the solution, then the rows of the
         # 相依事項與現行政策的關係 table of its step 7 section (domestic; ETBlue,
         # 2026-10-22 and 2026-10-23).
-        b = self.solution("B")
+        b = self.solution("S2")
         self.assertEqual([(p["place"], p["source"]) for p in b["practices"]],
                          [("美國紐約", "practice"), ("美國費城", "practice"), ("美國費城", "practice")])
         first = b["practices"][0]
@@ -276,10 +276,10 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertFalse(first["domestic"])
         self.assertEqual(first["content"]["tag"], "實證")
         self.assertEqual(first["use"]["tag"], "AI模擬")
-        self.assertTrue(first["use"]["text"].startswith("解法 B 在被丟家用垃圾的點"))
-        # 「（N04、7.2）」 names B through its step 7 section, and the row names no other solution.
+        self.assertTrue(first["use"]["text"].startswith("解法 S2 在被丟家用垃圾的點"))
+        # 「（N04、7.2）」 names S2 through its step 7 section, and the row names no other solution.
         self.assertTrue(b["practices"][2]["use"]["text"].endswith("（N04、7.2）"))
-        a = self.solution("A")
+        a = self.solution("S1")
         self.assertEqual([(p["place"], p["domestic"], p["source"]) for p in a["practices"]],
                          [("美國費城", False, "practice"), ("韓國首爾", False, "practice"),
                           (None, True, "dependency"), (None, True, "dependency")])
@@ -287,12 +287,12 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(dep["name"], "現行的裁撤與復設做法")
         self.assertEqual(dep["content"]["tag"], "AI模擬")
         self.assertIsNone(dep["use"])
-        self.assertEqual(dep["refs"], ["O04-US04", "解法 A", "解法 D"])
-        # The same row is under 解法 D too (it names A and D).
-        self.assertIn(dep, self.solution("D")["practices"])
-        # 「#8 解法 B」 in the 和 #8 無菸城市 row is not a solution of this issue,
+        self.assertEqual(dep["refs"], ["O04-US04", "解法 S1", "解法 S4"])
+        # The same row is under 解法 S4 too (it names S1 and S4).
+        self.assertIn(dep, self.solution("S4")["practices"])
+        # 「#8 解法 S2」 in the 和 #8 無菸城市 row is not a solution of this issue,
         # so that row stays in the 分析摘要 and is on no solution.
-        self.assertEqual([p["name"] for p in self.solution("E")["practices"]], ["家戶垃圾收運"])
+        self.assertEqual([p["name"] for p in self.solution("S5")["practices"]], ["家戶垃圾收運"])
         self.assertNotIn("和 #8 無菸城市", [p["name"] for s in self.issue["solutions"] for p in s["practices"]])
 
     def test_solution_practices_in_other_issues(self):
@@ -300,36 +300,36 @@ class BuildJsonOutputTest(unittest.TestCase):
             with open(os.path.join(self.out, "issues", f"{folder}.json"), encoding="utf-8") as f:
                 return json.load(f)
         trees, policy = load("1-trees"), load("9-policydiscovery")
-        a1 = [p for p in self.solution("A", trees)["practices"] if p["source"] == "practice"]
+        a1 = [p for p in self.solution("S1", trees)["practices"] if p["source"] == "practice"]
         self.assertEqual([p["place"] for p in a1], ["新加坡"] * 4 + ["臺灣臺北市", "美國紐約"])
         self.assertTrue(a1[4]["domestic"])
-        # 「7.2、7.5 的相關法規」 names B and E.
+        # 「7.2、7.5 的相關法規」 names S2 and S5.
         names = lambda code: [p["name"] for p in self.solution(code, trees)["practices"]]
-        self.assertIn("樹木保護區（Tree Conservation Areas）", names("B"))
-        self.assertIn("樹木保護區（Tree Conservation Areas）", names("E"))
-        c9 = self.solution("C", policy)["practices"]
+        self.assertIn("樹木保護區（Tree Conservation Areas）", names("S2"))
+        self.assertIn("樹木保護區（Tree Conservation Areas）", names("S5"))
+        c9 = self.solution("S3", policy)["practices"]
         self.assertEqual([(p["place"], p["domestic"]) for p in c9 if p["source"] == "practice"],
                          [("臺灣", True), ("臺灣", True), ("臺灣臺北市", True)])
-        self.assertEqual(self.solution("E", policy)["practices"], [])
+        self.assertEqual(self.solution("S5", policy)["practices"], [])
 
     def test_solution_fields_in_other_issues(self):
         with open(os.path.join(self.out, "issues", "1-trees.json"), encoding="utf-8") as f:
             trees = json.load(f)
         with open(os.path.join(self.out, "issues", "8-smokefree.json"), encoding="utf-8") as f:
             smoke = json.load(f)
-        a1 = self.solution("A", trees)
+        a1 = self.solution("S1", trees)
         self.assertEqual(len(a1["ideas"]), 1)
         self.assertTrue(a1["ideas"][0]["idea"]["text"].startswith("可參考新加坡"))
-        self.assertEqual(self.solution("E", trees)["overview"]["owner"]["text"], "公園處")
+        self.assertEqual(self.solution("S5", trees)["overview"]["owner"]["text"], "公園處")
         for s in trees["solutions"] + smoke["solutions"]:
             self.assertEqual(len(s["evaluation"]) + len(s["plan"]), 9, s["id"])
             self.assertTrue(s["measures"], s["id"])
         self.assertEqual([s["ideas"] for s in smoke["solutions"]], [[]] * 5)
-        b8 = self.solution("B", smoke)
+        b8 = self.solution("S2", smoke)
         self.assertEqual(b8["evaluation"]["laws"][0]["tag"], "AI模擬")
-        self.assertEqual(self.solution("A", smoke)["evaluation"]["laws"][0]["tag"], "實證")
+        self.assertEqual(self.solution("S1", smoke)["evaluation"]["laws"][0]["tag"], "實證")
         # #1: every 相依事項 row names a solution, so the topic has no rows,
-        # and the rows are on the solutions (解法之間的相依 on A, B and E).
+        # and the rows are on the solutions (解法之間的相依 on S1, S2 and S5).
         dep = next(t for t in trees["summary"] if t["topic"] == "相依事項與現行政策的關係")
         self.assertEqual(dep["items"], [])
         for code in "ABE":
@@ -338,8 +338,8 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_pending_has_6_3_and_step_7(self):
         sections = [p["section"] for p in self.issue["pending"]]
         self.assertIn("6.3 成效衡量", sections)
-        step7 = {"7.1 解法 A：清潔箱佈建建議地圖", "7.2 解法 B：滿溢回報與動態清運",
-                 "7.3 解法 C：找桶指引與開放資料更新", "7.4 解法 D：參與式選址流程"}
+        step7 = {"7.1 解法 S1：清潔箱佈建建議地圖", "7.2 解法 S2：滿溢回報與動態清運",
+                 "7.3 解法 S3：找桶指引與開放資料更新", "7.4 解法 S4：參與式選址流程"}
         self.assertTrue(any(p["section"] in step7 and p["text"] == "【待補：法務確認】"
                             for p in self.issue["pending"]), self.issue["pending"])
         for p in self.issue["pending"]:
@@ -352,7 +352,7 @@ class BuildJsonOutputTest(unittest.TestCase):
             self.assertTrue(items, text)
             return items[0]["context"]
         self.assertEqual(ctx("【待補：環保局稽查資料】"), "家用垃圾違規棄置件數（試點區）")
-        self.assertEqual(ctx("【待補：法務確認】", "7.1 解法 A：清潔箱佈建建議地圖"), "相關法規")
+        self.assertEqual(ctx("【待補：法務確認】", "7.1 解法 S1：清潔箱佈建建議地圖"), "相關法規")
         self.assertEqual(ctx("【待補：政策組安排】"), "訪談清潔隊與環保局")
         self.assertIsNone(ctx("【待補：環保局確認目前實際數量與兩份表的關係】"))
         for p in self.issue["pending"]:
@@ -479,10 +479,10 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(domains[6], ["industry", "community-development", "civil-affairs"])
         self.assertEqual(domains[9], ["administration", "civil-affairs"])
         self.assertEqual(self.issue["domains"], ["environment"])
-        a = self.solution("A")
+        a = self.solution("S1")
         self.assertEqual((a["solutionTypes"], a["ownDomains"], a["domains"]), (["digital-tool", "planning"], [], ["environment"]))
         with open(os.path.join(self.out, "issues", "6-oldbuildings.json"), encoding="utf-8") as f:
-            c = self.solution("C", json.load(f))
+            c = self.solution("S3", json.load(f))
         self.assertEqual((c["solutionTypes"], c["ownDomains"], c["domains"]),
                          (["service", "subsidy"], ["welfare-services"], ["welfare-services"]))
 
@@ -543,7 +543,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(self.story("I01-US03")["priority"], "M")  # N01
 
     def test_solution_needs_and_stories(self):
-        a = self.solution("A")
+        a = self.solution("S1")
         self.assertEqual(a["needs"], {"must": ["N01", "N04", "N05", "N07", "O04-US02", "O12-US01"],
                                       "shouldCould": ["N02", "O04-US04", "I01-US09"]})
         # stories: the stories whose need the solution covers (the old field).
@@ -551,12 +551,12 @@ class BuildJsonOutputTest(unittest.TestCase):
         for sid in n07["stories"] + ["O04-US02", "I01-US09"]:
             self.assertIn(sid, a["stories"])
         self.assertEqual(len(a["stories"]), len(set(a["stories"])))
-        e = self.solution("E")
+        e = self.solution("S5")
         self.assertEqual(e["needs"]["shouldCould"], [])
 
     def test_conflict_way_out(self):
         c = {x["id"]: x for x in self.issue["conflicts"]}
-        self.assertEqual(c["C1"]["wayOutSolutions"], ["A", "B", "D"])
+        self.assertEqual(c["C1"]["wayOutSolutions"], ["S1", "S2", "S4"])
         self.assertEqual((c["C1"]["needsA"], c["C1"]["needsB"]), (["N01"], ["N06"]))
         self.assertEqual(c["C3"]["wayOutSolutions"], [])
         self.assertTrue(c["C3"]["wayOut"]["text"].startswith("未找到"))
@@ -597,8 +597,8 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_solution_added_date(self):
         # 新增日期 in 6.1 becomes "added".
         added = {s["id"]: s["added"] for s in self.issue["solutions"]}
-        self.assertEqual(added, {"A": "2026-10-16", "B": "2026-10-16", "C": "2026-10-16",
-                                 "D": "2026-10-16", "E": "2026-10-18"})
+        self.assertEqual(added, {"S1": "2026-10-16", "S2": "2026-10-16", "S3": "2026-10-16",
+                                 "S4": "2026-10-16", "S5": "2026-10-18"})
 
     def test_open_data(self):
         # open-data.csv becomes "openData" in index.json, in file order.
@@ -635,7 +635,7 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_summary_rows_without_a_solution(self):
         # solutions: the codes of this issue's solutions that refs names. [] means
         # the row names no solution (ETBlue, 2026-10-23: shown on the issue 總覽).
-        self.assertEqual(self.summary_item("可能的爭議", "收集點與清潔箱的位置")["solutions"], ["E"])
+        self.assertEqual(self.summary_item("可能的爭議", "收集點與清潔箱的位置")["solutions"], ["S5"])
         self.assertEqual(self.summary_item("難以取捨的決定", "清潔箱的設置依據")["solutions"], [])
         # The 相依事項 topic keeps only the rows with no solution.
         dep = next(t for t in self.issue["summary"] if t["topic"] == "相依事項與現行政策的關係")
@@ -645,9 +645,9 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_summary_item(self):
         self.assertEqual(self.summary_item("可能的爭議", "選址討論的速度與代表性"), {
             "item": "選址討論的速度與代表性",
-            "text": {"text": "解法 D 的里民討論會讓設置變慢；常出席的人聲音比較大；討論結果如果不被採用，可能傷害信任。",
+            "text": {"text": "解法 S4 的里民討論會讓設置變慢；常出席的人聲音比較大；討論結果如果不被採用，可能傷害信任。",
                      "tag": "AI模擬", "pending": False},
-            "refs": ["解法 D", "N05", "O05-US01"], "solutions": ["D"]})
+            "refs": ["解法 S4", "N05", "O05-US01"], "solutions": ["S4"]})
 
     def test_summary_pending_row(self):
         item = self.summary_item("受影響較大的弱勢族群", "呼吸道疾病（尚未納入）")
@@ -773,8 +773,8 @@ class BuildJsonTypesTest(unittest.TestCase):
         return self.mod.parse_issue(text, self.spaces, self.domains, self.types)
 
     def set_row_a(self, solution_types, own_domains):
-        """The text with new 解法類型 and 領域 cells on row A."""
-        m = re.search(r"^(\| A \| [^|]+ \| [^|]+ \| )`participation` \|  \|", self.text, re.M)
+        """The text with new 解法類型 and 領域 cells on row S1."""
+        m = re.search(r"^(\| S1 \| [^|]+ \| [^|]+ \| )`participation` \|  \|", self.text, re.M)
         self.assertIsNotNone(m)
         return self.text[:m.start()] + f"{m.group(1)}{solution_types} | {own_domains} |" + self.text[m.end():]
 
@@ -788,11 +788,11 @@ class BuildJsonTypesTest(unittest.TestCase):
 
     def test_own_domains(self):
         data = self.parse(self.set_row_a("`digital-tool`、`planning`", "`welfare-services`"))
-        a = next(s for s in data["solutions"] if s["id"] == "A")
+        a = next(s for s in data["solutions"] if s["id"] == "S1")
         self.assertEqual(a["solutionTypes"], ["digital-tool", "planning"])
         self.assertEqual(a["ownDomains"], ["welfare-services"])
         self.assertEqual(a["domains"], ["welfare-services"])
-        b = next(s for s in data["solutions"] if s["id"] == "B")
+        b = next(s for s in data["solutions"] if s["id"] == "S2")
         self.assertEqual((b["ownDomains"], b["domains"]), ([], ["environment"]))
 
     def assertReadError(self, text, *needles):
@@ -812,13 +812,13 @@ class BuildJsonTypesTest(unittest.TestCase):
                              "community-environment is a level 1 code")
 
     def test_empty_solution_types(self):
-        self.assertReadError(self.set_row_a("", ""), "solution A", "解法類型")
+        self.assertReadError(self.set_row_a("", ""), "solution S1", "解法類型")
 
     def test_four_solution_types(self):
-        self.assertReadError(self.set_row_a("`intake`、`planning`、`facility`、`service`", ""), "solution A", "at most 3")
+        self.assertReadError(self.set_row_a("`intake`、`planning`、`facility`、`service`", ""), "solution S1", "at most 3")
 
     def test_own_domain_repeats_issue_domain(self):
-        self.assertReadError(self.set_row_a("`intake`", "`environment`"), "solution A", "only when")
+        self.assertReadError(self.set_row_a("`intake`", "`environment`"), "solution S1", "only when")
 
 
 class BuildJsonErrorTest(unittest.TestCase):
@@ -856,7 +856,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.1:", "「新設計的清潔箱（Better Bin）」", "must start with its place")
 
     def test_practice_unknown_solution(self):
-        self.edit("| `[AI模擬]` 解法 B 在被丟家用垃圾的點", "| `[AI模擬]` 解法 Z 在被丟家用垃圾的點")
+        self.edit("| `[AI模擬]` 解法 S2 在被丟家用垃圾的點", "| `[AI模擬]` 解法 Z 在被丟家用垃圾的點")
         self.assertFails("2-trashcans: 6.1:", "解法 Z is not in 6.1")
 
     def test_practice_step7_section_of_no_solution(self):
@@ -864,8 +864,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.1:", "7.6 is not a step 7 section of a solution")
 
     # ---------- 分析摘要 ----------
-    SUMMARY_ROW = ("| 選址討論的速度與代表性 | `[AI模擬]` 解法 D 的里民討論會讓設置變慢；常出席的人聲音比較大；"
-                   "討論結果如果不被採用，可能傷害信任。 | 解法 D、N05、O05-US01 |")
+    SUMMARY_ROW = ("| 選址討論的速度與代表性 | `[AI模擬]` 解法 S4 的里民討論會讓設置變慢；常出席的人聲音比較大；"
+                   "討論結果如果不被採用，可能傷害信任。 | 解法 S4、N05、O05-US01 |")
 
     def test_summary_missing(self):
         self.edit("## 分析摘要\n", "## 摘要\n")
@@ -878,15 +878,15 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 分析摘要:", "難以取捨的決定、可能的爭議")
 
     def test_summary_unknown_local_ref(self):
-        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 D、N05", "C99、N05"))
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 S4、N05", "C99、N05"))
         self.assertFails("2-trashcans: 分析摘要:", "選址討論的速度與代表性", "C99")
 
     def test_summary_bad_ref(self):
-        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 D、N05", "解法 D，N05"))
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 S4、N05", "解法 S4，N05"))
         self.assertFails("2-trashcans: 分析摘要:", "選址討論的速度與代表性", "is not a reference")
 
     def test_summary_cross_ref_not_in_other_issue(self):
-        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 D、N05", "#8 解法 Z、N05"))
+        self.edit(self.SUMMARY_ROW, self.SUMMARY_ROW.replace("解法 S4、N05", "#8 解法 Z、N05"))
         self.assertFails("2-trashcans: 分析摘要:", "#8 解法 Z")
 
     def test_summary_row_without_tag(self):
@@ -935,19 +935,24 @@ class BuildJsonErrorTest(unittest.TestCase):
         path = os.path.join(self.dir, ISSUE, "issue-analysis.md")
         with open(path, encoding="utf-8") as f:
             lines = f.read().split("\n")
-        kept = [l for l in lines if not l.startswith("| D | 參與式選址流程 |")]
+        kept = [l for l in lines if not l.startswith("| S4 | 參與式選址流程 |")]
         self.assertEqual(len(kept), len(lines) - 1)
         with open(path, "w", encoding="utf-8") as f:
             f.write("\n".join(kept))
-        self.assertFails("2-trashcans: 6.2:", "D")
+        self.assertFails("2-trashcans: 6.2:", "S4")
 
     def test_6_2_code_not_in_6_1(self):
-        self.edit("| D | 參與式選址流程 |", "| F | 參與式選址流程 |")
-        self.assertFails("2-trashcans: 6.2:", "「F」 is not in 6.1")
+        self.edit("| S4 | 參與式選址流程 |", "| S6 | 參與式選址流程 |")
+        self.assertFails("2-trashcans: 6.2:", "「S6」 is not in 6.1")
 
-    def test_6_2_code_must_be_one_letter(self):
-        self.edit("| D | 參與式選址流程 |", "| D 參與式選址流程 | 參與式選址流程 |")
-        self.assertFails("2-trashcans: 6.2:", "bad solution code")
+    def test_6_2_code_must_be_a_solution_code(self):
+        self.edit("| S4 | 參與式選址流程 |", "| S4 參與式選址流程 | 參與式選址流程 |")
+        self.assertFails("2-trashcans: 6.2:", "is not a solution code")
+
+    def test_6_1_old_code_fails(self):
+        # An old ID (one capital letter) stops the build with the new code in the message.
+        self.edit("| S4 | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`", "| " + "D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`")
+        self.assertFails("2-trashcans: 6.1:", "「D」 is an old solution code: write S4")
 
     def test_level_1_space_code_fails(self):
         # Only level 2 space codes are tags (ETBlue, 2026-10-31).
@@ -959,8 +964,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 空間類型:", "moon")
 
     def test_unknown_space_code_in_solution(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |",
-                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`moon` |")
+        self.edit("| S4 | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |",
+                  "| S4 | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`moon` |")
         self.assertFails("2-trashcans: 6.1:", "moon")
 
     def make_no_space(self):
@@ -970,7 +975,7 @@ class BuildJsonErrorTest(unittest.TestCase):
             text = f.read()
         text = text.replace("空間類型：`sidewalk-furniture`、`arcade`、`park`、`mrt-exit`\n", "空間類型：無\n", 1)
         sec = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0]
-        new_sec = re.sub(r"^(\| [A-Z] \| [^|]+ \| )`[^|]+` \|", r"\1— |", sec, flags=re.M)
+        new_sec = re.sub(r"^(\| S\d+ \| [^|]+ \| )`[^|]+` \|", r"\1— |", sec, flags=re.M)
         self.assertEqual(new_sec.count("| — |"), 5)
         with open(path, "w", encoding="utf-8") as f:
             f.write(text.replace(sec, new_sec))
@@ -989,12 +994,12 @@ class BuildJsonErrorTest(unittest.TestCase):
 
     def test_no_space_issue_with_solution_space_fails(self):
         self.make_no_space()
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | — |", "| D | `[AI模擬]` 參與式選址流程 | `park` |")
-        self.assertFails("2-trashcans: 6.1:", "solution D", "無")
+        self.edit("| S4 | `[AI模擬]` 參與式選址流程 | — |", "| S4 | `[AI模擬]` 參與式選址流程 | `park` |")
+        self.assertFails("2-trashcans: 6.1:", "solution S4", "無")
 
     def test_dash_solution_space_in_issue_with_spaces_fails(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |", "| D | `[AI模擬]` 參與式選址流程 | — |")
-        self.assertFails("2-trashcans: 6.1:", "solution D", "無")
+        self.edit("| S4 | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` |", "| S4 | `[AI模擬]` 參與式選址流程 | — |")
+        self.assertFails("2-trashcans: 6.1:", "solution S4", "無")
 
     def test_two_tables_with_step_4_header(self):
         self.edit("\n### 相同訴求群組\n",
@@ -1031,9 +1036,9 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("stakeholders.csv: header: no column 新增日期")
 
     def test_bad_solution_date(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` | `participation` |  | 2026-10-16 |",
-                  "| D | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` | `participation` |  | 10/16 |")
-        self.assertFails("2-trashcans: 6.1:", "solution D", "新增日期")
+        self.edit("| S4 | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` | `participation` |  | 2026-10-16 |",
+                  "| S4 | `[AI模擬]` 參與式選址流程 | `sidewalk-furniture`、`arcade`、`park` | `participation` |  | 10/16 |")
+        self.assertFails("2-trashcans: 6.1:", "solution S4", "新增日期")
 
     def test_open_data_bad_issue_value(self):
         self.edit("臺北市政府衛生局,政府資料開放授權條款第 1 版,8\n", "臺北市政府衛生局,政府資料開放授權條款第 1 版,8、2\n", "data/open-data.csv")
@@ -1077,7 +1082,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 相同訴求群組", "#1 I06-US02")
 
     def test_cross_issue_reference_in_6_2(self):
-        self.edit("| D | 參與式選址流程 | `[AI模擬]` N04", "| D | 參與式選址流程 | `[AI模擬]` #1 O01-US01、N04")
+        self.edit("| S4 | 參與式選址流程 | `[AI模擬]` N04", "| S4 | 參與式選址流程 | `[AI模擬]` #1 O01-US01、N04")
         self.assertFails("2-trashcans: 6.2", "#1 O01-US01")
 
     def test_missing_section(self):
@@ -1095,31 +1100,31 @@ class BuildJsonErrorTest(unittest.TestCase):
 
     def test_6_3_codes_with_comma(self):
         # Codes in a 6.3 解法 cell are separated by 「、」, the same as other lists.
-        self.edit("| A、D | 家用垃圾違規棄置件數（試點區） |", "| A, D | 家用垃圾違規棄置件數（試點區） |")
-        self.assertFails("2-trashcans: 6.3:", "「A, D」", "separated by 「、」")
+        self.edit("| S1、S4 | 家用垃圾違規棄置件數（試點區） |", "| S1, S4 | 家用垃圾違規棄置件數（試點區） |")
+        self.assertFails("2-trashcans: 6.3:", "「S1, S4」", "separated by 「、」")
 
     def test_6_3_code_not_in_6_1(self):
-        self.edit("| E | 試辦收集點的數量與每日使用量 |", "| F | 試辦收集點的數量與每日使用量 |")
-        self.assertFails("2-trashcans: 6.3:", "F", "not in 6.1")
+        self.edit("| S5 | 試辦收集點的數量與每日使用量 |", "| S6 | 試辦收集點的數量與每日使用量 |")
+        self.assertFails("2-trashcans: 6.3:", "S6", "not in 6.1")
 
     def test_missing_step_7_section(self):
-        self.edit("### 7.4 解法 D：參與式選址流程", "### 7.4 參與式選址流程")
-        self.assertFails("2-trashcans: 步驟 7:", "solution D", "7.n 解法 D")
+        self.edit("### 7.4 解法 S4：參與式選址流程", "### 7.4 參與式選址流程")
+        self.assertFails("2-trashcans: 步驟 7:", "solution S4", "7.n 解法 S4")
 
     def test_step_7_section_for_unknown_code(self):
-        self.edit("### 7.4 解法 D：參與式選址流程", "### 7.4 解法 F：參與式選址流程")
-        self.assertFails("2-trashcans: 步驟 7:", "F")
+        self.edit("### 7.4 解法 S4：參與式選址流程", "### 7.4 解法 S6：參與式選址流程")
+        self.assertFails("2-trashcans: 步驟 7:", "S6")
 
     def test_missing_overview_row(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |\n", "")
-        self.assertFails("2-trashcans: 總覽:", "solution D has no row")
+        self.edit("| S4 | `[AI模擬]` 參與式選址流程 | 中 | 中 | 流程變慢、代表性不足 | 環保局、民政局 |\n", "")
+        self.assertFails("2-trashcans: 總覽:", "solution S4 has no row")
 
     def test_overview_row_with_unknown_code(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | 中 | 中 |", "| F | `[AI模擬]` 參與式選址流程 | 中 | 中 |")
-        self.assertFails("2-trashcans: 總覽:", "代號 「F」 is not a solution code from 6.1")
+        self.edit("| S4 | `[AI模擬]` 參與式選址流程 | 中 | 中 |", "| S6 | `[AI模擬]` 參與式選址流程 | 中 | 中 |")
+        self.assertFails("2-trashcans: 總覽:", "代號 「S6」 is not a solution code from 6.1")
 
     def test_overview_row_with_tag_in_code_cell(self):
-        self.edit("| D | `[AI模擬]` 參與式選址流程 | 中 | 中 |", "| `[AI模擬]` D | 參與式選址流程 | 中 | 中 |")
+        self.edit("| S4 | `[AI模擬]` 參與式選址流程 | 中 | 中 |", "| `[AI模擬]` S4 | 參與式選址流程 | 中 | 中 |")
         self.assertFails("2-trashcans: 總覽:", "is not a solution code from 6.1")
 
     def test_overview_old_header(self):
@@ -1128,8 +1133,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 總覽")
 
     def test_idea_names_unknown_solution(self):
-        self.edit("| `[AI模擬]` 併入解法 B，作為可選的試點項目", "| `[AI模擬]` 併入解法 F，作為可選的試點項目")
-        self.assertFails("2-trashcans: 6.1:", "F")
+        self.edit("| `[AI模擬]` 併入解法 S2，作為可選的試點項目", "| `[AI模擬]` 併入解法 S6，作為可選的試點項目")
+        self.assertFails("2-trashcans: 6.1:", "S6")
 
     def test_stale_issue_file_is_removed(self):
         os.makedirs(os.path.join(self.out, "issues"))
@@ -1174,7 +1179,7 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans:", "N11")
 
     def test_6_2_unknown_need(self):
-        self.edit("| C | 找桶指引與開放資料 | `[AI模擬]` N01 |", "| C | 找桶指引與開放資料 | `[AI模擬]` N01、N99 |")
+        self.edit("| S3 | 找桶指引與開放資料 | `[AI模擬]` N01 |", "| S3 | 找桶指引與開放資料 | `[AI模擬]` N01、N99 |")
         self.assertFails("2-trashcans: 6.2:", "N99")
 
     def test_way_out_without_code_or_not_found(self):

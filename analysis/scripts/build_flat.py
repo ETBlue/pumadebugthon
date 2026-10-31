@@ -11,9 +11,9 @@ writes them again each time.
 The rules (the data guide explains them to readers):
 - One row per ID. The column "id" is a global ID that is unique in its
   file. An ID of one issue gets the issue number in front, joined with
-  "-", like the solution slug of the app ("2-A"): "2-N01", "2-O01-US01",
+  "-", like the solution slug of the app ("2-S1"): "2-N01", "2-O01-US01",
   "2-W01", "2-C1". The columns "issue" and "local_id" keep the parts.
-  Stakeholders, space types and the cross-issue IDs (X-N01, X-C1, X-A)
+  Stakeholders, space types and the cross-issue IDs (X-N1, X-C1, X-S1)
   are already global, so they have no prefix.
 - A column that points to other rows holds their global IDs. In the CSV
   a list is joined with one space. In the JSON a list is an array.
@@ -53,12 +53,12 @@ def gid(issue, local):
 
 def ref(r):
     """The global ID of a cross-issue reference {issue, id}. issue null is an
-    ID of the cross-issue file itself (X-N02)."""
+    ID of the cross-issue file itself (X-N2)."""
     return r["id"] if r["issue"] is None else gid(r["issue"], r["id"])
 
 
 def part(p):
-    """The global ID of an issue solution {issue, code}, for example "1-C"."""
+    """The global ID of an issue solution {issue, code}, for example "1-S3"."""
     return gid(p["issue"], p["code"])
 
 

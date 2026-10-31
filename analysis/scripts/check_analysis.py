@@ -12,9 +12,16 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              DEPENDENCY_HEADER, DEPENDENCY_TOPIC, NO_DISASTER, PENDING_ONLY, PLAN_HEADER, PLAN_ROWS, STEP7_HEADER,
                              STEP7_ROWS, ref_solutions, step7_tables,
                              OLD_SOLUTION_HEADER, SOLUTION_HEADER, ReadError, cell_codes, domain_line, domain_types,
-                             solution_type_problems, solution_types, space_problem, space_types)
+                             solution_type_problems, solution_types, space_problem, space_types,
+                             SOLUTION_CODE, SOLUTION_CODES, solution_code_problem)
 STEP7_TAG = re.compile(rf"`\[(?:{TAG_NAMES})\]`")  # a tag in a step 7 cell (16b-2)
-STEP7_SOLUTION = re.compile(r"^### 7\.\d+ 解法 ([A-Z])：")  # the heading of a step 7 solution table
+STEP7_SOLUTION = re.compile(rf"^### 7\.\d+ 解法 ({SOLUTION_CODE})：")  # the heading of a step 7 solution table
+# A solution row of a 6.1 table: the 代號 is a solution code (S1), or an old
+# code (one capital letter), so that check 16 can report the old code.
+ROW61 = re.compile(rf"^\| (?:{SOLUTION_CODE}|[A-Z]) \|")
+# The heading of a step 7 solution section, also with an old code (A), so
+# that check 16b can report the old code.
+STEP7_ANY = re.compile(rf"^### 7\.\d+ 解法 ({SOLUTION_CODE}|[A-Z])：")
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
 # 新增日期: the date a stakeholder (stakeholders.csv) or a solution (6.1) was added.
 DATE_COL = "新增日期"
@@ -65,10 +72,10 @@ def check_old_priority(text, step4, err, local_only):
         if mos.get(r[0]) != p: err(f"MoSCoW mismatch {r[0]}: table {mos.get(r[0])} step4 {p}")
 
     # 8. Must covered by a solution; solution columns in correct priority.
-    # 6.2 columns are found by header name. 代號 is one capital letter and
+    # 6.2 columns are found by header name. 代號 is a solution code (S1) and
     # must be a code from 6.1.
     STEP62_HEADER = ["代號", "解法", "涵蓋的 Must", "涵蓋的 Should / Could", "涵蓋的相同訴求群組"]
-    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if re.match(r"^\| [A-Z] \|", l)]
+    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if ROW61.match(l)]
     covered = set()
     prio = {r[0]: r[6].split(" ")[-1] for r in step4}
     allw = defaultdict(list)
@@ -82,7 +89,7 @@ def check_old_priority(text, step4, err, local_only):
         if len(c) != len(STEP62_HEADER): err(f"6.2 row {c[0]} has {len(c)} cells, expected {len(STEP62_HEADER)}"); continue
         sol = c[0]
         col = dict(zip(STEP62_HEADER, c))
-        if not re.fullmatch(r"[A-Z]", sol): err(f"6.2: 代號 must be one capital letter: {sol!r}"); continue
+        if solution_code_problem(sol): err(f"6.2: 代號 {solution_code_problem(sol)}"); continue
         if sol not in codes61: err(f"6.2: solution {sol} is not in 6.1")
         if sol in codes62: err(f"6.2: solution {sol} is listed twice")
         codes62.append(sol)
@@ -200,7 +207,7 @@ def check_needs(text, step4, need_of, err, local_only):
             err(f"{r[0]}: priority in step 4 is {r[6].split(' ')[-1]}, but its need {key} is {need_prio[key]} in 5.2")
 
     # 6.2: solutions -> needs.
-    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if re.match(r"^\| [A-Z] \|", l)]
+    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if ROW61.match(l)]
     t62 = tables(section(text, "### 6.2") or [])
     if len(t62) != 1 or t62[0][0] != NEED_MAP_HEADER:
         err(f"6.2: expected one table with the header {' | '.join(NEED_MAP_HEADER)}, found {[' | '.join(h) for h, _ in t62]}")
@@ -209,7 +216,7 @@ def check_needs(text, step4, need_of, err, local_only):
     for c in t62[0][1]:
         if len(c) != len(NEED_MAP_HEADER): err(f"6.2 row {c[0]} has {len(c)} cells, expected {len(NEED_MAP_HEADER)}"); continue
         sol = c[0]
-        if not re.fullmatch(r"[A-Z]", sol): err(f"6.2: 代號 must be one capital letter: {sol!r}"); continue
+        if solution_code_problem(sol): err(f"6.2: 代號 {solution_code_problem(sol)}"); continue
         if sol not in codes61: err(f"6.2: solution {sol} is not in 6.1")
         if sol in codes62: err(f"6.2: solution {sol} is listed twice")
         codes62.append(sol)
@@ -237,15 +244,15 @@ def check_needs(text, step4, need_of, err, local_only):
     if not mm or int(mm.group(1)) != len(musts): err(f"6.2 Must summary count wrong: {mm and mm.group(1)} vs {len(musts)} Must needs")
 
 
-WAY_OUT_CODES = re.compile(r"^`\[(?:" + TAG_NAMES + r")\]` 解法 ([A-Z](?:、[A-Z])*)：")
+WAY_OUT_CODES = re.compile(r"^`\[(?:" + TAG_NAMES + r")\]` 解法 (" + SOLUTION_CODES.pattern + r")：")
 
 
 def check_conflicts(text, known_stories, need_ids, solo_stories, codes61, err, local_only, other_issue):
     """The conflict table 「### 6.4」 in the needs-based format (CONFLICT_HEADER).
     - 相關故事 has exactly one 「 vs 」, and each side lists stories of step 4.
     - 雙方的需求 lists N IDs or story IDs of needs, with one 「 vs 」.
-    - 以需求為本的解方 starts with a tag and 「解法 X：」 (codes from 6.1,
-      several separated by 「、」), or with a tag and 「未找到」. 「#n 解法 X」
+    - 以需求為本的解方 starts with a tag and 「解法 Sn：」 (codes from 6.1,
+      several separated by 「、」), or with a tag and 「未找到」. 「#n 解法 Sn」
       in the cell is a solution of another issue and must exist there.
     - 可能的審議方法 starts with a tag. For 「未找到」 it is the main way, so
       it must not be empty."""
@@ -282,8 +289,8 @@ def check_conflicts(text, known_stories, need_ids, solo_stories, codes61, err, l
             for code in m.group(1).split("、"):
                 if code not in codes61: err(f"6.4 {cid}: 以需求為本的解方 names 解法 {code}, which is not in 6.1")
         elif not re.match(rf"^`\[(?:{TAG_NAMES})\]` {WAY_OUT_NONE}", way):
-            err(f"6.4 {cid}: 以需求為本的解方 must start with a tag and 「解法 X：」, or with a tag and 「{WAY_OUT_NONE}」: {way[:30]!r}")
-        for num, code in re.findall(r"#(\d+) 解法 ([A-Z])", way):
+            err(f"6.4 {cid}: 以需求為本的解方 must start with a tag and 「解法 Sn：」 (for example 「解法 S1、S2：」), or with a tag and 「{WAY_OUT_NONE}」: {way[:30]!r}")
+        for num, code in re.findall(rf"#(\d+) 解法 ({SOLUTION_CODE})(?![0-9])", way):
             ids_other = other_issue(f"#{num} 解法 {code}", int(num), code)
             if ids_other is not None and code not in ids_other["solution"]:
                 err(f"6.4 {cid}: #{num} 解法 {code} is not in issue #{num}")
@@ -362,7 +369,7 @@ def main(md_path, csv_path):
 
     # 0e. a table cell holds at most one tag. Only the cells of the
     # evaluation table and the plan table of a step 7 solution section
-    # (「### 7.n 解法 X：…」) may hold more (ETBlue, 2026-10-22; method.md,
+    # (「### 7.n 解法 Sn：…」) may hold more (ETBlue, 2026-10-22; method.md,
     # 標記); 16b-2 checks them. The dependency table there keeps one tag.
     in_step7, header, prev = False, None, ""
     for n, line in enumerate(text.splitlines(), 1):
@@ -377,10 +384,13 @@ def main(md_path, csv_path):
             k = len(STEP7_TAG.findall(c))
             if k > 1: err(f"line {n}: a cell has {k} tags; only the cells of the step 7 solution tables may have more than one: {c[:40]!r}")
 
-    # 1. no old S\d\d IDs
-    old = re.findall(r"(?<![A-Za-z0-9])S\d\d(?:-US\d\d)?", text)
+    # 1. no old stakeholder IDs S01 (S01-US01). Solution codes S10, S11 …
+    # (ETBlue, 2026-10-31) look like a bare old ID, so a bare old ID is found
+    # only with a zero (S01 … S09); a story ID S12-US01 is always found.
+    OLD_S = r"(?<![A-Za-z0-9-])(?:S\d\d-US\d\d|S0\d)(?![0-9])"
+    old = re.findall(OLD_S, text)
     csv_raw = open(csv_path, encoding="utf-8").read()
-    old += re.findall(r"(?<![A-Za-z0-9])S\d\d(?:-US\d\d)?", csv_raw)
+    old += re.findall(OLD_S, csv_raw)
     if old: err(f"old S IDs remain: {sorted(set(old))}")
 
     # The needs-based format (a 「### 相同需求群組」 section) or the old format.
@@ -487,7 +497,7 @@ def main(md_path, csv_path):
     else:
         check_old_priority(text, step4, err, local_only)
     prio = {r[0]: r[6].split(" ")[-1] for r in step4}
-    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if re.match(r"^\| [A-Z] \|", l)]
+    codes61 = [cells(l)[0] for l in (section(text, "### 6.1") or []) if ROW61.match(l)]
 
     # 9. anchors
     def slug(h):
@@ -637,15 +647,17 @@ def main(md_path, csv_path):
     else:
         dcol = hdr61.index(DATE_COL)
         for line in sec61.splitlines():
-            if not re.match(r"^\| [A-Z] \|", line): continue
+            if not ROW61.match(line): continue
             c = cells(line)
+            why = solution_code_problem(c[0])
+            if why: err(f"6.1 代號: {why}")
             why = date_problem(c[dcol] if len(c) > dcol else "")
             if why: err(f"6.1 solution {c[0]}: {DATE_COL} {why}")
     if not hdr61 or "空間類型" not in hdr61: err("6.1: no 空間類型 column")
     else:
         col = hdr61.index("空間類型")
         for line in sec61.splitlines():
-            if not re.match(r"^\| [A-Z] \|", line): continue
+            if not ROW61.match(line): continue
             c = cells(line); sol = c[0]
             codes = cell_codes(c[col]) if len(c) > col else []
             dash = len(c) > col and c[col].strip() == NO_SPACE_CELL
@@ -672,23 +684,24 @@ def main(md_path, csv_path):
     elif hdr61 == SOLUTION_HEADER:
         tcol, dcol61 = hdr61.index("解法類型"), hdr61.index("領域")
         for line in sec61.splitlines():
-            if not re.match(r"^\| [A-Z] \|", line): continue
+            if not ROW61.match(line): continue
             c = cells(line); sol = c[0]
             if len(c) != len(hdr61):
                 err(f"6.1 solution {sol}: {len(c)} cells, expected {len(hdr61)}"); continue
             _, _, problems = solution_type_problems(sol, c[tcol], c[dcol61], issue_domains, solution_type_rows, domain_rows)
             for p in problems: err(f"6.1 {p}")
 
-    # 16b. each solution in 6.1 has its own step 7 section 「### 7.n 解法 X：…」
+    # 16b. each solution in 6.1 has its own step 7 section 「### 7.n 解法 Sn：…」
     # and a row in the 總覽 table (代號: the code only; 解法: the row tag and a
     # short name; then 成本, 可行性, 主要風險, 主責單位). The app
     # gives each solution a page with this content. A code is never reused.
-    codes_61 = [cells(l)[0] for l in sec61.splitlines() if re.match(r"^\| [A-Z] \|", l)]
+    codes_61 = [cells(l)[0] for l in sec61.splitlines() if ROW61.match(l)]
     step7_codes = []
     for line in text.splitlines():
-        m = re.match(r"^### 7\.\d+ 解法 ([A-Z])：", line)
+        m = STEP7_ANY.match(line)
         if not m: continue
-        if m.group(1) not in codes_61: err(f"步驟 7: 「{line}」: solution {m.group(1)} is not in 6.1")
+        if solution_code_problem(m.group(1)): err(f"步驟 7: 「{line}」: {solution_code_problem(m.group(1))}")
+        elif m.group(1) not in codes_61: err(f"步驟 7: 「{line}」: solution {m.group(1)} is not in 6.1")
         elif m.group(1) in step7_codes: err(f"步驟 7: solution {m.group(1)} has two sections")
         step7_codes.append(m.group(1))
     overview_codes = []
@@ -704,7 +717,7 @@ def main(md_path, csv_path):
             if h != OVERVIEW_HEADER: continue
             for c in rows:
                 if len(c) != len(OVERVIEW_HEADER): err(f"總覽 row 「{c[0]}」 has {len(c)} cells, expected {len(OVERVIEW_HEADER)}"); continue
-                if not re.fullmatch(r"[A-Z]", c[0]): err(f"總覽: 代號 must be one capital letter: {c[0]!r}"); continue
+                if solution_code_problem(c[0]): err(f"總覽: 代號 {solution_code_problem(c[0])}"); continue
                 if c[0] in overview_codes: err(f"總覽: solution {c[0]} has two rows")
                 overview_codes.append(c[0])
                 if not re.match(rf"`\[(?:{TAG_NAMES})\]` \S", c[1]):
@@ -756,7 +769,7 @@ def main(md_path, csv_path):
             err(f"{where}: the rows of the {label} table must be in this order: {'、'.join(wanted)}")
 
     for line in text.splitlines():
-        m = re.match(r"^### 7\.\d+ 解法 ([A-Z])：", line)
+        m = STEP7_SOLUTION.match(line)
         if not m: continue
         code = m.group(1)
         where = f"步驟 7 {issue_label} 解法 {code}"
@@ -778,16 +791,17 @@ def main(md_path, csv_path):
     # 16c. the 6.3 成效衡量 table. The app shows each row on the solution page
     # without the tables around it, so a cell must stand alone: no 「見下表」 or
     # 「見上表」. Give the key numbers and name the section of the full table.
-    # The 解法 cell is one code, or several separated by 「、」 (「A、D」), the same
+    # The 解法 cell is one code, or several separated by 「、」 (「S1、S4」), the same
     # as other lists. Each code is in 6.1.
     MEASURE_HEADER = ["解法", "指標", "目前數值（基準值）", "資料來源"]
     for h, rows in tables(section(text, "### 6.3") or []):
         if h != MEASURE_HEADER: continue
         for c in rows:
             if re.search(r"[,，]", c[0]):
-                err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 解法 cell 「{c[0]}」: separate codes with 「、」, for example 「A、D」")
-            elif not re.fullmatch(r"[A-Z](?:、[A-Z])*", c[0]):
-                err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 解法 cell 「{c[0]}」 must be solution codes, for example 「A」 or 「A、D」")
+                err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 解法 cell 「{c[0]}」: separate codes with 「、」, for example 「S1、S4」")
+            elif not SOLUTION_CODES.fullmatch(c[0]):
+                whys = [solution_code_problem(x) for x in c[0].split("、") if solution_code_problem(x)]
+                err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: 解法 cell 「{c[0]}」 must be solution codes, for example 「S1」 or 「S1、S4」" + (f" ({whys[0]})" if whys else ""))
             else:
                 for code in c[0].split("、"):
                     if code not in codes61: err(f"6.3 row 「{c[1] if len(c) > 1 else c[0]}」: solution {code} is not in 6.1")
@@ -801,8 +815,8 @@ def main(md_path, csv_path):
     # - 做法 starts with its place and 「：」: the country, and the city if any
     #   (「美國紐約：」, 「臺灣臺北市：」). A place that starts with 臺灣 is
     #   domestic. Write 臺灣, not 台灣 (「台…」 is an error).
-    # - 本文件怎麼用 names at least one solution of this issue: 「解法 A」,
-    #   「解法 C、D」 or a step 7 section 「7.1」. A row that names no solution
+    # - 本文件怎麼用 names at least one solution of this issue: 「解法 S1」,
+    #   「解法 S3、S4」 or a step 7 section 「7.1」. A row that names no solution
     #   would not be shown on any solution page, so it is an error.
     # - Each code is in 6.1; each 「7.n」 is the section of a solution.
     sections61 = section(text, "### 6.1") or []
@@ -825,7 +839,7 @@ def main(md_path, csv_path):
             for code in codes_p:
                 if code not in codes61: err(f"{where}: 本文件怎麼用 names 解法 {code}, which is not in 6.1")
             if not codes_p and not bad_p:
-                err(f"{where}: 本文件怎麼用 must name at least one solution of this issue (「解法 A」, 「解法 C、D」 or 「7.1」)")
+                err(f"{where}: 本文件怎麼用 must name at least one solution of this issue (「解法 S1」, 「解法 S3、S4」 or 「7.1」)")
 
     # 17. the 相關故事 of the 5.4 conflict table (old format) holds local
     # stories only. The needs-based format checks 6.4 in check_conflicts.
@@ -982,7 +996,7 @@ def main(md_path, csv_path):
         for ref in refs_s:
             p_ = parse_ref(ref)
             if p_ is None:
-                err(f"{rw}: 「{ref}」 is not a reference (write IDs like I01-US01, I05, C3, W01, N01 or 解法 A, separated by 「、」; 「#n 」 before an ID of another issue)"); continue
+                err(f"{rw}: 「{ref}」 is not a reference (write IDs like I01-US01, I05, C3, W01, N01 or 解法 S1, separated by 「、」; 「#n 」 before an ID of another issue)"); continue
             num, kind, rid = p_
             if num is None:
                 if rid not in own_ids[kind]: err(f"{rw}: {ref} is not in {KIND_WHERE[kind]} of this issue")

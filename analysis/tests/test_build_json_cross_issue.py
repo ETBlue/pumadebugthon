@@ -96,33 +96,33 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertIn({"issue": 12, "id": "I43-US01"}, i43["stories"])
 
     def test_issue_9_part_has_no_space(self):
-        # #9 uses no city space. X-D gets its spaces from its other parts.
-        d = self.solution("X-D")
-        self.assertIn({"issue": 9, "code": "D"}, d["parts"])
+        # #9 uses no city space. X-S4 gets its spaces from its other parts.
+        d = self.solution("X-S4")
+        self.assertIn({"issue": 9, "code": "S4"}, d["parts"])
         self.assertEqual(d["spaces"], ["sidewalk-walkway", "sidewalk-furniture", "arcade", "park", "mrt-exit"])
         self.assertIn({"issue": 9, "id": "N05"}, d["needs"]["must"])
-        self.assertIn("X-N08", d["needs"]["crossIssue"])
+        self.assertIn("X-N8", d["needs"]["crossIssue"])
 
     def test_combined_solution_parts_and_needs(self):
-        a = self.solution("X-A")
-        self.assertEqual(a["parts"], [{"issue": 1, "code": "C"}, {"issue": 2, "code": "D"}, {"issue": 8, "code": "A"}])
+        a = self.solution("X-S1")
+        self.assertEqual(a["parts"], [{"issue": 1, "code": "S3"}, {"issue": 2, "code": "S4"}, {"issue": 8, "code": "S1"}])
         self.assertIn({"issue": 1, "id": "N05"}, a["needs"]["must"])
         self.assertIn({"issue": 1, "id": "N11"}, a["needs"]["shouldCould"])
-        self.assertIn("X-N01", a["needs"]["crossIssue"])
+        self.assertIn("X-N1", a["needs"]["crossIssue"])
         self.assertEqual(a["tag"], "AI模擬")
         self.assertEqual(a["plan"]["owner"][0]["tag"], "AI模擬")
 
     def test_solution_types(self):
         # Each X- solution has its 4.1 解法類型 cell as a list, in cell order.
-        self.assertEqual(self.solution("X-E")["solutionTypes"], ["facility", "planning"])
-        self.assertEqual(self.solution("X-G")["solutionTypes"], ["service"])
+        self.assertEqual(self.solution("X-S5")["solutionTypes"], ["facility", "planning"])
+        self.assertEqual(self.solution("X-S7")["solutionTypes"], ["service"])
         for s in self.data["solutions"]:
             self.assertTrue(1 <= len(s["solutionTypes"]) <= 3, s["code"])
 
     def test_evaluation_and_plan(self):
-        # The tables of the 「### 4.5.n 解法 X-A：…」 section: the same keys as
+        # The tables of the 「### 4.5.n 解法 X-S1：…」 section: the same keys as
         # for an issue solution (ETBlue, 2026-10-23). Each cell is a list of one Cell.
-        e = self.solution("X-E")
+        e = self.solution("X-S5")
         self.assertEqual(list(e["evaluation"]), ["laws", "privacy", "risks", "disasters", "feasibility"])
         self.assertEqual(list(e["plan"]), ["owner", "resources", "cost", "steps"])
         # The old 主要風險 cell is split at 「；災害風險：」.
@@ -130,60 +130,66 @@ class CrossIssueJsonTest(unittest.TestCase):
                          [{"text": "分開設置後，清潔箱或吸菸區可能離人多的地方遠一些；菸蒂收集設備需要維護（#8）",
                            "tag": "AI模擬", "pending": False}])
         self.assertTrue(e["evaluation"]["disasters"][0]["text"].startswith("負壓式吸菸區停電時無法排氣"))
-        # 可行性 lists the 可行性 of each part (#2 解法 A, #2 解法 B, #8 解法 B).
+        # 可行性 lists the 可行性 of each part (#2 解法 S1, #2 解法 S2, #8 解法 S2).
         self.assertEqual(e["evaluation"]["feasibility"],
-                         [{"text": "#2 解法 A：可行性高；#2 解法 B：QR 回報可行性高，感測器試點可行性中；#8 解法 B：可行性中",
+                         [{"text": "#2 解法 S1：可行性高；#2 解法 S2：QR 回報可行性高，感測器試點可行性中；#8 解法 S2：可行性中",
                            "tag": "AI模擬", "pending": False}])
         self.assertEqual(e["plan"]["steps"][0]["tag"], "AI模擬")
         self.assertTrue(e["plan"]["steps"][0]["text"].startswith("第一步："))
 
     def test_summary_rows_of_a_solution(self):
-        # The 可能的爭議 and 法規上的障礙 rows whose 相關編號 names 「解法 X-A」.
-        a = self.solution("X-A")
+        # The 可能的爭議 and 法規上的障礙 rows whose 相關編號 names 「解法 X-S1」.
+        a = self.solution("X-S1")
         self.assertEqual([i["item"] for i in a["controversies"]], ["合併的選址討論"])
         for i in a["controversies"] + a["legal"]:
-            self.assertIn("X-A", i["solutions"])
+            self.assertIn("X-S1", i["solutions"])
         dep = next(t for t in self.data["summary"] if t["topic"] == "相依事項與現行政策的關係")
         self.assertEqual(dep["items"], [])
 
     def test_practices_are_the_dependency_rows(self):
         # The cross-issue file has no practice table. A solution gets the rows of
         # the 相依事項與現行政策的關係 table of its 4.5.n section. They are domestic.
-        a = self.solution("X-A")["practices"]
+        a = self.solution("X-S1")["practices"]
         self.assertEqual([p["name"] for p in a], ["以各議題的解法為基礎", "現行的清潔箱做法"])
         self.assertEqual({(p["place"], p["domestic"], p["use"], p["source"]) for p in a},
                          {(None, True, None, "dependency")})
         self.assertEqual(a[1]["content"]["tag"], "AI模擬")
-        self.assertEqual(a[1]["refs"], ["#2 O04-US04", "解法 X-A"])
-        self.assertEqual([p["name"] for p in self.solution("X-E")["practices"]], ["以各議題的解法為基礎"])
-        # X-C has the #10 row and the #11 row too (added on 2026-10-24).
-        self.assertEqual([p["name"] for p in self.solution("X-C")["practices"]],
+        self.assertEqual(a[1]["refs"], ["#2 O04-US04", "解法 X-S1"])
+        self.assertEqual([p["name"] for p in self.solution("X-S5")["practices"]], ["以各議題的解法為基礎"])
+        # X-S3 has the #10 row and the #11 row too (added on 2026-10-24).
+        self.assertEqual([p["name"] for p in self.solution("X-S3")["practices"]],
                          ["以各議題的解法為基礎", "現行的 1999 噪音派工", "現行的大型廢棄物電話預約"])
 
     def test_measures(self):
-        measures = self.solution("X-B")["measures"]
+        measures = self.solution("X-S2")["measures"]
         new = [m for m in measures if m["isNew"]]
         self.assertTrue(new)
         self.assertEqual(new[0]["from"], [])
         first = measures[0]
-        self.assertEqual(first["from"], [{"issue": 1, "code": "D"}])
+        self.assertEqual(first["from"], [{"issue": 1, "code": "S4"}])
         self.assertEqual(first["baseline"]["tag"], "實證")
+
+    def test_ids_are_in_number_order(self):
+        # 13 solutions and 20 need groups, so the numbers go past 10. The file
+        # order is the number order: X-S2 before X-S10, X-N2 before X-N10.
+        self.assertEqual([s["code"] for s in self.data["solutions"]], [f"X-S{n}" for n in range(1, 14)])
+        self.assertEqual([g["id"] for g in self.data["needGroups"]], [f"X-N{n}" for n in range(1, 21)])
 
     def test_need_group_priorities(self):
         groups = {g["id"]: g for g in self.data["needGroups"]}
-        self.assertEqual(groups["X-N01"]["priority"], "M")
-        self.assertFalse(groups["X-N01"]["prioritiesDiffer"])
-        self.assertIsNone(groups["X-N06"]["priority"])
-        self.assertTrue(groups["X-N06"]["prioritiesDiffer"])
-        self.assertIn({"issue": 2, "id": "N06", "priority": "M"}, groups["X-N06"]["needs"])
+        self.assertEqual(groups["X-N1"]["priority"], "M")
+        self.assertFalse(groups["X-N1"]["prioritiesDiffer"])
+        self.assertIsNone(groups["X-N6"]["priority"])
+        self.assertTrue(groups["X-N6"]["prioritiesDiffer"])
+        self.assertIn({"issue": 2, "id": "N06", "priority": "M"}, groups["X-N6"]["needs"])
 
     def test_conflicts(self):
         c2 = next(c for c in self.data["conflicts"] if c["id"] == "X-C2")
         self.assertEqual(c2["issueConflicts"], [{"issue": 2, "id": "C9"}])
-        self.assertEqual(c2["wayOutSolutions"], ["X-E", "X-B"])
+        self.assertEqual(c2["wayOutSolutions"], ["X-S5", "X-S2"])
         self.assertEqual(c2["sideA"], [{"issue": 2, "id": "I01-US09"}])
         c1 = next(c for c in self.data["conflicts"] if c["id"] == "X-C1")
-        self.assertIn({"issue": None, "id": "X-N02"}, c1["needsB"])
+        self.assertIn({"issue": None, "id": "X-N2"}, c1["needsB"])
 
 
 class CrossIssueJsonErrorTest(unittest.TestCase):
@@ -200,11 +206,11 @@ class CrossIssueJsonErrorTest(unittest.TestCase):
         with open(path, encoding="utf-8") as f:
             text = f.read()
         with open(path, "w", encoding="utf-8") as f:
-            f.write(text.replace("| #2 解法 A、#2 解法 B、#8 解法 B |", "| #2 解法 A、#2 解法 B |"))
+            f.write(text.replace("| #2 解法 S1、#2 解法 S2、#8 解法 S2 |", "| #2 解法 S1、#2 解法 S2 |"))
         code, out = run_build(self.dir, self.out)
         self.assertEqual(code, 1, out)
         self.assertIn("cross-issue", out)
-        self.assertIn("X-E", out)
+        self.assertIn("X-S5", out)
         self.assertNotIn("Traceback", out)
         self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
 

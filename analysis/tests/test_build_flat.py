@@ -117,10 +117,10 @@ class FlatFilesTest(unittest.TestCase):
 
     def test_csv_joins_a_list_with_spaces(self):
         rows = list(csv.DictReader(self.csv["solutions"][1:].splitlines()))
-        a = next(r for r in rows if r["id"] == "2-A")
+        a = next(r for r in rows if r["id"] == "2-S1")
         self.assertEqual(a["needs_must"].split(" ")[0], "2-N01")
         self.assertEqual(a["issue"], "2")
-        self.assertEqual(a["local_id"], "A")
+        self.assertEqual(a["local_id"], "S1")
 
     def test_ids_are_unique(self):
         for t in self.mod.TYPES:
@@ -217,7 +217,7 @@ class TypeColumnsTest(unittest.TestCase):
 
     def test_solution_row_has_types_and_domains(self):
         cell = {"text": "x", "tag": "AI模擬", "pending": False}
-        sol = {"id": "A", "name": cell, "summary": "s", "spaces": ["park"], "solutionTypes": ["intake", "open-data"],
+        sol = {"id": "S1", "name": cell, "summary": "s", "spaces": ["park"], "solutionTypes": ["intake", "open-data"],
                "ownDomains": ["welfare-services"], "domains": ["welfare-services"], "needs": None, "stories": [],
                "overview": {k: cell for k in ("cost", "feasibility", "risk", "owner")}, "added": None, "updated": None}
         issue = {"number": 2, "stakeholders": [], "stories": [], "groups": [], "needs": [], "needGroups": [],
@@ -230,7 +230,7 @@ class TypeColumnsTest(unittest.TestCase):
 
     def test_cross_solution_row_has_types(self):
         # Like an issue solution row: solution_types comes right after spaces.
-        sol = {"code": "X-A", "name": "n", "tag": "AI模擬", "summary": "s", "parts": [{"issue": 1, "code": "C"}],
+        sol = {"code": "X-S1", "name": "n", "tag": "AI模擬", "summary": "s", "parts": [{"issue": 1, "code": "S3"}],
                "spaces": ["park"], "solutionTypes": ["facility", "planning"],
                "needs": {"must": [], "shouldCould": [], "crossIssue": []}, "added": None, "updated": None}
         cross = {"needGroups": [], "conflicts": [], "solutions": [sol]}

@@ -2,6 +2,14 @@
 
 Status: draft for ETBlue's review. Round 1 and round 2: 2026-10-30. Round 3 (nested types): 2026-10-31. The newest round is at the top.
 
+Note on IDs (2026-10-31): this draft is a record and keeps the old IDs. Since then the IDs changed (`app/docs/design.md`, decision on the new ID format):
+
+| Old ID in this draft | New ID |
+|---|---|
+| Issue solution `A`, `B` … (full ID `1-A`) | `S1`, `S2` … (full ID `1-S1`) |
+| Cross-issue solution `X-A` … `X-M` | `X-S1` … `X-S13` |
+| Cross-issue need group `X-N01` … `X-N20` | `X-N1` … `X-N20` |
+
 Rules used in this draft:
 
 - Types are labels only. They are not scores, weights or ranks. An item can have more than one type.

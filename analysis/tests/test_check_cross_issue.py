@@ -108,7 +108,7 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("a cell has 2 tags")
 
     def test_empty_pending_item(self):
-        self.edit("【待補：試點後由 X-A 產生】", "【待補】")
+        self.edit("【待補：試點後由 X-S1 產生】", "【待補】")
         self.assertFails("bad 待補 item")
 
     def test_excluded_country(self):
@@ -122,11 +122,38 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("I01-US09", "#n")
 
     def test_unknown_cross_ref(self):
-        self.edit("| #1 解法 C、#2 解法 D、#8 解法 A | `sidewalk-furniture`", "| #1 解法 C、#2 解法 Z、#8 解法 A | `sidewalk-furniture`")
-        self.assertFails("#2 解法 Z")
+        self.edit("| #1 解法 S3、#2 解法 S4、#8 解法 S1 | `sidewalk-furniture`", "| #1 解法 S3、#2 解法 S99、#8 解法 S1 | `sidewalk-furniture`")
+        self.assertFails("#2 解法 S99")
+
+    # ---------- ID format (ETBlue, 2026-10-31) ----------
+
+    def test_old_solution_code_fails(self):
+        # An old ID: one capital letter after X-.
+        self.edit("| X-S1 | `[AI模擬]` 同一段人行道的共同參與式選址 |", "| X-" + "A | `[AI模擬]` 同一段人行道的共同參與式選址 |")
+        self.assertFails("old cross-issue solution code: write X-S1")
+
+    def test_old_need_group_id_fails(self):
+        # An old ID: a zero padding.
+        self.edit("| `[AI模擬]` X-N1 | 意見在設施設置", "| `[AI模擬]` X-N" + "01 | 意見在設施設置")
+        self.assertFails("has a zero padding: write X-N1")
+
+    def test_old_issue_solution_code_fails(self):
+        # An old ID: 「#8 解法」 and one capital letter.
+        self.edit("| X-S1 | `[AI模擬]` 同一段人行道的共同參與式選址 | #1 解法 S3、#2 解法 S4、#8 解法 S1 |",
+                  "| X-S1 | `[AI模擬]` 同一段人行道的共同參與式選址 | #1 解法 S3、#2 解法 S4、#8 解法 " + "A |")
+        self.assertFails("is an old solution code: write S1")
+
+    def test_need_id_is_not_a_solution_code(self):
+        # The kinds do not mix: X-N1 in the 代號 column of 4.1 is an error.
+        self.edit("| X-S1 | `[AI模擬]` 同一段人行道的共同參與式選址 |", "| X-N1 | `[AI模擬]` 同一段人行道的共同參與式選址 |")
+        self.assertFails("4.1: 代號 「X-N1」 is not a cross-issue solution ID")
+
+    def test_solution_id_is_not_a_need_group(self):
+        self.edit("| `[AI模擬]` X-N1 | 意見在設施設置", "| `[AI模擬]` X-S1 | 意見在設施設置")
+        self.assertFails("2.1: 群組 must be a tag and an X-N ID")
 
     def test_summary_ref_not_in_file(self):
-        self.edit("| X-N06、X-N07、X-N08、X-N16、X-N20 |\n", "| X-N06、X-N99 |\n")
+        self.edit("| X-N6、X-N7、X-N8、X-N16、X-N20 |\n", "| X-N6、X-N99 |\n")
         self.assertFails("X-N99")
 
     def test_summary_topics_order(self):
@@ -160,33 +187,33 @@ class CheckCrossIssueTest(unittest.TestCase):
     def test_need_group_one_stakeholder(self):
         self.edit("| #2 N09、#8 N05 | #2 I03-US01、#2 I04-US01、#8 I01-US10、#8 I03-US01、#8 I19-US01、#8 I25-US03 | I03、I04、I01、I19、I25 |",
                   "| #2 N09、#8 N05 | #2 I03-US01、#8 I03-US01 | I03 |")
-        self.assertFails("X-N05")
+        self.assertFails("X-N5")
 
     def test_need_group_one_issue(self):
         self.edit("| #2 N06、#8 N08、#11 N06 | #2 I01-US02、#2 I01-US08、#2 I09-US01、#2 I09-US02、#2 I09-US03、#2 I23-US01、#8 O03-US01、#8 I01-US09、#11 O05-US01、#11 O12-US01、#11 O24-US01、#11 I60-US01 | I01、I09、I23、O03、O05、O12、O24、I60 |",
                   "| #2 N06 | #2 I01-US02、#2 I01-US08、#2 I09-US01、#2 I09-US02、#2 I09-US03、#2 I23-US01 | I01、I09、I23 |")
-        self.assertFails("X-N06", "2 or more issues")
+        self.assertFails("X-N6", "2 or more issues")
 
     def test_need_group_stories_wrong(self):
         self.edit("| #1 N07、#2 N10、#3 N07、#4 N05、#5 N05、#6 N10、#8 O07-US01、#9 N01 | #1 O06-US01、#1 O07-US01、#1 O07-US02、",
                   "| #1 N07、#2 N10、#3 N07、#4 N05、#5 N05、#6 N10、#8 O07-US01、#9 N01 | #1 O06-US01、#1 O07-US01、")
-        self.assertFails("X-N04", "故事編號")
+        self.assertFails("X-N4", "故事編號")
 
     def test_priority_raised(self):
         self.edit("| `[AI模擬]` 各議題不同 | `[AI模擬]` #2 N06 是 Must", "| `[AI模擬]` M | `[AI模擬]` #2 N06 是 Must")
-        self.assertFails("X-N06", "各議題不同")
+        self.assertFails("X-N6", "各議題不同")
 
     def test_priority_not_from_issues(self):
         self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S、#11 N05 S | `[AI模擬]` S |", "| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S、#11 N05 S | `[AI模擬]` M |")
-        self.assertFails("X-N03")
+        self.assertFails("X-N3")
 
     def test_priority_listed_wrong(self):
         self.edit("| #1 N15 S、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S、#11 N05 S |", "| #1 N15 M、#2 N03 S、#3 N04 S、#8 N07 S、#10 N05 S、#11 N05 S |")
         self.assertFails("#1 N15")
 
     def test_need_group_not_covered(self):
-        # X-N12 is covered only by X-G.
-        self.edit("、#6 O57-US01、#11 N05 | X-N03、X-N12 |", "、#6 O57-US01、#11 N05 | X-N03 |")
+        # X-N12 is covered only by X-S7.
+        self.edit("、#6 O57-US01、#11 N05 | X-N3、X-N12 |", "、#6 O57-US01、#11 N05 | X-N3 |")
         self.assertFails("X-N12", "not covered")
 
     # ---------- conflicts ----------
@@ -197,8 +224,8 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("#2 C9")
 
     def test_way_out_unknown_code(self):
-        self.edit("| `[AI模擬]` 解法 X-E、X-B：", "| `[AI模擬]` 解法 X-E、X-Q：")
-        self.assertFails("X-Q")
+        self.edit("| `[AI模擬]` 解法 X-S5、X-S2：", "| `[AI模擬]` 解法 X-S5、X-S99：")
+        self.assertFails("X-S99")
 
     def test_conflict_needs_not_a_need(self):
         self.edit("| #2 I01-US09 vs #2 N01、#2 N02、#8 I25-US01 |", "| #2 I01-US09 vs #2 I01-US01、#2 N02、#8 I25-US01 |")
@@ -207,115 +234,115 @@ class CheckCrossIssueTest(unittest.TestCase):
     # ---------- combined solutions ----------
 
     def test_combined_solution_one_issue(self):
-        self.edit("| #2 解法 A、#2 解法 B、#8 解法 B |", "| #2 解法 A、#2 解法 B |")
-        self.assertFails("X-E", "2 or more issues")
+        self.edit("| #2 解法 S1、#2 解法 S2、#8 解法 S2 |", "| #2 解法 S1、#2 解法 S2 |")
+        self.assertFails("X-S5", "2 or more issues")
 
     def test_combined_space_not_in_parts(self):
-        self.edit("| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk-walkway`、`sidewalk-furniture`、`park`、`mrt-exit`、`indoor-home`、`indoor-business` |",
-                  "| #1 解法 B、#2 解法 B、#3 解法 F、#8 解法 D、#10 解法 A、#11 解法 A、#12 解法 D | `sidewalk-walkway`、`sidewalk-furniture`、`park`、`mrt-exit`、`indoor-home`、`indoor-business`、`utility` |")
-        self.assertFails("X-C", "utility")
+        self.edit("| #1 解法 S2、#2 解法 S2、#3 解法 S6、#8 解法 S4、#10 解法 S1、#11 解法 S1、#12 解法 S4 | `sidewalk-walkway`、`sidewalk-furniture`、`park`、`mrt-exit`、`indoor-home`、`indoor-business` |",
+                  "| #1 解法 S2、#2 解法 S2、#3 解法 S6、#8 解法 S4、#10 解法 S1、#11 解法 S1、#12 解法 S4 | `sidewalk-walkway`、`sidewalk-furniture`、`park`、`mrt-exit`、`indoor-home`、`indoor-business`、`utility` |")
+        self.assertFails("X-S3", "utility")
 
-    # X-E joins #2 解法 A (digital-tool, planning), #2 解法 B (digital-tool,
-    # intake) and #8 解法 B (facility, intake). Its 解法類型 cell is
+    # X-S5 joins #2 解法 S1 (digital-tool, planning), #2 解法 S2 (digital-tool,
+    # intake) and #8 解法 S2 (facility, intake). Its 解法類型 cell is
     # `facility`、`planning`.
     X_E_TYPES = "`park` | `facility`、`planning` | 2026-10-20 |"
 
     def test_combined_solution_type_unknown(self):
         self.edit(self.X_E_TYPES, "`park` | `facility`、`foo` | 2026-10-20 |")
-        self.assertFails("4.1 X-E: 解法類型: unknown code foo")
+        self.assertFails("4.1 X-S5: 解法類型: unknown code foo")
 
     def test_combined_solution_type_not_in_parts(self):
         self.edit(self.X_E_TYPES, "`park` | `facility`、`subsidy` | 2026-10-20 |")
-        self.assertFails("4.1 X-E", "subsidy", "not a 解法類型 of its issue solutions")
+        self.assertFails("4.1 X-S5", "subsidy", "not a 解法類型 of its issue solutions")
 
     def test_combined_solution_too_many_types(self):
         self.edit(self.X_E_TYPES, "`park` | `digital-tool`、`facility`、`intake`、`planning` | 2026-10-20 |")
-        self.assertFails("4.1 X-E", "at most 3")
+        self.assertFails("4.1 X-S5", "at most 3")
 
     def test_combined_solution_types_empty(self):
         self.edit(self.X_E_TYPES, "`park` |  | 2026-10-20 |")
-        self.assertFails("4.1 X-E: the 解法類型 cell is empty")
+        self.assertFails("4.1 X-S5: the 解法類型 cell is empty")
 
     def test_must_column_priority_wrong(self):
         self.edit("#9 N02、#9 N05、#12 N02 | #1 N06、", "#9 N02、#9 N05、#12 N02、#1 N06 | ")
         self.assertFails("#1 N06", "Must")
 
     def test_issue_9_need_not_covered_by_its_part(self):
-        # #9 解法 D (the #9 part of X-D) does not cover #9 N03 in #9 6.2.
+        # #9 解法 S4 (the #9 part of X-S4) does not cover #9 N03 in #9 6.2.
         self.edit("#6 N02、#9 N02、#9 N05、#12 N02 |", "#6 N02、#9 N02、#9 N03、#9 N05、#12 N02 |")
-        self.assertFails("#9 N03", "X-D")
+        self.assertFails("#9 N03", "X-S4")
 
     def test_issue_9_need_with_one_issue_priority_changed(self):
-        # X-N08 joins #2 I13-US02 (S) and #9 N02 (M), so its priority is 「各議題不同」, never M.
+        # X-N8 joins #2 I13-US02 (S) and #9 N02 (M), so its priority is 「各議題不同」, never M.
         self.edit("| #2 I13-US02 S、#9 N02 M | `[AI模擬]` 各議題不同 |", "| #2 I13-US02 S、#9 N02 M | `[AI模擬]` M |")
-        self.assertFails("X-N08", "各議題不同")
+        self.assertFails("X-N8", "各議題不同")
 
     def test_need_not_covered_by_parts(self):
         self.edit("| `[AI模擬]` #1 N08、#1 O12-US01、", "| `[AI模擬]` #1 N03、#1 N08、#1 O12-US01、")
-        self.assertFails("#1 N03", "X-B")
+        self.assertFails("#1 N03", "X-S2")
 
     def test_measure_from_other_solution(self):
-        self.edit("| 人行道範圍圖 | #1 解法 D |\n| X-B | 「SWW_WTH」", "| 人行道範圍圖 | #1 解法 C |\n| X-B | 「SWW_WTH」")
-        self.assertFails("#1 解法 C", "X-B")
+        self.edit("| 人行道範圍圖 | #1 解法 S4 |\n| X-S2 | 「SWW_WTH」", "| 人行道範圍圖 | #1 解法 S3 |\n| X-S2 | 「SWW_WTH」")
+        self.assertFails("#1 解法 S3", "X-S2")
 
     # 4.5: one section per combined solution, with the tables of an issue's
     # step 7 (ETBlue, 2026-10-23): evaluation, 執行計畫, and the
     # 相依事項與現行政策的關係 rows that name the solution.
     def test_evaluation_section_missing(self):
-        self.edit("### 4.5.5 解法 X-E：", "### 4.5.5 解法 X-Z：")
-        self.assertFails("4.5 X-Z: is not in 4.1", "4.5: X-E has no section 「### 4.5.n 解法 X-E：…」")
+        self.edit("### 4.5.5 解法 X-S5：", "### 4.5.5 解法 X-S99：")
+        self.assertFails("4.5 X-S99: is not in 4.1", "4.5: X-S5 has no section 「### 4.5.n 解法 X-S5：…」")
 
     # The 災害風險 row of each combined solution sums up the 災害風險 rows of
     # its parts (ETBlue, 2026-10-22; method.md, step 7). It must not be empty.
-    DISASTER_E = "| 災害風險 | `[AI模擬]` 負壓式吸菸區停電時無法排氣，封閉的吸菸室要考慮防火與排煙（#8 解法 B）；颱風或豪雨前後，清潔箱可能被吹倒或泡水，需要有災害時的派工方式（#2 解法 B） |"
+    DISASTER_E = "| 災害風險 | `[AI模擬]` 負壓式吸菸區停電時無法排氣，封閉的吸菸室要考慮防火與排煙（#8 解法 S2）；颱風或豪雨前後，清潔箱可能被吹倒或泡水，需要有災害時的派工方式（#2 解法 S2） |"
 
     def test_disaster_row_missing(self):
         self.edit(self.DISASTER_E + "\n", "")
-        self.assertFails("4.5 X-E: the rows of the table 項目 | 內容 must be 相關法規、隱私、其他顧慮與風險、災害風險、可行性")
+        self.assertFails("4.5 X-S5: the rows of the table 項目 | 內容 must be 相關法規、隱私、其他顧慮與風險、災害風險、可行性")
 
     def test_disaster_cell_with_only_a_tag(self):
         self.edit(self.DISASTER_E, "| 災害風險 | `[AI模擬]` |")
-        self.assertFails("4.5 X-E: the 「災害風險」 cell must start with a tag and text")
+        self.assertFails("4.5 X-S5: the 「災害風險」 cell must start with a tag and text")
 
     def test_plan_row_order(self):
-        # Swap the 成本 and 執行步驟 rows of X-E.
+        # Swap the 成本 and 執行步驟 rows of X-S5.
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
-        start = text.index("### 4.5.5 解法 X-E：")
+        start = text.index("### 4.5.5 解法 X-S5：")
         end = text.index("### 4.5.6", start)
         lines = text[start:end].split("\n")
         cost = next(l for l in lines if l.startswith("| 成本 | "))
         steps = next(l for l in lines if l.startswith("| 執行步驟 | "))
         self.edit(cost + "\n" + steps + "\n", steps + "\n" + cost + "\n")
-        self.assertFails("4.5 X-E: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本、執行步驟")
+        self.assertFails("4.5 X-S5: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本、執行步驟")
 
     def test_dependency_copy_missing(self):
         # 「以各議題的解法為基礎」 names all 11 combined solutions, so it is under each.
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
-        start = text.index("### 4.5.5 解法 X-E：")
+        start = text.index("### 4.5.5 解法 X-S5：")
         end = text.index("### 4.5.6", start)
         part = text[start:end]
         cut = part.index("\n| 相依事項與現行政策的關係 | 說明 | 相關編號 |")
         with open(self.md, "w", encoding="utf-8") as f:
             f.write(text[:start] + part[:cut] + "\n\n" + text[end:])
-        self.assertFails("4.5 X-E: 相依事項與現行政策的關係 「以各議題的解法為基礎」 names 解法 X-E, so it must be in the "
-                         "相依事項與現行政策的關係 table of X-E too")
+        self.assertFails("4.5 X-S5: 相依事項與現行政策的關係 「以各議題的解法為基礎」 names 解法 X-S5, so it must be in the "
+                         "相依事項與現行政策的關係 table of X-S5 too")
 
     def test_dependency_row_must_name_its_solution(self):
-        self.edit("| 現行的吸菸區設置要點 | `[AI模擬]` 解法 X-B 的檢查清單，以 #8 的「臺北市吸菸區設置及管理要點」（115 年 10 月 1 日生效）的距離與淨寬規定為起點之一。 | #8 O22-US02、解法 X-B |",
-                  "| 現行的吸菸區設置要點 | `[AI模擬]` 解法 X-B 的檢查清單，以 #8 的「臺北市吸菸區設置及管理要點」（115 年 10 月 1 日生效）的距離與淨寬規定為起點之一。 | #8 O22-US02 |")
-        self.assertFails("4.5 X-B 相依事項與現行政策的關係 「現行的吸菸區設置要點」: 相關編號 must name 解法 X-B")
+        self.edit("| 現行的吸菸區設置要點 | `[AI模擬]` 解法 X-S2 的檢查清單，以 #8 的「臺北市吸菸區設置及管理要點」（115 年 10 月 1 日生效）的距離與淨寬規定為起點之一。 | #8 O22-US02、解法 X-S2 |",
+                  "| 現行的吸菸區設置要點 | `[AI模擬]` 解法 X-S2 的檢查清單，以 #8 的「臺北市吸菸區設置及管理要點」（115 年 10 月 1 日生效）的距離與淨寬規定為起點之一。 | #8 O22-US02 |")
+        self.assertFails("4.5 X-S2 相依事項與現行政策的關係 「現行的吸菸區設置要點」: 相關編號 must name 解法 X-S2")
 
     def test_summary_dependency_row_with_a_solution_fails(self):
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
         head = "### 相依事項與現行政策的關係\n"
         i = text.index(head) + len(head)
-        row = "\n| 項目 | 說明 | 相關編號 |\n|---|---|---|\n| 測試 | `[AI模擬]` 測試 | 解法 X-A |\n"
+        row = "\n| 項目 | 說明 | 相關編號 |\n|---|---|---|\n| 測試 | `[AI模擬]` 測試 | 解法 X-S1 |\n"
         with open(self.md, "w", encoding="utf-8") as f:
             f.write(text[:i] + row + text[i:])
-        self.assertFails("分析摘要 相依事項與現行政策的關係 「測試」: names 解法 X-A; move the row")
+        self.assertFails("分析摘要 相依事項與現行政策的關係 「測試」: names 解法 X-S1; move the row")
 
 if __name__ == "__main__":
     unittest.main()

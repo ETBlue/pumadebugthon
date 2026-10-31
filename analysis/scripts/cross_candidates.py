@@ -18,13 +18,16 @@ A shared stakeholder alone does not count. The stakeholder can have
 different needs in the two issues.
 
 Output columns: 解法甲,解法乙,共同解法類型,共同領域,共同空間類型,共同需求,已在跨議題解法.
-- IDs look like 1-A. 解法甲 has the lower issue number (then the lower letter).
+- IDs look like 1-S1. 解法甲 has the lower issue number (then the lower
+  solution number).
 - Codes in a cell are joined with 「、」. Types, domains and spaces keep the
-  order of 解法甲's cell. 共同需求 lists the X-N IDs in ID order, then the
+  order of 解法甲's cell. 共同需求 lists the X-N IDs in number order (X-N2
+  before X-N10), then the
   1.2 rows (「1.2 O12」) in file order.
-- 已在跨議題解法 lists the X- solutions that contain both, or is empty.
+- 已在跨議題解法 lists the X- solutions that contain both, in number order
+  (X-S2 before X-S10), or is empty.
 - Rows are sorted by 解法甲, then 解法乙 (issue number as a number, then
-  letter). They are never sorted by a count. There are no scores or ranks.
+  the solution number as a number: S2 before S10). They are never sorted by a count. There are no scores or ranks.
 
 With --check the script writes nothing. It fails when the file differs from
 a rebuild (build_all.sh uses this with CI=true).
@@ -37,7 +40,7 @@ import csv, io, os, sys
 # python3 -I does not put the script folder on sys.path, so add it.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_json
-from analysis_common import ReadError
+from analysis_common import ReadError, id_key
 
 PLATFORM_TYPES = ("open-data", "intake")
 HEADER = ["解法甲", "解法乙", "共同解法類型", "共同領域", "共同空間類型", "共同需求", "已在跨議題解法"]
@@ -59,7 +62,7 @@ def solution_refs(s):
 def need_sets(cross):
     """The cross-issue need groups as (name, {(issue, ID)}), X-N groups first."""
     groups = []
-    for g in sorted(cross.get("needGroups") or [], key=lambda g: g["id"]):
+    for g in sorted(cross.get("needGroups") or [], key=lambda g: id_key(g["id"])):
         refs = {(r["issue"], r["id"]) for r in (g.get("needs") or []) + (g.get("stories") or [])}
         groups.append((g["id"], refs))
     for row in cross.get("repeatedNeeds") or []:
@@ -74,15 +77,15 @@ def candidates(issues, cross):
     id, solutionTypes, domains, spaces, stories, needs).
     cross: the cross-issue dict as build_json.py writes it (needGroups,
     repeatedNeeds, solutions with parts).
-    Returns one dict per pair: a, b (like "1-A"), types, domains, spaces,
+    Returns one dict per pair: a, b (like "1-S1"), types, domains, spaces,
     needs, crossSolutions (lists of codes).
     """
-    sols = sorted(((i["number"], s["id"], s) for i in issues for s in i["solutions"]), key=lambda x: (x[0], x[1]))
+    sols = sorted(((i["number"], s["id"], s) for i in issues for s in i["solutions"]), key=lambda x: (x[0], id_key(x[1])))
     groups = need_sets(cross)
     in_groups = {(num, code): [name for name, refs in groups if any((num, r) in refs for r in solution_refs(s))]
                  for num, code, s in sols}
     parts = [(x["code"], {(p["issue"], p["code"]) for p in x["parts"]})
-             for x in sorted(cross.get("solutions") or [], key=lambda x: x["code"])]
+             for x in sorted(cross.get("solutions") or [], key=lambda x: id_key(x["code"]))]
     rows = []
     for i, (n1, c1, s) in enumerate(sols):
         for n2, c2, t in sols[i + 1:]:

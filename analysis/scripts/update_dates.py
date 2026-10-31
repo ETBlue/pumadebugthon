@@ -7,8 +7,8 @@ Usage: python3 -I analysis/scripts/update_dates.py analysis [--check]
 Writes analysis/data/updated-dates.csv (UTF-8 with BOM). Columns:
 - 類型: 利害關係人, 跨議題解法, 解法, 使用者故事, 空間類型, 領域類型 or
   解法類型.
-- 編號: the stakeholder ID (I06), the cross-issue solution code (X-A), the
-  issue number and the solution code (2-A), the issue number and the story
+- 編號: the stakeholder ID (I06), the cross-issue solution code (X-S1), the
+  issue number and the solution code (2-S1), the issue number and the story
   ID (2-O01-US01), or the code of a space type (sidewalk-walkway), a domain type
   (transport) or a solution type (intake).
 - 新增日期: only for 使用者故事, 空間類型, 領域類型 and 解法類型, because
@@ -57,8 +57,9 @@ The rule for the 更新日期:
 - An item that no longer exists loses its row.
 
 Row order: the stakeholders (O before I, then the number), then the
-cross-issue solutions (X-A, X-B…), then the issue solutions (by issue
-number, then by code), then the user stories (by issue number, then in the
+cross-issue solutions (in the file order: X-S1, X-S2…), then the issue
+solutions (by issue number, then by the number of the code: S2 before
+S10), then the user stories (by issue number, then in the
 order of the step 4 table), then the space types (in the order of
 space-types.csv), then the domain types (in the order of domain-types.csv),
 then the solution types (in the order of solution-types.csv). This is the
@@ -116,6 +117,12 @@ def stakeholder_order(sid):
     return (sid[0] != "O", int(sid[1:]))
 
 
+def ordered_solutions(solutions):
+    """The solutions of one issue in ID order: by the number of the code, so
+    S2 comes before S10 (analysis_common.id_key)."""
+    return sorted(solutions, key=lambda s: common.id_key(s["id"]))
+
+
 def items(analysis_dir):
     """Every item with its fingerprint, in the row order:
     [{"type", "id", "added", "fingerprint"}]. added is None for the types in
@@ -140,7 +147,7 @@ def items(analysis_dir):
         content = without_pending({k: v for k, v in s.items() if k not in CROSS_SKIP and (k != "practices" or v)})
         out.append({"type": CROSS, "id": s["code"], "added": s["added"], "fingerprint": common.fingerprint(content)})
     for d in issues:
-        for s in sorted(d["solutions"], key=lambda s: s["id"]):
+        for s in ordered_solutions(d["solutions"]):
             content = {k: s[k] for k in SOLUTION_KEYS}
             # practices (2026-10-22): only when the list is not empty, so the
             # new field alone does not change the date of a solution with none.

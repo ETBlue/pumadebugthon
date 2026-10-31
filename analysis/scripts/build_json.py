@@ -28,7 +28,7 @@ A section that cannot be read stops the script with exit code 1 and the line
 Sections and tables are found with the shared rules in analysis_common.py,
 the same as in check_analysis.py and sync_stakeholders.py: by their heading
 text ("## 分析摘要" and its "### " topics, "### 1.1", "### 1.2", "### 1.n 特別關注族群檢查", "## 步驟 4", "### 相同訴求群組", "### 5.4",
-"### 6.1", "### 6.2", "### 6.3", one "### 7.n 解法 X：…" per solution, and
+"### 6.1", "### 6.2", "### 6.3", one "### 7.n 解法 Sn：…" per solution, and
 "### 7.n 總覽"). A heading matches when the prefix is followed by a
 space, 「：」 or the end of the line, so "### 6.1" does not match "### 6.10".
 Inside a section, the script uses the tables whose header has all the wanted
@@ -61,7 +61,7 @@ script.
 
 Each solution also gets the fields for its own page in the app:
 - measures: the 6.3 rows whose 解法 cell lists its code (a cell can list
-  several, separated by 「、」, for example 「A、D」).
+  several, separated by 「、」, for example 「S1、S4」).
 - evaluation and plan: the two tables of its step 7 section (ETBlue,
   2026-10-23; solution_tables). evaluation {laws, privacy, risks,
   disasters, feasibility} is the 項目 | 內容 table (相關法規, 隱私,
@@ -72,20 +72,20 @@ Each solution also gets the fields for its own page in the app:
   tag, or a 【待補】 cell such as 「【待補：執行步驟】」, is a list of one
   Cell. Every other cell in the JSON is one Cell with at most one tag.
 - controversies and legal: the 分析摘要 rows of 可能的爭議 and 法規上的障礙
-  whose 相關編號 names the solution (「解法 A」, not 「#8 解法 B」), in file
+  whose 相關編號 names the solution (「解法 S1」, not 「#8 解法 S2」), in file
   order. Each item is the same object as in summary.
 - overview: its row of the 總覽 table (成本, 可行性, 主要風險, 主責單位). The
   row is found by its 代號 cell (the code only). The 解法 cell holds the row
   tag and a short name; every field gets the row tag.
 - ideas: the rows of the 6.1 構想 table (if the table exists) whose
-  本文件的處理 cell names the solution as 「解法 X」.
+  本文件的處理 cell names the solution as 「解法 Sn」.
 - pending: the 【待補】 items of its step 7 section and of its 6.3 rows. The
   same items are also in the issue's pending list.
 - practices: the related policies and practices (相關或類似的政策與做法;
   ETBlue, 2026-10-22), in this order:
   1. source "practice": the rows of the 6.1 practice tables
      (analysis_common.practice_tables) whose 本文件怎麼用 cell names the
-     solution (analysis_common.practice_refs: 「解法 X」, 「解法 C、D」 or
+     solution (analysis_common.practice_refs: 「解法 Sn」, 「解法 S3、S4」 or
      「7.n」). name is the 做法 cell after 「<place>：」, place is the place
      (「美國紐約」, 「臺灣臺北市」), domestic is true when the place starts
      with 「臺灣」. content is the 內容 Cell, use the 本文件怎麼用 Cell.
@@ -103,10 +103,10 @@ Each solution also gets the fields for its own page in the app:
 summary: the 「## 分析摘要」 section, one item per topic in
 analysis_common.SUMMARY_TOPICS, in that fixed order: {topic, items: [{item,
 text, refs, solutions}]}. text is the 說明 Cell (a tag, or a 【待補】 cell). refs are the
-references of the 相關編號 cell as written, for example "C5", "解法 A" or
-"#8 解法 B". Each one must exist: in this issue, or in issue #n. solutions
-are the codes of this issue's solutions that refs names (「解法 A」 -> "A";
-「#8 解法 B」 is not one); [] means the row names no solution (ETBlue,
+references of the 相關編號 cell as written, for example "C5", "解法 S1" or
+"#8 解法 S2". Each one must exist: in this issue, or in issue #n. solutions
+are the codes of this issue's solutions that refs names (「解法 S1」 -> "S1";
+「#8 解法 S2」 is not one); [] means the row names no solution (ETBlue,
 2026-10-23: the app shows those rows on the issue 總覽). The topic
 相依事項與現行政策的關係 has only rows with solutions [] (the others are
 in step 7), and it may have no rows. A 【待補】
@@ -164,9 +164,9 @@ method, result}], solutions [{code, name, tag, parts [{issue, code}],
 spaces, solutionTypes, added, summary, updated, needs {must, shouldCould, crossIssue}, measures
 [{indicator, baseline, source, from [{issue, code}], isNew}], evaluation
 {laws, privacy, risks, disasters, feasibility}, plan {owner, resources, cost,
-steps} (the tables of its 「### 4.5.n 解法 X-A：…」 section, the same shape
+steps} (the tables of its 「### 4.5.n 解法 X-S1：…」 section, the same shape
 as for an issue solution), controversies, legal (as for an issue solution;
-summary items have solutions with X codes, for example "X-A"), practices
+summary items have solutions with X codes, for example "X-S1"), practices
 (dependency rows only, see above)}], solutionFocus [{tag, solutions, note}], pending
 [{text, section}].
 """
@@ -340,14 +340,14 @@ def headings_before(lines):
     return out
 
 
-# Solution codes in a 6.3 解法 cell: one code, or several separated by 「、」 (「A、D」).
-SOLUTION_CODES = re.compile(r"[A-Z](?:、[A-Z])*")
+# Solution codes in a 6.3 解法 cell: one code, or several separated by 「、」 (「S1、S4」).
+SOLUTION_CODES = common.SOLUTION_CODES
 
 
 def pending_context(line, item_start):
     """The context of a 【待補】 item in a table row: the first cell of the row
     that is not the cell holding the item, not empty, not 「—」 and not only
-    solution codes (like 「A」 or 「A、D」 in 6.3). Tags and backticks are
+    solution codes (like 「S1」 or 「S1、S4」 in 6.3). Tags and backticks are
     removed. None when the line is not a table row or no cell fits."""
     if not line.startswith("|"):
         return None
@@ -362,18 +362,20 @@ def pending_context(line, item_start):
     return None
 
 
-# A step 7 heading for one solution, for example 「### 7.1 解法 A：清潔箱佈建建議地圖」. Group 1 is the code.
-STEP7_SOLUTION = re.compile(r"^### 7\.\d+ 解法 ([A-Z])：")
-# A solution named in the 構想 table's 本文件的處理 cell, for example 「併入解法 B」.
-IDEA_SOLUTION = re.compile(r"解法 ?([A-Z])(?![A-Za-z])")
+# A step 7 heading for one solution, for example 「### 7.1 解法 S1：清潔箱佈建建議地圖」. Group 1 is the code.
+STEP7_SOLUTION = re.compile(rf"^### 7\.\d+ 解法 ({common.SOLUTION_CODE})：")
+# A solution named in the 構想 table's 本文件的處理 cell, for example 「併入解法 S2」.
+IDEA_SOLUTION = re.compile(rf"解法 ?({common.SOLUTION_CODE})(?![A-Za-z0-9])")
 
 
 def row_codes(value, known, section_name, where):
-    """The solution codes in a cell such as 「A」 or 「A、D」. Each must be a code from 6.1."""
+    """The solution codes in a cell such as 「S1」 or 「S1、S4」. Each must be a code from 6.1."""
     v = value.strip()
     if not SOLUTION_CODES.fullmatch(v):
-        raise ReadError(section_name, f"{where}: 解法 cell 「{value}」 must be solution codes separated by 「、」, for example 「A」 or 「A、D」")
-    codes = re.findall(r"[A-Z]", v)
+        old = [c for c in v.split("、") if common.solution_code_problem(c.strip())]
+        why = common.solution_code_problem(old[0].strip()) if old else ""
+        raise ReadError(section_name, f"{where}: 解法 cell 「{value}」 must be solution codes separated by 「、」, for example 「S1」 or 「S1、S4」 ({why})")
+    codes = v.split("、")
     for c in codes:
         if c not in known:
             raise ReadError(section_name, f"{where}: solution {c} is not in 6.1")
@@ -791,13 +793,13 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
                 if ref not in need_ids:
                     raise ReadError(cname, f"{cid}: 雙方的需求 「{ref}」 is not a need in 5.2")
             way = cell(r["以需求為本的解方"], cname, cid)
-            m = re.match(r"解法 ([A-Z](?:、[A-Z])*)：", way["text"])
+            m = re.match(rf"解法 ({common.SOLUTION_CODES.pattern})：", way["text"])
             if m:
                 codes = m.group(1).split("、")
             elif way["text"].startswith(common.WAY_OUT_NONE):
                 codes = []
             else:
-                raise ReadError(cname, f"{cid}: 以需求為本的解方 must start with 「解法 X：」 or 「{common.WAY_OUT_NONE}」")
+                raise ReadError(cname, f"{cid}: 以需求為本的解方 must start with 「解法 Sn：」 (for example 「解法 S1、S2：」) or 「{common.WAY_OUT_NONE}」")
             item.update({"needsA": na, "needsB": nb, "wayOut": way, "wayOutSolutions": codes})
         conflicts.append(item)
     no_duplicates([c["id"] for c in conflicts], cname, "conflict")
@@ -809,6 +811,9 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
     with_types = needs_format or any(all(c in h for c in common.SOLUTION_HEADER) for h, _ in tables61)
     for r in table_rows(tables61, "6.1", common.SOLUTION_HEADER if with_types else common.OLD_SOLUTION_HEADER):
         sol, codes = r["代號"], common.cell_codes(r["空間類型"])
+        why = common.solution_code_problem(sol)
+        if why:
+            raise ReadError("6.1", f"代號: {why}")
         solution_types, own_domains = [], []
         if with_types:
             solution_types, own_domains, problems = common.solution_type_problems(
@@ -842,8 +847,9 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
     cols62 = common.NEED_MAP_HEADER if needs_format else ["代號", "解法", "涵蓋的 Must", "涵蓋的 Should / Could"]
     for r in table_rows(common.tables(section(text, "### 6.2", "6.2")), "6.2", cols62):
         sol = r["代號"]
-        if not re.fullmatch(r"[A-Z]", sol):
-            raise ReadError("6.2", f"bad solution code 「{sol}」 (expected one capital letter)")
+        why = common.solution_code_problem(sol)
+        if why:
+            raise ReadError("6.2", f"代號: {why}")
         if sol not in by_sol:
             raise ReadError("6.2", f"solution 「{sol}」 is not in 6.1")
         in_62.append(sol)
@@ -879,7 +885,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
 
     sol_codes = [s["id"] for s in solutions]
 
-    # 6.3 measures: a row belongs to every solution its 解法 cell lists (「A、D」).
+    # 6.3 measures: a row belongs to every solution its 解法 cell lists (「S1、S4」).
     for s in solutions:
         s["measures"] = []
     for r in table_rows(common.tables(section(text, "### 6.3", "6.3")), "6.3", ["解法", "指標", "目前數值（基準值）", "資料來源"]):
@@ -889,7 +895,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
                                              "baseline": cell(r["目前數值（基準值）"], "6.3", metric),
                                              "source": r["資料來源"]})
 
-    # step 7: one section 「### 7.n 解法 X：…」 per solution, with a 項目 | 內容 table.
+    # step 7: one section 「### 7.n 解法 Sn：…」 per solution, with a 項目 | 內容 table.
     step7_heads = {}
     for l in lines:
         m = STEP7_SOLUTION.match(l)
@@ -908,7 +914,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
         s["evaluation"], s["plan"], s["dependencies"] = solution_tables(common.section(text, head), name, s["id"])
 
     # 總覽 (### 7.n 總覽): one row per solution. The 代號 cell is the code only
-    # (「A」). The 解法 cell is the row tag and a short name (「`[AI模擬]` 佈建建議地圖」).
+    # (「S1」). The 解法 cell is the row tag and a short name (「`[AI模擬]` 佈建建議地圖」).
     # Every field gets the row tag.
     overview_head = next((l for l in lines if re.match(r"^### 7\.\d+ 總覽\s*$", l)), None)
     if overview_head is None:
@@ -916,8 +922,8 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
     for r in table_rows(common.tables(common.section(text, overview_head)), "總覽",
                         ["代號", "解法", "成本", "可行性", "主要風險", "主責單位"]):
         code = r["代號"].strip()
-        if not re.fullmatch(r"[A-Z]", code) or code not in by_sol:
-            raise ReadError("總覽", f"row 「{r['解法']}」: 代號 「{r['代號']}」 is not a solution code from 6.1")
+        if common.solution_code_problem(code) or code not in by_sol:
+            raise ReadError("總覽", f"row 「{r['解法']}」: 代號 「{r['代號']}」 is not a solution code from 6.1 ({common.solution_code_problem(code) or 'not in 6.1'})")
         first = cell(r["解法"], "總覽", code)
         if "overview" in by_sol[code]:
             raise ReadError("總覽", f"solution {code} has two rows")
@@ -929,7 +935,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
             raise ReadError("總覽", f"solution {s['id']} has no row")
 
     # 6.1 構想 table (optional): a row belongs to every solution that its
-    # 本文件的處理 cell names as 「解法 X」. A row that names no solution is left out.
+    # 本文件的處理 cell names as 「解法 Sn」. A row that names no solution is left out.
     for s in solutions:
         s["ideas"] = []
     idea_tables = [t for t in common.tables(section(text, "### 6.1", "6.1")) if "構想" in t[0] and "本文件的處理" in t[0]]
@@ -1006,7 +1012,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
         if head is not None and head.split(" ")[0] == "6.3" and line.startswith("|"):
             first = common.split_cells(line)[0]
             if SOLUTION_CODES.fullmatch(first):
-                owners = [c for c in re.findall(r"[A-Z]", first) if c in by_sol]
+                owners = [c for c in first.split("、") if c in by_sol]
         for m in PENDING.finditer(plain):
             if s_start <= n_line < s_end and m.group(0) in outside:
                 continue

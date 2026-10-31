@@ -108,8 +108,8 @@ class ItemsTest(unittest.TestCase):
         self.assertEqual(types, sorted(types, key=["利害關係人", "跨議題解法", "解法", "使用者故事", "空間類型",
                                                    "領域類型", "解法類型"].index))
         self.assertIn(("利害關係人", "O01"), keys)
-        self.assertIn(("解法", "2-A"), keys)
-        self.assertIn(("跨議題解法", "X-A"), keys)
+        self.assertIn(("解法", "2-S1"), keys)
+        self.assertIn(("跨議題解法", "X-S1"), keys)
         self.assertIn(("使用者故事", "2-O01-US01"), keys)
         self.assertIn(("空間類型", "sidewalk-walkway"), keys)
         self.assertIn(("空間類型", "road"), keys)  # a level 1 row has a row too
@@ -132,7 +132,15 @@ class ItemsTest(unittest.TestCase):
         stake = [i["id"] for i in items if i["type"] == "利害關係人"]
         self.assertEqual(stake, sorted(stake, key=lambda s: (s[0] != "O", int(s[1:]))))
         sols = [i["id"] for i in items if i["type"] == "解法"]
-        self.assertEqual(sols, sorted(sols, key=lambda s: (int(s.split("-")[0]), s.split("-")[1])))
+        self.assertEqual(sols, sorted(sols, key=lambda s: (int(s.split("-")[0]), int(s.split("-")[1][1:]))))
+        cross = [i["id"] for i in items if i["type"] == "跨議題解法"]
+        self.assertEqual(cross, [f"X-S{n}" for n in range(1, len(cross) + 1)])
+        self.assertGreaterEqual(len(cross), 10)  # so X-S10 is after X-S9
+
+    def test_solutions_sort_by_number(self):
+        # 12 solutions: text order would put S10, S11 and S12 before S2.
+        sols = [{"id": f"S{n}"} for n in (12, 2, 10, 1, 11, 3, 9, 4, 8, 5, 7, 6)]
+        self.assertEqual([s["id"] for s in self.mod.ordered_solutions(sols)], [f"S{n}" for n in range(1, 13)])
 
     def test_moved_stakeholder_has_no_item(self):
         with open(os.path.join(self.dir, "data", "stakeholders.csv"), encoding="utf-8-sig", newline="") as f:
@@ -187,7 +195,7 @@ class ItemsTest(unittest.TestCase):
         edit(self.md, "並加上人行道淨寬檢查。", "並加上人行道寬度檢查。")
         after = self.prints()
         changed = {k for k in before if before[k] != after[k]}
-        self.assertEqual(changed, {("解法", "2-A")})
+        self.assertEqual(changed, {("解法", "2-S1")})
 
     def test_step_7_retag_changes_only_that_solution(self):
         # Splitting a step 7 cell into parts with their own tags (ETBlue,
@@ -196,7 +204,7 @@ class ItemsTest(unittest.TestCase):
         edit(self.md, "| 主責單位 | `[AI模擬]` 環保局（環境清潔管理科）；",
              "| 主責單位 | `[AI模擬]` 環保局（環境清潔管理科）。 `[實證]` 協作單位；")
         after = self.prints()
-        self.assertEqual({k for k in before if before[k] != after[k]}, {("解法", "2-A")})
+        self.assertEqual({k for k in before if before[k] != after[k]}, {("解法", "2-S1")})
 
     def test_solution_added_date_is_not_content(self):
         before = self.prints()
@@ -257,9 +265,9 @@ class UpdatedRowsTest(unittest.TestCase):
                                 self.row("O01", "2026-10-20", "aaa")])
 
     def test_same_id_of_another_type_is_another_item(self):
-        old = [self.row("X-A", "2026-10-20", "aaa", type_="跨議題解法")]
-        rows = self.mod.updated_rows([self.item("X-A", "aaa", type_="解法")], old, self.today)
-        self.assertEqual(rows, [self.row("X-A", "2026-10-18", "aaa", type_="解法")])
+        old = [self.row("X-S1", "2026-10-20", "aaa", type_="跨議題解法")]
+        rows = self.mod.updated_rows([self.item("X-S1", "aaa", type_="解法")], old, self.today)
+        self.assertEqual(rows, [self.row("X-S1", "2026-10-18", "aaa", type_="解法")])
 
 
 class ScriptTest(unittest.TestCase):
@@ -344,7 +352,7 @@ class ScriptTest(unittest.TestCase):
         after = self.rows()
         self.assertEqual(set(after), set(before))
         # With no old row, each item gets its 新增日期.
-        self.assertEqual(after[("解法", "2-A")]["更新日期"], "2026-10-16")
+        self.assertEqual(after[("解法", "2-S1")]["更新日期"], "2026-10-16")
         # A story or a space type has no 新增日期 in another file, so it gets today.
         today = load("analysis_common").today().isoformat()
         self.assertEqual(after[("使用者故事", "2-O01-US01")]["新增日期"], today)

@@ -15,9 +15,12 @@ IDs:
   number.
 - Story, need, conflict, group and solution IDs belong to one issue, so they
   always start with 「#」, the issue number and one space: 「#2 I01-US09」,
-  「#1 N05」, 「#2 C9」, 「#8 解法 A」. A story or N ID without it is an error.
-- The file's own IDs: X-N01 (a cross-issue need group), X-C1 (a cross-issue
-  conflict) and 解法 X-A (a combined solution; the code is X-A).
+  「#1 N05」, 「#2 C9」, 「#8 解法 S1」. A story or N ID without it is an error.
+- The file's own IDs: X-N1 (a cross-issue need group), X-C1 (a cross-issue
+  conflict) and 解法 X-S1 (a combined solution; the code is X-S1). The
+  numbers have no zero padding (ETBlue, 2026-10-31). An old ID (X- and one
+  capital letter, X-N with a zero, or 「解法」 and one capital letter) is an
+  error with a message that names the new ID.
 
 Rules checked (see method.md, 跨議題分析):
 - Tags are in backticks; a 【待補：…】 item says what is missing; no example
@@ -44,7 +47,7 @@ Rules checked (see method.md, 跨議題分析):
   the issue's 6.2, in the column of its issue priority. Every X-N group is
   covered by at least one combined solution.
 - 4.3: 「來自」 is 「新指標」 or a part of the combined solution.
-- 4.5: one section 「### 4.5.n 解法 X-A：…」 per combined solution, with the
+- 4.5: one section 「### 4.5.n 解法 X-S1：…」 per combined solution, with the
   same tables as a step 7 solution section of an issue file (ETBlue,
   2026-10-23; analysis_common.step7_tables): the evaluation table, the plan
   table (執行計畫) and, if needed, the dependency table (相依事項與現行政策的
@@ -67,12 +70,17 @@ CROSS_FILE = "cross-issue-analysis.md"
 # Hong Kong after 1997-07-01 counts as China.
 EXCLUDED_WORDS = ("中國", "伊朗", "北韓", "香港")
 
-# A reference to an ID of one issue: 「#2 I01-US09」, 「#1 N05」, 「#8 解法 A」.
+# A reference to an ID of one issue: 「#2 I01-US09」, 「#1 N05」, 「#8 解法 S1」.
 # Group 1 is the issue number, group 2 the ID.
-REF = re.compile(r"#(\d+) (解法 [A-Z]|[OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|N\d\d)(?![0-9A-Za-z])")
-X_NEED = re.compile(r"(?<![A-Za-z0-9])X-N\d\d(?![0-9])")
-X_CONFLICT = re.compile(r"(?<![A-Za-z0-9])X-C\d+(?![0-9])")
-X_CODE = re.compile(r"(?<![A-Za-z0-9])X-[A-Z](?![A-Za-z0-9-])")
+REF = re.compile(rf"#(\d+) (解法 {common.SOLUTION_CODE}|[OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|N\d\d)(?![0-9A-Za-z])")
+X_NEED = re.compile(rf"(?<![A-Za-z0-9]){common.X_NEED_CODE}(?![0-9])")
+X_CONFLICT = re.compile(rf"(?<![A-Za-z0-9]){common.X_CONFLICT_CODE}(?![0-9])")
+X_CODE = re.compile(rf"(?<![A-Za-z0-9]){common.X_SOLUTION_CODE}(?![A-Za-z0-9-])")
+# Old IDs (before 2026-10-31): X- and one capital letter (a combined
+# solution), X-N with a zero (a need group), 「解法」 and one capital letter
+# (an issue solution, also after 「#8 」).
+OLD_X_CODE = re.compile(r"(?<![A-Za-z0-9-])X-(?:[A-Z](?![A-Za-z0-9-])|[NC]0\d+(?![0-9]))")
+OLD_SOLUTION = re.compile(r"解法 ([A-Z])(?![A-Za-z0-9-])")
 STAKEHOLDER = re.compile(r"(?<![A-Za-z0-9-])[OI]\d\d(?![0-9-])")
 TAGGED = re.compile(rf"^`\[(?:{common.TAG_NAMES})\]` \S")
 PENDING_ITEM = re.compile(r"^【待補：[^】]+】$")
@@ -132,7 +140,7 @@ class Issue:
         for h, rows in common.tables(common.section(text, "### 6.1") or []):
             if h and h[0] == "代號" and "空間類型" in h:
                 for r in rows:
-                    if len(r) == len(h) and re.fullmatch(r"[A-Z]", r[0]):
+                    if len(r) == len(h) and re.fullmatch(common.SOLUTION_CODE, r[0]):
                         self.spaces[r[0]] = common.cell_codes(r[h.index("空間類型")])
                         if "解法類型" in h:
                             self.types[r[0]] = common.cell_codes(r[h.index("解法類型")])
@@ -320,6 +328,13 @@ def read_cross_issue(text, ctx):
                 if k > 1:
                     err(f"line {n}: a cell has {k} tags; a cell in this file has at most one: {c[:40]!r}")
 
+    # No old ID (see OLD_X_CODE and OLD_SOLUTION; ETBlue, 2026-10-31).
+    for x in sorted(set(OLD_X_CODE.findall(text)), key=common.id_key):
+        kind = {"N": "need", "C": "conflict"}.get(x[2]) if len(x) > 3 else "solution"
+        err(f"old ID: {common.x_code_problem(x, kind)}")
+    for x in sorted(set(OLD_SOLUTION.findall(text)), key=common.id_key):
+        err(f"old ID 「解法 {x}」: {common.solution_code_problem(x)}")
+
     # Every 「#n ID」 exists; no story, need, conflict, group or solution ID without 「#n」.
     for m in REF.finditer(text):
         issue_ref(int(m.group(1)), m.group(2), "reference")
@@ -327,8 +342,8 @@ def read_cross_issue(text, ctx):
     rest = re.sub(r"\]\([^)]*\)", "]()", rest)  # link targets
     for pat, what in ((r"(?<![A-Za-z0-9-])[OI]\d\d-US\d\d", "story"), (r"(?<![A-Za-z0-9-])N\d\d(?![0-9])", "need"),
                       (r"(?<![A-Za-z0-9-])C\d+(?![0-9])", "conflict"), (r"(?<![A-Za-z0-9-])W\d\d(?![0-9])", "group"),
-                      (r"解法 [A-Z](?![A-Za-z0-9-])", "solution")):
-        for x in sorted(set(re.findall(pat, rest))):
+                      (rf"解法 {common.SOLUTION_CODE}(?![A-Za-z0-9-])", "solution")):
+        for x in sorted(set(re.findall(pat, rest)), key=common.id_key):
             err(f"{x}: a {what} ID belongs to one issue; write 「#n {x}」 (n is the issue number)")
     for x in sorted(set(STAKEHOLDER.findall(rest))):
         if x not in stake:
@@ -366,23 +381,23 @@ def read_cross_issue(text, ctx):
     xs_rows = one_table(text, SECTIONS["solutions"], XS_HEADER, err, "合併的解法")
     xn_ids = []
     for r in xn_rows:
-        m = re.fullmatch(rf"`\[(?:{common.TAG_NAMES})\]` (X-N\d\d)", r["群組"])
-        if not m: err(f"2.1: 群組 must be a tag and an X-N ID: {r['群組']!r}"); continue
+        m = re.fullmatch(rf"`\[(?:{common.TAG_NAMES})\]` ({common.X_NEED_CODE})", r["群組"])
+        if not m: err(f"2.1: 群組 must be a tag and an X-N ID such as X-N1: {r['群組']!r}"); continue
         if m.group(1) in xn_ids: err(f"2.1: {m.group(1)} is listed twice")
         xn_ids.append(m.group(1))
     xc_ids = []
     for r in xc_rows:
-        if not re.fullmatch(r"X-C\d+", r["#"]): err(f"3: bad conflict ID {r['#']!r}"); continue
+        if common.x_code_problem(r["#"], "conflict"): err(f"3: bad conflict ID: {common.x_code_problem(r['#'], 'conflict')}"); continue
         if r["#"] in xc_ids: err(f"3: {r['#']} is listed twice")
         xc_ids.append(r["#"])
     xs_codes = []
     for r in xs_rows:
-        if not re.fullmatch(r"X-[A-Z]", r["代號"]): err(f"4.1: 代號 must be X and one capital letter: {r['代號']!r}"); continue
+        if common.x_code_problem(r["代號"], "solution"): err(f"4.1: 代號 {common.x_code_problem(r['代號'], 'solution')}"); continue
         if r["代號"] in xs_codes: err(f"4.1: {r['代號']} is listed twice")
         xs_codes.append(r["代號"])
-    for x in sorted(set(X_NEED.findall(text)) - set(xn_ids)): err(f"{x} is referenced but is not in 2.1")
-    for x in sorted(set(X_CONFLICT.findall(text)) - set(xc_ids)): err(f"{x} is referenced but is not in 3")
-    for x in sorted(set(X_CODE.findall(text)) - set(xs_codes)): err(f"{x} is referenced but is not in 4.1")
+    for x in sorted(set(X_NEED.findall(text)) - set(xn_ids), key=common.id_key): err(f"{x} is referenced but is not in 2.1")
+    for x in sorted(set(X_CONFLICT.findall(text)) - set(xc_ids), key=common.id_key): err(f"{x} is referenced but is not in 3")
+    for x in sorted(set(X_CODE.findall(text)) - set(xs_codes), key=common.id_key): err(f"{x} is referenced but is not in 4.1")
 
     # ----- 分析摘要 -----
     summary = []
@@ -416,11 +431,11 @@ def read_cross_issue(text, ctx):
                 refs = common.split_refs(refs_cell)
                 if tagged and not refs: err(f"{where}: 相關編號 is empty")
                 for ref in refs:
-                    if REF.fullmatch(ref) or re.fullmatch(r"X-N\d\d|X-C\d+|解法 X-[A-Z]", ref):
+                    if REF.fullmatch(ref) or re.fullmatch(rf"{common.X_NEED_CODE}|{common.X_CONFLICT_CODE}|解法 {common.X_SOLUTION_CODE}", ref):
                         continue  # existence is checked on the whole text
                     if re.fullmatch(r"[OI]\d\d", ref):
                         continue  # a global stakeholder ID, checked on the whole text
-                    err(f"{where}: 「{ref}」 is not a reference (write 「#n ID」 for an ID of an issue, or X-N01, X-C1, 解法 X-A, or a stakeholder ID)")
+                    err(f"{where}: 「{ref}」 is not a reference (write 「#n ID」 for an ID of an issue, or X-N1, X-C1, 解法 X-S1, or a stakeholder ID)")
                 codes_ = common.ref_solutions(refs, "X-")
                 if name == common.DEPENDENCY_TOPIC and codes_:
                     err(f"{where}: names {'、'.join('解法 ' + c for c in codes_)}; move the row to the "
@@ -509,7 +524,7 @@ def read_cross_issue(text, ctx):
     # ----- 2.1 X-N groups -----
     need_groups, member_of = [], {}
     for r in xn_rows:
-        m = re.fullmatch(rf"`\[(?:{common.TAG_NAMES})\]` (X-N\d\d)", r["群組"])
+        m = re.fullmatch(rf"`\[(?:{common.TAG_NAMES})\]` ({common.X_NEED_CODE})", r["群組"])
         if not m: continue
         xid, where = m.group(1), f"2.1 {m.group(1)}"
         members, want_stories, want_holders = [], [], []
@@ -580,7 +595,7 @@ def read_cross_issue(text, ctx):
     def needs_side(side, where):
         out = []
         for ref in split_list(side):
-            if re.fullmatch(r"X-N\d\d", ref):
+            if re.fullmatch(common.X_NEED_CODE, ref):
                 if ref not in groups_by_id: err(f"{where}: {ref} is not in 2.1")
                 out.append(ref_obj(None, ref)); continue
             p = need_ref(ref, where)
@@ -588,7 +603,7 @@ def read_cross_issue(text, ctx):
         return out
     for r in xc_rows:
         cid = r["#"]
-        if not re.fullmatch(r"X-C\d+", cid): continue
+        if not re.fullmatch(common.X_CONFLICT_CODE, cid): continue
         where = f"3 {cid}"
         issue_conflicts = []
         for ref in split_list(r["相關的議題衝突"]):
@@ -617,13 +632,13 @@ def read_cross_issue(text, ctx):
         else:
             need_sides = [needs_side(s, where) for s in nsides]
         way = r["以需求為本的解方"]
-        m = re.match(rf"^`\[(?:{common.TAG_NAMES})\]` 解法 (X-[A-Z](?:、X-[A-Z])*)：", way)
+        m = re.match(rf"^`\[(?:{common.TAG_NAMES})\]` 解法 ({common.X_SOLUTION_CODE}(?:、{common.X_SOLUTION_CODE})*)：", way)
         codes = m.group(1).split("、") if m else []
         for c in codes:
             if c not in xs_codes: err(f"{where}: 以需求為本的解方 names 解法 {c}, which is not in 4.1")
         none_found = re.match(rf"^`\[(?:{common.TAG_NAMES})\]` {common.WAY_OUT_NONE}", way) is not None
         if not m and not none_found:
-            err(f"{where}: 以需求為本的解方 must start with a tag and 「解法 X-A：」, or with a tag and 「{common.WAY_OUT_NONE}」")
+            err(f"{where}: 以需求為本的解方 must start with a tag and 「解法 X-S1：」, or with a tag and 「{common.WAY_OUT_NONE}」")
         method = r["可能的審議方法"]
         if not TAGGED.match(method) and (none_found or method != "—"):
             err(f"{where}: 可能的審議方法 must start with a tag" + ("; no solution was found, so a method is needed" if none_found else ", or be 「—」"))
@@ -646,14 +661,14 @@ def read_cross_issue(text, ctx):
     solutions, parts_of = [], {}
     for r in xs_rows:
         code = r["代號"]
-        if not re.fullmatch(r"X-[A-Z]", code): continue
+        if not re.fullmatch(common.X_SOLUTION_CODE, code): continue
         where = f"4.1 {code}"
         name_cell = parse_cell(r["解法"])
         if name_cell["tag"] is None: err(f"{where}: 解法 must start with a tag")
         parts = []
         for ref in split_list(r["合併的議題解法"]):
             m = REF.fullmatch(ref)
-            if not m or not m.group(2).startswith("解法 "): err(f"{where}: 「{ref}」 must be 「#n 解法 X」"); continue
+            if not m or not m.group(2).startswith("解法 "): err(f"{where}: 「{ref}」 must be 「#n 解法 Sn」, for example 「#1 解法 S3」"); continue
             num = int(m.group(1))
             if issue_ref(num, m.group(2), where): parts.append((num, m.group(2)[3:]))
         if len(parts) < 2: err(f"{where}: a combined solution joins 2 or more issue solutions")
@@ -727,7 +742,7 @@ def read_cross_issue(text, ctx):
     for r in one_table(text, SECTIONS["measures"], XM_HEADER, err, "成效衡量"):
         where = f"4.3 「{r['指標']}」"
         codes = r["解法"].split("、")
-        if not all(re.fullmatch(r"X-[A-Z]", c) and c in sol_by_code for c in codes):
+        if not all(re.fullmatch(common.X_SOLUTION_CODE, c) and c in sol_by_code for c in codes):
             err(f"{where}: 解法 must be codes from 4.1, separated by 「、」: {r['解法']!r}"); continue
         base = r["目前數值（基準值）"]
         if not TAGGED.match(base) and not PENDING_ITEM.match(base):
@@ -740,7 +755,7 @@ def read_cross_issue(text, ctx):
         if src != NEW_MEASURE:
             for ref in split_list(src):
                 m = REF.fullmatch(ref)
-                if not m or not m.group(2).startswith("解法 "): err(f"{where}: 來自 must be 「{NEW_MEASURE}」 or 「#n 解法 X」"); continue
+                if not m or not m.group(2).startswith("解法 "): err(f"{where}: 來自 must be 「{NEW_MEASURE}」 or 「#n 解法 Sn」"); continue
                 part = (int(m.group(1)), m.group(2)[3:])
                 for c in codes:
                     if part not in parts_of.get(c, []): err(f"{where}: #{part[0]} 解法 {part[1]} is not a part of {c}")
@@ -758,8 +773,8 @@ def read_cross_issue(text, ctx):
         codes = []
         if cell_ != common.FOCUS_NONE:
             for ref in cell_.split("、"):
-                m = re.fullmatch(r"解法 (X-[A-Z])", ref.strip())
-                if not m or m.group(1) not in sol_by_code: err(f"4.4 {g}: 「{ref}」 must be 「解法 X-A」 with a code from 4.1"); continue
+                m = re.fullmatch(rf"解法 ({common.X_SOLUTION_CODE})", ref.strip())
+                if not m or m.group(1) not in sol_by_code: err(f"4.4 {g}: 「{ref}」 must be 「解法 X-S1」 with a code from 4.1"); continue
                 codes.append(m.group(1))
         note = r["說明"]
         if not codes and not PENDING_ITEM.match(note): err(f"4.4 {g}: no solution, so 說明 must be one 【待補：…】 item")

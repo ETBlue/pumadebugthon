@@ -31,8 +31,8 @@ Rules:
   order. Each subsection has one table with the header SUMMARY_HEADER.
 - A 相關編號 cell lists references separated by 「、」, or 「—」. A reference
   is a story (I01-US01), a stakeholder (I05), a conflict (C3), a group (W01)
-  or a solution (解法 A). A reference to another issue starts with 「#」, the
-  issue number and one space: 「#8 解法 B」, 「#2 C9」 (SUMMARY_REF).
+  or a solution (解法 S1). A reference to another issue starts with 「#」, the
+  issue number and one space: 「#8 解法 S2」, 「#2 C9」 (SUMMARY_REF).
   A 相同需求群組 (N01) is a reference too.
 - Two formats exist (see docs/method.md). The needs-based format has a
   "### 相同需求群組" section (needs_format). In it, step 5 gives one MoSCoW
@@ -59,10 +59,10 @@ Rules:
   any, for example 「美國紐約：」, 「英國：」, 「臺灣臺北市：」. A place that
   starts with DOMESTIC (「臺灣」) is domestic; any other place is foreign
   (ETBlue, 2026-10-22). The 本文件怎麼用 cell names solutions of this issue
-  (practice_refs): 「解法 A」, a list 「解法 C、D」, or a step 7 section
-  「7.1」, which means the solution of the heading 「### 7.1 解法 A：…」. A
-  reference to another issue (「#8 解法 B」) is not a solution of this issue.
-- Step 7 「評估解法」 (ETBlue, 2026-10-23): each 「### 7.n 解法 X：…」 section
+  (practice_refs): 「解法 S1」, a list 「解法 S3、S4」, or a step 7 section
+  「7.1」, which means the solution of the heading 「### 7.1 解法 S1：…」. A
+  reference to another issue (「#8 解法 S2」) is not a solution of this issue.
+- Step 7 「評估解法」 (ETBlue, 2026-10-23): each 「### 7.n 解法 Sn：…」 section
   has an evaluation table (項目 | 內容: STEP7_ROWS), a plan table (執行計畫 |
   內容: PLAN_ROWS) and, when the solution has some, a dependency table
   (DEPENDENCY_HEADER). step7_tables() finds them by header. A dependency
@@ -89,6 +89,16 @@ Rules:
   use them, so both give the same messages. An issue with 「空間類型：無」 (#9)
   still has a 領域 line and its 解法類型 cells. The old format may leave
   out the 領域 line and use OLD_SOLUTION_HEADER (the fixture only).
+- Solution, need and conflict IDs (ETBlue, 2026-10-31; app/docs/design.md
+  decision 151): one capital letter and a number with no zero padding. An
+  issue solution is S1, S2 … (SOLUTION_CODE); its full ID is 「1-S1」. The
+  cross-issue file has solutions X-S1 … (X_SOLUTION_CODE), need groups
+  X-N1 … (X_NEED_CODE) and conflicts X-C1 … (X_CONFLICT_CODE). The other
+  IDs of an issue (N01, W01, C1, O01, I01-US01) do not change. An old ID
+  (one capital letter; X- and one capital letter; X-N with a zero) fails
+  with a message that names the new form
+  (solution_code_problem, x_code_problem). Lists of these IDs sort by the
+  number inside the ID, not as text, so S2 comes before S10 (id_key).
 - Content fingerprint (fingerprint): the first 12 hex characters of the
   SHA-256 of the content as canonical JSON (keys sorted, no spaces, UTF-8).
   update_dates.py and check_analysis.py use it to see whether the content of
@@ -98,6 +108,50 @@ import csv, datetime, hashlib, json, os, re
 
 DATA_FOLDER = "data"
 DOCS_FOLDER = "docs"
+
+
+# Solution, need and conflict IDs (see the rules above). Patterns without
+# anchors; use re.fullmatch, or add boundaries.
+SOLUTION_CODE = r"S[1-9]\d*"
+X_SOLUTION_CODE = r"X-S[1-9]\d*"
+X_NEED_CODE = r"X-N[1-9]\d*"
+X_CONFLICT_CODE = r"X-C[1-9]\d*"
+# A list of issue solution codes, as in a 6.3 解法 cell: 「S1」 or 「S1、S4」.
+SOLUTION_CODES = re.compile(rf"{SOLUTION_CODE}(?:、{SOLUTION_CODE})*")
+
+
+def id_key(value):
+    """A sort key that compares the numbers inside an ID as numbers, so
+    S2 < S10, X-N2 < X-N10 and 1-S2 < 1-S10 < 2-S1. The other parts compare
+    as text."""
+    return tuple((0, int(p), "") if p.isdigit() else (1, 0, p) for p in re.findall(r"\d+|\D+", value))
+
+
+def solution_code_problem(code):
+    """Why code is not an issue solution code (S1, S2 …), or None. An old
+    code (one capital letter, for example A) gets a message with the new code."""
+    if re.fullmatch(SOLUTION_CODE, code):
+        return None
+    if re.fullmatch(r"[A-Z]", code):
+        return f"「{code}」 is an old solution code: write S{ord(code) - 64} (the letters map in order: A is S1, B is S2 …)"
+    return f"「{code}」 is not a solution code (S and a number with no zero padding, for example S1 or S10)"
+
+
+def x_code_problem(code, kind):
+    """Why code is not a cross-issue ID of this kind, or None. kind is
+    "solution" (X-S1), "need" (X-N1) or "conflict" (X-C1). An old code
+    (X- and one capital letter, or X-N with a zero) gets a message with the
+    new code."""
+    pattern, example = {"solution": (X_SOLUTION_CODE, "X-S1"), "need": (X_NEED_CODE, "X-N1"),
+                        "conflict": (X_CONFLICT_CODE, "X-C1")}[kind]
+    if re.fullmatch(pattern, code):
+        return None
+    if kind == "solution" and re.fullmatch(r"X-[A-Z]", code):
+        return f"「{code}」 is an old cross-issue solution code: write X-S{ord(code[2]) - 64} (the letters map in order: A is X-S1, B is X-S2 …)"
+    m = re.fullmatch(r"X-([NC])0+(\d+)", code)
+    if m and m.group(1) == {"need": "N", "conflict": "C"}.get(kind):
+        return f"「{code}」 has a zero padding: write X-{m.group(1)}{int(m.group(2))}"
+    return f"「{code}」 is not a cross-issue {kind} ID (for example {example}; a number with no zero padding)"
 
 
 def data_file(analysis_dir, name):
@@ -354,8 +408,8 @@ SUMMARY_TOPICS = ("難以取捨的決定", "可能的爭議", "受影響較大�
 SUMMARY_HEADER = ["項目", "說明", "相關編號"]
 # One reference in a 相關編號 cell. Group 1 is the issue number of another
 # issue (or None), group 2 the ID: a story, a stakeholder, a conflict, a group
-# or 「解法 X」.
-SUMMARY_REF = re.compile(r"(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|N\d\d|解法 [A-Z])")
+# or 「解法 S1」.
+SUMMARY_REF = re.compile(rf"(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|N\d\d|解法 {SOLUTION_CODE})")
 
 # The needs-based format (see the rules above and method.md).
 NEED_GROUP_HEADING = "### 相同需求群組"
@@ -380,12 +434,12 @@ PRACTICE_HEADER = ["做法", "內容", "本文件怎麼用"]
 PRACTICE_NAME = re.compile(r"([^\s：:（）()]+)：(\S.*)")
 # A place that starts with this is domestic (國內); any other place is foreign (國外).
 DOMESTIC = "臺灣"
-# Solutions in a 本文件怎麼用 cell: 「解法 A」 or 「解法 C、D」 (group 1), not
+# Solutions in a 本文件怎麼用 cell: 「解法 S1」 or 「解法 S3、S4」 (group 1), not
 # after 「#8 」; or a step 7 section 「7.1」 (group 2).
-PRACTICE_SOLUTIONS = re.compile(r"(?<!#\d )(?<!#\d\d )解法 ?([A-Z](?![A-Za-z0-9-])(?:、[A-Z](?![A-Za-z0-9-]))*)"
+PRACTICE_SOLUTIONS = re.compile(rf"(?<!#\d )(?<!#\d\d )解法 ?({SOLUTION_CODE}(?![A-Za-z0-9-])(?:、{SOLUTION_CODE}(?![A-Za-z0-9-]))*)"
                                 r"|(?<![0-9.])7\.(\d+)(?![0-9]|\.[0-9])")
-# A step 7 heading for one solution: 「### 7.1 解法 A：…」.
-STEP7_HEADING = re.compile(r"^### 7\.(\d+) 解法 ([A-Z])：")
+# A step 7 heading for one solution: 「### 7.1 解法 S1：…」.
+STEP7_HEADING = re.compile(rf"^### 7\.(\d+) 解法 ({SOLUTION_CODE})：")
 
 # Step 7 「評估解法」 (ETBlue, 2026-10-23; method.md, 步驟 7). Each solution
 # section has up to three tables, found by their header (step7_tables):
@@ -394,7 +448,7 @@ STEP7_HEADING = re.compile(r"^### 7\.(\d+) 解法 ([A-Z])：")
 # - optional: the dependency table (DEPENDENCY_HEADER), the rows of
 #   相依事項與現行政策的關係 that name this solution. A row that names several
 #   solutions is written under each of them, with the same text.
-# The cross-issue file uses the same tables in its 「### 4.5.n 解法 X-A：…」 sections.
+# The cross-issue file uses the same tables in its 「### 4.5.n 解法 X-S1：…」 sections.
 STEP7_HEADER = ["項目", "內容"]
 STEP7_ROWS = ("相關法規", "隱私", "其他顧慮與風險", "災害風險", "可行性")
 PLAN_HEADER = ["執行計畫", "內容"]
@@ -410,7 +464,7 @@ NO_DISASTER = "無明顯相關災害風險"
 # 執行步驟 placeholder 「【待補：執行步驟】」).
 PENDING_ONLY = re.compile(r"【待補：[^】]+】")
 # The 4.5 heading of one combined solution in the cross-issue file.
-CROSS_STEP7_HEADING = re.compile(r"^### 4\.5\.(\d+) 解法 (X-[A-Z])：")
+CROSS_STEP7_HEADING = re.compile(rf"^### 4\.5\.(\d+) 解法 ({X_SOLUTION_CODE})：")
 
 SEPARATOR = re.compile(r"^\|(?:\s*:?-+:?\s*\|)+\s*$")
 HEADING = re.compile(r"^(#{2,3}) (.+)$")
@@ -535,7 +589,7 @@ def issue_ids(text):
     {"story", "stakeholder", "conflict", "group", "need", "solution"} -> set of IDs.
     A conflict is the first cell of a row of the conflict table (C1; see
     conflict_heading), a group the W ID of a 相同訴求群組 row (W01), a need
-    the N ID of a 相同需求群組 row (N01), a solution the 代號 of a 6.1 row (A)."""
+    the N ID of a 相同需求群組 row (N01), a solution the 代號 of a 6.1 row (S1)."""
     conflicts = {r[0] for h, rows in tables(section(text, conflict_heading(text)) or []) if h and h[0] == "#" for r in rows}
     groups = set()
     for h, rows in tables(section(text, "### 相同訴求群組") or []):
@@ -544,7 +598,7 @@ def issue_ids(text):
             if m:
                 groups.add(m.group(0))
     solutions = {r[0] for h, rows in tables(section(text, "### 6.1") or []) if h and h[0] == "代號"
-                 for r in rows if re.fullmatch(r"[A-Z]", r[0])}
+                 for r in rows if re.fullmatch(SOLUTION_CODE, r[0])}
     return {"story": set(step4_ids(text)), "stakeholder": set(step1_ids(text)),
             "conflict": conflicts, "group": groups, "need": set(need_group_ids(text)), "solution": solutions}
 
@@ -585,7 +639,7 @@ def split_refs(value):
 def parse_ref(ref):
     """One 相關編號 reference -> (issue number or None, kind, ID), or None when
     it is not a reference. kind is story, stakeholder, conflict, group or
-    solution, or need (N01). The ID of a solution is its code: 「解法 B」 -> "B"."""
+    solution, or need (N01). The ID of a solution is its code: 「解法 S2」 -> "S2"."""
     m = SUMMARY_REF.fullmatch(ref)
     if not m:
         return None
@@ -614,7 +668,7 @@ def practice_place(name):
 
 
 def step7_sections(text):
-    """{section number "1": solution code "A"} from the 「### 7.n 解法 X：」 headings."""
+    """{section number "1": solution code "S1"} from the 「### 7.n 解法 Sn：」 headings."""
     return {m.group(1): m.group(2) for m in map(STEP7_HEADING.match, text.splitlines()) if m}
 
 
@@ -633,11 +687,11 @@ def step7_tables(lines):
 
 def ref_solutions(refs, prefix=""):
     """The solution codes that a list of references names as 「解法 <prefix>X」,
-    in order, without repeats. 「#8 解法 B」 (another issue) is not one.
-    prefix is "X-" in the cross-issue file: 「解法 X-A」 -> "X-A"."""
+    in order, without repeats. 「#8 解法 S2」 (another issue) is not one.
+    prefix is "X-" in the cross-issue file: 「解法 X-S1」 -> "X-S1"."""
     out = []
     for r in refs:
-        m = re.fullmatch(rf"解法 ({re.escape(prefix)}[A-Z])", r.strip())
+        m = re.fullmatch(rf"解法 ({re.escape(prefix)}{SOLUTION_CODE})", r.strip())
         if m and m.group(1) not in out:
             out.append(m.group(1))
     return out
@@ -646,7 +700,7 @@ def ref_solutions(refs, prefix=""):
 def practice_refs(use, sections):
     """The solution codes that a 本文件怎麼用 cell names, in order, without
     repeats, and the references that are not solutions: (codes, bad).
-    sections: step7_sections(). A code is any capital letter after 「解法」;
+    sections: step7_sections(). A code is any S code after 「解法」;
     the caller checks that it is in 6.1. bad lists each 「7.n」 that is not
     the section of a solution."""
     codes, bad = [], []

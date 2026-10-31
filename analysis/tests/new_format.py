@@ -49,7 +49,7 @@ def set_types(text, domains="`environment`", solution_type="`participation`"):
     lines[head] = NEW_HEADER
     lines[head + 1] = "|---|---|---|---|---|---|---|"
     i = head + 2
-    while i < len(lines) and re.match(r"^\| [A-Z] \|", lines[i]):
+    while i < len(lines) and re.match(r"^\| S[1-9]\d* \|", lines[i]):
         c = [x.strip() for x in lines[i].strip().strip("|").split(" | ")]
         if old:
             c = c[:3] + [solution_type, ""] + c[3:]

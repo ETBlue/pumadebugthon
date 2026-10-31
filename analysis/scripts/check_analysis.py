@@ -392,6 +392,9 @@ def main(md_path, csv_path):
     csv_raw = open(csv_path, encoding="utf-8").read()
     old += re.findall(OLD_S, csv_raw)
     if old: err(f"old S IDs remain: {sorted(set(old))}")
+    # 1b. no old solution code after 「解法」 (one capital letter; ETBlue, 2026-10-31).
+    for x in sorted(set(re.findall(r"解法 ?([A-Z])(?![A-Za-z0-9-])", text))):
+        err(f"old ID 「解法 {x}」: {solution_code_problem(x)}")
 
     # The needs-based format (a 「### 相同需求群組」 section) or the old format.
     # #1, #2 and #8 use the needs-based format. No issue uses the old format now.

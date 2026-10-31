@@ -336,6 +336,10 @@ class CheckAnalysisTest(unittest.TestCase):
         self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_D, self.SOL_D.replace("| S4 |", "| " + "D |"))
         self.assertFails("6.1 代號: 「D」 is an old solution code: write S4")
 
+    def test_old_solution_reference_fails(self):
+        self.edit(f"{ISSUE}/issue-analysis.md", self.PRACTICE_USE, "| `[AI模擬]` 解法 " + "B 在被丟家用垃圾的點")
+        self.assertFails("「B」 is an old solution code: write S2")
+
     def test_6_1_code_with_zero_fails(self):
         self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_D, self.SOL_D.replace("| S4 |", "| S04 |"))
         code, out = self.run_check()

@@ -227,7 +227,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertTrue(b["ideas"][0]["handling"]["text"].startswith("併入解法 S2"))
         self.assertEqual(b["ideas"][0]["handling"]["tag"], "AI模擬")
         self.assertEqual(list(b["ideas"][0]), ["idea", "handling"])
-        for code in "ACDE":
+        for code in ("S1", "S3", "S4", "S5"):
             self.assertEqual(self.solution(code)["ideas"], [])
 
     def test_solution_pending(self):
@@ -332,7 +332,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         # and the rows are on the solutions (解法之間的相依 on S1, S2 and S5).
         dep = next(t for t in trees["summary"] if t["topic"] == "相依事項與現行政策的關係")
         self.assertEqual(dep["items"], [])
-        for code in "ABE":
+        for code in ("S1", "S2", "S5"):
             self.assertIn("解法之間的相依", [p["name"] for p in self.solution(code, trees)["practices"]], code)
 
     def test_pending_has_6_3_and_step_7(self):
@@ -856,8 +856,8 @@ class BuildJsonErrorTest(unittest.TestCase):
         self.assertFails("2-trashcans: 6.1:", "「新設計的清潔箱（Better Bin）」", "must start with its place")
 
     def test_practice_unknown_solution(self):
-        self.edit("| `[AI模擬]` 解法 S2 在被丟家用垃圾的點", "| `[AI模擬]` 解法 Z 在被丟家用垃圾的點")
-        self.assertFails("2-trashcans: 6.1:", "解法 Z is not in 6.1")
+        self.edit("| `[AI模擬]` 解法 S2 在被丟家用垃圾的點", "| `[AI模擬]` 解法 S9 在被丟家用垃圾的點")
+        self.assertFails("2-trashcans: 6.1:", "解法 S9 is not in 6.1")
 
     def test_practice_step7_section_of_no_solution(self):
         self.edit("（N04、7.2）", "（N04、7.6）")

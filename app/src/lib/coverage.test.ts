@@ -59,7 +59,7 @@ describe('stakeholderCells', () => {
 
 describe('solutionCells', () => {
   it('counts both cells of each story of the covered needs', () => {
-    const solution = trashcans.solutions.find((s) => s.id === 'A')!
+    const solution = trashcans.solutions.find((s) => s.id === 'S1')!
     const needIds = [...solution.needs!.must, ...solution.needs!.shouldCould]
     const stories = trashcans.needs.filter((n) => needIds.includes(n.id)).flatMap((n) => n.stories)
     expect(stories.length).toBeGreaterThan(0)
@@ -86,8 +86,8 @@ describe('solutionCells', () => {
 
 describe('crossSolutionCells', () => {
   it('counts the stories of the needs it covers, also through an X-N group and in an issue not in parts', () => {
-    // X-E has parts in #2 and #8, but covers #1 N15 through X-N03.
-    const xe = findCrossSolution(cross, 'X-E')!
+    // X-S5 has parts in #2 and #8, but covers #1 N15 through X-N3.
+    const xe = findCrossSolution(cross, 'X-S5')!
     const withTrees = basisTotal(crossSolutionCells(cross, xe, files))
     const withoutTrees = basisTotal(crossSolutionCells(cross, xe, [trashcans, smokefree, policy]))
     const n15 = trees.needs.find((n) => n.id === 'N15')!
@@ -95,7 +95,7 @@ describe('crossSolutionCells', () => {
   })
 
   it('counts each story once, also when the need is in needs.must and in an X-N group', () => {
-    const xa = findCrossSolution(cross, 'X-A')!
+    const xa = findCrossSolution(cross, 'X-S1')!
     const group = cross.needGroups.find((g) => xa.needs.crossIssue.includes(g.id))!
     const m = group.needs[0]
     const doubled = { ...xa, needs: { ...xa.needs, must: [...xa.needs.must, { issue: m.issue, id: m.id }] } }
@@ -103,8 +103,8 @@ describe('crossSolutionCells', () => {
   })
 
   it('treats a story ID in two issues as two stories', () => {
-    // O12-US01 is a need in #2 and in #8 for X-B: both are counted.
-    const xb = findCrossSolution(cross, 'X-B')!
+    // O12-US01 is a need in #2 and in #8 for X-S2: both are counted.
+    const xb = findCrossSolution(cross, 'X-S2')!
     const only2 = basisTotal(crossSolutionCells(cross, xb, [trashcans]))
     const only8 = basisTotal(crossSolutionCells(cross, xb, [smokefree]))
     const both = basisTotal(crossSolutionCells(cross, xb, [trashcans, smokefree]))
@@ -209,10 +209,10 @@ describe('stakeholderCrossSolutions', () => {
 
   it('lists the cross-issue solutions that cover its needs, with those needs (decision 119)', () => {
     expect(view('I06', cross)).toEqual([
-      ['X-B', ['1:N08', '2:N07', '8:I06-US01']],
-      ['X-D', ['2:N08']],
+      ['X-S2', ['1:N08', '2:N07', '8:I06-US01']],
+      ['X-S4', ['2:N08']],
     ])
-    expect(view('I01', cross).map(([code]) => code)).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
+    expect(view('I01', cross).map(([code]) => code)).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5'])
   })
 
   it('is empty without the cross-issue file', () => {

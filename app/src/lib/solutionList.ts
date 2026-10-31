@@ -13,7 +13,7 @@ import type { RecentSolution } from './recent'
 
 /** Every solution of the given issue files and every cross-issue solution,
  * in the fixed ID order: the cross-issue solutions first, then by issue
- * number, then by letter. cross is null when cross-issue.json does not
+ * number, then by the number of the code (S2 before S10). cross is null when cross-issue.json does not
  * exist. */
 export function solutionListItems(issues: IssueFile[], cross: CrossIssueFile | null): RecentSolution[] {
   const items: RecentSolution[] = [
@@ -50,7 +50,7 @@ export function solutionListView(items: RecentSolution[], state: ListState, ctx:
 }
 
 /** The issues whose needs a cross-issue solution covers, but which are not
- * in its parts, in number order. For 「也涵蓋 #1 的需求」 on the card (X-E). */
+ * in its parts, in number order. For 「也涵蓋 #1 的需求」 on the card (X-S5). */
 export function crossAlsoCovers(cross: CrossIssueFile, solution: CrossSolution): number[] {
   const parts = new Set(crossIssueNumbers(solution))
   return crossCoverageIssueNumbers(cross, solution).filter((n) => !parts.has(n))

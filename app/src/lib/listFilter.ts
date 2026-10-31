@@ -77,7 +77,7 @@ function issueSolutionCovers(item: Extract<RecentSolution, { kind: 'issue' }>, w
 /** #/solutions: 議題 (with 「跨議題解法」), 空間類型 and 利害關係人.
  * 議題 keeps an issue solution of a picked issue. It keeps a cross-issue
  * solution when 「跨議題解法」 is picked, or a picked issue is in its parts
- * or in the issues of the needs it covers (X-E matches #1).
+ * or in the issues of the needs it covers (X-S5 matches #1).
  * 利害關係人 keeps a cross-issue solution that covers one of the
  * stakeholder's needs in any issue (decision 60). */
 export function filterSolutions(

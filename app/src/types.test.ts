@@ -292,8 +292,8 @@ describe('cross-issue.json', () => {
 
   it('covers #1, #2, #8 and #9 with 5 solutions, 8 X-N groups and 2 conflicts', () => {
     expect(cross.issues).toEqual([1, 2, 8, 9])
-    expect(cross.solutions.map((s) => s.code)).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
-    expect(cross.needGroups.map((g) => g.id)).toEqual(['X-N01', 'X-N02', 'X-N03', 'X-N04', 'X-N05', 'X-N06', 'X-N07', 'X-N08'])
+    expect(cross.solutions.map((s) => s.code)).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5'])
+    expect(cross.needGroups.map((g) => g.id)).toEqual(['X-N1', 'X-N2', 'X-N3', 'X-N4', 'X-N5', 'X-N6', 'X-N7', 'X-N8'])
     expect(cross.conflicts.map((c) => c.id)).toEqual(['X-C1', 'X-C2'])
   })
 

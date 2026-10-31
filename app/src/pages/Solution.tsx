@@ -68,7 +68,7 @@ function NotFound({ title, body, issueNumber }: { title: string; body: string; i
 }
 
 /** Solution page (design 3.12): #/solutions/:slug/:tab?, for example
- * #/solutions/2-A/needs. One solution with everything the analysis says
+ * #/solutions/2-S1/needs. One solution with everything the analysis says
  * about it. */
 export default function Solution() {
   const index = useIndex()
@@ -169,7 +169,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
   )
 }
 
-/** A cross-issue solution (design 3.18): #/solutions/X-A. Without
+/** A cross-issue solution (design 3.18): #/solutions/X-S1. Without
  * cross-issue.json, or with an unknown code, it shows the "not found"
  * message. */
 function CrossSolutionLoader({ index, code }: { index: IndexFile; code: string }) {
@@ -184,7 +184,7 @@ function CrossSolutionLoader({ index, code }: { index: IndexFile; code: string }
 
 /** Loads the issue files like the issue page does: the issues in parts,
  * plus the issues of the needs the solution covers, for example #1 for
- * X-E through its group X-N03 (crossCoverageIssueNumbers, decision 60). */
+ * X-S5 through its group X-N3 (crossCoverageIssueNumbers, decision 60). */
 function CrossIssueFilesLoader({ index, data, solution }: { index: IndexFile; data: CrossIssueFile; solution: CrossSolution }) {
   const folders = useMemo(
     () =>

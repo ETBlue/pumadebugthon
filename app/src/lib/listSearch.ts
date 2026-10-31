@@ -56,21 +56,28 @@ export function stakeholderMatches(stakeholder: { id: string; name: string }, qu
   return titleHas(stakeholder.name, query)
 }
 
-/** The letter alone (an issue solution or a cross-issue solution), the
- * code (`2a` for #2 A, `xa` for X-A), or a part of the name. A number
- * alone does not match: the 議題 filter does that. */
+/** A solution code in a search key: an optional issue number, then 「s」
+ * and a number. Leading zeros are ignored. For example `s1`, `2s1` (2-S1 or
+ * #2 S1 with spaces, # and - removed). */
+const SOLUTION_KEY = /^(\d+)?s(\d+)$/
+
+/** The code alone (an issue solution or a cross-issue solution, `s1` finds
+ * every S1 and X-S1), the full code (`2s1` for #2 S1, `xs1` for X-S1), or a
+ * part of the name. The numbers are compared as numbers, so `s01` finds S1
+ * and `s1` does not find S10 (design decision 151). A number alone does not
+ * match: the 議題 filter does that. */
 export function solutionMatches(item: SearchSolutionItem, query: ListQuery | null): boolean {
   if (!query) return true
   const key = query.key
   if (item.kind === 'issue') {
-    const letter = item.solution.id.toLowerCase()
-    if (key === letter) return true
-    const m = /^(\d+)([a-z])$/.exec(key)
-    if (m && Number(m[1]) === item.issueNumber && m[2] === letter) return true
+    const id = /^S(\d+)$/.exec(item.solution.id)
+    const m = SOLUTION_KEY.exec(key)
+    if (id && m && Number(m[2]) === Number(id[1]) && (m[1] === undefined || Number(m[1]) === item.issueNumber)) return true
     return titleHas(item.solution.name.text, query)
   }
-  const codeKey = item.solution.code.toLowerCase().replace(/-/g, '')
-  if (key === codeKey || key === codeKey.slice(1)) return true
+  const code = /^X-S(\d+)$/.exec(item.solution.code)
+  const m = /^x?s(\d+)$/.exec(key)
+  if (code && m && Number(m[1]) === Number(code[1])) return true
   return titleHas(item.solution.name, query)
 }
 

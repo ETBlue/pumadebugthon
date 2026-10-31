@@ -108,7 +108,7 @@ export interface NeedItemProps {
 
 /** One need (需求) in a list (design 3.2, 3.3, 3.16): the summary with its
  * tag, then the parts the page asks for. Stakeholders are in ID order and
- * solutions in letter order, as NeedItem in src/lib/needs.ts gives them. */
+ * solutions in code order (S2 before S10), as NeedItem in src/lib/needs.ts gives them. */
 export function NeedItem({
   item, issueNumber, stakeholders, parts = ISSUE_NEED_PARTS, headingLevel = 4, summaryLink = false,
   stakeholderLinks = true, others, ownStories, otherSolutionsThan, crossSolutions = [], focusTarget = true, children, className,

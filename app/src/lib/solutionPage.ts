@@ -13,14 +13,14 @@ import {
 import { storyStakeholderOf } from './stories'
 import { conflictView, type ConflictView } from './wantList'
 
-/** The solution for the code in the URL: one capital letter, for example "A".
- * null for an unknown or badly written code. */
+/** The solution for the code in the URL: S and a number with no zero
+ * padding, for example "S1" or "S10". null for an unknown or badly written code. */
 export function findSolution(issue: IssueFile, code: string | undefined): Solution | null {
-  if (code === undefined || !/^[A-Z]$/.test(code)) return null
+  if (code === undefined || !/^S[1-9]\d*$/.test(code)) return null
   return issue.solutions.find((s) => s.id === code) ?? null
 }
 
-/** 「#2 A 名稱」 as plain text, for the page title and link names. */
+/** 「#2 S1 名稱」 as plain text, for the page title and link names. */
 export function solutionTitle(issueNumber: number, solution: Solution): string {
   return `#${issueNumber} ${solution.id} ${stripMarkdown(solution.name.text)}`
 }
@@ -82,7 +82,7 @@ export interface CoveredNeed extends NeedItem {
 }
 
 export interface NotCoveredNeed extends NeedItem {
-  /** The other solutions that cover the need, in letter order. Empty when no
+  /** The other solutions that cover the need, in code order (S2 before S10). Empty when no
    * solution covers it (「沒有任何解法涵蓋」). */
   otherSolutions: Solution[]
 }

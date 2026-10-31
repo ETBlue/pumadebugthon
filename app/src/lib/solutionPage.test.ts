@@ -31,12 +31,19 @@ const sol = (issue: IssueFile, code: string) => issue.solutions.find((s) => s.id
 
 describe('findSolution', () => {
   it('finds a solution by its code', () => {
-    expect(findSolution(trashcans, 'A')?.id).toBe('A')
-    expect(findSolution(trees, 'E')?.id).toBe('E')
+    expect(findSolution(trashcans, 'S1')?.id).toBe('S1')
+    expect(findSolution(trees, 'S5')?.id).toBe('S5')
+    const ten = { ...trashcans, solutions: [...trashcans.solutions, { ...trashcans.solutions[0], id: 'S10' }] }
+    expect(findSolution(ten, 'S10')?.id).toBe('S10')
+    expect(findSolution(ten, 'S1')?.id).toBe('S1')
   })
 
   it('returns null for an unknown or badly written code', () => {
     expect(findSolution(trashcans, 'Z')).toBeNull()
+    expect(findSolution(trashcans, 'S9')).toBeNull()
+    expect(findSolution(trashcans, 'S01')).toBeNull()
+    expect(findSolution(trashcans, 's1')).toBeNull()
+    expect(findSolution(trashcans, 'A')).toBeNull() // an old ID: no redirect (decision 151)
     expect(findSolution(trashcans, 'a')).toBeNull()
     expect(findSolution(trashcans, 'AB')).toBeNull()
     expect(findSolution(trashcans, '')).toBeNull()
@@ -45,14 +52,14 @@ describe('findSolution', () => {
 })
 
 describe('solutionTitle', () => {
-  it('is 「#2 A 名稱」 as plain text, without the tag', () => {
-    expect(solutionTitle(2, sol(trashcans, 'A'))).toBe('#2 A 清潔箱佈建建議地圖')
+  it('is 「#2 S1 名稱」 as plain text, without the tag', () => {
+    expect(solutionTitle(2, sol(trashcans, 'S1'))).toBe('#2 S1 清潔箱佈建建議地圖')
   })
 })
 
 describe('solutionGroupCoverage', () => {
   it('lists the W groups with a covered story: 全部 or 部分, in file order', () => {
-    const groups = solutionGroupCoverage(trashcans, sol(trashcans, 'A'))
+    const groups = solutionGroupCoverage(trashcans, sol(trashcans, 'S1'))
     expect(groups.map((g) => [g.group.id, g.full])).toEqual([
       ['W01', true],
       ['W02', true],
@@ -68,21 +75,21 @@ describe('solutionGroupCoverage', () => {
     expect(w09.stakeholders).toEqual(['I01', 'I08'])
   })
 
-  it('is empty for a solution that covers no W group (#8 E)', () => {
-    expect(solutionGroupCoverage(smokefree, sol(smokefree, 'E'))).toEqual([])
+  it('is empty for a solution that covers no W group (#8 S5)', () => {
+    expect(solutionGroupCoverage(smokefree, sol(smokefree, 'S5'))).toEqual([])
   })
 })
 
 describe('solutionConflicts', () => {
   it('lists the conflicts with a covered story on either side, in file order', () => {
-    const a = solutionConflicts(trashcans, sol(trashcans, 'A'))
+    const a = solutionConflicts(trashcans, sol(trashcans, 'S1'))
     expect(a.map((c) => c.conflict.id)).toEqual(['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C9'])
     const c6 = a.find((c) => c.conflict.id === 'C6')!
     // Covered stories on both sides, side A first.
     expect(c6.covered).toContain('I01-US01')
     expect(c6.covered).toContain('I06-US01')
     expect(c6.covered.indexOf('I01-US01')).toBeLessThan(c6.covered.indexOf('I06-US01'))
-    expect(solutionConflicts(trashcans, sol(trashcans, 'E')).map((c) => c.conflict.id)).toEqual(['C1', 'C2', 'C3', 'C6', 'C8', 'C9'])
+    expect(solutionConflicts(trashcans, sol(trashcans, 'S5')).map((c) => c.conflict.id)).toEqual(['C1', 'C2', 'C3', 'C6', 'C8', 'C9'])
   })
 
   it('works for the other issues', () => {
@@ -105,30 +112,30 @@ const codes = (list: { id: string }[]) => list.map((x) => x.id)
 
 describe('solutionNeedCoverage', () => {
   it('splits the needs of #2 into 9 covered by A and 13 not covered, in the order of step 5.2', () => {
-    const { covered, notCovered } = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
+    const { covered, notCovered } = solutionNeedCoverage(trashcans, sol(trashcans, 'S1'))
     expect(ids(covered)).toEqual(['N01', 'N02', 'N04', 'N05', 'N07', 'O04-US02', 'O04-US04', 'O12-US01', 'I01-US09'])
     expect(notCovered).toHaveLength(13)
     expect(ids(notCovered)).toEqual(trashcans.needs.map((n) => n.id).filter((id) => !ids(covered).includes(id)))
   })
 
   it('gives each covered need the part of step 6.2 that lists it', () => {
-    const { covered } = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
+    const { covered } = solutionNeedCoverage(trashcans, sol(trashcans, 'S1'))
     expect(covered.find((c) => c.need.id === 'N01')?.part).toBe('must')
     expect(covered.find((c) => c.need.id === 'N02')?.part).toBe('shouldCould')
   })
 
-  it('gives each not covered need the other solutions that cover it, in letter order', () => {
-    const { notCovered } = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
+  it('gives each not covered need the other solutions that cover it, in code order', () => {
+    const { notCovered } = solutionNeedCoverage(trashcans, sol(trashcans, 'S1'))
     const others = (id: string) => codes(notCovered.find((n) => n.need.id === id)?.otherSolutions ?? [])
-    expect(others('N06')).toEqual(['B', 'D'])
-    expect(others('I24-US01')).toEqual(['E'])
+    expect(others('N06')).toEqual(['S2', 'S4'])
+    expect(others('I24-US01')).toEqual(['S5'])
     // O09-US01 is 這次不做 and no solution covers it. It is still in the list.
     expect(others('O09-US01')).toEqual([])
     expect(notCovered.find((n) => n.need.id === 'O09-US01')?.need.priority).toBe('W')
   })
 
   it('has no covered needs in the old format (needs is null)', () => {
-    const old = { ...sol(trashcans, 'A'), needs: null }
+    const old = { ...sol(trashcans, 'S1'), needs: null }
     const { covered, notCovered } = solutionNeedCoverage(trashcans, old)
     expect(covered).toEqual([])
     expect(notCovered).toHaveLength(22)
@@ -137,7 +144,7 @@ describe('solutionNeedCoverage', () => {
 
 describe('solutionStakeholderCoverage', () => {
   it('splits the stakeholders of #2 into 14 covered by A and 13 not covered, in ID order', () => {
-    const { covered, notCovered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'A'))
+    const { covered, notCovered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'S1'))
     expect(covered.map((s) => s.id)).toEqual([
       'O01', 'O04', 'O05', 'O10', 'O11', 'O12', 'I01', 'I02', 'I06', 'I07', 'I08', 'I09', 'I10', 'I12',
     ])
@@ -147,16 +154,16 @@ describe('solutionStakeholderCoverage', () => {
   })
 
   it('gives each stakeholder its covered and not covered needs, each need once', () => {
-    const { covered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'A'))
+    const { covered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'S1'))
     const i01 = covered.find((s) => s.id === 'I01')
     // I01 has 5 stories in N01, but N01 shows once.
     expect(ids(i01?.covered ?? [])).toEqual(['N01', 'N04', 'I01-US09'])
     expect(ids(i01?.notCovered ?? [])).toEqual(['N06'])
-    expect(codes(i01?.notCovered[0].otherSolutions ?? [])).toEqual(['B', 'D'])
+    expect(codes(i01?.notCovered[0].otherSolutions ?? [])).toEqual(['S2', 'S4'])
   })
 
   it('gives a not covered stakeholder only not covered needs', () => {
-    const { notCovered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'A'))
+    const { notCovered } = solutionStakeholderCoverage(trashcans, sol(trashcans, 'S1'))
     const o09 = notCovered.find((s) => s.id === 'O09')
     expect(o09?.covered).toEqual([])
     expect(ids(o09?.notCovered ?? [])).toContain('O09-US01')
@@ -166,19 +173,19 @@ describe('solutionStakeholderCoverage', () => {
 describe('solutionWayOutConflicts', () => {
   it('gives the conflicts whose way out lists the solution, in file order', () => {
     const list = (code: string) => solutionWayOutConflicts(trashcans, sol(trashcans, code)).map((v) => v.conflict.id)
-    expect(list('A')).toEqual(['C1', 'C2', 'C6', 'C7', 'C9'])
-    expect(list('E')).toEqual(['C2', 'C8'])
+    expect(list('S1')).toEqual(['C1', 'C2', 'C6', 'C7', 'C9'])
+    expect(list('S5')).toEqual(['C2', 'C8'])
   })
 
   it('gives each conflict its needs and way out', () => {
-    const [c1] = solutionWayOutConflicts(trashcans, sol(trashcans, 'A'))
+    const [c1] = solutionWayOutConflicts(trashcans, sol(trashcans, 'S1'))
     expect(codes(c1.needsA)).toEqual(['N01'])
     expect(codes(c1.needsB)).toEqual(['N06'])
     expect(c1.hasWayOut).toBe(true)
   })
 
   it('is empty for a solution in no way out', () => {
-    const none = { ...sol(trashcans, 'A'), id: 'Z' }
+    const none = { ...sol(trashcans, 'S1'), id: 'Z' }
     expect(solutionWayOutConflicts(trashcans, none)).toEqual([])
   })
 })
@@ -187,11 +194,11 @@ describe('solutionRelatedConflicts', () => {
   it('gives the conflicts with a covered story that do not list the solution in the way out, in file order', () => {
     const list = (issue: IssueFile, code: string) =>
       solutionRelatedConflicts(issue, sol(issue, code)).map((c) => c.conflict.id)
-    // #2 A has a covered story in C1–C6 and C9. C1, C2, C6 and C9 list A in the way out.
-    expect(list(trashcans, 'A')).toEqual(['C3', 'C4', 'C5'])
-    expect(list(smokefree, 'B')).toEqual(['C3'])
-    // #1 C lists C3, C4 and C8 in the way out.
-    expect(list(trees, 'C')).toEqual(['C5', 'C6'])
+    // #2 S1 has a covered story in C1–C6 and C9. C1, C2, C6 and C9 list A in the way out.
+    expect(list(trashcans, 'S1')).toEqual(['C3', 'C4', 'C5'])
+    expect(list(smokefree, 'S2')).toEqual(['C3'])
+    // #1 S3 lists C3, C4 and C8 in the way out.
+    expect(list(trees, 'S3')).toEqual(['C5', 'C6'])
   })
 })
 
@@ -200,20 +207,20 @@ const groupIds = (groups: { priority: string; items: { need: { id: string } }[] 
 
 describe('dataBasedCoverage', () => {
   it('keeps everything when the filter is off', () => {
-    const coverage = solutionNeedCoverage(trashcans, sol(trashcans, 'A'))
+    const coverage = solutionNeedCoverage(trashcans, sol(trashcans, 'S1'))
     expect(dataBasedCoverage(coverage, false)).toEqual(coverage)
   })
 
   it('keeps the needs with a 實證 or AI整理 以便… cell when the filter is on', () => {
-    const { covered, notCovered } = dataBasedCoverage(solutionNeedCoverage(trashcans, sol(trashcans, 'A')), true)
+    const { covered, notCovered } = dataBasedCoverage(solutionNeedCoverage(trashcans, sol(trashcans, 'S1')), true)
     expect(ids(covered)).toEqual(['N01', 'N04', 'I01-US09'])
     expect(ids(notCovered)).toEqual(['N03', 'N06', 'I09-US06', 'I24-US01'])
   })
 })
 
 describe('coverageByPriority', () => {
-  it('groups the covered and not covered needs of #2 A by the need priority, in the order M, S, C, W', () => {
-    const groups = coverageByPriority(solutionNeedCoverage(trashcans, sol(trashcans, 'A')))
+  it('groups the covered and not covered needs of #2 S1 by the need priority, in the order M, S, C, W', () => {
+    const groups = coverageByPriority(solutionNeedCoverage(trashcans, sol(trashcans, 'S1')))
     expect(groupIds(groups.covered)).toEqual([
       ['M', ['N01', 'N04', 'N05', 'N07', 'O04-US02', 'O12-US01']],
       ['S', ['N02', 'O04-US04', 'I01-US09']],
@@ -227,15 +234,15 @@ describe('coverageByPriority', () => {
   })
 
   it('keeps the extra fields (part, otherSolutions)', () => {
-    const groups = coverageByPriority(solutionNeedCoverage(trashcans, sol(trashcans, 'A')))
+    const groups = coverageByPriority(solutionNeedCoverage(trashcans, sol(trashcans, 'S1')))
     expect(groups.covered[0].items[0].part).toBe('must')
-    expect(codes(groups.notCovered[0].items[0].otherSolutions)).toEqual(['B', 'D'])
+    expect(codes(groups.notCovered[0].items[0].otherSolutions)).toEqual(['S2', 'S4'])
   })
 })
 
 describe('stakeholderEntries', () => {
   it('puts the needs of each stakeholder under its issue, keeping the ID order', () => {
-    const coverage = solutionStakeholderCoverage(trashcans, sol(trashcans, 'A'))
+    const coverage = solutionStakeholderCoverage(trashcans, sol(trashcans, 'S1'))
     const { covered, notCovered } = stakeholderEntries(2, coverage)
     expect(covered.map((e) => e.id)).toEqual(coverage.covered.map((s) => s.id))
     expect(notCovered.map((e) => e.id)).toEqual(coverage.notCovered.map((s) => s.id))
@@ -262,7 +269,7 @@ describe('solutionWantCoverage (decision 103)', () => {
   })
 
   it('keeps the order of the stories in the issue file', () => {
-    const { covered } = solutionWantCoverage(trashcans, sol(trashcans, 'A'))
+    const { covered } = solutionWantCoverage(trashcans, sol(trashcans, 'S1'))
     const order = trashcans.stories.map((s) => s.id)
     const at = covered.map((s) => order.indexOf(s.id))
     expect(at).toEqual([...at].sort((a, b) => a - b))
@@ -271,7 +278,7 @@ describe('solutionWantCoverage (decision 103)', () => {
 
 describe('practiceSides (decision 104)', () => {
   it('splits into 國內 and 國外 and keeps the file order', () => {
-    const { practices } = sol(trashcans, 'A')
+    const { practices } = sol(trashcans, 'S1')
     const sides = practiceSides(practices)
     expect(sides.domestic.every((p) => p.domestic)).toBe(true)
     expect(sides.foreign.every((p) => !p.domestic)).toBe(true)
@@ -291,7 +298,7 @@ describe('practiceSides (decision 104)', () => {
 // The 潛在風險, 可能爭議, 法規障礙 and 執行計畫 tabs (ETBlue, 2026-10-23;
 // decisions 140 and 143).
 describe('concernItems', () => {
-  const trashcansA = (trashcansJson as IssueFile).solutions.find((s) => s.id === 'A')!
+  const trashcansA = (trashcansJson as IssueFile).solutions.find((s) => s.id === 'S1')!
   const label = (c: ReturnType<typeof concernItems>[number]) => (c.kind === 'summary' ? c.item.item : c.key)
 
   it('潛在風險: only 其他顧慮與風險 and 災害風險, no 分析摘要 row (decision 143)', () => {
@@ -306,15 +313,15 @@ describe('concernItems', () => {
     expect(concernItems(trashcansA, 'legal').map(label)).toEqual(['道路上設置物件', 'laws'])
   })
 
-  it('works the same for a cross-issue solution (X-A)', () => {
-    const xa = (crossJson as CrossIssueFile).solutions.find((s) => s.code === 'X-A')!
+  it('works the same for a cross-issue solution (X-S1)', () => {
+    const xa = (crossJson as CrossIssueFile).solutions.find((s) => s.code === 'X-S1')!
     expect(concernItems(xa, 'risks').map(label)).toEqual(['risks', 'disasters'])
     expect(concernItems(xa, 'controversies').map(label)).toEqual(['合併的選址討論', 'privacy'])
     expect(concernItems(xa, 'legal').map(label)).toEqual(['合併辦理的權責', 'laws'])
   })
 
-  it('a solution with no 分析摘要 row still has its step 7 rows (#2 C)', () => {
-    const c = (trashcansJson as IssueFile).solutions.find((s) => s.id === 'C')!
+  it('a solution with no 分析摘要 row still has its step 7 rows (#2 S3)', () => {
+    const c = (trashcansJson as IssueFile).solutions.find((s) => s.id === 'S3')!
     expect(c.controversies).toEqual([])
     expect(concernItems(c, 'controversies').map(label)).toEqual(['privacy'])
     expect(concernItems(c, 'risks').map(label)).toEqual(['risks', 'disasters'])
@@ -323,7 +330,7 @@ describe('concernItems', () => {
 
 describe('concernCount and concernItemsShown', () => {
   const cell = (tag: Cell['tag'], text = '說明'): Cell => ({ text, tag, pending: tag === null })
-  const row = (item: string, tag: Cell['tag']): SummaryItem => ({ item, text: cell(tag), refs: [], solutions: ['A'] })
+  const row = (item: string, tag: Cell['tag']): SummaryItem => ({ item, text: cell(tag), refs: [], solutions: ['S1'] })
   const sol = {
     evaluation: {
       laws: [cell(null, '【待補：法規】')],

@@ -75,17 +75,17 @@ export type SummaryRefKind = 'story' | 'stakeholder' | 'conflict' | 'group' | 'n
 
 /** One reference of a 相關編號 cell. */
 export interface SummaryRef {
-  /** The issue number for a reference to another issue (「#8 解法 B」), else null. */
+  /** The issue number for a reference to another issue (「#8 解法 S2」), else null. */
   issue: number | null
   kind: SummaryRefKind
-  /** The ID. For a solution, its code: 「解法 B」 -> "B". */
+  /** The ID. For a solution, its code: 「解法 S2」 -> "S2". */
   id: string
 }
 
 // The same format as analysis_common.SUMMARY_REF.
-const REF = /^(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|N\d\d|解法 [A-Z])$/
+const REF = /^(?:#(\d+) )?([OI]\d\d-US\d\d|[OI]\d\d|C\d+|W\d\d|N\d\d|解法 S[1-9]\d*)$/
 
-/** Read one reference, for example "I01-US09", "C9", "N01", "解法 A" or "#8 解法 B".
+/** Read one reference, for example "I01-US09", "C9", "N01", "解法 S1" or "#8 解法 S2".
  * null when the text is not a reference. */
 export function parseSummaryRef(ref: string): SummaryRef | null {
   const m = REF.exec(ref)
@@ -110,7 +110,7 @@ export interface RefTarget {
  * - need (N01): the 需求 tab with ?focus= on the N group.
  * - stakeholder: the stakeholder page.
  * - conflict: the 衝突 tab with ?focus= on the conflict (decision 142).
- * - solution: the solution page (/solutions/2-E).
+ * - solution: the solution page (/solutions/2-S5).
  * A reference to another issue gets the same kind of target in that issue.
  * Every target is built from the IDs, so the other issue's file is not needed.
  * Issue and solution links keep the 「只看有資料根據」 filter. null when the
@@ -149,14 +149,14 @@ function issueRefTarget(r: SummaryRef, n: number, dataBasedOnly: boolean): RefTa
 
 /** The link of a reference in the cross-issue file (decision 140), for the
  * 「相關：」 line on a cross-issue solution page:
- * - 「解法 X-A」: the cross-issue solution page.
- * - an ID of one issue (「#8 I25-US01」, 「#1 解法 C」, 「#2 C6」): the same
+ * - 「解法 X-S1」: the cross-issue solution page.
+ * - an ID of one issue (「#8 I25-US01」, 「#1 解法 S3」, 「#2 C6」): the same
  *   target as on the issue page (summaryRefTo).
  * - a stakeholder (「I05」): its page, when the ID is in stakeholderIds.
  * - an X-N group or an X-C conflict: null, because they have no page.
  * null too when the reference cannot be read. */
 export function crossSummaryRefTo(ref: string, stakeholderIds: ReadonlySet<string>, dataBasedOnly: boolean): RefTarget | null {
-  const cross = /^解法 (X-[A-Z])$/.exec(ref)
+  const cross = /^解法 (X-S[1-9]\d*)$/.exec(ref)
   if (cross) return { pathname: crossSolutionPath(cross[1]), search: filterSearch(dataBasedOnly) }
   const r = parseSummaryRef(ref)
   if (!r) return null

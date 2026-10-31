@@ -164,7 +164,7 @@ Unavailable issues: `available: false`, `counts: null`, `spaces: []`, `updated: 
 Tests on #2 (numbers after Task A4):
 - story count 45; conflict count 7; solution count 4; group count 11
 - C6: `sideA` has `I01-US01`; `sideB` has `I06-US01`, `I07-US02`, `O12-US01`
-- solution A's stories include `I06-US01`
+- solution S1's stories include `I06-US01`
 - `pending` has an item from 6.3 and an item from step 7
 - `index.json` has 6 issues; only #2 is available
 - I12 is active; O02 has `movedTo: "I12"`
@@ -210,7 +210,7 @@ All app commands run in `app/`. UI text only in `src/i18n/zh-TW.ts`.
   - `otherSide`: conflicts where a picked story is on one side, with the other side's stories
   - `solutions`: solutions that list any picked story
   - `notMentioned`: stakeholders of the issue not in `same` or `otherSide`
-- Tests on the #2 fixture: picking W08 → `otherSide` has C6 with `I01-US01`; `solutions` includes A and D; `same` has 3 stories from O12, I06, I07. Search 「人行道」 returns the W08 item.
+- Tests on the #2 fixture: picking W08 → `otherSide` has C6 with `I01-US01`; `solutions` includes S1 and S4; `same` has 3 stories from O12, I06, I07. Search 「人行道」 returns the W08 item.
 
 ### Task C5: stakeholder lookups (test first)
 
@@ -227,7 +227,7 @@ All app commands run in `app/`. UI text only in `src/i18n/zh-TW.ts`.
 **Files:** `src/lib/spaces.ts`, `src/lib/spaces.test.ts`.
 
 - `issuesBySpace(index, code)`, `solutionsBySpace(issues, code)`, `sameSpaceIssues(index, issueNumber)`.
-- Tests on the fixture: `sidewalk` has issue 2 and solution A; `sameSpaceIssues` of #2 is empty while only #2 exists.
+- Tests on the fixture: `sidewalk` has issue 2 and solution S1; `sameSpaceIssues` of #2 is empty while only #2 exists.
 
 ### Task C7: shared components
 
@@ -330,7 +330,7 @@ ETBlue's notes for the UI are in `human-inputs.md`. Part 1 is U1. Part 2 is U2. 
 
 Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all open questions (Q1–Q13) on 2026-10-20, so design section 14 has no open questions. Two answers changed the draft:
 - No want page and no need page (decision 45). Wants and needs show only in the 訴求 and 需求 tabs. A link to one want or need goes to the tab with `?focus=<key>` (decision 57).
-- Solutions have their own path: `#/solutions/2-A`, and `#/solutions/X-A` for a cross-issue solution. The old `#/issues/<n>/solutions/<code>[/<tab>]` redirects (decision 56).
+- Solutions have their own path: `#/solutions/2-S1`, and `#/solutions/X-S1` for a cross-issue solution. The old `#/issues/<n>/solutions/<code>[/<tab>]` redirects (decision 56).
 
 **Rules for this phase** (on top of the rules at the top of this file):
 - Pure logic goes in `src/lib/`, with Vitest tests written first. Components only show what `src/lib/` returns.
@@ -339,7 +339,7 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
 - Tags `[實證]` / `[AI整理]` / `[AI模擬]` always show with `TagBadge`, next to their text. The 「只看有資料根據」 filter (`?evidence=1`) works on every new list.
 - Solarized tokens only. Headings in order, `aria` names, keyboard use, no sideways scroll at 360 px.
 - Every task ends with `npm test`, `npx tsc -b` and `npm run build` in `app/`, all passing, and a local commit. Do not push until Task N12 passes.
-- Real numbers for tests come from the fixtures (#1, #2, #8). Examples in this plan: #2 has 訴求 39, 衝突 9, 需求 21, 解法 5. I06 has 訴求 5, 衝突 4, 需求 4, 解法 4. #2 A covers 9 needs (12 not covered) and 14 stakeholders (13 not covered).
+- Real numbers for tests come from the fixtures (#1, #2, #8). Examples in this plan: #2 has 訴求 39, 衝突 9, 需求 21, 解法 5. I06 has 訴求 5, 衝突 4, 需求 4, 解法 4. #2 S1 covers 9 needs (12 not covered) and 14 stakeholders (13 not covered).
 
 **Order and parallel groups:**
 
@@ -393,8 +393,8 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
    - `storyPath(issueNumber, storyId)` → `/stakeholders/I06/stories/2/I06-US01` (the stakeholder is the part before 「-」)
    - `wantFocusPath(issueNumber, key)` → `{ pathname: '/issues/2/wants', search: '?focus=W08' }`, `needFocusPath(issueNumber, key)` → `{ pathname: '/issues/2/needs', search: '?focus=N07' }` (design 3.16, decision 57). No want or need page paths.
    - `SOLUTION_TABS = ['overview', 'needs', 'stakeholders']`, `parseSolutionTab(segment)`
-   - `solutionPath(issueNumber, code, tab?)` → `/solutions/2-A`, `/solutions/2-A/needs` (the 總覽 tab has no segment). `crossSolutionPath(code, tab?)` → `/solutions/X-A`, `/solutions/X-A/stakeholders`.
-   - `parseSolutionSlug(segment)` → `{ kind: 'issue', issueNumber: 2, code: 'A' }` for `2-A`, `{ kind: 'cross', code: 'X-A' }` for `X-A`, null for anything else (`2`, `A`, `2-`, `X-`, `2-a1`, `cross`).
+   - `solutionPath(issueNumber, code, tab?)` → `/solutions/2-S1`, `/solutions/2-S1/needs` (the 總覽 tab has no segment). `crossSolutionPath(code, tab?)` → `/solutions/X-S1`, `/solutions/X-S1/stakeholders`.
+   - `parseSolutionSlug(segment)` → `{ kind: 'issue', issueNumber: 2, code: 'S1' }` for `2-S1`, `{ kind: 'cross', code: 'X-S1' }` for `X-S1`, null for anything else (`2`, `S1`, `2-`, `X-`, `2-a1`, `cross`).
    - `legacySolutionPath(issueNumber, code, tab?)` → the new path for an old `/issues/2/solutions/A[/needs]` URL (design 3.12)
    - `movedStakeholderPath(pathname, oldId, newId)`: the same path with the new ID, and a story ID that starts with the old ID gets the new ID (design 3.3)
 2. `stakeholderFilter.ts` (design 3.14): `STAKEHOLDER_PARAM = 'stakeholder'`, `stakeholderFilterOf(params, issueIds, stakeholders)` (resolves a moved ID; an ID not in the issue gives null), `withStakeholderFilter(params, id | null)`, `keptSearch(params)` (keeps `evidence` and `stakeholder`, drops `pick` and `focus`), `menuGroups(ids, stakeholders)` → `[{ group: 'O', items }, { group: 'I', items }]` in ID order (`compareIds`), empty groups left out.
@@ -407,7 +407,7 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
 **Files (new):** `src/lib/needs.ts`, `src/lib/needs.test.ts`.
 
 1. `needKey(story)` → `story.needGroup ?? story.id`.
-2. `NeedItem`: `need`, `summary: Cell` (the group's summary and tag, or the story's 以便… cell), `stories`, `stakeholders` (ID order), `solutions` (`{ solution, part: 'must' | 'shouldCould' }`, letter order), `conflicts` (the conflicts that list the key in `needsA` or `needsB`).
+2. `NeedItem`: `need`, `summary: Cell` (the group's summary and tag, or the story's 以便… cell), `stories`, `stakeholders` (ID order), `solutions` (`{ solution, part: 'must' | 'shouldCould' }`, code order), `conflicts` (the conflicts that list the key in `needsA` or `needsB`).
 3. `issueNeeds(issue)` → `NeedItem[]` in the order of `issue.needs`. `needsByPriority(items)` → groups in the order M, S, C, W, empty groups left out.
 4. `needsOfStakeholder(issue, id)` → its `NeedItem`s, each once, with `ownStories`.
 5. `dataBasedNeeds(items)`: keep a need when at least one of its stories has a `[實證]` or `[AI整理]` 以便… cell. `needsForStakeholder(items, id | null)`.
@@ -436,7 +436,7 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
 2. `issueTabCounts(issue)` → `{ wants, conflicts, needs, solutions }`. #2: 39, 9, 21, 5.
 3. `stakeholderTabCounts(issues, id)` → the same fields, summed over the issues (decision 48). I06: 5, 4, 4, 4.
 4. In `solutionPage.ts`: `solutionNeedCoverage(issue, solution)` → `{ covered, notCovered }` (NeedItems; each not-covered need with the other solutions that cover it), `solutionStakeholderCoverage(issue, solution)` → `{ covered, notCovered }` (stakeholder ID order, each with its covered and not-covered needs), `solutionWayOutConflicts(issue, solution)`.
-5. `solutionTabCounts(issue, solution)`. #2 A: needs 9 / 12, stakeholders 14 / 13.
+5. `solutionTabCounts(issue, solution)`. #2 S1: needs 9 / 12, stakeholders 14 / 13.
 
 **Done when:** the numbers above are in the tests and pass.
 
@@ -445,13 +445,13 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
 **Files:** `src/router.tsx`, `src/lib/issuePage.ts` (+ test), `src/lib/opinion.ts` (+ test), `src/lib/summary.ts` (+ test), `src/lib/nav.ts` (+ test), `src/lib/solutionPage.ts` (+ test, only the path functions it uses), `src/components/SolutionCard.tsx` and any other file that builds a solution link, `src/pages/Issue.tsx`, `src/pages/Stakeholder.tsx`, `src/pages/Solution.tsx`, new `src/pages/StakeholderStory.tsx`, `src/components/issue/types.ts`, `src/i18n/zh-TW.ts` (blocks `issue.tabs`, `stakeholderPage.tabs`, `solutionPage.tabs`).
 
 1. Test first in `issuePage.ts`: `ISSUE_TABS = ['overview', 'wants', 'needs', 'solutions']`. `legacyIssueTab(segment)` → the new tab and the search to add (`opinion` → `wants`, same query; `conflicts` → `wants`, `focus=conflicts`; `stakeholders` → `overview`, `focus=stakeholders`), else null.
-2. Test first: `opinionPickTo` → `/issues/<n>/wants?pick=…`. `summaryRefTo`: a story → `storyPath`; a conflict → `/issues/<n>/wants?focus=C9`; an N group as in Task N1, now with `tabPath(n, 'needs')`; a solution (`解法 E`) → `solutionPath(2, 'E')` = `/solutions/2-E`. Same for another issue.
-3. Test first: `activeNavItem` gives 利害關係人 for `/stakeholders/I06/stories/2/I06-US01`, 解法 for `/solutions/2-A`, `/solutions/2-A/needs` and `/solutions/X-A`, and 議題 for `/issues/2/solutions` (the issue's tab) (design 3.7).
+2. Test first: `opinionPickTo` → `/issues/<n>/wants?pick=…`. `summaryRefTo`: a story → `storyPath`; a conflict → `/issues/<n>/wants?focus=C9`; an N group as in Task N1, now with `tabPath(n, 'needs')`; a solution (`解法 S5`) → `solutionPath(2, 'S5')` = `/solutions/2-S5`. Same for another issue.
+3. Test first: `activeNavItem` gives 利害關係人 for `/stakeholders/I06/stories/2/I06-US01`, 解法 for `/solutions/2-S1`, `/solutions/2-S1/needs` and `/solutions/X-S1`, and 議題 for `/issues/2/solutions` (the issue's tab) (design 3.7).
 4. Router (design 3.19): `solutions/:slug/:tab?` (the `Solution` page reads the slug with `parseSolutionSlug`), `stakeholders/:id/:tab?`, `stakeholders/:id/stories/:number/:storyId`. No want or need page routes. Old issue tabs redirect with `<Navigate replace>`. The old `issues/:number/solutions/:code/:tab?` redirects with `<Navigate replace>` to `legacySolutionPath`, query kept. Moved stakeholder IDs redirect on every sub-route (`movedStakeholderPath`). Change every place that builds a solution link today (`SolutionCard`, `SolutionTitleLink`, `solutionPage.ts`, `summary.ts`, the space page) to `solutionPath`. For now the `Solution` page shows the "not found" message for an `X-…` slug; Task N11 fills it.
 5. Tab frames: the issue page shows the 4 tabs with the count labels (`issueTabCounts`). For now, the 訴求 tab shows the old `OpinionTab` and `ConflictsTab` one after the other, the 需求 tab is empty, and the 總覽 tab adds the old `StakeholdersTab` at the end. The stakeholder page and the solution page get their tab lists with the counts; the current content goes in 總覽 for now. A tab change uses `keptSearch`.
 6. The new story page: find the issue and the story with `findStory`, redirect or show the "not found" message with links. The content can be the h1 and the breadcrumb only; Task N8 fills it.
 
-**Done when:** every URL in design 3.19 opens the right page or redirects; old URLs `#/issues/2/opinion?pick=W08`, `#/issues/2/conflicts`, `#/issues/2/stakeholders`, `#/stakeholders/O02/needs`, `#/issues/2/solutions/A` (→ `#/solutions/2-A`) and `#/issues/2/solutions/A/needs?evidence=1` (→ `#/solutions/2-A/needs?evidence=1`) work; `#/stakeholders/I06/wants/2/W08` shows the not-found page; tests pass.
+**Done when:** every URL in design 3.19 opens the right page or redirects; old URLs `#/issues/2/opinion?pick=W08`, `#/issues/2/conflicts`, `#/issues/2/stakeholders`, `#/stakeholders/O02/needs`, `#/issues/2/solutions/A` (→ `#/solutions/2-S1`) and `#/issues/2/solutions/A/needs?evidence=1` (→ `#/solutions/2-S1/needs?evidence=1`) work; `#/stakeholders/I06/wants/2/W08` shows the not-found page; tests pass.
 
 ### Task N4: shared components
 
@@ -505,7 +505,7 @@ Design 3.15: the breadcrumb, h1, page title, all the parts in the table, the red
 
 Design 3.12: the header above the tabs (breadcrumb, h1, the issue line), 總覽 with 解開的衝突, the 需求 tab (covered by priority; not covered with 「由其他解法涵蓋」), the 利害關係人 tab (covered and not covered, with their needs). Labels with counts from `solutionTabCounts`.
 
-**Done when:** `#/solutions/2-A` shows 「需求　涵蓋 9・未涵蓋 12」 and 「利害關係人　涵蓋 14・未涵蓋 13」; the breadcrumb is 首頁 › 解法 › #2 A (since L11: 首頁 › 解法 › #2 A 清潔箱佈建建議地圖, decision 99) and the header link 解法 is active; an unknown tab or slug shows the message with links. Build the tab parts so that Task N11 can reuse them for a cross-issue solution (the needs and stakeholders come in as props, split by issue).
+**Done when:** `#/solutions/2-S1` shows 「需求　涵蓋 9・未涵蓋 12」 and 「利害關係人　涵蓋 14・未涵蓋 13」; the breadcrumb is 首頁 › 解法 › #2 S1 (since L11: 首頁 › 解法 › #2 S1 清潔箱佈建建議地圖, decision 99) and the header link 解法 is active; an unknown tab or slug shows the message with links. Build the tab parts so that Task N11 can reuse them for a cross-issue solution (the needs and stakeholders come in as props, split by issue).
 
 ### Task N10: link sweep and list pages
 
@@ -521,20 +521,20 @@ Design 3.12: the header above the tabs (breadcrumb, h1, the issue line), 總覽 
 
 **Input:** `cross-issue.json`, written by `analysis/scripts/build_json.py` from `analysis/cross-issue/cross-issue-analysis.md`. Its fields are in the docstring of `build_json.py` and in design 3.18. Make it with `analysis/scripts/build_all.sh <a scratchpad dir>`. If the real file differs from design 3.18, follow the real data and update design 3.18 in the same commit.
 
-**Files:** `src/types.ts` (new `CrossIssueFile` type), `src/data.ts` (`useCrossIssue`, null for a missing file), new `src/lib/crossIssue.ts` (+ test, on a new fixture `src/test/fixtures/cross-issue.json` copied from the real build), `src/pages/Solution.tsx` (the `cross` kind of `parseSolutionSlug`), new `src/components/solution/CrossOverviewTab.tsx`, `src/components/solution/NeedsTab.tsx` and `StakeholdersTab.tsx` (only if they need a prop for several issues), `src/pages/Solutions.tsx`, `src/components/issue/SolutionsTab.tsx`, `src/components/solution/OverviewTab.tsx`, `src/lib/counts.ts` and `src/lib/recent.ts` (decision 51), `src/pages/About.tsx` and `src/lib/dataFiles.ts` (list the new JSON file), `src/i18n/zh-TW.ts` (block `crossIssue`). No new route: `solutions/:slug/:tab?` from Task N3 already covers `#/solutions/X-A`.
+**Files:** `src/types.ts` (new `CrossIssueFile` type), `src/data.ts` (`useCrossIssue`, null for a missing file), new `src/lib/crossIssue.ts` (+ test, on a new fixture `src/test/fixtures/cross-issue.json` copied from the real build), `src/pages/Solution.tsx` (the `cross` kind of `parseSolutionSlug`), new `src/components/solution/CrossOverviewTab.tsx`, `src/components/solution/NeedsTab.tsx` and `StakeholdersTab.tsx` (only if they need a prop for several issues), `src/pages/Solutions.tsx`, `src/components/issue/SolutionsTab.tsx`, `src/components/solution/OverviewTab.tsx`, `src/lib/counts.ts` and `src/lib/recent.ts` (decision 51), `src/pages/About.tsx` and `src/lib/dataFiles.ts` (list the new JSON file), `src/i18n/zh-TW.ts` (block `crossIssue`). No new route: `solutions/:slug/:tab?` from Task N3 already covers `#/solutions/X-S1`.
 
-1. Test first in `crossIssue.ts`: `findCrossSolution(data, code)`, `crossSolutionsOfIssue(data, issueNumber)` (the issue is in `parts`), `crossSolutionsOfSolution(data, issueNumber, code)`, `crossNeedCoverage(data, solution, issues)` and `crossStakeholderCoverage(…)` (design 3.18: covered = in `needs.must`, `needs.shouldCould` or an X-N group in `needs.crossIssue`; not covered = the other needs of the issues in `parts`), `crossSolutionTabCounts`, `crossWayOutConflicts(data, code)`, the issue filter rule on `#/solutions`, and the header count with and without the file. Tests on the fixture: `crossSolutionsOfIssue(data, 2)` has X-A to X-E; `crossSolutionsOfSolution(data, 2, 'A')` is X-B and X-E; `crossWayOutConflicts(data, 'X-B')` is X-C1 and X-C2; X-A covers #2 N05 (from `must`) and every need of X-N01.
-2. The page `#/solutions/X-A` with the same frame and tabs as an issue solution, and the parts in the design 3.18 table. It loads the issue files of the issues in `parts`.
+1. Test first in `crossIssue.ts`: `findCrossSolution(data, code)`, `crossSolutionsOfIssue(data, issueNumber)` (the issue is in `parts`), `crossSolutionsOfSolution(data, issueNumber, code)`, `crossNeedCoverage(data, solution, issues)` and `crossStakeholderCoverage(…)` (design 3.18: covered = in `needs.must`, `needs.shouldCould` or an X-N group in `needs.crossIssue`; not covered = the other needs of the issues in `parts`), `crossSolutionTabCounts`, `crossWayOutConflicts(data, code)`, the issue filter rule on `#/solutions`, and the header count with and without the file. Tests on the fixture: `crossSolutionsOfIssue(data, 2)` has X-S1 to X-S5; `crossSolutionsOfSolution(data, 2, 'S1')` is X-S2 and X-S5; `crossWayOutConflicts(data, 'X-S2')` is X-C1 and X-C2; X-S1 covers #2 N05 (from `must`) and every need of X-N1.
+2. The page `#/solutions/X-S1` with the same frame and tabs as an issue solution, and the parts in the design 3.18 table. It loads the issue files of the issues in `parts`.
 3. The other places in the second design 3.18 table.
 
-**Done when:** with the file, `#/solutions/X-A`, `#/solutions/X-A/needs` and `#/solutions/X-A/stakeholders` show every part in design 3.18, and the header link 解法 is active; `#/solutions/2-A` shows 「跨議題解法」 with links to X-B and X-E; without the file, the app works as before, `#/solutions/X-A` shows the not-found message, and no request error shows in the console.
+**Done when:** with the file, `#/solutions/X-S1`, `#/solutions/X-S1/needs` and `#/solutions/X-S1/stakeholders` show every part in design 3.18, and the header link 解法 is active; `#/solutions/2-S1` shows 「跨議題解法」 with links to X-S2 and X-S5; without the file, the app works as before, `#/solutions/X-S1` shows the not-found message, and no request error shows in the console.
 
 ### Task N12: accessibility and phone check (Playwright)
 
 **Files:** a script in the scratchpad only (not in the repo); fixes in any app file.
 
 1. `npm run build`, then `npx vite preview --port 4311` in `app/` (in the background).
-2. A Playwright script (import `~/.npm/_npx/705bc6b22212b352/node_modules/playwright/index.mjs`) opens these pages at 360 px, 375 px, 768 px and 1280 px, in both themes: `#/`, `#/issues/2`, `#/issues/2/wants`, `#/issues/2/wants?stakeholder=I06`, `#/issues/2/needs`, `#/issues/2/solutions`, `#/stakeholders/I06`, `#/stakeholders/I06/wants`, `#/stakeholders/I06/needs`, `#/stakeholders/I06/solutions`, `#/stakeholders/I06/stories/2/I06-US01`, `#/issues/2/needs?focus=N07`, `#/solutions/2-A`, `…/2-A/needs`, `…/2-A/stakeholders`, `#/solutions`, `#/solutions/X-A`, `…/X-A/needs`, `…/X-A/stakeholders`.
+2. A Playwright script (import `~/.npm/_npx/705bc6b22212b352/node_modules/playwright/index.mjs`) opens these pages at 360 px, 375 px, 768 px and 1280 px, in both themes: `#/`, `#/issues/2`, `#/issues/2/wants`, `#/issues/2/wants?stakeholder=I06`, `#/issues/2/needs`, `#/issues/2/solutions`, `#/stakeholders/I06`, `#/stakeholders/I06/wants`, `#/stakeholders/I06/needs`, `#/stakeholders/I06/solutions`, `#/stakeholders/I06/stories/2/I06-US01`, `#/issues/2/needs?focus=N07`, `#/solutions/2-S1`, `…/2-S1/needs`, `…/2-S1/stakeholders`, `#/solutions`, `#/solutions/X-S1`, `…/X-S1/needs`, `…/X-S1/stakeholders`.
 3. On each page, check:
    - no sideways scroll (`document.documentElement.scrollWidth <= innerWidth`)
    - **the header at 360 px:** the app name 「市政提案小幫手」 fits on the first row, does not wrap in the middle of the name, and does not overlap the links or the theme button (decision 42)
@@ -584,7 +584,7 @@ From ETBlue's new notes in `human-inputs.md` (commits 487bac6 and 8c4bd4b), 2026
 **Files (new):** `src/lib/sideMenu.ts`, `src/lib/sideMenu.test.ts`, `src/lib/stakeholderStats.ts`, `src/lib/stakeholderStats.test.ts`. **Change:** `src/lib/stakeholderFilter.ts` (+ test).
 
 1. `sideMenuTree(ids, stakeholders, pathLabels)` (design 3.21, decision 65): two roots (O, I), then the 分類路徑 levels with names. In each level: its stakeholders in ID order, then its child levels in the order of `buildTree`. Levels with no stakeholder are left out. Each group has `stakeholderCount` (all levels below). A stakeholder with no path is under its root. Reuse `buildTree` where it fits.
-2. `sideMenuCounts(context, …)` → `Map<id, number>` (decision 66). The contexts: `stakeholders` (stories over the analyzed issues), `stakeholder-overview`, `stakeholder-wants`, `stakeholder-needs`, `stakeholder-solutions` (summed over the issues, as `stakeholderTabCounts`), `issue-wants`, `issue-needs`, `issue-solutions` (one issue). It takes `dataBasedOnly`. Test the rule: for each context, the count equals the length of the list that the tab view shows for that stakeholder with the same filter. Use I06 on #2 (wants W08 and W11, needs N07 and N08, solutions A and C, so 2, 2 and 2 without the filter) and I06 on the stakeholder page (the same numbers as `stakeholderTabCounts` on the fixtures).
+2. `sideMenuCounts(context, …)` → `Map<id, number>` (decision 66). The contexts: `stakeholders` (stories over the analyzed issues), `stakeholder-overview`, `stakeholder-wants`, `stakeholder-needs`, `stakeholder-solutions` (summed over the issues, as `stakeholderTabCounts`), `issue-wants`, `issue-needs`, `issue-solutions` (one issue). It takes `dataBasedOnly`. Test the rule: for each context, the count equals the length of the list that the tab view shows for that stakeholder with the same filter. Use I06 on #2 (wants W08 and W11, needs N07 and N08, solutions S1 and S3, so 2, 2 and 2 without the filter) and I06 on the stakeholder page (the same numbers as `stakeholderTabCounts` on the fixtures).
 3. Side bar filters in the URL (decision 67): `CROSS_PARAM = 'cross'`, `SPECIAL_PARAM = 'special'`. `sideBarFiltersOf(params)` → `{ dataBasedOnly, crossIssueOnly, special: string[] }` (`special` in the fixed `FOCUS_ORDER`; unknown values are dropped). `menuIdsFor(ids, stakeholders, filters, current)` (the current stakeholder is always kept). `keptSearch` also keeps `cross` and `special`. `clearFiltersSearch(params)` removes `stakeholder`, `evidence`, `cross` and `special` and keeps nothing else that is a filter (decision 68). `filterStatusParts(...)` → the parts of the status line.
 4. `stakeholderStats(stakeholders, issues, filters)` (design 3.20, decision 63) → `{ totals, byCategory, byFocusGroup, byIssue }`. `byCategory` in `FIRST_LEVEL_ORDER`, rows with 0 stakeholders left out. `byFocusGroup` in `FOCUS_ORDER`, with the stakeholder IDs in ID order. `byIssue` in issue number order. With `dataBasedOnly`, only the story counts change. Test that no list is in count order when the fixed order differs from it.
 
@@ -709,7 +709,7 @@ L10 and L11 were added on 2026-10-22, after L1–L9 were written. They keep thei
 Design 3.23.3–3.23.5, decisions 81–85, 89 and 97:
 1. `coverage.ts`: `evidenceShare(cells)` → `{ part, total } | null` (part = 實證 + AI整理; null when total is 0). `stakeholderCells(issues, id)`. `solutionCells(issue, solution)` and `crossSolutionCells(cross, solution, issues)`: both cells of each story of the covered needs, each story once (Q23 (a)). `stakeholderSolutionCoverage(issues, cross, id)` → `{ covered, total }`, with 這次不做 needs in the total (Q23 (b)). `sharePercent(share)` (the rounding of `evidencePercent`). `compareShares(a, b)` by cross-multiplying.
 2. `listSort.ts`: `sortIssues(issues, sort)`, `sortStakeholders(list, sort, ctx)`, `sortSolutions(items, sort, ctx)`. The sorts are `updated` (default), `added`, `evidence`, and `solutions` on stakeholders only. There is no `id` sort. Dates newest first with the home tie rule. Shares highest first, ties in the fixed ID order, no share last. No date last, in the fixed ID order.
-3. `listFilter.ts`: `filterIssues`, `filterStakeholders`, `filterSolutions` with the rules of 3.23.5: ANY inside one filter, ALL between filters; 「跨議題」 (`issue=X`) as in design 3.23.5; a cross-issue solution matches an issue in its `parts` or in its covered needs (X-E matches #1); the 利害關係人 filter on solutions uses the same rule as the issue's 解法 tab. The text search is not here: it is in L10, and the pages apply both.
+3. `listFilter.ts`: `filterIssues`, `filterStakeholders`, `filterSolutions` with the rules of 3.23.5: ANY inside one filter, ALL between filters; 「跨議題」 (`issue=X`) as in design 3.23.5; a cross-issue solution matches an issue in its `parts` or in its covered needs (X-S5 matches #1); the 利害關係人 filter on solutions uses the same rule as the issue's 解法 tab. The text search is not here: it is in L10, and the pages apply both.
 4. `listParams.ts`: `listParamsOf(page, params, index)` → `{ sort, issues, crossChoice, spaces, who, specialOnly, view, q }` (drops unknown values, also `sort=id`; resolves moved IDs; `q` trimmed, cut at 100 characters, dropped when empty). `listUrlSearch(page, state)` (was `listSearch` in the first draft; renamed, decision 95). `clearListFilters(params)` (removes every filter and `q`; keeps `sort` and `view`). `legacyListRedirect(page, search)` (`cross=1` → `issue=X`, `special=` → `specialonly=1`, drops `evidence`).
 
 **Tests (first):**
@@ -781,10 +781,10 @@ Design 3.23.13, decisions 95 and 96:
 1. `parseListQuery(q)` → `{ text, key } | null`. `text`: NFKC, lower case, trimmed (for the title). `key`: `text` without spaces, 「#」 and 「-」 (for the number). Null when both are empty.
 2. `issueMatches(issue, query)`: the number (leading zeros ignored) or the title.
 3. `stakeholderMatches(stakeholder, query)`: the ID (the same letter and the same number, leading zeros ignored) or the name.
-4. `solutionMatches(item, query)`: the letter alone (also X-A for `A`), `<n><letter>` for an issue solution, `x<letter>` for a cross-issue solution, or the name.
+4. `solutionMatches(item, query)`: the code alone (also X-S1 for `S1`), `<n>s<number>` for an issue solution, `xs<number>` for a cross-issue solution, or the name.
 5. Each function is true when the query is null. The whole number or code must match; the title matches any part.
 
-**Tests (first):** `8`, `#8`, `＃８`, `08` find #8; 「無菸」 finds #8; `1` does not find a #10 (a test item); `i6`, `I06`, `I 06` find I06; `I1` does not find I12; 「身心」 finds I06; `A` finds every solution A and X-A; `X-A` and `xa` find only X-A; `2-A`, `2A`, `#2 A` find only #2 A; 「建議地圖」 finds only #2 A; an empty query and `#` alone find every item; `2` does not find the solutions of #2 by number.
+**Tests (first):** `8`, `#8`, `＃８`, `08` find #8; 「無菸」 finds #8; `1` does not find a #10 (a test item); `i6`, `I06`, `I 06` find I06; `I1` does not find I12; 「身心」 finds I06; `S1` finds every solution S1 and X-S1; `X-S1` and `xs1` find only X-S1; `2-S1`, `2S1`, `#2 S1` find only #2 S1; 「建議地圖」 finds only #2 S1; an empty query and `#` alone find every item; `2` does not find the solutions of #2 by number.
 
 **Checks:** the app checks.
 
@@ -798,13 +798,13 @@ Design 3.2 (Breadcrumb), decision 99:
 1. `Breadcrumb` takes `items: { id?, name?, to? }[]`. It writes `<nav aria-label="頁面位置">` with an `<ol>`, a 「›」 `<li aria-hidden="true">` in muted text between items, links with `targetLinkClass`, and the last item as plain text with `aria-current="page"`. An item shows the ID in `font-mono`, a space, then the name. A long name wraps inside its item.
 2. The ID plus the name, on every page (ETBlue, 2026-10-22): an item that names an issue, a stakeholder or a solution shows both. An item with no name keeps its ID only. A story has no title in the data, so the story item stays 「#2 I06-US01」. A solution name is shown as plain text (`stripMarkdown`, no tag badge).
 3. The issue page: 首頁 › 議題 › #8 無菸城市 on every tab, also on the page of a 製作中 issue. 議題 links to `#/issues` with no params. The "not found" message has no breadcrumb.
-4. The solution pages: 首頁 › 解法 › #2 A 清潔箱佈建建議地圖 and 首頁 › 解法 › X-A 同一段人行道的共同參與式選址. The story page: 首頁 › 利害關係人 › I06 身心障礙者（視障、輪椅使用者） › #2 I06-US01 (the same items as before, now through the component).
+4. The solution pages: 首頁 › 解法 › #2 S1 清潔箱佈建建議地圖 and 首頁 › 解法 › X-S1 同一段人行道的共同參與式選址. The story page: 首頁 › 利害關係人 › I06 身心障礙者（視障、輪椅使用者） › #2 I06-US01 (the same items as before, now through the component).
 
-**Tests:** no pure logic, so no new Vitest file. Check by hand in the dev server and in L9: the breadcrumbs show the ID and the name, and the longest names wrap at 360 px (compare a screenshot of `#/solutions/2-A` and `#/stakeholders/I06/stories/2/I06-US01` before and after).
+**Tests:** no pure logic, so no new Vitest file. Check by hand in the dev server and in L9: the breadcrumbs show the ID and the name, and the longest names wrap at 360 px (compare a screenshot of `#/solutions/2-S1` and `#/stakeholders/I06/stories/2/I06-US01` before and after).
 
 **Checks:** the app checks.
 
-**Done when:** `#/issues/8` and `#/issues/8/wants` show 首頁 › 議題 › #8 無菸城市; `#/solutions/2-A` shows 首頁 › 解法 › #2 A 清潔箱佈建建議地圖; `#/solutions/X-A` shows 首頁 › 解法 › X-A 同一段人行道的共同參與式選址; the story breadcrumb works as before; the keyboard order on the issue page is breadcrumb, h1 area, tab list, tab content; 360 px has no sideways scroll.
+**Done when:** `#/issues/8` and `#/issues/8/wants` show 首頁 › 議題 › #8 無菸城市; `#/solutions/2-S1` shows 首頁 › 解法 › #2 S1 清潔箱佈建建議地圖; `#/solutions/X-S1` shows 首頁 › 解法 › X-S1 同一段人行道的共同參與式選址; the story breadcrumb works as before; the keyboard order on the issue page is breadcrumb, h1 area, tab list, tab content; 360 px has no sideways scroll.
 
 ### Task L5: `#/issues`
 
@@ -857,7 +857,7 @@ Design 3.23.5, 3.23.9 and 3.23.13, decisions 85, 89, 92, 95–98:
 
 **Checks:** the app checks.
 
-**Done when:** `#/solutions?sort=added` shows the same first 5 as the home block; `?issue=1` includes X-E; `?issue=X` shows only X-A to X-E; `?who=I06` shows only the solutions that cover a need of I06; `?q=A` shows #1 A, #2 A, #8 A, #9 A and X-A in the order of the current sort; `?q=X-A` shows only X-A; `?q=%232%20A` shows only #2 A; `?q=A&who=I06` shows only the solutions A that cover a need of I06; the result line says 「共 25 個」 with no filter on the current data.
+**Done when:** `#/solutions?sort=added` shows the same first 5 as the home block; `?issue=1` includes X-S5; `?issue=X` shows only X-S1 to X-S5; `?who=I06` shows only the solutions that cover a need of I06; `?q=S1` shows #1 S1, #2 S1, #8 S1, #9 S1 and X-S1 in the order of the current sort; `?q=X-S1` shows only X-S1; `?q=%232%20S1` shows only #2 S1; `?q=S1&who=I06` shows only the solutions S1 that cover a need of I06; the result line says 「共 25 個」 with no filter on the current data.
 
 ### Task L8: home links, old links, clean-up
 
@@ -877,7 +877,7 @@ Design 3.23.12, decision 91: the three links of 3.23.12; `#/?cross=1` still reac
 
 The same method as Task S7, with these changes:
 1. Widths: 360, 375, 768, 1280, 1440 and 1920 px, both themes.
-2. Pages: the S7 list (without the side bar pages that are gone), plus `#/issues?sort=evidence`, `#/issues?space=sidewalk&who=I06`, `#/issues?q=無菸`, `#/issues/8/wants`, `#/stakeholders?sort=solutions&issue=X&specialonly=1`, `#/stakeholders?view=tree`, `#/stakeholders?view=tree&q=身心`, `#/stakeholders/I06/needs?evidence=1`, `#/solutions?issue=1&who=I06`, `#/solutions?sort=added`, `#/solutions?q=A`, and the open filter sheet, the open popovers and the open tree dialog at 360 and 1280 px.
+2. Pages: the S7 list (without the side bar pages that are gone), plus `#/issues?sort=evidence`, `#/issues?space=sidewalk&who=I06`, `#/issues?q=無菸`, `#/issues/8/wants`, `#/stakeholders?sort=solutions&issue=X&specialonly=1`, `#/stakeholders?view=tree`, `#/stakeholders?view=tree&q=身心`, `#/stakeholders/I06/needs?evidence=1`, `#/solutions?issue=1&who=I06`, `#/solutions?sort=added`, `#/solutions?q=S1`, and the open filter sheet, the open popovers and the open tree dialog at 360 and 1280 px.
 3. Extra checks:
    - Each list page has one h1 and it is visually hidden. The bar is the first content under the header. The search box is the first control of the bar, and on a phone it is on its own row, outside the sheet.
    - The search box has the full label (「搜尋議題」 and so on) and a `role="search"` landmark. Typing gives a new count in the result line (`role="status"`). Typing a word and pressing back once leaves the search. The clear button and Escape remove `q`.

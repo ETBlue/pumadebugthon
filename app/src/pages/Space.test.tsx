@@ -157,9 +157,9 @@ const menuBar = (html: string) =>
 const sortOptions = (html: string) => [...menuBar(html).matchAll(/<option [^>]*>([^<]+)<\/option>/g)].map((m) => m[1])
 /** The text of the result line. */
 const resultLine = (html: string) => /<p role="status" class="[^"]*">([\s\S]*?)<\/p>/.exec(html)?.[1].replace(/<[^>]+>/g, '') ?? ''
-/** The solution links of issue n, in page order: 「2-E」. */
+/** The solution links of issue n, in page order: 「2-S5」. */
 const solutionOrder = (html: string, n: number) =>
-  [...html.matchAll(new RegExp(`href="/solutions/${n}-([A-Z])"`, 'g'))].map((m) => `${n}-${m[1]}`)
+  [...html.matchAll(new RegExp(`href="/solutions/${n}-(S\\d+)"`, 'g'))].map((m) => `${n}-${m[1]}`)
 
 describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', () => {
   it('the 解法 tab has the bar of the issue tabs with the sorts of #/solutions, 議題, 利害關係人 and the search', () => {
@@ -187,15 +187,15 @@ describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', (
   })
 
   it('sort=evidence changes the order inside an issue group: the order of #/solutions', () => {
-    // 最近更新: all on the same date, so the highest letter first.
-    expect(solutionOrder(render('/spaces/sidewalk-furniture/solutions'), 1)).toEqual(['1-E', '1-D', '1-C', '1-B', '1-A'])
+    // 最近更新: all on the same date, so the highest code first.
+    expect(solutionOrder(render('/spaces/sidewalk-furniture/solutions'), 1)).toEqual(['1-S5', '1-S4', '1-S3', '1-S2', '1-S1'])
     const html = render('/spaces/sidewalk-furniture/solutions?sort=evidence')
     const items = spaceSolutionItems(issueFiles, 'sidewalk-furniture')
     const expected = spaceSolutionsView(items, { ...DEFAULT_LIST_STATE, sort: 'evidence' }, issueFiles)
       .filter((x) => x.kind === 'issue' && x.issueNumber === 1)
       .map((x) => `1-${'id' in x.solution ? x.solution.id : ''}`)
     expect(solutionOrder(html, 1)).toEqual(expected)
-    expect(expected).not.toEqual(['1-E', '1-D', '1-C', '1-B', '1-A'])
+    expect(expected).not.toEqual(['1-S5', '1-S4', '1-S3', '1-S2', '1-S1'])
     expect(html).toMatch(/<option value="evidence" selected="">/)
   })
 
@@ -210,7 +210,7 @@ describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', (
   })
 
   it('the search finds by code and name, with an empty state', () => {
-    expect(resultLine(render('/spaces/sidewalk-furniture/solutions?q=2a'))).toContain('顯示 1 個解法，共 14 個。')
+    expect(resultLine(render('/spaces/sidewalk-furniture/solutions?q=2s1'))).toContain('顯示 1 個解法，共 14 個。')
     const none = render('/spaces/sidewalk-furniture/stakeholders?q=不會有這個字')
     expect(none).toContain('找不到符合「不會有這個字」的利害關係人。')
     expect(none).not.toContain('>各議題的利害關係人</h3>')

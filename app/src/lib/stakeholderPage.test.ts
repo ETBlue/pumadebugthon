@@ -93,7 +93,7 @@ describe('stakeholderConflictViews', () => {
   it('I06 in #2: C6 with the other side and the conflict view', () => {
     const list = stakeholderConflictViews(trashcans, 'I06')
     expect(list.map((c) => [c.view.conflict.id, ids(c.otherStories)])).toEqual([['C6', ['I01-US01']]])
-    expect(ids(list[0].view.wayOutSolutions)).toEqual(['A', 'C'])
+    expect(ids(list[0].view.wayOutSolutions)).toEqual(['S1', 'S3'])
   })
 
   it('I06 in #1: C1 and C7, in file order', () => {
@@ -131,8 +131,8 @@ describe('stakeholderSolutionsView', () => {
   it('I06 in #2: A covers N07, C covers N08, nothing is left uncovered', () => {
     const v = stakeholderSolutionsView(trashcans, 'I06')
     expect(v.solutions.map((s) => [s.solution.id, needIds(s.needs)])).toEqual([
-      ['A', ['N07']],
-      ['C', ['N08']],
+      ['S1', ['N07']],
+      ['S3', ['N08']],
     ])
     expect(v.uncovered).toEqual([])
   })
@@ -147,7 +147,7 @@ describe('stakeholderSolutionsView', () => {
 
   it('O09 in #2: B covers O09-US02, and O09-US01 has no solution', () => {
     const v = stakeholderSolutionsView(trashcans, 'O09')
-    expect(v.solutions.map((s) => [s.solution.id, needIds(s.needs)])).toEqual([['B', ['O09-US02']]])
+    expect(v.solutions.map((s) => [s.solution.id, needIds(s.needs)])).toEqual([['S2', ['O09-US02']]])
     expect(needIds(v.uncovered)).toEqual(['O09-US01'])
   })
 

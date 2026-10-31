@@ -35,7 +35,7 @@ describe('focusElementId', () => {
       'W8',
       'W123',
       'N1',
-      'X-N01',
+      'X-N1',
       'X-C1',
       'I06',
       'I06-US',

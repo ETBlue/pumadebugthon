@@ -23,34 +23,34 @@ const policy = policyJson as IssueFile
 // Out of order on purpose: the functions must use issue number order.
 const files = [smokefree, trashcans, trees]
 
-const xa = findCrossSolution(cross, 'X-A')!
-const xe = findCrossSolution(cross, 'X-E')!
+const xa = findCrossSolution(cross, 'X-S1')!
+const xe = findCrossSolution(cross, 'X-S5')!
 const codes = (list: { code: string }[]) => list.map((s) => s.code)
 
 describe('findCrossSolution', () => {
   it('finds a solution by its code', () => {
     expect(xa.name).toBe('同一段人行道的共同參與式選址')
-    expect(findCrossSolution(cross, 'X-E')?.code).toBe('X-E')
+    expect(findCrossSolution(cross, 'X-S5')?.code).toBe('X-S5')
   })
 
   it('returns null for an unknown code, a missing file or no code', () => {
-    expect(findCrossSolution(cross, 'X-Z')).toBeNull()
-    expect(findCrossSolution(cross, 'A')).toBeNull()
-    expect(findCrossSolution(null, 'X-A')).toBeNull()
+    expect(findCrossSolution(cross, 'X-S99')).toBeNull()
+    expect(findCrossSolution(cross, 'S1')).toBeNull()
+    expect(findCrossSolution(null, 'X-S1')).toBeNull()
     expect(findCrossSolution(cross, undefined)).toBeNull()
   })
 })
 
 describe('crossSolutionTitle', () => {
   it('is the code and the name as plain text', () => {
-    expect(crossSolutionTitle(xa)).toBe('X-A 同一段人行道的共同參與式選址')
+    expect(crossSolutionTitle(xa)).toBe('X-S1 同一段人行道的共同參與式選址')
   })
 })
 
 describe('crossIssueNumbers', () => {
   it('lists the issues of parts once each, in number order', () => {
     expect(crossIssueNumbers(xa)).toEqual([1, 2, 8])
-    // X-E has two parts of #2.
+    // X-S5 has two parts of #2.
     expect(crossIssueNumbers(xe)).toEqual([2, 8])
   })
 })
@@ -64,12 +64,12 @@ describe('issuesOfCross', () => {
 
 describe('crossSolutionsOfIssue', () => {
   it('lists the solutions with the issue in parts, in code order', () => {
-    expect(codes(crossSolutionsOfIssue(cross, 2))).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
-    expect(codes(crossSolutionsOfIssue(cross, 1))).toEqual(['X-A', 'X-B', 'X-C', 'X-D'])
+    expect(codes(crossSolutionsOfIssue(cross, 2))).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5'])
+    expect(codes(crossSolutionsOfIssue(cross, 1))).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4'])
   })
 
-  it('lists the one solution with a #9 part (X-D)', () => {
-    expect(codes(crossSolutionsOfIssue(cross, 9))).toEqual(['X-D'])
+  it('lists the one solution with a #9 part (X-S4)', () => {
+    expect(codes(crossSolutionsOfIssue(cross, 9))).toEqual(['X-S4'])
   })
 
   it('is empty for an issue the file does not cover, and without the file', () => {
@@ -80,14 +80,14 @@ describe('crossSolutionsOfIssue', () => {
 
 describe('crossSolutionsOfSolution', () => {
   it('lists the solutions that combine this issue solution', () => {
-    expect(codes(crossSolutionsOfSolution(cross, 2, 'A'))).toEqual(['X-B', 'X-E'])
-    expect(codes(crossSolutionsOfSolution(cross, 1, 'B'))).toEqual(['X-C', 'X-D'])
-    expect(codes(crossSolutionsOfSolution(cross, 8, 'A'))).toEqual(['X-A', 'X-B'])
+    expect(codes(crossSolutionsOfSolution(cross, 2, 'S1'))).toEqual(['X-S2', 'X-S5'])
+    expect(codes(crossSolutionsOfSolution(cross, 1, 'S2'))).toEqual(['X-S3', 'X-S4'])
+    expect(codes(crossSolutionsOfSolution(cross, 8, 'S1'))).toEqual(['X-S1', 'X-S2'])
   })
 
   it('is empty when no cross-issue solution uses it', () => {
-    expect(crossSolutionsOfSolution(cross, 2, 'E')).toEqual([])
-    expect(crossSolutionsOfSolution(null, 2, 'A')).toEqual([])
+    expect(crossSolutionsOfSolution(cross, 2, 'S5')).toEqual([])
+    expect(crossSolutionsOfSolution(null, 2, 'S1')).toEqual([])
   })
 })
 
@@ -105,16 +105,16 @@ describe('crossNeedCoverage (design 3.18, decision 60)', () => {
     expect(ids(8).covered.map((i) => i.need.id)).toEqual(['N03', 'N08', 'N09', 'O01-US02', 'O22-US03', 'I25-US01', 'I26-US02'])
   })
 
-  it('covers #2 N05 from must, and every need of X-N01', () => {
+  it('covers #2 N05 from must, and every need of X-N1', () => {
     expect(ids(2).covered.find((i) => i.need.id === 'N05')?.part).toBe('must')
-    const xn01 = cross.needGroups.find((g) => g.id === 'X-N01')!
+    const xn01 = cross.needGroups.find((g) => g.id === 'X-N1')!
     for (const m of xn01.needs) {
       expect(ids(m.issue).covered.map((i) => i.need.id)).toContain(m.id)
     }
   })
 
   it('marks a need found only through an X-N group as crossIssue', () => {
-    // #1 N06 is in X-N07 and not in must or shouldCould.
+    // #1 N06 is in X-N7 and not in must or shouldCould.
     expect(ids(1).covered.find((i) => i.need.id === 'N06')?.part).toBe('crossIssue')
     expect(ids(1).covered.find((i) => i.need.id === 'N11')?.part).toBe('shouldCould')
   })
@@ -126,7 +126,7 @@ describe('crossNeedCoverage (design 3.18, decision 60)', () => {
 
   it('lists the issue solutions that cover a not covered need', () => {
     const n01 = ids(2).notCovered.find((i) => i.need.id === 'N01')!
-    expect(n01.otherSolutions.map((s) => s.id)).toEqual(['A', 'B', 'C', 'E'])
+    expect(n01.otherSolutions.map((s) => s.id)).toEqual(['S1', 'S2', 'S3', 'S5'])
   })
 
   it('leaves out an issue whose file is not given', () => {
@@ -134,8 +134,8 @@ describe('crossNeedCoverage (design 3.18, decision 60)', () => {
   })
 })
 
-describe('cross-issue coverage of an issue that is not in parts (X-E, #1 N15)', () => {
-  // X-E has parts in #2 and #8 only. It lists X-N03, and X-N03 has #1 N15.
+describe('cross-issue coverage of an issue that is not in parts (X-S5, #1 N15)', () => {
+  // X-S5 has parts in #2 and #8 only. It lists X-N3, and X-N3 has #1 N15.
   // Decision 60: a need in a listed X-N group is covered, so #1 N15 is
   // covered. 「Not covered」 stays limited to the issues in parts.
   it('loads the issues of parts plus the issues of the listed X-N groups', () => {
@@ -144,11 +144,11 @@ describe('cross-issue coverage of an issue that is not in parts (X-E, #1 N15)', 
     expect(crossCoverageIssueNumbers(cross, xa)).toEqual([1, 2, 8])
   })
 
-  // #9 has no city space. X-D has #9 解法 D as a part; X-C has no #9 part, but
-  // it lists X-N08, and X-N08 has #9 N02. So both pages load the #9 file.
-  it('loads #9 for X-D (a part) and for X-C (through X-N08)', () => {
-    const xc = findCrossSolution(cross, 'X-C')!
-    const xd = findCrossSolution(cross, 'X-D')!
+  // #9 has no city space. X-S4 has #9 解法 S4 as a part; X-S3 has no #9 part, but
+  // it lists X-N8, and X-N8 has #9 N02. So both pages load the #9 file.
+  it('loads #9 for X-S4 (a part) and for X-S3 (through X-N8)', () => {
+    const xc = findCrossSolution(cross, 'X-S3')!
+    const xd = findCrossSolution(cross, 'X-S4')!
     expect(crossIssueNumbers(xd)).toEqual([1, 2, 8, 9])
     expect(crossCoverageIssueNumbers(cross, xc)).toContain(9)
     const withPolicy = [policy, ...files]
@@ -161,7 +161,7 @@ describe('cross-issue coverage of an issue that is not in parts (X-E, #1 N15)', 
     expect(c9.coverage.notCovered).toEqual([])
   })
 
-  it('lists #1 N15 as covered through X-N03, with no not covered need in #1', () => {
+  it('lists #1 N15 as covered through X-N3, with no not covered need in #1', () => {
     const coverage = crossNeedCoverage(cross, xe, files)
     expect(coverage.map((c) => [c.issueNumber, c.inParts])).toEqual([[1, false], [2, true], [8, true]])
     const one = coverage[0].coverage
@@ -178,7 +178,7 @@ describe('cross-issue coverage of an issue that is not in parts (X-E, #1 N15)', 
       expect(one.covered.map((c) => c.need.id)).toEqual(['N15'])
       expect(one.notCovered).toEqual([])
     }
-    // A stakeholder of #1 with no need in X-N03 is not listed at all.
+    // A stakeholder of #1 with no need in X-N3 is not listed at all.
     const listed = new Set([...covered, ...notCovered].map((e) => e.id))
     const onlyInOne = trees.stakeholders.map((s) => s.id).filter(
       (id) => !trashcans.stakeholders.some((s) => s.id === id) && !smokefree.stakeholders.some((s) => s.id === id),
@@ -204,11 +204,11 @@ describe('crossStakeholderCoverage', () => {
   })
 
   it('splits the needs of a stakeholder by issue, in issue number order', () => {
-    // O05 (里長) is in #1, #2 and #8; X-N01 covers its need in each.
+    // O05 (里長) is in #1, #2 and #8; X-N1 covers its need in each.
     const o05 = covered.find((e) => e.id === 'O05')!
     expect(o05.issues.map((i) => i.issueNumber)).toEqual([1, 2, 8])
     expect(o05.issues.map((i) => i.covered.map((c) => c.need.id))).toEqual([['N05'], ['N05'], ['N09']])
-    // #1 N15 of O05 is not covered by X-A.
+    // #1 N15 of O05 is not covered by X-S1.
     expect(o05.issues[0].notCovered.map((c) => c.need.id)).toEqual(['N15'])
   })
 
@@ -233,7 +233,7 @@ describe('crossSolutionTabCounts', () => {
       measures: 4,
       policies: { domestic: 2, foreign: 0 },
     })
-    // X-E: 9 needs of #2 and #8, plus #1 N15 through X-N03 (decision 60).
+    // X-S5: 9 needs of #2 and #8, plus #1 N15 through X-N3 (decision 60).
     // N15 (O05, O13) moves one stakeholder from not covered to covered.
     expect(crossSolutionTabCounts(cross, xe, files)).toMatchObject({
       needs: { covered: 10, notCovered: 37 },
@@ -246,16 +246,16 @@ describe('crossSolutionTabCounts', () => {
 
 describe('crossNeedGroupsOf', () => {
   it('gives the X-N groups of needs.crossIssue, in ID order', () => {
-    expect(crossNeedGroupsOf(cross, xa).map((g) => g.id)).toEqual(['X-N01', 'X-N06', 'X-N07'])
+    expect(crossNeedGroupsOf(cross, xa).map((g) => g.id)).toEqual(['X-N1', 'X-N6', 'X-N7'])
     expect(crossNeedGroupsOf(cross, xa)[1].prioritiesDiffer).toBe(true)
   })
 })
 
 describe('crossWayOutConflicts', () => {
   it('lists the conflicts whose wayOutSolutions has the code, in file order', () => {
-    expect(crossWayOutConflicts(cross, 'X-B').map((c) => c.id)).toEqual(['X-C1', 'X-C2'])
-    expect(crossWayOutConflicts(cross, 'X-A').map((c) => c.id)).toEqual(['X-C1'])
-    expect(crossWayOutConflicts(cross, 'X-C')).toEqual([])
+    expect(crossWayOutConflicts(cross, 'X-S2').map((c) => c.id)).toEqual(['X-C1', 'X-C2'])
+    expect(crossWayOutConflicts(cross, 'X-S1').map((c) => c.id)).toEqual(['X-C1'])
+    expect(crossWayOutConflicts(cross, 'X-S3')).toEqual([])
   })
 })
 
@@ -272,14 +272,14 @@ describe('crossConflictView', () => {
     const c1 = cross.conflicts.find((c) => c.id === 'X-C1')!
     const first = crossConflictView(cross, c1, files).needsB[0]
     expect(first.kind).toBe('group')
-    expect(first.kind === 'group' && first.group.id).toBe('X-N02')
+    expect(first.kind === 'group' && first.group.id).toBe('X-N2')
   })
 })
 
 describe('crossSolutionFocus', () => {
   it('lists the 特別關注族群 notes that name the code, in file order', () => {
-    expect(crossSolutionFocus(cross, 'X-A').map((f) => f.tag)).toEqual(['高齡', '身心障礙', '兒童與照顧者', '外籍', '經濟弱勢'])
-    expect(crossSolutionFocus(cross, 'X-E').map((f) => f.tag)).toEqual(['呼吸道疾病'])
+    expect(crossSolutionFocus(cross, 'X-S1').map((f) => f.tag)).toEqual(['高齡', '身心障礙', '兒童與照顧者', '外籍', '經濟弱勢'])
+    expect(crossSolutionFocus(cross, 'X-S5').map((f) => f.tag)).toEqual(['呼吸道疾病'])
   })
 })
 
@@ -305,7 +305,7 @@ describe('crossWantCoverage (decision 103)', () => {
     }
   })
 
-  it('has no not covered wants for an issue that is not in parts (X-E and #1)', () => {
+  it('has no not covered wants for an issue that is not in parts (X-S5 and #1)', () => {
     const one = crossWantCoverage(cross, xe, files).find((w) => w.issueNumber === 1)!
     expect(one.inParts).toBe(false)
     expect(one.wants.covered.length).toBeGreaterThan(0)
@@ -322,8 +322,8 @@ describe('crossRelatedConflicts (decision 103)', () => {
         expect(r.covered.length).toBeGreaterThan(0)
       }
     }
-    // X-B is in the way out of both conflicts, so none is only related.
-    expect(crossRelatedConflicts(cross, findCrossSolution(cross, 'X-B')!, files)).toEqual([])
+    // X-S2 is in the way out of both conflicts, so none is only related.
+    expect(crossRelatedConflicts(cross, findCrossSolution(cross, 'X-S2')!, files)).toEqual([])
     expect(crossRelatedConflicts(cross, xa, files).map((r) => r.conflict.id)).toEqual(['X-C2'])
   })
 })

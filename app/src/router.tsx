@@ -45,7 +45,7 @@ export const router = createHashRouter([
       { path: 'stakeholders/:id/stories/:number/:storyId', element: <StakeholderStory />, handle: { fullWidth: true } },
       { path: 'stakeholders/:id/:tab?', element: <Stakeholder />, handle: { fullWidth: true } },
       { path: 'solutions', element: <Solutions />, handle: { fullWidth: true } },
-      // 2-A: a solution of an issue. X-A: a cross-issue solution (Task N11).
+      // 2-S1: a solution of an issue. X-S1: a cross-issue solution (Task N11).
       { path: 'solutions/:slug/:tab?', element: <Solution />, handle: { fullWidth: true } },
       { path: 'spaces', element: <Spaces />, handle: { fullWidth: true } },
       { path: 'spaces/:code/:tab?', element: <Space />, handle: { fullWidth: true } },

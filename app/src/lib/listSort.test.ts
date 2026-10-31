@@ -22,7 +22,7 @@ const ids = (list: Stakeholder[]) => list.map((s) => s.id)
 const keys = (list: RecentSolution[]) => list.map(solutionItemKey)
 
 const listed = index.stakeholders.filter(isListed)
-/** Every solution, in the fixed ID order: X-A…, then #1 A, #1 B, … */
+/** Every solution, in the fixed ID order: X-S1…, then #1 S1, #1 S2, … */
 const allSolutions = [...recentSolutionItems(files, cross)].sort(compareSolutionItems)
 
 describe('sortIssues', () => {
@@ -130,35 +130,35 @@ describe('sortSolutions', () => {
 
   it('最近更新 with two dates: newest first, then the tie rule of the home block', () => {
     // The dates are set here, so the test does not depend on the dates in the fixture.
-    // 2026-10-21: #9 A, C, D, #2 A, B and #1 A, B. Every other solution has 2026-10-20.
+    // 2026-10-21: #9 S1, S3, S4, #2 S1, S2 and #1 S1, S2. Every other solution has 2026-10-20.
     // Same date: the cross-issue solutions first, then the issue number and
-    // the letter, highest first.
-    const newer = ['9-A', '9-C', '9-D', '2-A', '2-B', '1-A', '1-B']
+    // the code number, highest first.
+    const newer = ['9-S1', '9-S3', '9-S4', '2-S1', '2-S2', '1-S1', '1-S2']
     const items = allSolutions.map((x): RecentSolution => {
       const updated = newer.includes(solutionItemKey(x)) ? '2026-10-21' : '2026-10-20'
       return { ...x, solution: { ...x.solution, updated } } as RecentSolution
     })
     expect(keys(sortSolutions(items, 'updated', ctx))).toEqual([
-      '9-D', '9-C', '9-A', '2-B', '2-A', '1-B', '1-A',
-      'X-E', 'X-D', 'X-C', 'X-B', 'X-A',
-      '9-E', '9-B', '8-E', '8-D', '8-C', '8-B', '8-A', '2-E', '2-D', '2-C', '1-E', '1-D', '1-C',
+      '9-S4', '9-S3', '9-S1', '2-S2', '2-S1', '1-S2', '1-S1',
+      'X-S5', 'X-S4', 'X-S3', 'X-S2', 'X-S1',
+      '9-S5', '9-S2', '8-S5', '8-S4', '8-S3', '8-S2', '8-S1', '2-S5', '2-S4', '2-S3', '1-S5', '1-S4', '1-S3',
     ])
   })
 
   it('最近更新 with no dates at all gives the fixed ID order, cross-issue solutions first', () => {
     const noUpdated = allSolutions.map((x) => ({ ...x, solution: { ...x.solution, updated: null } }) as RecentSolution)
     const sorted = keys(sortSolutions(noUpdated, 'updated', ctx))
-    expect(sorted.slice(0, 6)).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E', '1-A'])
+    expect(sorted.slice(0, 6)).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5', '1-S1'])
     expect(sorted).toEqual(keys(allSolutions))
   })
 
   it('最近更新 uses updated, with the tie rule of the home block', () => {
     const items = allSolutions.map((x): RecentSolution => {
       const code = solutionItemKey(x)
-      const updated = ['X-A', 'X-B', '2-A', '8-B'].includes(code) ? '2026-10-21' : code === '1-C' ? '2026-10-22' : null
+      const updated = ['X-S1', 'X-S2', '2-S1', '8-S2'].includes(code) ? '2026-10-21' : code === '1-S3' ? '2026-10-22' : null
       return { ...x, solution: { ...x.solution, updated } } as RecentSolution
     })
-    expect(keys(sortSolutions(items, 'updated', ctx)).slice(0, 6)).toEqual(['1-C', 'X-B', 'X-A', '8-B', '2-A', 'X-C'])
+    expect(keys(sortSolutions(items, 'updated', ctx)).slice(0, 6)).toEqual(['1-S3', 'X-S2', 'X-S1', '8-S2', '2-S1', 'X-S3'])
   })
 
   it('資料根據比例 sorts by the cells of the covered needs, ties in the fixed ID order', () => {
@@ -178,5 +178,24 @@ describe('sortSolutions', () => {
   it('works with no cross-issue file', () => {
     const issueOnly = allSolutions.filter((x) => x.kind === 'issue')
     expect(sortSolutions(issueOnly, 'evidence', { issues: files, cross: null })).toHaveLength(issueOnly.length)
+  })
+})
+
+describe('the fixed solution order uses numbers, not text (decision 151)', () => {
+  const base = (trashcansJson as IssueFile).solutions[0]
+  const issueItem = (n: number, k: number): RecentSolution => ({ kind: 'issue', issueNumber: n, solution: { ...base, id: `S${k}` } })
+  const crossItem = (k: number): RecentSolution => ({ kind: 'cross', solution: { ...cross.solutions[0], code: `X-S${k}` } })
+  const ks = Array.from({ length: 12 }, (_, i) => i + 1)
+
+  it('compareSolutionItems: X-S1 to X-S12, then #1 S1 to S12, then #10 S1', () => {
+    const order = [...ks.map(crossItem), ...ks.map((k) => issueItem(1, k)), issueItem(10, 1)]
+    expect(keys([...order].reverse().sort(compareSolutionItems))).toEqual(keys(order))
+  })
+
+  it('a date tie keeps the number order, highest first', () => {
+    const items = [...ks.map(crossItem), ...ks.map((k) => issueItem(1, k))].map(
+      (x) => ({ ...x, solution: { ...x.solution, updated: '2026-10-20' } }) as RecentSolution,
+    )
+    expect(keys(sortSolutions(items, 'updated', ctx))).toEqual([...ks.map((k) => `X-S${13 - k}`), ...ks.map((k) => `1-S${13 - k}`)])
   })
 })

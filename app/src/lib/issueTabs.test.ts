@@ -88,17 +88,17 @@ describe('solutionsTabView', () => {
   it('with a stakeholder, lists only the 解開的衝突 that the 訴求 tab shows (#2, I06 and I02)', () => {
     // Solution A is the way out of C1, C2, C6, C7 and C9. Only C6 has a
     // story of I06, so with ?stakeholder=I06 only C6 is on the 訴求 tab.
-    const all = solutionsTabView(trashcans, null, false).find((s) => s.solution.id === 'A')!
+    const all = solutionsTabView(trashcans, null, false).find((s) => s.solution.id === 'S1')!
     expect(all.wayOutConflicts.map((c) => c.id)).toEqual(['C1', 'C2', 'C6', 'C7', 'C9'])
-    const i06 = solutionsTabView(trashcans, 'I06', false).find((s) => s.solution.id === 'A')!
+    const i06 = solutionsTabView(trashcans, 'I06', false).find((s) => s.solution.id === 'S1')!
     expect(i06.wayOutConflicts.map((c) => c.id)).toEqual(['C6'])
     // No conflict of #2 has a story of I02.
     for (const item of solutionsTabView(trashcans, 'I02', false)) expect(item.wayOutConflicts).toEqual([])
   })
 
-  it('shows every solution of #2 in letter order, with the needs in the two parts of 6.2', () => {
+  it('shows every solution of #2 in code order, with the needs in the two parts of 6.2', () => {
     const view = solutionsTabView(trashcans, null, false)
-    expect(view.map((s) => s.solution.id)).toEqual(['A', 'B', 'C', 'D', 'E'])
+    expect(view.map((s) => s.solution.id)).toEqual(['S1', 'S2', 'S3', 'S4', 'S5'])
     const a = view[0]
     expect(needIds(a.must)).toEqual(['N01', 'N04', 'N05', 'N07', 'O04-US02', 'O12-US01'])
     expect(needIds(a.shouldCould)).toEqual(['N02', 'O04-US04', 'I01-US09'])
@@ -114,7 +114,7 @@ describe('solutionsTabView', () => {
 
   it('with a stakeholder, shows only the solutions with one of its needs, and only its needs', () => {
     const view = solutionsTabView(trashcans, 'I06', false)
-    expect(view.map((s) => s.solution.id)).toEqual(['A', 'C'])
+    expect(view.map((s) => s.solution.id)).toEqual(['S1', 'S3'])
     expect(needIds(view[0].must)).toEqual(['N07'])
     expect(needIds(view[0].shouldCould)).toEqual([])
     expect(needIds(view[1].shouldCould)).toEqual(['N08'])
@@ -123,11 +123,11 @@ describe('solutionsTabView', () => {
   it('counts the other needs the solution covers (「這個解法還涵蓋其他 6 個需求」)', () => {
     const view = solutionsTabView(trashcans, 'I01', false)
     expect(view.map((s) => [s.solution.id, s.otherNeeds])).toEqual([
-      ['A', 6],
-      ['B', 5],
-      ['C', 4],
-      ['D', 5],
-      ['E', 2],
+      ['S1', 6],
+      ['S2', 5],
+      ['S3', 4],
+      ['S4', 5],
+      ['S5', 2],
     ])
   })
 
@@ -140,7 +140,7 @@ describe('solutionsTabView', () => {
     expect(needIds(c.must)).toEqual(['N01'])
     // In #2 every solution keeps a need with data, and the other-needs count
     // stays the count of the stakeholder filter only.
-    expect(view.map((s) => s.solution.id)).toEqual(['A', 'B', 'C', 'D', 'E'])
+    expect(view.map((s) => s.solution.id)).toEqual(['S1', 'S2', 'S3', 'S4', 'S5'])
     expect(a.otherNeeds).toBe(0)
   })
 
@@ -148,7 +148,7 @@ describe('solutionsTabView', () => {
   // at least one of the stakeholder's needs in it is still shown.
   it('with a stakeholder and the data filter, leaves out a solution whose needs of the stakeholder are all hidden (#2, I06)', () => {
     // Without the filter, A (N07) and C (N08) cover a need of I06.
-    expect(solutionsTabView(trashcans, 'I06', false).map((s) => s.solution.id)).toEqual(['A', 'C'])
+    expect(solutionsTabView(trashcans, 'I06', false).map((s) => s.solution.id)).toEqual(['S1', 'S3'])
     // N07 and N08 have no data basis, so both solutions leave the list.
     expect(solutionsTabView(trashcans, 'I06', true)).toEqual([])
   })

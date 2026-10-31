@@ -134,19 +134,19 @@ describe('recentStakeholders', () => {
 describe('recentSolutions', () => {
   const key = (x: { issueNumber: number; solution: Solution }) => `${x.issueNumber}${x.solution.id}`
 
-  it('lists solutions by update date, then issue number, then letter, highest first (decision 131)', () => {
+  it('lists solutions by update date, then issue number, then code number, highest first (decision 131)', () => {
     // Every solution in the fixture has the 更新日期 2026-10-22, so the issue
-    // number and the letter decide. #2 A to D were added earlier (2026-10-16),
+    // number and the code decide. #2 S1 to S4 were added earlier (2026-10-16),
     // but the 新增日期 is not used any more.
     expect(recentSolutions([trees, trashcans, smokefree]).map(key)).toEqual([
-      '8E', '8D', '8C', '8B', '8A', '2E', '2D', '2C', '2B', '2A', '1E', '1D', '1C', '1B', '1A',
+      '8S5', '8S4', '8S3', '8S2', '8S1', '2S5', '2S4', '2S3', '2S2', '2S1', '1S5', '1S4', '1S3', '1S2', '1S1',
     ])
   })
 
   it('puts a newer update date first, whatever the 新增日期', () => {
-    const older = { ...solution('A', '2026-10-20'), added: '2026-10-19' }
-    const newer = { ...solution('B', '2026-10-22'), added: '2026-10-01' }
-    expect(recentSolutions([issueFile(3, [older, newer])]).map(key)).toEqual(['3B', '3A'])
+    const older = { ...solution('S1', '2026-10-20'), added: '2026-10-19' }
+    const newer = { ...solution('S2', '2026-10-22'), added: '2026-10-01' }
+    expect(recentSolutions([issueFile(3, [older, newer])]).map(key)).toEqual(['3S2', '3S1'])
   })
 
   it('does not depend on the order of the issue files', () => {
@@ -156,19 +156,25 @@ describe('recentSolutions', () => {
   })
 
   it('puts a solution with no date last', () => {
-    const list = [issueFile(3, [solution('A', ''), solution('B', '2026-01-01')])]
-    expect(recentSolutions(list).map(key)).toEqual(['3B', '3A'])
+    const list = [issueFile(3, [solution('S1', ''), solution('S2', '2026-01-01')])]
+    expect(recentSolutions(list).map(key)).toEqual(['3S2', '3S1'])
   })
 
   it('is not changed by the number of stories', () => {
-    const few = [issueFile(3, [solution('A', '2026-10-18', ['a', 'b', 'c']), solution('B', '2026-10-18', [])])]
-    const many = [issueFile(3, [solution('A', '2026-10-18', []), solution('B', '2026-10-18', ['a', 'b', 'c'])])]
-    expect(recentSolutions(few).map(key)).toEqual(['3B', '3A'])
-    expect(recentSolutions(many).map(key)).toEqual(['3B', '3A'])
+    const few = [issueFile(3, [solution('S1', '2026-10-18', ['a', 'b', 'c']), solution('S2', '2026-10-18', [])])]
+    const many = [issueFile(3, [solution('S1', '2026-10-18', []), solution('S2', '2026-10-18', ['a', 'b', 'c'])])]
+    expect(recentSolutions(few).map(key)).toEqual(['3S2', '3S1'])
+    expect(recentSolutions(many).map(key)).toEqual(['3S2', '3S1'])
   })
 
   it('keeps only the first items when a limit is given', () => {
-    expect(recentSolutions([trees, trashcans, smokefree], 2).map(key)).toEqual(['8E', '8D'])
+    expect(recentSolutions([trees, trashcans, smokefree], 2).map(key)).toEqual(['8S5', '8S4'])
+  })
+
+  it('compares the number of the code as a number on the same date (decision 151)', () => {
+    // 12 solutions: text order would put S10, S11 and S12 between S1 and S2.
+    const list = [issueFile(3, Array.from({ length: 12 }, (_, i) => solution(`S${i + 1}`, '2026-10-18')))]
+    expect(recentSolutions(list).map(key)).toEqual(Array.from({ length: 12 }, (_, i) => `3S${12 - i}`))
   })
 })
 
@@ -178,19 +184,27 @@ describe('recentSolutionItems', () => {
     x.kind === 'cross' ? x.solution.code : `${x.issueNumber}${x.solution.id}`
 
   it('adds the cross-issue solutions by their update date (decisions 51 and 131)', () => {
-    // X-A to X-E have the same 更新日期 (2026-10-22) as the issue solutions,
+    // X-S1 to X-S5 have the same 更新日期 (2026-10-22) as the issue solutions,
     // so they come first.
     expect(recentSolutionItems([trees, trashcans, smokefree], cross, 7).map(key)).toEqual([
-      'X-E', 'X-D', 'X-C', 'X-B', 'X-A', '8E', '8D',
+      'X-S5', 'X-S4', 'X-S3', 'X-S2', 'X-S1', '8S5', '8S4',
     ])
   })
 
   it('puts the cross-issue solutions first on the same date', () => {
     const sameDay: CrossIssueFile = { ...cross, solutions: cross.solutions.map((s) => ({ ...s, updated: '2026-10-22' })) }
-    expect(recentSolutionItems([smokefree], sameDay, 7).map(key)).toEqual(['X-E', 'X-D', 'X-C', 'X-B', 'X-A', '8E', '8D'])
+    expect(recentSolutionItems([smokefree], sameDay, 7).map(key)).toEqual(['X-S5', 'X-S4', 'X-S3', 'X-S2', 'X-S1', '8S5', '8S4'])
+  })
+
+  it('orders 10 or more cross-issue solutions of the same date by number (decision 151)', () => {
+    const many: CrossIssueFile = {
+      ...cross,
+      solutions: Array.from({ length: 12 }, (_, i) => ({ ...cross.solutions[0], code: `X-S${i + 1}`, updated: '2026-10-22' })),
+    }
+    expect(recentSolutionItems([], many).map(key)).toEqual(Array.from({ length: 12 }, (_, i) => `X-S${12 - i}`))
   })
 
   it('is the issue solutions only without the file', () => {
-    expect(recentSolutionItems([trees, trashcans, smokefree], null, 3).map(key)).toEqual(['8E', '8D', '8C'])
+    expect(recentSolutionItems([trees, trashcans, smokefree], null, 3).map(key)).toEqual(['8S5', '8S4', '8S3'])
   })
 })

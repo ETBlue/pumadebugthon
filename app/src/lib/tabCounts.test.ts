@@ -54,7 +54,7 @@ describe('issueStakeholderTabCounts', () => {
 
 describe('stakeholderTabCounts', () => {
   it('sums the counts over the issues (I06: 訴求 5・衝突 4, 需求 4, 解法 4)', () => {
-    // #1: W06, W08 / C1, C7 / N08 / D. #2: W08, W11 / C6 / N07, N08 / A, C.
+    // #1: W06, W08 / C1, C7 / N08 / S4. #2: W08, W11 / C6 / N07, N08 / S1, S3.
     // #8: W07 / C3 / I06-US01 / A. Design 3.3.
     expect(stakeholderTabCounts(issues, null, 'I06')).toEqual({ issues: 3, wants: 5, conflicts: 4, needs: 4, solutions: 4 })
   })
@@ -103,8 +103,8 @@ describe('stakeholderTabCounts', () => {
 })
 
 describe('solutionTabCounts', () => {
-  it('gives the covered and not covered counts (#2 A: needs 9 / 13, stakeholders 14 / 13)', () => {
-    expect(solutionTabCounts(trashcans, sol(trashcans, 'A'))).toEqual({
+  it('gives the covered and not covered counts (#2 S1: needs 9 / 13, stakeholders 14 / 13)', () => {
+    expect(solutionTabCounts(trashcans, sol(trashcans, 'S1'))).toEqual({
       needs: { covered: 9, notCovered: 13 },
       wants: { covered: 28, notCovered: 25 },
       stakeholders: { covered: 14, notCovered: 13 },
@@ -137,10 +137,10 @@ describe('solutionTabCounts', () => {
 })
 
 describe('solutionTabCounts: 衝突, 成效衡量 and 相關政策 (decision 103)', () => {
-  it('counts 國內 and 國外 by domestic (#2 B: only 國外; #8 E: none)', () => {
-    expect(solutionTabCounts(trashcans, sol(trashcans, 'B')).policies).toEqual({ domestic: 0, foreign: 3 })
+  it('counts 國內 and 國外 by domestic (#2 S2: only 國外; #8 S5: none)', () => {
+    expect(solutionTabCounts(trashcans, sol(trashcans, 'S2')).policies).toEqual({ domestic: 0, foreign: 3 })
     const smokefree = issues.find((i) => i.number === 8)!
-    expect(solutionTabCounts(smokefree, sol(smokefree, 'E')).policies).toEqual({ domestic: 0, foreign: 0 })
+    expect(solutionTabCounts(smokefree, sol(smokefree, 'S5')).policies).toEqual({ domestic: 0, foreign: 0 })
   })
 
   it('never counts a conflict as both 解開 and 相關', () => {
@@ -154,8 +154,8 @@ describe('solutionTabCounts: 衝突, 成效衡量 and 相關政策 (decision 103
 })
 
 describe('solutionTabLabel', () => {
-  it('gives the label of each tab (#2 A)', () => {
-    const c = solutionTabCounts(trashcans, sol(trashcans, 'A'))
+  it('gives the label of each tab (#2 S1)', () => {
+    const c = solutionTabCounts(trashcans, sol(trashcans, 'S1'))
     const text = (tab: Parameters<typeof solutionTabLabel>[0]) => tabLabelText(solutionTabLabel(tab, c))
     expect(text('overview')).toBe('總覽')
     expect(text('needs')).toBe('需求　滿足 9・未滿足 13')

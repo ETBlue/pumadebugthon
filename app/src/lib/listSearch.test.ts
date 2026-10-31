@@ -56,8 +56,8 @@ describe('parseListQuery', () => {
   })
 
   it('keeps the spaces inside the text, and removes spaces, # and - from the key', () => {
-    expect(parseListQuery('#2 A')).toEqual({ text: '#2 a', key: '2a' })
-    expect(parseListQuery('X-A')).toEqual({ text: 'x-a', key: 'xa' })
+    expect(parseListQuery('#2 S1')).toEqual({ text: '#2 s1', key: '2s1' })
+    expect(parseListQuery('X-S1')).toEqual({ text: 'x-s1', key: 'xs1' })
   })
 
   it('returns null for an empty search, or only spaces and #', () => {
@@ -115,27 +115,45 @@ describe('stakeholderMatches', () => {
 })
 
 describe('solutionMatches', () => {
-  it('finds every solution A and X-A by the letter alone', () => {
-    expect(solutionHits('A')).toEqual(['1A', '2A', '8A', '9A', 'X-A'])
-    expect(solutionHits('a')).toEqual(['1A', '2A', '8A', '9A', 'X-A'])
+  it('finds every solution S1 and X-S1 by the code alone', () => {
+    expect(solutionHits('S1')).toEqual(['1S1', '2S1', '8S1', '9S1', 'X-S1'])
+    expect(solutionHits('s1')).toEqual(['1S1', '2S1', '8S1', '9S1', 'X-S1'])
+    expect(solutionHits('S01')).toEqual(['1S1', '2S1', '8S1', '9S1', 'X-S1'])
   })
 
-  it('finds only X-A by X-A or xa', () => {
-    expect(solutionHits('X-A')).toEqual(['X-A'])
-    expect(solutionHits('xa')).toEqual(['X-A'])
-    expect(solutionHits('XA')).toEqual(['X-A'])
+  it('finds only X-S1 by X-S1 or xs1', () => {
+    expect(solutionHits('X-S1')).toEqual(['X-S1'])
+    expect(solutionHits('xs1')).toEqual(['X-S1'])
+    expect(solutionHits('XS1')).toEqual(['X-S1'])
   })
 
-  it('finds only #2 A by 2-A, 2A or #2 A', () => {
-    for (const q of ['2-A', '2A', '#2 A', '02a']) expect(solutionHits(q)).toEqual(['2A'])
+  it('finds only #2 S1 by 2-S1, 2S1 or #2 S1', () => {
+    for (const q of ['2-S1', '2S1', '#2 S1', '02s1', '2-S01']) expect(solutionHits(q)).toEqual(['2S1'])
   })
 
-  it('finds only #2 A by 建議地圖', () => {
-    expect(solutionHits('建議地圖')).toEqual(['2A'])
+  it('compares the number of the code as a number: S1 does not find S10', () => {
+    const s = (n: number) => ({ kind: 'issue' as const, issueNumber: 12, solution: { id: `S${n}`, name: { text: '名稱', tag: null, pending: false } } })
+    const x = (n: number) => ({ kind: 'cross' as const, solution: { code: `X-S${n}`, name: '名稱' } })
+    const items: SearchSolutionItem[] = [s(1), s(2), s(10), s(11), x(1), x(10)]
+    const hits = (q: string) => items.filter((i) => solutionMatches(i, parseListQuery(q))).map(code)
+    expect(hits('S1')).toEqual(['12S1', 'X-S1'])
+    expect(hits('S10')).toEqual(['12S10', 'X-S10'])
+    expect(hits('12-S10')).toEqual(['12S10'])
+    expect(hits('1-S2')).toEqual([])
+    expect(hits('X-S10')).toEqual(['X-S10'])
+  })
+
+  it('does not find a solution by an old code (no redirect, decision 151)', () => {
+    expect(solutionHits('2-' + 'A')).toEqual([])
+    expect(solutionHits('X-' + 'A')).toEqual([])
+  })
+
+  it('finds only #2 S1 by 建議地圖', () => {
+    expect(solutionHits('建議地圖')).toEqual(['2S1'])
   })
 
   it('finds a cross-issue solution by a part of its name', () => {
-    expect(solutionHits('清潔箱')).toEqual(['2A', 'X-E'])
+    expect(solutionHits('清潔箱')).toEqual(['2S1', 'X-S5'])
   })
 
   it('does not find the solutions of #2 by the issue number alone', () => {
@@ -151,12 +169,12 @@ describe('solutionMatches', () => {
 
 describe('search with a filter and a sort', () => {
   it('keeps only the items that match the search and the filter', () => {
-    // The filter here: only issue #8. The search 「A」 finds every solution A.
-    const query = parseListQuery('A')
+    // The filter here: only issue #8. The search 「S1」 finds every solution S1.
+    const query = parseListQuery('S1')
     const hits = solutions
       .filter((s) => s.kind === 'issue' && s.issueNumber === 8)
       .filter((s) => solutionMatches(s, query))
-    expect(hits.map(code)).toEqual(['8A'])
+    expect(hits.map(code)).toEqual(['8S1'])
   })
 
   it('keeps the order of the sort', () => {

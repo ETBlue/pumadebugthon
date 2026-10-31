@@ -61,8 +61,8 @@ describe('issueWants', () => {
   })
 
   it('lists the solutions that cover the need of one of its stories, in ID order', () => {
-    // W08 has I06-US01 and I07-US02 (need N07: A) and O12-US01 (A, D).
-    expect(ids(items.find((i) => i.key === 'W08')!.solutions)).toEqual(['A', 'D'])
+    // W08 has I06-US01 and I07-US02 (need N07: S1) and O12-US01 (S1, S4).
+    expect(ids(items.find((i) => i.key === 'W08')!.solutions)).toEqual(['S1', 'S4'])
   })
 
   it('has an empty solution list when no solution covers its stories', () => {
@@ -131,9 +131,9 @@ describe('conflictView', () => {
     expect(ids(view.needsB)).toEqual(['N06'])
   })
 
-  it('C1 has the way out A, B, D', () => {
+  it('C1 has the way out S1, S2, S4', () => {
     expect(view.wayOut).toBe(c1.wayOut)
-    expect(ids(view.wayOutSolutions)).toEqual(['A', 'B', 'D'])
+    expect(ids(view.wayOutSolutions)).toEqual(['S1', 'S2', 'S4'])
     expect(view.hasWayOut).toBe(true)
   })
 
@@ -151,10 +151,10 @@ describe('conflictView', () => {
   })
 
   it('leaves out unknown story, need and solution IDs', () => {
-    const fake = { ...c1, sideA: ['I01-US01', 'X99-US01'], needsA: ['N01', 'N99'], wayOutSolutions: ['A', 'Z'] }
+    const fake = { ...c1, sideA: ['I01-US01', 'X99-US01'], needsA: ['N01', 'N99'], wayOutSolutions: ['S1', 'Z'] }
     const v = conflictView(trashcans, fake)
     expect(ids(v.storiesA)).toEqual(['I01-US01'])
     expect(ids(v.needsA)).toEqual(['N01'])
-    expect(ids(v.wayOutSolutions)).toEqual(['A'])
+    expect(ids(v.wayOutSolutions)).toEqual(['S1'])
   })
 })

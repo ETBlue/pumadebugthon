@@ -48,7 +48,7 @@ describe('wantsTabView', () => {
     const c1 = wantsTabView(trashcans, null, false).conflicts[0]
     expect(c1.needsA.map((n) => n.id)).toEqual(['N01'])
     expect(c1.needsB.map((n) => n.id)).toEqual(['N06'])
-    expect(c1.wayOutSolutions.map((s) => s.id)).toEqual(['A', 'B', 'D'])
+    expect(c1.wayOutSolutions.map((s) => s.id)).toEqual(['S1', 'S2', 'S4'])
     expect(c1.hasWayOut).toBe(true)
   })
 

@@ -12,7 +12,7 @@ function segments(pathname: string): string[] {
  * The header nav item that the page at `pathname` belongs to, or null.
  * Pass `useLocation().pathname`, so the query string is not part of it.
  * Only whole segments match: "/issuesx" is not 議題.
- * Solution pages (`/solutions/2-A`, `/solutions/X-A` and their tabs) belong
+ * Solution pages (`/solutions/2-S1`, `/solutions/X-S1` and their tabs) belong
  * to 解法. So does the old `/issues/<n>/solutions/<code>[/<tab>]`. It does
  * not redirect any more (decision 110); it shows the not-found page. The
  * issue's own 解法 tab `/issues/<n>/solutions` stays under 議題. Story pages `/stakeholders/<id>/stories/…` belong to 利害關係人.

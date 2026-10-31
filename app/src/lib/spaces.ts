@@ -26,7 +26,7 @@ export function issuesBySpace(index: IndexFile, code: string): AvailableIssueSum
 }
 
 /** Every solution that uses the space type, by issue number, then in the
- * order of the issue file (A, B, …). */
+ * order of the issue file (S1, S2, …). */
 export function solutionsBySpace(issues: IssueFile[], code: string): SpaceSolution[] {
   return [...issues]
     .sort((a, b) => a.number - b.number)

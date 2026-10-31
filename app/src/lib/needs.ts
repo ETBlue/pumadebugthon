@@ -31,7 +31,7 @@ export interface NeedItem {
   /** The stakeholders of its stories, in ID order, each once. */
   stakeholders: string[]
   /** The solutions that list the need in needs.must or needs.shouldCould,
-   * in letter order. */
+   * in code order (S2 before S10). */
   solutions: NeedSolution[]
   /** The conflicts that list the need in needsA or needsB, in file order. */
   conflicts: Conflict[]

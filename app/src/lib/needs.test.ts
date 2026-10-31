@@ -59,17 +59,17 @@ describe('issueNeeds', () => {
     expect(item.summary).toEqual(story(trashcans, 'O09-US01').soThat)
   })
 
-  it('lists the covering solutions in letter order, with the part of 6.2', () => {
+  it('lists the covering solutions in code order, with the part of 6.2', () => {
     expect(n01.solutions.map((s) => [s.solution.id, s.part])).toEqual([
-      ['A', 'must'],
-      ['B', 'must'],
-      ['C', 'must'],
-      ['E', 'must'],
+      ['S1', 'must'],
+      ['S2', 'must'],
+      ['S3', 'must'],
+      ['S5', 'must'],
     ])
     const n02 = items.find((i) => i.need.id === 'N02')!
     expect(n02.solutions.map((s) => [s.solution.id, s.part])).toEqual([
-      ['A', 'shouldCould'],
-      ['D', 'shouldCould'],
+      ['S1', 'shouldCould'],
+      ['S4', 'shouldCould'],
     ])
   })
 
@@ -218,9 +218,9 @@ describe('shownNeedStories', () => {
 
 describe('solutionsOfStories', () => {
   it('gives the solutions that list the need of one of the stories, in ID order', () => {
-    // W08 of #2: its stories are covered by A and D (the same as on the need).
+    // W08 of #2: its stories are covered by S1 and S4 (the same as on the need).
     const w08 = trashcans.stories.filter((s) => s.group === 'W08').map((s) => s.id)
-    expect(solutionsOfStories(trashcans, w08).map((s) => s.id)).toEqual(['A', 'D'])
+    expect(solutionsOfStories(trashcans, w08).map((s) => s.id)).toEqual(['S1', 'S4'])
   })
 
   it('uses needs.must and needs.shouldCould, the same source as a need', () => {
@@ -237,12 +237,12 @@ describe('solutionsOfStories', () => {
       format: 'stories',
       needs: [],
       solutions: [
-        { ...trashcans.solutions[1], id: 'B', needs: null, stories: [story.id] },
-        { ...trashcans.solutions[0], id: 'A', needs: null, stories: [story.id] },
-        { ...trashcans.solutions[2], id: 'C', needs: null, stories: [] },
+        { ...trashcans.solutions[1], id: 'S2', needs: null, stories: [story.id] },
+        { ...trashcans.solutions[0], id: 'S1', needs: null, stories: [story.id] },
+        { ...trashcans.solutions[2], id: 'S3', needs: null, stories: [] },
       ],
     } as IssueFile
-    expect(solutionsOfStories(old, [story.id]).map((s) => s.id)).toEqual(['A', 'B'])
+    expect(solutionsOfStories(old, [story.id]).map((s) => s.id)).toEqual(['S1', 'S2'])
   })
 })
 

@@ -73,7 +73,7 @@ function NeedPart({ id, title, needs, issueNumber }: { id: string; title: string
   )
 }
 
-/** 解法 (design 3.2): each solution in letter order, with its summary, space
+/** 解法 (design 3.2): each solution in code order (S2 before S10), with its summary, space
  * types, the needs it covers (the two parts of step 6.2) and 解開的衝突. With
  * a stakeholder picked in the menu bar (decision 116), only the solutions with one
  * of its needs, and only its needs. The 特別關注 chips work the same way

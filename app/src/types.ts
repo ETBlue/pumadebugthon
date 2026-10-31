@@ -293,7 +293,8 @@ export interface Conflict {
 
 /** A row of 6.1, with its stories from 6.2. */
 export interface Solution {
-  /** One capital letter, for example "A". */
+  /** S and a number with no zero padding, for example "S1" or "S10"
+   * (design decision 151). */
   id: string
   name: Cell
   /** 一句話說明 */
@@ -332,7 +333,7 @@ export interface Solution {
   /** Rows of the 6.1 構想 table whose 本文件的處理 cell names this solution. */
   ideas: SolutionIdea[]
   /** The 分析摘要 rows of 可能的爭議 whose 相關編號 names this solution
-   * (「解法 A」, not 「#8 解法 B」), in file order. The same objects as in
+   * (「解法 S1」, not 「#8 解法 S2」), in file order. The same objects as in
    * IssueFile.summary. Can be []. */
   controversies: SummaryItem[]
   /** The 分析摘要 rows of 法規上的障礙 that name this solution, the same way. */
@@ -431,7 +432,7 @@ export interface SolutionPractice {
    * solution's step 7 section (4.5.n in the cross-issue file). */
   source: 'practice' | 'dependency'
   /** 相關編號 of a dependency row, as written (for example "O04-US04",
-   * "解法 A", "#1 C7"). [] for a practice row. */
+   * "解法 S1", "#1 C7"). [] for a practice row. */
   refs: string[]
 }
 
@@ -441,12 +442,12 @@ export interface SummaryItem {
   item: string
   /** 說明: a tag and the text, or a 【待補】 cell. */
   text: Cell
-  /** 相關編號 as written, for example "C5", "I01-US09", "解法 A" or
-   * "#8 解法 B" (another issue). Empty for 「—」. build_json.py checks
+  /** 相關編號 as written, for example "C5", "I01-US09", "解法 S1" or
+   * "#8 解法 S2" (another issue). Empty for 「—」. build_json.py checks
    * that each one exists. */
   refs: string[]
-  /** The codes of the solutions that refs names: 「解法 A」 -> "A" in an
-   * issue file, 「解法 X-A」 -> "X-A" in the cross-issue file. 「#8 解法 B」
+  /** The codes of the solutions that refs names: 「解法 S1」 -> "S1" in an
+   * issue file, 「解法 X-S1」 -> "X-S1" in the cross-issue file. 「#8 解法 S2」
    * is not one. [] when the row names no solution (ETBlue, 2026-10-23: such
    * rows are shown on the issue 總覽). */
   solutions: string[]
@@ -506,13 +507,13 @@ export interface IssueFile {
 // (design 3.18). The file does not exist when the Markdown file does not exist.
 
 /** A reference to an ID of one issue, for example { issue: 2, id: "N05" }.
- * issue is null for the file's own IDs (an X-N group, for example "X-N02"). */
+ * issue is null for the file's own IDs (an X-N group, for example "X-N2"). */
 export interface CrossRef {
   issue: number | null
   id: string
 }
 
-/** A reference to a solution of one issue, for example { issue: 1, code: "C" }. */
+/** A reference to a solution of one issue, for example { issue: 1, code: "S3" }. */
 export interface CrossPart {
   issue: number
   code: string
@@ -552,7 +553,7 @@ export interface CrossGroupNeed {
 
 /** An X-N group: the same need in several issues. It has no page. */
 export interface CrossNeedGroup {
-  /** For example "X-N01". */
+  /** For example "X-N1". */
   id: string
   tag: Tag
   summary: string
@@ -581,7 +582,7 @@ export interface CrossConflict {
   needsB: CrossRef[]
   /** 以需求為本的解方 */
   wayOut: Cell
-  /** The cross-issue solution codes in wayOut, for example ["X-B", "X-A"]. */
+  /** The cross-issue solution codes in wayOut, for example ["X-S2", "X-S1"]. */
   wayOutSolutions: string[]
   method: Cell
   result: Cell
@@ -600,7 +601,7 @@ export interface CrossMeasure {
 
 /** A cross-issue solution: it combines solutions of several issues. */
 export interface CrossSolution {
-  /** For example "X-A". */
+  /** For example "X-S1". */
   code: string
   name: string
   tag: Tag
@@ -623,7 +624,7 @@ export interface CrossSolution {
     crossIssue: string[]
   }
   measures: CrossMeasure[]
-  /** The tables of its 「### 4.5.n 解法 X-A：…」 section: the same shape as
+  /** The tables of its 「### 4.5.n 解法 X-S1：…」 section: the same shape as
    * for an issue solution. Each cell has one part. */
   evaluation: SolutionEvaluation
   plan: SolutionPlan
@@ -660,7 +661,7 @@ export interface CrossIssueFile {
   focusGroups: CrossFocusGroup[]
   needGroups: CrossNeedGroup[]
   conflicts: CrossConflict[]
-  /** In code order (X-A, X-B, …). */
+  /** In code order (X-S1, X-S2, …). */
   solutions: CrossSolution[]
   solutionFocus: CrossSolutionFocus[]
   pending: CrossPending[]

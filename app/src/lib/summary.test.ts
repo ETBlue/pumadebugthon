@@ -22,17 +22,18 @@ describe('parseSummaryRef', () => {
     expect(parseSummaryRef('C9')).toEqual({ issue: null, kind: 'conflict', id: 'C9' })
     expect(parseSummaryRef('W08')).toEqual({ issue: null, kind: 'group', id: 'W08' })
     expect(parseSummaryRef('N01')).toEqual({ issue: null, kind: 'need', id: 'N01' })
-    expect(parseSummaryRef('解法 A')).toEqual({ issue: null, kind: 'solution', id: 'A' })
+    expect(parseSummaryRef('解法 S1')).toEqual({ issue: null, kind: 'solution', id: 'S1' })
   })
 
   it('reads a reference to another issue', () => {
-    expect(parseSummaryRef('#8 解法 B')).toEqual({ issue: 8, kind: 'solution', id: 'B' })
+    expect(parseSummaryRef('#8 解法 S2')).toEqual({ issue: 8, kind: 'solution', id: 'S2' })
+    expect(parseSummaryRef('#12 解法 S10')).toEqual({ issue: 12, kind: 'solution', id: 'S10' })
     expect(parseSummaryRef('#1 C7')).toEqual({ issue: 1, kind: 'conflict', id: 'C7' })
     expect(parseSummaryRef('#1 N03')).toEqual({ issue: 1, kind: 'need', id: 'N03' })
   })
 
   it('returns null for text that is not a reference', () => {
-    for (const bad of ['解法A', 'A', '#8解法 B', 'C5，O01-US02', 'N1', 'N001', '']) expect(parseSummaryRef(bad)).toBeNull()
+    for (const bad of ['解法S1', 'A', '解法 ' + 'A', '解法 S01', '解法 S0', '#8解法 S2', 'C5，O01-US02', 'N1', 'N001', '']) expect(parseSummaryRef(bad)).toBeNull()
   })
 })
 
@@ -83,12 +84,12 @@ describe('summaryRefTo', () => {
   it('links a conflict to the 衝突 tab with ?focus= (decision 142) and a solution to its page, keeping the filter', () => {
     expect(summaryRefTo('C9', 2, trashcans, false)).toEqual({ pathname: '/issues/2/conflicts', search: '?focus=C9' })
     expect(summaryRefTo('C9', 2, trashcans, true)).toEqual({ pathname: '/issues/2/conflicts', search: '?focus=C9&evidence=1' })
-    expect(summaryRefTo('解法 E', 2, trashcans, false)).toEqual({ pathname: '/solutions/2-E', search: '' })
-    expect(summaryRefTo('解法 E', 2, trashcans, true)).toEqual({ pathname: '/solutions/2-E', search: '?evidence=1' })
+    expect(summaryRefTo('解法 S5', 2, trashcans, false)).toEqual({ pathname: '/solutions/2-S5', search: '' })
+    expect(summaryRefTo('解法 S5', 2, trashcans, true)).toEqual({ pathname: '/solutions/2-S5', search: '?evidence=1' })
   })
 
   it('links a reference to another issue into that issue', () => {
-    expect(summaryRefTo('#8 解法 B', 2, trashcans, false)).toEqual({ pathname: '/solutions/8-B', search: '' })
+    expect(summaryRefTo('#8 解法 S2', 2, trashcans, false)).toEqual({ pathname: '/solutions/8-S2', search: '' })
     expect(summaryRefTo('#1 C7', 2, trashcans, false)).toEqual({ pathname: '/issues/1/conflicts', search: '?focus=C7' })
     expect(summaryRefTo('#1 I06-US02', 2, trashcans, false)).toEqual({
       pathname: '/stakeholders/I06/stories/1/I06-US02',
@@ -129,10 +130,10 @@ describe('the summary in the fixtures', () => {
     }
   })
 
-  it('shows the new #2 conflict C9 with #8 解法 B', () => {
+  it('shows the new #2 conflict C9 with #8 解法 S2', () => {
     const topic = trashcans.summary.find((t) => t.topic === '可能的爭議')
     const item = topic?.items.find((i) => i.refs.includes('C9'))
-    expect(item?.refs).toContain('#8 解法 B')
+    expect(item?.refs).toContain('#8 解法 S2')
     expect(item?.text.tag).toBe('AI模擬')
   })
 })
@@ -246,18 +247,18 @@ describe('crossSummaryRefTo (decision 140)', () => {
   const ids = new Set(['I05', 'O28'])
 
   it('links a cross-issue solution and keeps ?evidence=1', () => {
-    expect(crossSummaryRefTo('解法 X-A', ids, false)).toEqual({ pathname: '/solutions/X-A', search: '' })
-    expect(crossSummaryRefTo('解法 X-A', ids, true)).toEqual({ pathname: '/solutions/X-A', search: '?evidence=1' })
+    expect(crossSummaryRefTo('解法 X-S1', ids, false)).toEqual({ pathname: '/solutions/X-S1', search: '' })
+    expect(crossSummaryRefTo('解法 X-S1', ids, true)).toEqual({ pathname: '/solutions/X-S1', search: '?evidence=1' })
   })
 
   it('links an ID of one issue the same way as the issue page', () => {
-    expect(crossSummaryRefTo('#1 解法 C', ids, false)).toEqual({ pathname: '/solutions/1-C', search: '' })
+    expect(crossSummaryRefTo('#1 解法 S3', ids, false)).toEqual({ pathname: '/solutions/1-S3', search: '' })
     expect(crossSummaryRefTo('#8 I25-US01', ids, false)?.pathname).toBe('/stakeholders/I25/stories/8/I25-US01')
     expect(crossSummaryRefTo('#2 C6', ids, true)).toEqual(summaryRefTo('#2 C6', 1, trees, true))
   })
 
   it('links a known stakeholder; an X-N group, an X-C conflict or an unknown ID stays plain text', () => {
     expect(crossSummaryRefTo('O28', ids, false)).toEqual({ pathname: '/stakeholders/O28', search: '' })
-    for (const ref of ['I99', 'X-N01', 'X-C1', 'C6', '解法 A', 'nonsense']) expect(crossSummaryRefTo(ref, ids, false), ref).toBeNull()
+    for (const ref of ['I99', 'X-N1', 'X-C1', 'C6', '解法 S1', 'nonsense']) expect(crossSummaryRefTo(ref, ids, false), ref).toBeNull()
   })
 })

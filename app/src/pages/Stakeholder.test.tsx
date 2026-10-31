@@ -141,12 +141,12 @@ function filesOf(id: string): IssueFile[] {
 }
 
 /** The different solutions linked on the tab: issue solutions
- * (/solutions/2-A) and cross-issue solutions (/solutions/X-B). */
+ * (/solutions/2-S1) and cross-issue solutions (/solutions/X-S2). */
 function solutionLinks(html: string): { issue: number; cross: number } {
   const distinct = (re: RegExp) => new Set(html.match(re) ?? []).size
   return {
-    issue: distinct(/href="\/solutions\/\d+-[A-Z]+"/g),
-    cross: distinct(/href="\/solutions\/X-[A-Z]+"/g),
+    issue: distinct(/href="\/solutions\/\d+-S\d+"/g),
+    cross: distinct(/href="\/solutions\/X-S\d+"/g),
   }
 }
 
@@ -180,8 +180,8 @@ describe('the 解法 tab of the stakeholder page (decision 119)', () => {
     const firstIssueAt = html.search(/id="stakeholder-solutions-\d+"/)
     expect(crossAt).toBeGreaterThan(-1)
     expect(firstIssueAt).toBeGreaterThan(crossAt)
-    expect(html).toContain('href="/solutions/X-B"')
-    expect(html).toContain('href="/solutions/X-D"')
+    expect(html).toContain('href="/solutions/X-S2"')
+    expect(html).toContain('href="/solutions/X-S4"')
     // The 資料根據 of each card.
     expect(html.split('id="stakeholder-solutions-cross"')[1]).toContain('涵蓋需求的資料根據')
   })

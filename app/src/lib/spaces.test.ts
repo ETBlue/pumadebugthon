@@ -33,15 +33,15 @@ describe('issuesBySpace', () => {
 describe('solutionsBySpace', () => {
   it('sidewalk-furniture: every solution of both issues, by issue number then solution ID', () => {
     const list = solutionsBySpace([trashcans, trees], 'sidewalk-furniture')
-    expect(pairs(list)).toEqual(['#1 A', '#1 B', '#1 C', '#1 D', '#1 E', '#2 A', '#2 B', '#2 C', '#2 D', '#2 E'])
-    expect(list.find((x) => x.issueNumber === 2 && x.solution.id === 'A')?.solution.summary).toBe(
+    expect(pairs(list)).toEqual(['#1 S1', '#1 S2', '#1 S3', '#1 S4', '#1 S5', '#2 S1', '#2 S2', '#2 S3', '#2 S4', '#2 S5'])
+    expect(list.find((x) => x.issueNumber === 2 && x.solution.id === 'S1')?.solution.summary).toBe(
       trashcans.solutions[0].summary,
     )
   })
 
-  it('arcade: #2 C and D; utility: #1 A and D', () => {
-    expect(pairs(solutionsBySpace([trees, trashcans], 'arcade'))).toEqual(['#2 C', '#2 D'])
-    expect(pairs(solutionsBySpace([trees, trashcans], 'utility'))).toEqual(['#1 A', '#1 D'])
+  it('arcade: #2 S3 and S4; utility: #1 S1 and S4', () => {
+    expect(pairs(solutionsBySpace([trees, trashcans], 'arcade'))).toEqual(['#2 S3', '#2 S4'])
+    expect(pairs(solutionsBySpace([trees, trashcans], 'utility'))).toEqual(['#1 S1', '#1 S4'])
   })
 })
 
@@ -71,7 +71,7 @@ describe('sameSpaceIssues', () => {
 })
 
 describe('stakeholdersBySpace', () => {
-  it('utility: only #1, the stakeholders of the stories of #1 A and D, in ID order', () => {
+  it('utility: only #1, the stakeholders of the stories of #1 S1 and S4, in ID order', () => {
     expect(stakeholdersBySpace([trashcans, trees], 'utility')).toEqual([
       {
         issueNumber: 1,

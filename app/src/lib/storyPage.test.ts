@@ -56,7 +56,7 @@ describe('storyView', () => {
   })
 
   it('has the solutions that cover its need', () => {
-    expect(ids(view.solutions)).toEqual(['A'])
+    expect(ids(view.solutions)).toEqual(['S1'])
   })
 
   it('has no groups for a story with no W group and no N group', () => {
@@ -66,7 +66,7 @@ describe('storyView', () => {
     expect(v.wantGroup).toBeNull()
     expect(v.needGroup).toBeNull()
     expect(v.need?.id).toBe('I24-US01')
-    expect(ids(v.solutions)).toEqual(['E'])
+    expect(ids(v.solutions)).toEqual(['S5'])
   })
 
   it('uses the same need key rule as needs.ts, also when the N group is missing from needGroups', () => {

@@ -102,8 +102,8 @@ describe('opinionResult on #2', () => {
     expect(ids(r.otherSide[0].otherStories)).toEqual(['I01-US01'])
   })
 
-  it('solutions: A and D', () => {
-    expect(ids(r.solutions)).toEqual(['A', 'D'])
+  it('solutions: S1 and S4', () => {
+    expect(ids(r.solutions)).toEqual(['S1', 'S4'])
   })
 
   it('notMentioned: every other stakeholder of the issue, in ID order', () => {
@@ -155,7 +155,7 @@ describe('opinionResult on #1', () => {
     const r = opinionResult(trees, w08.storyIds)
     expect(r.otherSide.map((o) => o.conflict.id)).toEqual(['C7'])
     expect(ids(r.otherSide[0].otherStories)).toEqual(['O14-US06'])
-    expect(ids(r.solutions)).toEqual(['D'])
+    expect(ids(r.solutions)).toEqual(['S4'])
   })
 })
 

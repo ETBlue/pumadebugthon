@@ -18,7 +18,7 @@ const index = indexJson as IndexFile
 const issues = [treesJson, trashcansJson, smokefreeJson, policyJson] as IssueFile[]
 const CODE = 'sidewalk-furniture'
 const state = (part: Partial<ListState>): ListState => ({ ...DEFAULT_LIST_STATE, issues: [], spaces: [], groups: [], ...part })
-/** 「2-A」 for each issue solution of the list. */
+/** 「2-S1」 for each issue solution of the list. */
 const keys = (list: RecentSolution[]) => list.map((x) => (x.kind === 'issue' ? `${x.issueNumber}-${x.solution.id}` : x.solution.code))
 
 describe('spaceTabParams', () => {
@@ -76,17 +76,17 @@ describe('spaceSolutionsView', () => {
 
   it('sorts as #/solutions, and the groups keep the issue order', () => {
     // 最近更新: all on the same date, so the tie rule of #/solutions: the
-    // highest issue number first, then the highest letter first.
+    // highest issue number first, then the highest code first.
     expect(keys(spaceSolutionsView(items, state({}), issues))).toEqual([
-      '8-D', '8-C', '8-B', '8-A', '2-E', '2-D', '2-C', '2-B', '2-A', '1-E', '1-D', '1-C', '1-B', '1-A',
+      '8-S4', '8-S3', '8-S2', '8-S1', '2-S5', '2-S4', '2-S3', '2-S2', '2-S1', '1-S5', '1-S4', '1-S3', '1-S2', '1-S1',
     ])
-    // 最近新增: #2 A to D were added 2 days before the others, so they go last.
+    // 最近新增: #2 S1 to S4 were added 2 days before the others, so they go last.
     expect(keys(spaceSolutionsView(items, state({ sort: 'added' }), issues))).toEqual([
-      '8-D', '8-C', '8-B', '8-A', '2-E', '1-E', '1-D', '1-C', '1-B', '1-A', '2-D', '2-C', '2-B', '2-A',
+      '8-S4', '8-S3', '8-S2', '8-S1', '2-S5', '1-S5', '1-S4', '1-S3', '1-S2', '1-S1', '2-S4', '2-S3', '2-S2', '2-S1',
     ])
     const groups = groupByIssue(spaceSolutionsView(items, state({ sort: 'added' }), issues))
     expect(groups.map((g) => g.issueNumber)).toEqual([1, 2, 8])
-    expect(keys(groups[1].items)).toEqual(['2-E', '2-D', '2-C', '2-B', '2-A'])
+    expect(keys(groups[1].items)).toEqual(['2-S5', '2-S4', '2-S3', '2-S2', '2-S1'])
   })
 
   it('資料根據比例 puts a higher share first', () => {
@@ -96,8 +96,8 @@ describe('spaceSolutionsView', () => {
   })
 
   it('filters by issue and by stakeholder, and searches', () => {
-    expect(keys(spaceSolutionsView(items, state({ issues: [8] }), issues))).toEqual(['8-D', '8-C', '8-B', '8-A'])
-    expect(keys(spaceSolutionsView(items, state({ q: '2a' }), issues))).toEqual(['2-A'])
+    expect(keys(spaceSolutionsView(items, state({ issues: [8] }), issues))).toEqual(['8-S4', '8-S3', '8-S2', '8-S1'])
+    expect(keys(spaceSolutionsView(items, state({ q: '2s1' }), issues))).toEqual(['2-S1'])
     const who = spaceSolutionsView(items, state({ who: 'I06' }), issues)
     expect(who.length).toBeGreaterThan(0)
     expect(who.length).toBeLessThan(14)

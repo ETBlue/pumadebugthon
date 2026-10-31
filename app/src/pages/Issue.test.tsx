@@ -160,8 +160,8 @@ describe('the issue page tabs', () => {
 
   it('a reference link keeps 「只看有資料根據」 (?evidence=1)', () => {
     state.override = { [(policyJson as IssueFile).folder]: policyWithEvidenceRow() }
-    expect(render('/issues/9/decisions?evidence=1')).toContain('href="/solutions/9-A?evidence=1"')
-    expect(render('/issues/9/decisions')).toContain('href="/solutions/9-A"')
+    expect(render('/issues/9/decisions?evidence=1')).toContain('href="/solutions/9-S1?evidence=1"')
+    expect(render('/issues/9/decisions')).toContain('href="/solutions/9-S1"')
     state.override = {}
     expect(render('/issues/2/decisions')).toContain('href="/issues/2/conflicts?focus=C6"')
   })

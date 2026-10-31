@@ -19,9 +19,9 @@ describe('activeNavItem', () => {
     ['/stakeholders/I06/stories/2/I06-US01', 'stakeholders'],
     ['/solutions', 'solutions'],
     ['/solutions/x', 'solutions'],
-    ['/solutions/2-A', 'solutions'],
-    ['/solutions/2-A/needs', 'solutions'],
-    ['/solutions/X-A', 'solutions'],
+    ['/solutions/2-S1', 'solutions'],
+    ['/solutions/2-S1/needs', 'solutions'],
+    ['/solutions/X-S1', 'solutions'],
     // Decision 120: the space list and the space pages belong to 空間.
     ['/spaces', 'spaces'],
     ['/spaces/', 'spaces'],
@@ -49,7 +49,7 @@ describe('isNavListPage', () => {
     expect(isNavListPage('/wants')).toBe(false)
     expect(isNavListPage('/issues/2')).toBe(false)
     expect(isNavListPage('/issues/2/solutions/A')).toBe(false)
-    expect(isNavListPage('/solutions/2-A')).toBe(false)
+    expect(isNavListPage('/solutions/2-S1')).toBe(false)
     expect(isNavListPage('/')).toBe(false)
     expect(isNavListPage('/spaces')).toBe(true)
     expect(isNavListPage('/spaces/sidewalk-furniture')).toBe(false)

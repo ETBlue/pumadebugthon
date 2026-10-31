@@ -98,7 +98,7 @@ export interface StakeholderSolution {
 }
 
 export interface StakeholderSolutionsView {
-  /** The solutions that cover at least one of its needs, in letter order. */
+  /** The solutions that cover at least one of its needs, in code order (S2 before S10). */
   solutions: StakeholderSolution[]
   /** 「尚未有解法涵蓋的需求」: its needs that no solution covers, in the order of step 5.2. */
   uncovered: StakeholderNeedItem[]

@@ -128,20 +128,20 @@ describe('parseSolutionTab', () => {
 
 describe('solutionPath and crossSolutionPath', () => {
   it('the overview has no tab segment; other tabs have one', () => {
-    expect(solutionPath(2, 'A')).toBe('/solutions/2-A')
-    expect(solutionPath(2, 'A', 'overview')).toBe('/solutions/2-A')
-    expect(solutionPath(2, 'A', 'needs')).toBe('/solutions/2-A/needs')
-    expect(crossSolutionPath('X-A')).toBe('/solutions/X-A')
-    expect(crossSolutionPath('X-A', 'stakeholders')).toBe('/solutions/X-A/stakeholders')
+    expect(solutionPath(2, 'S1')).toBe('/solutions/2-S1')
+    expect(solutionPath(2, 'S1', 'overview')).toBe('/solutions/2-S1')
+    expect(solutionPath(2, 'S1', 'needs')).toBe('/solutions/2-S1/needs')
+    expect(crossSolutionPath('X-S1')).toBe('/solutions/X-S1')
+    expect(crossSolutionPath('X-S1', 'stakeholders')).toBe('/solutions/X-S1/stakeholders')
   })
 
   it('parseSolutionSlug and parseSolutionTab read back every path', () => {
     for (const tab of SOLUTION_TABS) {
-      const [, , slug, segment] = solutionPath(2, 'A', tab).split('/')
-      expect(parseSolutionSlug(slug)).toEqual({ kind: 'issue', issueNumber: 2, code: 'A' })
+      const [, , slug, segment] = solutionPath(2, 'S1', tab).split('/')
+      expect(parseSolutionSlug(slug)).toEqual({ kind: 'issue', issueNumber: 2, code: 'S1' })
       expect(parseSolutionTab(segment)).toBe(tab)
-      const [, , crossSlug, crossSegment] = crossSolutionPath('X-B', tab).split('/')
-      expect(parseSolutionSlug(crossSlug)).toEqual({ kind: 'cross', code: 'X-B' })
+      const [, , crossSlug, crossSegment] = crossSolutionPath('X-S2', tab).split('/')
+      expect(parseSolutionSlug(crossSlug)).toEqual({ kind: 'cross', code: 'X-S2' })
       expect(parseSolutionTab(crossSegment)).toBe(tab)
     }
   })
@@ -149,16 +149,22 @@ describe('solutionPath and crossSolutionPath', () => {
 
 describe('parseSolutionSlug', () => {
   it('reads an issue solution', () => {
-    expect(parseSolutionSlug('2-A')).toEqual({ kind: 'issue', issueNumber: 2, code: 'A' })
-    expect(parseSolutionSlug('12-E')).toEqual({ kind: 'issue', issueNumber: 12, code: 'E' })
+    expect(parseSolutionSlug('2-S1')).toEqual({ kind: 'issue', issueNumber: 2, code: 'S1' })
+    expect(parseSolutionSlug('12-S5')).toEqual({ kind: 'issue', issueNumber: 12, code: 'S5' })
+    expect(parseSolutionSlug('2-S10')).toEqual({ kind: 'issue', issueNumber: 2, code: 'S10' })
   })
 
   it('reads a cross-issue solution', () => {
-    expect(parseSolutionSlug('X-A')).toEqual({ kind: 'cross', code: 'X-A' })
+    expect(parseSolutionSlug('X-S1')).toEqual({ kind: 'cross', code: 'X-S1' })
+    expect(parseSolutionSlug('X-S13')).toEqual({ kind: 'cross', code: 'X-S13' })
+  })
+
+  it('returns null for an old link: no redirect (decision 151)', () => {
+    for (const s of ['2-' + 'A', '12-' + 'E', 'X-' + 'A', 'X-' + 'M']) expect(parseSolutionSlug(s)).toBeNull()
   })
 
   it('returns null for anything else', () => {
-    for (const s of ['2', 'A', '2-', 'X-', '2-a1', '2-a', 'cross', '02-A', '0-A', 'X-a', '2-A-B', '', undefined]) {
+    for (const s of ['2', 'S1', '2-', 'X-', '2-a1', '2-a', 'cross', '02-S1', '0-S1', '2-S0', '2-S01', 'X-S0', 'X-S01', 'X-N1', 'X-C1', '2-s1', 'X-a', '2-A-B', '', undefined]) {
       expect(parseSolutionSlug(s)).toBeNull()
     }
   })
@@ -171,7 +177,7 @@ describe('keyStoryPath', () => {
   })
 
   it('is null for a group key or anything else', () => {
-    for (const key of ['W08', 'N07', 'C1', 'X-N01', 'I01', 'i01-us09', 'I01-US', '']) expect(keyStoryPath(2, key)).toBeNull()
+    for (const key of ['W08', 'N07', 'C1', 'X-N1', 'I01', 'i01-us09', 'I01-US', '']) expect(keyStoryPath(2, key)).toBeNull()
   })
 })
 

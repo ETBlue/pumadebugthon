@@ -1,7 +1,7 @@
-// Cross-issue solutions (design 3.18): lookups for the page #/solutions/X-A
+// Cross-issue solutions (design 3.18): lookups for the page #/solutions/X-S1
 // and for the other places that show them. The data is cross-issue.json.
 // Every function takes null for a missing file and then returns nothing.
-// Order is always code order (X-A, X-B, …), file order, issue number order or
+// Order is always code order (X-S1, X-S2, …), file order, issue number order or
 // ID order. Nothing here sorts by a count.
 import type {
   CrossConflict, CrossIssueFile, CrossNeedGroup, CrossRef, CrossSolution, CrossSolutionFocus, IssueFile, Story,
@@ -11,14 +11,14 @@ import { issueNeeds, needsOfStakeholder, type NeedItem } from './needs'
 import { wantsOfCoverage, type CoveredNeed, type NeedCoverage, type StakeholderEntry, type WantCoverage } from './solutionPage'
 import { concernCounts, practiceCounts, type SolutionTabCounts } from './tabCounts'
 
-/** The cross-issue solution for the code in the URL, for example "X-A".
+/** The cross-issue solution for the code in the URL, for example "X-S1".
  * null for an unknown code, or when the file does not exist. */
 export function findCrossSolution(data: CrossIssueFile | null, code: string | undefined): CrossSolution | null {
   if (data === null || code === undefined) return null
   return data.solutions.find((s) => s.code === code) ?? null
 }
 
-/** 「X-A 名稱」 as plain text, for the page title. */
+/** 「X-S1 名稱」 as plain text, for the page title. */
 export function crossSolutionTitle(solution: CrossSolution): string {
   return `${solution.code} ${solution.name}`
 }
@@ -37,8 +37,8 @@ export function issuesOfCross(solution: CrossSolution, issues: IssueFile[]): Iss
 /** The issues that the solution page needs (design 3.18, decision 60): the
  * issues in parts, plus the issues of every need the solution covers
  * (needs.must, needs.shouldCould and the X-N groups in needs.crossIssue).
- * Each once, in number order. For example X-E has parts in #2 and #8, but
- * its group X-N03 has #1 N15, so this gives [1, 2, 8]. */
+ * Each once, in number order. For example X-S5 has parts in #2 and #8, but
+ * its group X-N3 has #1 N15, so this gives [1, 2, 8]. */
 export function crossCoverageIssueNumbers(data: CrossIssueFile, solution: CrossSolution): number[] {
   const numbers = [
     ...crossIssueNumbers(solution),

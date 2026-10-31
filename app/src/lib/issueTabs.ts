@@ -2,7 +2,7 @@
 // stakeholder filter (?stakeholder=, design 3.14) and the 「只看有資料根據」
 // filter (?evidence=1, design 3.5).
 // Order is always the fixed priority order, the file order of step 5.2 or
-// letter order. Nothing here sorts by a count.
+// code order (S2 before S10). Nothing here sorts by a count.
 import type { Conflict, IssueFile, Priority, Solution } from '@/types'
 import { dataBasedNeeds, issueNeeds, needsByPriority, needsForStakeholder, needsForStakeholderSet, type NeedPriorityGroup } from './needs'
 import { solutionNeedCoverage, type CoveredNeed } from './solutionPage'
@@ -77,7 +77,7 @@ export interface SolutionsTabItem {
   wayOutConflicts: Conflict[]
 }
 
-/** The 解法 tab: each solution in letter order. With a stakeholder picked,
+/** The 解法 tab: each solution in code order (S2 before S10). With a stakeholder picked,
  * only the solutions that cover at least one of its needs, each with only
  * that stakeholder's needs. special (the 特別關注 filter, decision 75) works
  * the same way with the stakeholders of the picked groups, on top of the

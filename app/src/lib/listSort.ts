@@ -7,7 +7,7 @@ import {
   compareShares, crossSolutionCells, evidenceShare, solutionCells, stakeholderCells, stakeholderSolutionCoverage,
   type Share,
 } from './coverage'
-import { compareIds } from './ids'
+import { compareCodes, compareIds } from './ids'
 import type { RecentSolution } from './recent'
 
 /** The sort values in the URL (sort=). 'solutions' is on #/stakeholders only. */
@@ -101,32 +101,29 @@ export function sortStakeholders(list: Stakeholder[], sort: ListSort, ctx: ListC
 // ---------- #/solutions ----------
 
 /** A key for one solution item: the code for a cross-issue solution
- * ("X-A"), "<issue>-<letter>" for an issue solution ("2-A"). */
+ * ("X-S1"), "<issue>-<code>" for an issue solution ("2-S1"). */
 export function solutionItemKey(item: RecentSolution): string {
   return item.kind === 'cross' ? item.solution.code : `${item.issueNumber}-${item.solution.id}`
 }
 
-function letterOrder(a: string, b: string): number {
-  return a < b ? -1 : a > b ? 1 : 0
-}
-
-/** The fixed ID order of solutions: the cross-issue solutions first (X-A,
- * X-B…), then by issue number, then by letter. */
+/** The fixed ID order of solutions: the cross-issue solutions first (X-S1,
+ * X-S2… X-S10, by number), then by issue number, then by the number of the
+ * code (S2 before S10, compareCodes). */
 export function compareSolutionItems(a: RecentSolution, b: RecentSolution): number {
-  if (a.kind === 'cross' && b.kind === 'cross') return letterOrder(a.solution.code, b.solution.code)
+  if (a.kind === 'cross' && b.kind === 'cross') return compareCodes(a.solution.code, b.solution.code)
   if (a.kind === 'cross') return -1
   if (b.kind === 'cross') return 1
-  return a.issueNumber - b.issueNumber || letterOrder(a.solution.id, b.solution.id)
+  return a.issueNumber - b.issueNumber || compareCodes(a.solution.id, b.solution.id)
 }
 
 /** The tie rule of the date sorts, as recentSolutionItems: the cross-issue
  * solutions first (code, highest first), then the issue number, highest
- * first, then the letter, highest first. */
+ * first, then the number of the code, highest first. */
 function solutionDateTie(a: RecentSolution, b: RecentSolution): number {
-  if (a.kind === 'cross' && b.kind === 'cross') return letterOrder(b.solution.code, a.solution.code)
+  if (a.kind === 'cross' && b.kind === 'cross') return compareCodes(b.solution.code, a.solution.code)
   if (a.kind === 'cross') return -1
   if (b.kind === 'cross') return 1
-  return b.issueNumber - a.issueNumber || letterOrder(b.solution.id, a.solution.id)
+  return b.issueNumber - a.issueNumber || compareCodes(b.solution.id, a.solution.id)
 }
 
 function solutionShare(item: RecentSolution, ctx: ListContext): Share | null {

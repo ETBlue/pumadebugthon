@@ -118,29 +118,30 @@ function withTab(base: string, tab: string | undefined): string {
 }
 
 /** The URL path of the solution page of an issue, for example
- * "/solutions/2-A" or "/solutions/2-A/needs". The overview has no tab segment. */
+ * "/solutions/2-S1" or "/solutions/2-S1/needs". The overview has no tab segment. */
 export function solutionPath(issueNumber: number, code: string, tab?: SolutionTab): string {
   return withTab(`/solutions/${issueNumber}-${code}`, tab)
 }
 
 /** The URL path of a cross-issue solution page. code is the code as
- * cross-issue.json writes it, for example "X-A": "/solutions/X-A",
- * "/solutions/X-A/stakeholders". */
+ * cross-issue.json writes it, for example "X-S1": "/solutions/X-S1",
+ * "/solutions/X-S1/stakeholders". */
 export function crossSolutionPath(code: string, tab?: SolutionTab): string {
   return withTab(`/solutions/${code}`, tab)
 }
 
 export type SolutionSlug = { kind: 'issue'; issueNumber: number; code: string } | { kind: 'cross'; code: string }
 
-/** The solution of the path segment (design 3.12): "2-A" is solution A of
- * issue #2, "X-A" is a cross-issue solution. The issue number is a plain
- * positive number (not "02"). The code is one capital letter. Anything else
- * returns null. */
+/** The solution of the path segment (design 3.12): "2-S1" is solution S1 of
+ * issue #2, "X-S1" is a cross-issue solution. The issue number and the
+ * number of the code are plain positive numbers (not "02", not "S01";
+ * design decision 151). Anything else returns null, also an old link such
+ * with one capital letter after the 「-」 (no redirect). */
 export function parseSolutionSlug(segment: string | undefined): SolutionSlug | null {
   if (segment === undefined) return null
-  const cross = /^X-[A-Z]$/.exec(segment)
+  const cross = /^X-S[1-9]\d*$/.exec(segment)
   if (cross) return { kind: 'cross', code: segment }
-  const m = /^([1-9]\d*)-([A-Z])$/.exec(segment)
+  const m = /^([1-9]\d*)-(S[1-9]\d*)$/.exec(segment)
   if (!m) return null
   return { kind: 'issue', issueNumber: Number(m[1]), code: m[2] }
 }

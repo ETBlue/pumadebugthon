@@ -50,7 +50,7 @@ export function spaceTabFiltered(state: ListState): boolean {
 // ---------- 解法 ----------
 
 /** The solutions of the space as list items, in the fixed order: by issue
- * number, then by letter. */
+ * number, then by the number of the code. */
 export function spaceSolutionItems(issues: IssueFile[], code: string): RecentSolution[] {
   return solutionsBySpace(issues, code).map((s): RecentSolution => ({ kind: 'issue', ...s }))
 }

@@ -75,7 +75,7 @@ describe('CellParts with the 只看有資料根據 filter (decision 105)', () =>
 })
 
 describe('a step 7 cell on the solution page (decision 140)', () => {
-  const base = trashcans.solutions.find((s) => s.id === 'A') as Solution
+  const base = trashcans.solutions.find((s) => s.id === 'S1') as Solution
   const sol: Solution = {
     ...base,
     evaluation: { ...base.evaluation, privacy: mixed },
@@ -84,7 +84,7 @@ describe('a step 7 cell on the solution page (decision 140)', () => {
   // 隱私 is on the 可能爭議 tab now; the 概覽 block stays on 總覽.
   function render(search: string, tab: 'overview' | 'controversies'): string {
     return renderToStaticMarkup(
-      <MemoryRouter initialEntries={[`/solutions/2-A${search}`]}>
+      <MemoryRouter initialEntries={[`/solutions/2-S1${search}`]}>
         {tab === 'overview' ? (
           <OverviewTab issue={trashcans} solution={sol} />
         ) : (
@@ -111,7 +111,7 @@ describe('a step 7 cell on the solution page (decision 140)', () => {
     expect(on).toContain('官方資料的部分')
     expect(on).toContain('新聞的部分')
     // The 概覽 block of 總覽 (成本, 可行性, 主要風險, 主責單位) follows it too:
-    // the cells of #2 A are all [AI模擬], so they show the note.
+    // the cells of #2 S1 are all [AI模擬], so they show the note.
     const box = (html: string) => html.slice(html.indexOf('id="solution-overview"'), html.indexOf('</dl>'))
     expect(box(render('?evidence=1', 'overview'))).toContain('這一格只有標記 [AI模擬] 的內容。')
     expect(box(render('', 'overview'))).not.toContain('這一格只有')

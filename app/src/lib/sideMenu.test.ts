@@ -209,7 +209,7 @@ describe('sideMenuCounts', () => {
     expect(counts.get('I99')).toBe(0)
   })
 
-  it('I06 on #2: wants W08 and W11, needs N07 and N08, conflict C6, solutions A and C', () => {
+  it('I06 on #2: wants W08 and W11, needs N07 and N08, conflict C6, solutions S1 and S3', () => {
     const of = (c: (typeof SIDE_MENU_CONTEXTS)[number]) => sideMenuCounts(c, [trashcans], ['I06'], false).get('I06')
     expect(of('issue-wants')).toBe(2)
     expect(of('issue-needs')).toBe(2)

@@ -23,7 +23,7 @@ const tl = t.lists
 const ts = t.solutionsList
 
 /** The tag badge, then the code and name as a link to the cross-issue
- * solution page (#/solutions/X-A). The badge is outside the link. The link
+ * solution page (#/solutions/X-S1). The badge is outside the link. The link
  * keeps the 「只看有資料根據」 setting. */
 export function CrossSolutionLink({ solution: sol }: { solution: CrossSolution }) {
   const [params] = useSearchParams()

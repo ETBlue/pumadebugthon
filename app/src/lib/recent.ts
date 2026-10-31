@@ -3,7 +3,7 @@
 // and the solutions were sorted by 新增日期). Items with the same date: by ID, highest
 // first. An item with no date goes last. Never by a count.
 import type { AvailableIssueSummary, CrossIssueFile, CrossSolution, IssueFile, IssueSummary, Solution, Stakeholder } from '@/types'
-import { compareIds } from './ids'
+import { compareCodes, compareIds } from './ids'
 import { isListed } from './stakeholders'
 
 /** Newest date first. A missing date (null or "") goes last. Dates are
@@ -42,7 +42,8 @@ export interface IssueSolution {
 }
 
 /** 最近更新的解法: the solutions of the given issue files by `updated`, then
- * by issue number, then by solution letter, highest first. */
+ * by issue number, then by the number of the solution code (S10 before
+ * S2), highest first. */
 export function recentSolutions(issues: IssueFile[], limit?: number): IssueSolution[] {
   const list = issues
     .flatMap((issue) => issue.solutions.map((solution) => ({ issueNumber: issue.number, solution })))
@@ -50,7 +51,7 @@ export function recentSolutions(issues: IssueFile[], limit?: number): IssueSolut
       (a, b) =>
         compareDatesDesc(a.solution.updated, b.solution.updated) ||
         b.issueNumber - a.issueNumber ||
-        (a.solution.id < b.solution.id ? 1 : a.solution.id > b.solution.id ? -1 : 0),
+        compareCodes(b.solution.id, a.solution.id),
     )
   return take(list, limit)
 }
@@ -67,7 +68,7 @@ export type RecentSolution =
  * not exist. */
 export function recentSolutionItems(issues: IssueFile[], cross: CrossIssueFile | null, limit?: number): RecentSolution[] {
   const crossItems: RecentSolution[] = [...(cross?.solutions ?? [])]
-    .sort((a, b) => compareDatesDesc(a.updated, b.updated) || (a.code < b.code ? 1 : a.code > b.code ? -1 : 0))
+    .sort((a, b) => compareDatesDesc(a.updated, b.updated) || compareCodes(b.code, a.code))
     .map((solution) => ({ kind: 'cross', solution }))
   const issueItems: RecentSolution[] = recentSolutions(issues).map((x) => ({ kind: 'issue', ...x }))
   // Merge the two lists, which are both in date order. A cross-issue

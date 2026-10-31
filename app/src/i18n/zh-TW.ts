@@ -77,7 +77,7 @@ export const t = {
       solutions: '解法',
       'cross-need-groups': '跨議題的共同需求（X-N）',
       'cross-conflicts': '跨議題的衝突（X-C）',
-      'cross-solutions': '合併的解法（X-A…）',
+      'cross-solutions': '合併的解法（X-S1…）',
       'space-types': '空間類型',
     },
     dataLicense: '分析內容採用 CC BY 4.0 授權，例外見 ',
@@ -939,7 +939,7 @@ export const t = {
     storyCount: (n: number) => `${n} 則故事`,
     pickLink: (n: number) => `到 #${n} 做意見健檢`,
   },
-  /** Cross-issue solutions (design 3.18): the page #/solutions/X-A and the
+  /** Cross-issue solutions (design 3.18): the page #/solutions/X-S1 and the
    * other places that show them. */
   crossIssue: {
     notFoundBody: (code: string) => `沒有代號為 ${code} 的跨議題解法。網址可能打錯了。`,
@@ -1037,7 +1037,7 @@ export const t = {
     issueValue: (n: number, title: string) => `#${n} ${title}`,
     crossBadge: '跨議題解法',
     /** A cross-issue solution that also covers needs of issues outside its
-     * parts (X-E): 「也涵蓋 #1 的需求」. */
+     * parts (X-S5): 「也涵蓋 #1 的需求」. */
     alsoCovers: (titles: string[]) => `也涵蓋 ${titles.join('、')} 的需求`,
     basis: '涵蓋需求的資料根據',
     basisNone: '沒有涵蓋的需求',

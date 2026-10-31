@@ -67,7 +67,7 @@ export interface NeedCoveragePartsProps {
   /** The needs of this issue, split into covered and not covered
    * (solutionNeedCoverage, or the cross-issue version in Task N11). */
   coverage: NeedCoverage
-  /** The code of the solution on the page ("A", or "X-A" for a cross-issue
+  /** The code of the solution on the page ("S1", or "X-S1" for a cross-issue
    * solution). A not covered need lists the other solutions that cover it. */
   solutionId: string
   /** All stakeholders from index.json, for the names. */

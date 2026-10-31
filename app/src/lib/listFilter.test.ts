@@ -96,15 +96,15 @@ describe('filterSolutions', () => {
 
   it('議題: the issue solutions of the issue, and the cross-issue solutions with it in parts or in their covered needs', () => {
     const kept = keys({ issues: [1] })
-    expect(kept).toContain('X-E') // X-E covers #1 N15 through X-N03.
-    expect(kept.filter((k) => !k.startsWith('X-'))).toEqual(['1-A', '1-B', '1-C', '1-D', '1-E'])
+    expect(kept).toContain('X-S5') // X-S5 covers #1 N15 through X-N3.
+    expect(kept.filter((k) => !k.startsWith('X-'))).toEqual(['1-S1', '1-S2', '1-S3', '1-S4', '1-S5'])
     const crossKept = cross.solutions.filter((s) => crossCoverageIssueNumbers(cross, s).includes(1)).map((s) => s.code)
     expect(kept.filter((k) => k.startsWith('X-'))).toEqual(crossKept)
   })
 
   it('跨議題解法 keeps only the cross-issue solutions, and works with ANY', () => {
-    expect(keys({ crossChoice: true })).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
-    expect(keys({ crossChoice: true, issues: [9] })).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E', '9-A', '9-B', '9-C', '9-D', '9-E'])
+    expect(keys({ crossChoice: true })).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5'])
+    expect(keys({ crossChoice: true, issues: [9] })).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5', '9-S1', '9-S2', '9-S3', '9-S4', '9-S5'])
   })
 
   it('空間類型: ANY of the picked spaces, for both kinds', () => {

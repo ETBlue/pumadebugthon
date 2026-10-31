@@ -31,12 +31,12 @@ const ctx: ListContext = { issues: files, cross }
 // Out of order on purpose: solutionListItems must use the fixed ID order.
 const items = solutionListItems([policy, smokefree, trashcans, trees], cross)
 const view = (search: string) => solutionListView(items, solutionsParams(new URLSearchParams(search), index, files, cross), ctx)
-const lettersA = ['1-A', '2-A', '8-A', '9-A', 'X-A']
+const codesS1 = ['1-S1', '2-S1', '8-S1', '9-S1', 'X-S1']
 
 describe('solutionListItems', () => {
   it('gives every issue solution and every cross-issue solution in the fixed ID order', () => {
     expect(keys(items)).toEqual(keys([...items].sort(compareSolutionItems)))
-    expect(keys(items).slice(0, 6)).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E', '1-A'])
+    expect(keys(items).slice(0, 6)).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5', '1-S1'])
     expect(items).toHaveLength(25)
   })
 
@@ -88,15 +88,15 @@ describe('solutionListView (filter, then search, then sort)', () => {
     expect(keys(view('').slice(0, 5))).toEqual(keys(recentSolutionItems(files, cross, 5)))
   })
 
-  it('?issue=1 includes X-E, which covers a need of #1 but has no part in #1', () => {
+  it('?issue=1 includes X-S5, which covers a need of #1 but has no part in #1', () => {
     const shown = keys(view('issue=1'))
-    expect(shown).toContain('X-E')
-    expect(shown).toContain('1-A')
+    expect(shown).toContain('X-S5')
+    expect(shown).toContain('1-S1')
     expect(shown.filter((k) => /^\d/.test(k)).every((k) => k.startsWith('1-'))).toBe(true)
   })
 
-  it('?issue=X shows only X-A to X-E', () => {
-    expect(keys(view('issue=X')).sort()).toEqual(['X-A', 'X-B', 'X-C', 'X-D', 'X-E'])
+  it('?issue=X shows only X-S1 to X-S5', () => {
+    expect(keys(view('issue=X')).sort()).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5'])
   })
 
   it('?who=I06 shows only the solutions that cover a need of I06', () => {
@@ -106,28 +106,28 @@ describe('solutionListView (filter, then search, then sort)', () => {
     expect(shown).toEqual(keys(sortSolutions(filterSolutions(items, { ...NO_FILTERS, who: 'I06' }, ctx), 'updated', ctx)))
   })
 
-  it('?q=A shows #1 A, #2 A, #8 A, #9 A and X-A in the order of the sort', () => {
-    expect(keys(view('q=A')).sort()).toEqual(lettersA)
+  it('?q=S1 shows #1 S1, #2 S1, #8 S1, #9 S1 and X-S1 in the order of the sort', () => {
+    expect(keys(view('q=S1')).sort()).toEqual(codesS1)
     for (const sort of ['updated', 'added', 'evidence'] as const) {
-      const order = keys(sortSolutions(items, sort, ctx)).filter((k) => lettersA.includes(k))
-      expect(keys(view(`q=A&sort=${sort}`))).toEqual(order)
+      const order = keys(sortSolutions(items, sort, ctx)).filter((k) => codesS1.includes(k))
+      expect(keys(view(`q=S1&sort=${sort}`))).toEqual(order)
     }
   })
 
-  it('?q=X-A shows only X-A, and ?q=%232%20A shows only #2 A', () => {
-    expect(keys(view('q=X-A'))).toEqual(['X-A'])
-    expect(keys(view('q=%232%20A'))).toEqual(['2-A'])
+  it('?q=X-S1 shows only X-S1, and ?q=%232%20S1 shows only #2 S1', () => {
+    expect(keys(view('q=X-S1'))).toEqual(['X-S1'])
+    expect(keys(view('q=%232%20S1'))).toEqual(['2-S1'])
   })
 
-  it('?q=A&who=I06 shows only the solutions A that cover a need of I06', () => {
+  it('?q=S1&who=I06 shows only the solutions S1 that cover a need of I06', () => {
     const withWho = keys(view('who=I06'))
-    expect(keys(view('q=A&who=I06'))).toEqual(withWho.filter((k) => lettersA.includes(k)))
+    expect(keys(view('q=S1&who=I06'))).toEqual(withWho.filter((k) => codesS1.includes(k)))
   })
 })
 
 describe('crossAlsoCovers (「也涵蓋 #1 的需求」)', () => {
-  it('X-E also covers needs of #1, which is not in its parts', () => {
-    expect(crossAlsoCovers(cross, findCrossSolution(cross, 'X-E')!)).toEqual([1])
+  it('X-S5 also covers needs of #1, which is not in its parts', () => {
+    expect(crossAlsoCovers(cross, findCrossSolution(cross, 'X-S5')!)).toEqual([1])
   })
 
   it('never lists an issue of the parts', () => {
@@ -140,10 +140,10 @@ describe('crossAlsoCovers (「也涵蓋 #1 的需求」)', () => {
 
 describe('solutionItemCells', () => {
   it('uses the cells of the stories of the covered needs (design 3.23.4)', () => {
-    const a = items.find((x) => solutionItemKey(x) === '2-A')!
+    const a = items.find((x) => solutionItemKey(x) === '2-S1')!
     expect(solutionItemCells(a, ctx)).toEqual(solutionCells(trashcans, trashcans.solutions[0]))
-    const xa = items.find((x) => solutionItemKey(x) === 'X-A')!
-    expect(solutionItemCells(xa, ctx)).toEqual(crossSolutionCells(cross, findCrossSolution(cross, 'X-A')!, files))
+    const xa = items.find((x) => solutionItemKey(x) === 'X-S1')!
+    expect(solutionItemCells(xa, ctx)).toEqual(crossSolutionCells(cross, findCrossSolution(cross, 'X-S1')!, files))
   })
 })
 
@@ -166,7 +166,7 @@ describe('solutionSpaceOptions', () => {
 })
 
 describe('coveredNeedCount', () => {
-  it('#2 A covers 9 needs (6.2 of #2: Must and Should / Could)', () => {
+  it('#2 S1 covers 9 needs (6.2 of #2: Must and Should / Could)', () => {
     expect(coveredNeedCount(trashcans, trashcans.solutions[0])).toBe(9)
   })
 

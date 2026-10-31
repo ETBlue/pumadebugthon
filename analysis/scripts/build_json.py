@@ -170,10 +170,10 @@ MOVED = "已改為"
 ISSUE_SOURCES = ("主辦單位", "參加者補充")
 
 
-class ReadError(Exception):
-    def __init__(self, section, reason):
-        super().__init__(f"{section}: {reason}")
-        self.section, self.reason = section, reason
+# ReadError and read_csv are in analysis_common.py, so the type list readers
+# there can use them too. The names stay here for the other scripts and tests.
+ReadError = common.ReadError
+read_csv = common.read_csv
 
 
 # ---------- small helpers ----------
@@ -239,27 +239,6 @@ def unique(items):
             seen.add(x)
             out.append(x)
     return out
-
-
-def read_csv(analysis_dir, name, columns):
-    """Rows of a shared CSV file. A missing file or column is a ReadError."""
-    path = common.data_file(analysis_dir, name)
-    try:
-        with open(path, encoding="utf-8-sig", newline="") as f:
-            reader = csv.DictReader(f)
-            rows = list(reader)
-            header = reader.fieldnames or []
-    except OSError as e:
-        raise ReadError(name, f"cannot read the file ({e.strerror})")
-    except (UnicodeDecodeError, csv.Error) as e:
-        raise ReadError(name, f"cannot read the file ({e})")
-    missing = [c for c in columns if c not in header]
-    if missing:
-        raise ReadError(name, f"header: no column {'、'.join(missing)}")
-    for i, r in enumerate(rows, start=2):
-        if None in r or any(r[c] is None for c in columns):
-            raise ReadError(name, f"row {i}: wrong number of cells")
-    return rows
 
 
 def check_date(value, section_name, where):

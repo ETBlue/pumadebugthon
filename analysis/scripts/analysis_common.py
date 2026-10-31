@@ -66,12 +66,19 @@ Rules:
   (DEPENDENCY_HEADER). step7_tables() finds them by header. A dependency
   row is a row of the 分析摘要 topic 相依事項與現行政策的關係 that names the
   solution; the 分析摘要 keeps only the rows that name no solution.
+- Type lists (ETBlue, 2026-10-31): data/domain-types.csv (領域, the 政事別
+  list of Taipei) and data/solution-types.csv (解法類型). domain_types() and
+  solution_types() read them. A code must not repeat. A list with 2 levels
+  (domain types; space types later) has a 上層 column: empty on a level 1
+  row, the code of a level 1 row on a level 2 row (check_two_levels). Only
+  level 2 codes (leaf_codes) are tags on issues and solutions. Types are
+  labels only: no scores, weights or ranks.
 - Content fingerprint (fingerprint): the first 12 hex characters of the
   SHA-256 of the content as canonical JSON (keys sorted, no spaces, UTF-8).
   update_dates.py and check_analysis.py use it to see whether the content of
   a stakeholder or a solution changed.
 """
-import datetime, hashlib, json, os, re
+import csv, datetime, hashlib, json, os, re
 
 DATA_FOLDER = "data"
 DOCS_FOLDER = "docs"
@@ -85,6 +92,104 @@ def data_file(analysis_dir, name):
 def doc_file(analysis_dir, name):
     """The path of a shared doc, such as method.md: <analysis_dir>/docs/<name>."""
     return os.path.join(analysis_dir, DOCS_FOLDER, name)
+
+
+class ReadError(Exception):
+    """A file or a section that cannot be read. section is the file name or
+    the section, reason says what is wrong. build_json.ReadError is this class."""
+    def __init__(self, section, reason):
+        super().__init__(f"{section}: {reason}")
+        self.section, self.reason = section, reason
+
+
+def read_csv(analysis_dir, name, columns):
+    """Rows of a shared CSV file. A missing file or column is a ReadError."""
+    path = data_file(analysis_dir, name)
+    try:
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+            header = reader.fieldnames or []
+    except OSError as e:
+        raise ReadError(name, f"cannot read the file ({e.strerror})")
+    except (UnicodeDecodeError, csv.Error) as e:
+        raise ReadError(name, f"cannot read the file ({e})")
+    missing = [c for c in columns if c not in header]
+    if missing:
+        raise ReadError(name, f"header: no column {'、'.join(missing)}")
+    for i, r in enumerate(rows, start=2):
+        if None in r or any(r[c] is None for c in columns):
+            raise ReadError(name, f"row {i}: wrong number of cells")
+    return rows
+
+
+# The type lists (see the rules above) and their columns.
+DOMAIN_TYPES_FILE = "domain-types.csv"
+DOMAIN_TYPE_COLS = ("代碼", "名稱", "上層", "說明", "政事別", "陳情系統主類別")
+SOLUTION_TYPES_FILE = "solution-types.csv"
+SOLUTION_TYPE_COLS = ("代碼", "名稱", "說明", "判斷方式", "政策工具")
+
+
+def code_rows(analysis_dir, name, columns):
+    """{代碼: row} of a type list, in file order. The values are stripped.
+    A missing column, an empty code or a repeated code is a ReadError."""
+    out = {}
+    for i, r in enumerate(read_csv(analysis_dir, name, columns), start=2):
+        row = {k: (v or "").strip() for k, v in r.items()}
+        code = row["代碼"]
+        if not code:
+            raise ReadError(name, f"row {i}: empty 代碼")
+        if code in out:
+            raise ReadError(name, f"code {code} is repeated (row {i})")
+        out[code] = row
+    return out
+
+
+def _row_list(rows):
+    """rows as a list of row dicts: a {code: row} dict or a list of rows."""
+    return list(rows.values()) if isinstance(rows, dict) else list(rows)
+
+
+def leaf_codes(rows):
+    """The level 2 codes (a row with a 上層) in file order. rows is a
+    {code: row} dict or a list of rows with 代碼 and 上層."""
+    return [r["代碼"].strip() for r in _row_list(rows) if r["上層"].strip()]
+
+
+def check_two_levels(rows, file_name):
+    """Check a list with 2 levels. Every 上層 is empty (level 1) or the code
+    of a level 1 row (level 2). Every level 1 row has at least one child.
+    Otherwise a ReadError that names the file and the code. rows is a
+    {code: row} dict or a list of rows with 代碼 and 上層."""
+    rows = _row_list(rows)
+    parent = {r["代碼"].strip(): r["上層"].strip() for r in rows}
+    for r in rows:
+        code, up = r["代碼"].strip(), r["上層"].strip()
+        if not up:
+            continue
+        if up not in parent:
+            raise ReadError(file_name, f"code {code}: 上層 {up} is not a code in this file")
+        if parent[up]:
+            raise ReadError(file_name, f"code {code}: 上層 {up} is a level 2 code. The list has only 2 levels, "
+                                       f"so 上層 must be a level 1 code (a row with an empty 上層)")
+    children = set(parent.values())
+    for code, up in parent.items():
+        if not up and code not in children:
+            raise ReadError(file_name, f"level 1 code {code} has no child (no row has 上層 {code})")
+
+
+def domain_types(analysis_dir):
+    """{代碼: row} of data/domain-types.csv (領域), in file order. Runs
+    check_two_levels. A ReadError when the file cannot be read or is wrong."""
+    rows = code_rows(analysis_dir, DOMAIN_TYPES_FILE, DOMAIN_TYPE_COLS)
+    check_two_levels(rows, DOMAIN_TYPES_FILE)
+    return rows
+
+
+def solution_types(analysis_dir):
+    """{代碼: row} of data/solution-types.csv (解法類型), in file order.
+    A ReadError when the file cannot be read or a code repeats."""
+    return code_rows(analysis_dir, SOLUTION_TYPES_FILE, SOLUTION_TYPE_COLS)
 
 # The source tags, in display order (see method.md, section 標記):
 # 實證 = a person can check the source, or a person checked the AI summary.

@@ -1,15 +1,18 @@
 """Keep the 更新日期 of each stakeholder, solution, cross-issue solution, user
-story and space type, and the 新增日期 of each user story and space type.
+story, space type, domain type and solution type, and the 新增日期 of each
+user story, space type, domain type and solution type.
 
 Usage: python3 -I analysis/scripts/update_dates.py analysis [--check]
 
 Writes analysis/data/updated-dates.csv (UTF-8 with BOM). Columns:
-- 類型: 利害關係人, 跨議題解法, 解法, 使用者故事 or 空間類型.
+- 類型: 利害關係人, 跨議題解法, 解法, 使用者故事, 空間類型, 領域類型 or
+  解法類型.
 - 編號: the stakeholder ID (I06), the cross-issue solution code (X-A), the
   issue number and the solution code (2-A), the issue number and the story
-  ID (2-O01-US01), or the space type code (sidewalk).
-- 新增日期: only for 使用者故事 and 空間類型, because they have no other
-  place for it (YYYY-MM-DD). Empty for the other types: their 新增日期 is in
+  ID (2-O01-US01), or the code of a space type (sidewalk), a domain type
+  (transport) or a solution type (intake).
+- 新增日期: only for 使用者故事, 空間類型, 領域類型 and 解法類型, because
+  they have no other place for it (YYYY-MM-DD). Empty for the other types: their 新增日期 is in
   issues.csv, stakeholders.csv, 6.1 or cross-issue-analysis.md.
 - 更新日期: the last day the item's own content changed (YYYY-MM-DD).
 - 內容指紋: analysis_common.fingerprint of the item's own content.
@@ -36,8 +39,11 @@ The content of each item (design 3.23.8):
   優先順序 and its tag, 相同訴求編號, 相同需求編號). The same fields as in
   the stakeholder's content.
 - 空間類型: its row in space-types.csv (名稱, 分組, 說明).
+- 領域類型: its row in domain-types.csv (名稱, 上層, 說明, 政事別,
+  陳情系統主類別).
+- 解法類型: its row in solution-types.csv (名稱, 說明, 判斷方式, 政策工具).
 
-The rule for the 新增日期 of a 使用者故事 or a 空間類型:
+The rule for the 新增日期 of a 使用者故事, 空間類型, 領域類型 or 解法類型:
 - A new item (no row yet, or an empty 新增日期) gets today (Taiwan time).
 - Otherwise it keeps its date. It never changes.
 
@@ -51,7 +57,9 @@ Row order: the stakeholders (O before I, then the number), then the
 cross-issue solutions (X-A, X-B…), then the issue solutions (by issue
 number, then by code), then the user stories (by issue number, then in the
 order of the step 4 table), then the space types (in the order of
-space-types.csv). This is the fixed ID order of the app.
+space-types.csv), then the domain types (in the order of domain-types.csv),
+then the solution types (in the order of solution-types.csv). This is the
+fixed ID order of the app.
 
 With --check, the script writes nothing. It fails (exit code 1) when the
 file would change, with the message 「請執行 update_dates.py」. build_all.sh
@@ -69,11 +77,16 @@ import build_json
 FILE = "updated-dates.csv"
 HEADER = ["類型", "編號", "新增日期", "更新日期", "內容指紋"]
 STAKEHOLDER, CROSS, SOLUTION, STORY, SPACE = "利害關係人", "跨議題解法", "解法", "使用者故事", "空間類型"
-TYPES = (STAKEHOLDER, CROSS, SOLUTION, STORY, SPACE)
+DOMAIN_TYPE, SOLUTION_TYPE = "領域類型", "解法類型"
+TYPES = (STAKEHOLDER, CROSS, SOLUTION, STORY, SPACE, DOMAIN_TYPE, SOLUTION_TYPE)
 # The types whose 新增日期 is kept in this file (they have no other place for it).
-OWN_ADDED = (STORY, SPACE)
+OWN_ADDED = (STORY, SPACE, DOMAIN_TYPE, SOLUTION_TYPE)
 # The columns of space-types.csv that are the space type's own content.
 SPACE_COLS = ("名稱", "分組", "說明")
+# The columns of domain-types.csv and solution-types.csv that are the type's
+# own content: every column except 代碼.
+DOMAIN_TYPE_COLS = common.DOMAIN_TYPE_COLS[1:]
+SOLUTION_TYPE_COLS = common.SOLUTION_TYPE_COLS[1:]
 # The columns of stakeholders.csv that are the stakeholder's own content.
 STAKE_COLS = ("利害關係人", "分類路徑", "特別關注", "議題", "備註")
 # The fields of a story that are the stakeholder's content.
@@ -102,8 +115,8 @@ def stakeholder_order(sid):
 
 def items(analysis_dir):
     """Every item with its fingerprint, in the row order:
-    [{"type", "id", "added", "fingerprint"}]. added is None for a 使用者故事
-    and a 空間類型 (this file keeps their 新增日期). A file that cannot be
+    [{"type", "id", "added", "fingerprint"}]. added is None for the types in
+    OWN_ADDED (this file keeps their 新增日期). A file that cannot be
     read raises build_json.ReadError."""
     index, issue_files = build_json.build(analysis_dir)
     cross = build_json.build_cross_issue(analysis_dir)
@@ -142,6 +155,11 @@ def items(analysis_dir):
     for r in build_json.read_csv(analysis_dir, "space-types.csv", ("代碼",) + SPACE_COLS):
         content = {c: r[c].strip() for c in SPACE_COLS}
         out.append({"type": SPACE, "id": r["代碼"].strip(), "added": None, "fingerprint": common.fingerprint(content)})
+    for type_, rows, cols in ((DOMAIN_TYPE, common.domain_types(analysis_dir), DOMAIN_TYPE_COLS),
+                              (SOLUTION_TYPE, common.solution_types(analysis_dir), SOLUTION_TYPE_COLS)):
+        for code, r in rows.items():
+            content = {c: r[c] for c in cols}
+            out.append({"type": type_, "id": code, "added": None, "fingerprint": common.fingerprint(content)})
     return out
 
 
@@ -200,7 +218,7 @@ def date_problem(value):
 def problems(analysis_dir):
     """The problems of updated-dates.csv, as a list of messages ([] when it is right).
     Every current item has exactly one row and there are no other rows. A
-    使用者故事 or 空間類型 has a 新增日期 that is a real date, not after
+    使用者故事, 空間類型, 領域類型 or 解法類型 has a 新增日期 that is a real date, not after
     today; the other types leave it empty. Each 更新日期 is a real date, not
     after today, and not before the item's 新增日期. Each 內容指紋 matches
     the current content."""
@@ -223,7 +241,7 @@ def problems(analysis_dir):
         seen.add(key)
         item = by_key.get(key)
         if item is None:
-            out.append(f"{name} is not a current stakeholder, solution, story or space type. {RUN}"); continue
+            out.append(f"{name} is not a current stakeholder, solution, story, space type, domain type or solution type. {RUN}"); continue
         added = (r["新增日期"] or "").strip()
         if item["type"] in OWN_ADDED:
             why = date_problem(added)

@@ -9,7 +9,7 @@ import json, os, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "scripts", "build_json.py")
-SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/open-data.csv",
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/domain-types.csv", "data/solution-types.csv", "data/open-data.csv",
           "docs/method.md", "docs/human-inputs.md")
 CROSS = os.path.join("cross-issue", "cross-issue-analysis.md")
 # The fields of index.json. The cross-issue data must not change them (the app reads them).

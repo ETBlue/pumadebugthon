@@ -12,8 +12,11 @@ SCRIPTS = os.path.join(ANALYSIS, "scripts")
 UPDATE = os.path.join(SCRIPTS, "update_dates.py")
 BUILD = os.path.join(SCRIPTS, "build_json.py")
 SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv",
+          "data/domain-types.csv", "data/solution-types.csv",
           "data/open-data.csv", "data/updated-dates.csv", "docs/method.md", "docs/human-inputs.md")
 ISSUE = "2-trashcans"
+# The types whose 新增日期 is kept in updated-dates.csv.
+OWN_ADDED = ("使用者故事", "空間類型", "領域類型", "解法類型")
 
 
 def load(name):
@@ -101,8 +104,9 @@ class ItemsTest(unittest.TestCase):
         self.assertEqual(len(keys), len(set(keys)))
         types = [i["type"] for i in items]
         # 利害關係人 first, then 跨議題解法, then 解法 (the fixed ID order of the
-        # solutions), then 使用者故事, then 空間類型.
-        self.assertEqual(types, sorted(types, key=["利害關係人", "跨議題解法", "解法", "使用者故事", "空間類型"].index))
+        # solutions), then 使用者故事, then 空間類型, then 領域類型, then 解法類型.
+        self.assertEqual(types, sorted(types, key=["利害關係人", "跨議題解法", "解法", "使用者故事", "空間類型",
+                                                   "領域類型", "解法類型"].index))
         self.assertIn(("利害關係人", "O01"), keys)
         self.assertIn(("解法", "2-A"), keys)
         self.assertIn(("跨議題解法", "X-A"), keys)
@@ -115,9 +119,15 @@ class ItemsTest(unittest.TestCase):
         with open(os.path.join(self.dir, "data", "space-types.csv"), encoding="utf-8-sig", newline="") as f:
             codes = [r["代碼"] for r in csv.DictReader(f)]
         self.assertEqual([i["id"] for i in items if i["type"] == "空間類型"], codes)
-        # Only the types with a 新增日期 in their own file have "added".
+        # Domain types and solution types: the order of their files.
+        for type_, name in (("領域類型", "domain-types.csv"), ("解法類型", "solution-types.csv")):
+            with open(os.path.join(self.dir, "data", name), encoding="utf-8-sig", newline="") as f:
+                codes = [r["代碼"] for r in csv.DictReader(f)]
+            self.assertTrue(codes, name)
+            self.assertEqual([i["id"] for i in items if i["type"] == type_], codes)
+        # Only the types with no 新增日期 in another file have "added" None.
         for i in items:
-            self.assertEqual(i["added"] is None, i["type"] in ("使用者故事", "空間類型"), i["id"])
+            self.assertEqual(i["added"] is None, i["type"] in OWN_ADDED, i["id"])
         stake = [i["id"] for i in items if i["type"] == "利害關係人"]
         self.assertEqual(stake, sorted(stake, key=lambda s: (s[0] != "O", int(s[1:]))))
         sols = [i["id"] for i in items if i["type"] == "解法"]
@@ -157,6 +167,13 @@ class ItemsTest(unittest.TestCase):
         edit(os.path.join(self.dir, "data", "space-types.csv"), "sidewalk,人行道,道路,", "sidewalk,人行道,道路,測試。")
         after = self.prints()
         self.assertEqual({k for k in before if before[k] != after[k]}, {("空間類型", "sidewalk")})
+
+    def test_domain_and_solution_type_change_changes_only_that_row(self):
+        before = self.prints()
+        edit(os.path.join(self.dir, "data", "domain-types.csv"), "\ntransport,交通,", "\ntransport,交通運輸,")
+        edit(os.path.join(self.dir, "data", "solution-types.csv"), "\nintake,受理與派工,", "\nintake,受理,")
+        after = self.prints()
+        self.assertEqual({k for k in before if before[k] != after[k]}, {("領域類型", "transport"), ("解法類型", "intake")})
 
     def test_stakeholder_row_change_changes_it(self):
         before = self.prints()
@@ -216,7 +233,7 @@ class UpdatedRowsTest(unittest.TestCase):
         self.assertEqual(rows, [self.row("O01", "2026-10-20", "aaa")])
 
     def test_new_story_or_space_type_gets_today_for_both_dates(self):
-        for type_ in ("使用者故事", "空間類型"):
+        for type_ in OWN_ADDED:
             with self.subTest(type_=type_):
                 rows = self.mod.updated_rows([self.item("x", "aaa", added=None, type_=type_)], [], self.today)
                 self.assertEqual(rows, [self.row("x", self.today, "aaa", type_=type_, added=self.today)])
@@ -275,7 +292,7 @@ class ScriptTest(unittest.TestCase):
 
     def test_added_column_only_for_stories_and_space_types(self):
         for (type_, iid), r in self.rows().items():
-            if type_ in ("使用者故事", "空間類型"):
+            if type_ in OWN_ADDED:
                 self.assertRegex(r["新增日期"], r"^\d{4}-\d\d-\d\d$", iid)
                 self.assertGreaterEqual(r["更新日期"], r["新增日期"], iid)
             else:
@@ -302,6 +319,20 @@ class ScriptTest(unittest.TestCase):
                          {k: v for k, v in before.items() if k not in (("利害關係人", "O01"), story)})
         code, out = self.run_script("--check")
         self.assertEqual(code, 0, out)
+
+    def test_new_domain_type_gets_today(self):
+        # A new row in domain-types.csv gets today as its 新增日期 and 更新日期,
+        # like a new space type. The other rows keep their dates.
+        before = self.rows()
+        with open(os.path.join(self.dir, "data", "domain-types.csv"), "a", encoding="utf-8", newline="") as f:
+            f.write("test-domain,測試,economic-development,測試用的領域。,測試支出,\n")
+        code, out = self.run_script()
+        self.assertEqual(code, 0, out)
+        after = self.rows()
+        today = load("analysis_common").today().isoformat()
+        new = after[("領域類型", "test-domain")]
+        self.assertEqual((new["新增日期"], new["更新日期"]), (today, today))
+        self.assertEqual({k: v for k, v in after.items() if k != ("領域類型", "test-domain")}, before)
 
     def test_missing_file_is_made(self):
         before = self.rows()

@@ -11,7 +11,7 @@ import os, re, shutil, subprocess, sys, tempfile, unittest
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "scripts", "check_analysis.py")
 UPDATE = os.path.join(ANALYSIS, "scripts", "update_dates.py")
-SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "docs/method.md",
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/domain-types.csv", "data/solution-types.csv", "docs/method.md",
           "data/open-data.csv", "data/updated-dates.csv", "docs/human-inputs.md")
 ISSUE = "2-trashcans"
 # No issue uses the old format now. This copy of #8 (from before commit 37057a9) tests it.

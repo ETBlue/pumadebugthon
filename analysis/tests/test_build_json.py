@@ -13,7 +13,7 @@ import importlib.util, json, os, re, shutil, subprocess, sys, tempfile, unittest
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REPO = os.path.dirname(ANALYSIS)
 SCRIPT = os.path.join(ANALYSIS, "scripts", "build_json.py")
-SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/open-data.csv")
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/domain-types.csv", "data/solution-types.csv", "data/open-data.csv")
 ISSUE = "2-trashcans"
 # No issue uses the old format now. This copy of #8 (from before commit
 # 37057a9) tests it. It is read from the working tree, not from HEAD.

@@ -4,7 +4,7 @@ scripts that use it (check_analysis.py, sync_stakeholders.py, build_json.py).
 The tests read the issue files in the working tree. They do not change them.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import csv, importlib.util, os, re, unittest
+import csv, importlib.util, os, re, shutil, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ISSUES = {"1-trees": 28, "2-trashcans": 27, "8-smokefree": 21}  # folder -> number of step 1 stakeholders
@@ -159,6 +159,117 @@ class SameStep1IdsTest(unittest.TestCase):
                 self.assertEqual(from_check, from_build)
                 self.assertEqual(len(self.check.step1_rows(text)[1]), 2)
 
+
+
+class TypeListsTest(unittest.TestCase):
+    """The domain and solution type lists (domain-types.csv, solution-types.csv)
+    and the shared check for a list with 2 levels."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.common = load("analysis_common")
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.dir = self._tmp.name
+        os.makedirs(os.path.join(self.dir, "data"))
+        for name in ("domain-types.csv", "solution-types.csv"):
+            shutil.copy(os.path.join(ANALYSIS, "data", name), os.path.join(self.dir, "data", name))
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def edit(self, name, change):
+        """Change the text of a copied CSV file with change(text) -> text."""
+        path = os.path.join(self.dir, "data", name)
+        with open(path, encoding="utf-8-sig", newline="") as f:
+            text = f.read()
+        new = change(text)
+        self.assertNotEqual(new, text)
+        with open(path, "w", encoding="utf-8-sig", newline="") as f:
+            f.write(new)
+
+    def rows(self, *lines):
+        """Rows for check_two_levels: each line is "code,parent"."""
+        return [dict(zip(("代碼", "上層"), l.split(","))) for l in lines]
+
+    def test_real_files_load(self):
+        domains = self.common.domain_types(ANALYSIS)
+        self.assertEqual(len(domains), 36)
+        self.assertEqual(len(self.common.leaf_codes(domains)), 28)
+        self.assertEqual(sum(1 for r in domains.values() if not r["上層"]), 8)
+        self.assertEqual(list(domains)[:2], ["general-affairs", "administration"])
+        self.assertEqual(domains["transport"]["上層"], "economic-development")
+        self.assertEqual(domains["transport"]["政事別"], "交通支出")
+        types = self.common.solution_types(ANALYSIS)
+        self.assertEqual(len(types), 13)
+        self.assertEqual(list(types)[0], "digital-tool")
+        self.assertEqual(list(types)[-1], "planning")
+
+    def test_files_have_bom(self):
+        for name in ("domain-types.csv", "solution-types.csv"):
+            with open(os.path.join(ANALYSIS, "data", name), "rb") as f:
+                self.assertTrue(f.read().startswith(b"\xef\xbb\xbf"), name)
+
+    def test_leaf_codes_in_file_order(self):
+        rows = self.rows("a,", "a1,a", "b,", "b1,b", "a2,a")
+        self.assertEqual(self.common.leaf_codes(rows), ["a1", "b1", "a2"])
+
+    def test_two_levels_pass(self):
+        self.common.check_two_levels(self.rows("a,", "a1,a", "b,", "b1,b"), "x.csv")
+
+    def test_unknown_parent_fails(self):
+        with self.assertRaises(self.common.ReadError) as e:
+            self.common.check_two_levels(self.rows("a,", "a1,a", "b1,zz"), "x.csv")
+        self.assertIn("x.csv", str(e.exception))
+        self.assertIn("b1", str(e.exception))
+        self.assertIn("zz", str(e.exception))
+
+    def test_parent_that_is_level_2_fails(self):
+        with self.assertRaises(self.common.ReadError) as e:
+            self.common.check_two_levels(self.rows("a,", "a1,a", "a11,a1"), "x.csv")
+        self.assertIn("x.csv", str(e.exception))
+        self.assertIn("a11", str(e.exception))
+
+    def test_level_1_without_child_fails(self):
+        with self.assertRaises(self.common.ReadError) as e:
+            self.common.check_two_levels(self.rows("a,", "a1,a", "b,"), "x.csv")
+        self.assertIn("x.csv", str(e.exception))
+        self.assertIn("b", str(e.exception))
+
+    def test_domain_reader_runs_the_two_level_check(self):
+        self.edit("domain-types.csv", lambda t: t.replace("\ntransport,交通,economic-development,", "\ntransport,交通,zz,", 1))
+        with self.assertRaises(self.common.ReadError) as e:
+            self.common.domain_types(self.dir)
+        self.assertIn("domain-types.csv", str(e.exception))
+        self.assertIn("transport", str(e.exception))
+
+    def test_repeated_code_fails(self):
+        for name, line in (("domain-types.csv", "transport,交通,economic-development,重複。,交通支出,\n"),
+                           ("solution-types.csv", "intake,受理與派工,重複。,重複。,Organisation\n")):
+            with self.subTest(name=name):
+                self.edit(name, lambda t: t + line)
+                reader = self.common.domain_types if name.startswith("domain") else self.common.solution_types
+                with self.assertRaises(self.common.ReadError) as e:
+                    reader(self.dir)
+                self.assertIn(name, str(e.exception))
+                self.assertIn(line.split(",")[0], str(e.exception))
+
+    def test_missing_column_fails(self):
+        for name, reader in (("domain-types.csv", self.common.domain_types),
+                             ("solution-types.csv", self.common.solution_types)):
+            with self.subTest(name=name):
+                self.edit(name, lambda t: t.replace(",說明,", ",備註,", 1))
+                with self.assertRaises(self.common.ReadError) as e:
+                    reader(self.dir)
+                self.assertIn(name, str(e.exception))
+                self.assertIn("說明", str(e.exception))
+
+    def test_same_read_error_as_build_json(self):
+        # build_json.ReadError is the class of the analysis_common module it imports.
+        build = load("build_json")
+        self.assertIs(build.ReadError, build.common.ReadError)
+        self.assertIs(build.read_csv, build.common.read_csv)
 
 
 class PracticeTest(unittest.TestCase):

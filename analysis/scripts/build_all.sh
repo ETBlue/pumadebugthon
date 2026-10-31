@@ -9,7 +9,7 @@
 #   2. build_csv.py for each issue folder in issues.csv that has an
 #      issue-analysis.md.
 #   3. update_dates.py updates data/updated-dates.csv (the dates of each
-#      stakeholder, solution, story and space type). With CI=true it runs with --check: it writes
+#      stakeholder, solution, story, space type, domain type and solution type). With CI=true it runs with --check: it writes
 #      nothing and fails when the file is not up to date, so CI never writes a date.
 #   4. check_analysis.py for each of these issue folders.
 #   5. check_cross_issue.py for cross-issue/cross-issue-analysis.md (if it exists).

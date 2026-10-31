@@ -9,7 +9,7 @@ import os, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "scripts", "check_cross_issue.py")
-SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "docs/method.md", "data/open-data.csv", "docs/human-inputs.md")
+SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/domain-types.csv", "data/solution-types.csv", "docs/method.md", "data/open-data.csv", "docs/human-inputs.md")
 CROSS = os.path.join("cross-issue", "cross-issue-analysis.md")
 
 

@@ -228,6 +228,17 @@ class TypeColumnsTest(unittest.TestCase):
         self.assertEqual(row["domains"], ["welfare-services"])
         self.assertEqual(self.mod.csv_value(row["solution_types"]), "intake open-data")
 
+    def test_cross_solution_row_has_types(self):
+        # Like an issue solution row: solution_types comes right after spaces.
+        sol = {"code": "X-A", "name": "n", "tag": "AI模擬", "summary": "s", "parts": [{"issue": 1, "code": "C"}],
+               "spaces": ["park"], "solutionTypes": ["facility", "planning"],
+               "needs": {"must": [], "shouldCould": [], "crossIssue": []}, "added": None, "updated": None}
+        cross = {"needGroups": [], "conflicts": [], "solutions": [sol]}
+        row = self.mod.cross_rows(cross)["cross-solutions"][0]
+        self.assertEqual(row["solution_types"], ["facility", "planning"])
+        self.assertEqual(list(row).index("solution_types"), list(row).index("spaces") + 1)
+        self.assertEqual(self.mod.csv_value(row["solution_types"]), "facility planning")
+
 
 if __name__ == "__main__":
     unittest.main()

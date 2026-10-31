@@ -229,6 +229,7 @@
 | `summary` | 說明 |
 | `parts` | 它合併的各議題解法 → `solutions`，例如 `1-C 2-D 8-A` |
 | `spaces` | 空間類型 → `space-types` |
+| `solution_types` | 解法類型，1 到 3 個代碼，例如 `open-data`。每個代碼都是至少一個組成解法的解法類型。代碼見 `analysis/data/solution-types.csv` |
 | `needs_must`、`needs_should_could` | 涵蓋的 Must、Should／Could 需求 → `needs`（或 `cross-need-groups`） |
 | `cross_need_groups` | 涵蓋的跨議題共同需求 → `cross-need-groups` |
 | `added`、`updated` | 新增日期、更新日期 |

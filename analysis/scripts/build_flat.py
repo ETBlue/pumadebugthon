@@ -220,7 +220,7 @@ def cross_rows(cross):
         rows["cross-solutions"].append({
             "id": s["code"], "name": s["name"], "name_tag": s["tag"], "summary": s["summary"],
             "parts": [part(p) for p in s["parts"]],
-            "spaces": s["spaces"],
+            "spaces": s["spaces"], "solution_types": s["solutionTypes"],
             "needs_must": [ref(x) for x in s["needs"]["must"]],
             "needs_should_could": [ref(x) for x in s["needs"]["shouldCould"]],
             "cross_need_groups": s["needs"]["crossIssue"],

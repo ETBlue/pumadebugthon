@@ -83,7 +83,10 @@ Rules:
   solution-types.csv. Each 領域 cell is empty, or lists 1 to 3 level 2
   domain codes that are not on the issue's 領域 line: a solution gets its
   own domains only when they differ from the issue's. type_codes() and
-  tag_problem() check a list of codes. An issue with 「空間類型：無」 (#9)
+  tag_problem() check a list of codes. domain_line() reads and checks the
+  領域 line, solution_type_problems() the two 6.1 cells, and
+  space_problem() one space code. build_json.py and check_analysis.py both
+  use them, so both give the same messages. An issue with 「空間類型：無」 (#9)
   still has a 領域 line and its 解法類型 cells. The old format may leave
   out the 領域 line and use OLD_SOLUTION_HEADER (the fixture only).
 - Content fingerprint (fingerprint): the first 12 hex characters of the
@@ -246,9 +249,17 @@ def tag_problem(code, rows, file_name):
         return f"unknown code {code} (not in {file_name})"
     if "上層" in row and not row["上層"].strip():
         children = [c for c, r in rows.items() if r["上層"].strip() == code]
-        return (f"{code} is a level 1 code. Only level 2 codes are tags. "
-                f"Use one of its children: {'、'.join(children)}")
+        # check_two_levels rejects a level 1 code with no child, but rows may
+        # come from a list that was not checked.
+        use = f"Use one of its children: {'、'.join(children)}" if children else "It has no children in the list"
+        return f"{code} is a level 1 code. Only level 2 codes are tags. {use}"
     return None
+
+
+def space_problem(code, rows):
+    """Why a code cannot be a space tag, or None: an unknown code, or a level
+    1 code. rows: {代碼: row} of space-types.csv (space_types)."""
+    return tag_problem(code, rows, SPACE_TYPES_FILE)
 
 
 def type_codes(value, rows, file_name, max_count=MAX_TYPES):
@@ -268,11 +279,46 @@ def type_codes(value, rows, file_name, max_count=MAX_TYPES):
         problems.append(f"code {c} is listed twice")
     if len(codes) > max_count:
         problems.append(f"{len(codes)} codes, but at most {max_count} are allowed")
-    for c in codes:
+    for c in dict.fromkeys(codes):  # each code once, also when it repeats
         p = tag_problem(c, rows, file_name)
         if p:
             problems.append(p)
     return codes, problems
+
+
+def domain_line(lines, domain_rows, needs_format):
+    """The 領域 line of an issue file: (codes, problems). lines: the lines
+    of the file. The line is lines[3], right under the 空間類型 line. Only
+    the old format (needs_format False) may leave it out; then ([], []).
+    A line with no code is a problem. Each message is ready to show."""
+    if len(lines) > 3 and lines[3].startswith(DOMAIN_LINE):
+        codes, problems = type_codes(lines[3][len(DOMAIN_LINE):], domain_rows, DOMAIN_TYPES_FILE)
+        if not codes and not problems:
+            return [], [f"領域 line has no code; write 1 to {MAX_TYPES} codes from {DOMAIN_TYPES_FILE}"]
+        return codes, [f"領域 line: {p}" for p in problems]
+    if needs_format:
+        return [], [f"no 「{DOMAIN_LINE}」 line right under the 空間類型 line"]
+    return [], []
+
+
+def solution_type_problems(sol, types_cell, domains_cell, issue_domains, solution_type_rows, domain_rows):
+    """The 解法類型 and 領域 cells of one 6.1 row: (solution types, own
+    domains, problems). sol is the solution code. The 解法類型 cell must
+    have 1 to 3 codes. The 領域 cell is empty, or has codes that are not in
+    issue_domains (a solution gets its own domains only when they differ).
+    Each message starts with 「solution <sol>: 」."""
+    problems = []
+    types, found = type_codes(types_cell, solution_type_rows, SOLUTION_TYPES_FILE)
+    if not types and not found:
+        problems.append(f"solution {sol}: the 解法類型 cell is empty; write 1 to {MAX_TYPES} codes from {SOLUTION_TYPES_FILE}")
+    problems += [f"solution {sol}: 解法類型: {p}" for p in found]
+    own, found = type_codes(domains_cell, domain_rows, DOMAIN_TYPES_FILE)
+    problems += [f"solution {sol}: 領域: {p}" for p in found]
+    for code in own:
+        if code in issue_domains:
+            problems.append(f"solution {sol}: 領域 {code} is on the issue's 領域 line. "
+                            f"Fill the 領域 cell only when the solution's domains differ from the issue's")
+    return types, own, problems
 
 # The source tags, in display order (see method.md, section 標記):
 # 實證 = a person can check the source, or a person checked the AI summary.

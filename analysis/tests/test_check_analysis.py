@@ -6,20 +6,14 @@ Before the check, run_check runs update_dates.py on the copy, so a test that cha
 because the 更新日期 file is old. The tests of the 更新日期 check pass dates=False.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import importlib.util, os, re, shutil, subprocess, sys, tempfile, unittest
+import os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-def load_helper():
-    """The test helper tests/new_format.py (not a test file)."""
-    spec = importlib.util.spec_from_file_location("new_format", os.path.join(ANALYSIS, "tests", "new_format.py"))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-NEW_FORMAT = load_helper()
+# The test helper tests/new_format.py (not a test file).
+from . import new_format as NEW_FORMAT
+OLD_SOLUTION_HEADER = ["代號", "解法", "空間類型", "新增日期", "一句話說明"]
 SCRIPT = os.path.join(ANALYSIS, "scripts", "check_analysis.py")
 UPDATE = os.path.join(ANALYSIS, "scripts", "update_dates.py")
 SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/domain-types.csv", "data/solution-types.csv", "docs/method.md",
@@ -277,10 +271,32 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertEqual(code, 0, out)
 
     def test_old_6_1_header_fails_in_needs_format(self):
-        # Only the old format (the fixture) may keep the 6.1 header without the two columns.
+        # Only the old format (the fixture) may keep the 6.1 header without the
+        # two columns. Here #2 (needs format) gets the old 5-column header and
+        # old 5-column rows.
+        self.to_new_format()
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        sec = text.split("### 6.1", 1)[1].split("### 6.2", 1)[0]
+        old = sec.replace(NEW_FORMAT.NEW_HEADER + "\n|---|---|---|---|---|---|---|",
+                          NEW_FORMAT.OLD_HEADER + "\n|---|---|---|---|---|", 1)
+        old, n = re.subn(r"^(\| [A-Z] \| [^|]+ \| [^|]+ \|) `participation` \|  \|", r"\1", old, flags=re.M)
+        self.assertEqual(n, 5)
+        self.assertIn("| A | `[AI模擬]` 清潔箱佈建建議地圖 | `sidewalk-furniture`、`mrt-exit` | 2026-10-16 |", old)
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(text.replace(sec, old))
+        self.assertFails("6.1: the header must be", "found | " + " | ".join(OLD_SOLUTION_HEADER) + " |")
+
+    def test_6_1_header_in_wrong_order_fails(self):
         self.to_new_format()
         self.edit(f"{ISSUE}/issue-analysis.md", NEW_FORMAT.NEW_HEADER, "| 代號 | 解法 | 空間類型 | 新增日期 | 解法類型 | 領域 | 一句話說明 |")
         self.assertFails("6.1: the header must be")
+
+    def test_unknown_own_domain_fails(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
+                  "| `sidewalk-furniture`、`mrt-exit` | `participation` | `foo` | 2026-10-16 |")
+        self.assertFails("6.1 solution A: 領域: unknown code foo")
 
     def test_6_2_code_not_in_6_1(self):
         self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 |", "| F | 參與式選址流程 |")

@@ -19,6 +19,9 @@ ISSUE = "2-trashcans"
 # 37057a9) tests it. It is read from the working tree, not from HEAD.
 OLD_FORMAT = os.path.join(ANALYSIS, "tests", "fixtures", "old-format")
 
+# The test helper tests/new_format.py (not a test file).
+from . import new_format
+
 
 def head_issue_folders():
     """Paths of the issue folders in HEAD that have an issue-analysis.md."""
@@ -50,7 +53,7 @@ def use_old_format(analysis_dir):
     text = re.sub(r"^(\| 其他顧慮與風險 \|.*\n)", r"\1| 災害風險 | `[AI模擬]` 無明顯相關災害風險 |\n", text, flags=re.M)
     # The fixture still has the space codes from before the split of
     # 2026-10-31. Rename them in this copy too.
-    text = load_helper().new_space_codes(text)
+    text = new_format.new_space_codes(text)
     with open(path, "w", encoding="utf-8") as f:
         f.write(text)
 
@@ -67,13 +70,6 @@ def load_module():
     spec.loader.exec_module(mod)
     return mod
 
-
-def load_helper():
-    """The test helper tests/new_format.py (not a test file)."""
-    spec = importlib.util.spec_from_file_location("new_format", os.path.join(ANALYSIS, "tests", "new_format.py"))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
 
 
 class BuildJsonOutputTest(unittest.TestCase):
@@ -765,7 +761,7 @@ class BuildJsonTypesTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.mod = load_module()
-        cls.helper = load_helper()
+        cls.helper = new_format
         cls.common = cls.mod.common
         cls.spaces = cls.common.space_types(ANALYSIS)
         cls.domains = cls.common.domain_types(ANALYSIS)

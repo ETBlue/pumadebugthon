@@ -260,6 +260,46 @@ class TypeListsTest(unittest.TestCase):
         self.assertIn("x.csv", str(e.exception))
         self.assertIn("empty 代碼", str(e.exception))
 
+    def test_repeated_unknown_code_is_reported_once(self):
+        rows = {"a": {"代碼": "a", "上層": ""}, "a1": {"代碼": "a1", "上層": "a"}}
+        codes, problems = self.common.type_codes("`foo`、`foo`", rows, "x.csv")
+        self.assertEqual(codes, ["foo", "foo"])
+        self.assertEqual(problems, ["code foo is listed twice", "unknown code foo (not in x.csv)"])
+
+    def test_level_1_code_with_no_children(self):
+        # rows that check_two_levels did not check: the message still ends well.
+        p = self.common.tag_problem("a", {"a": {"代碼": "a", "上層": ""}}, "x.csv")
+        self.assertIn("a is a level 1 code", p)
+        self.assertNotIn("children: ", p)
+        self.assertFalse(p.rstrip().endswith(":"))
+        p = self.common.tag_problem("a", {"a": {"代碼": "a", "上層": ""}, "a1": {"代碼": "a1", "上層": "a"}}, "x.csv")
+        self.assertTrue(p.endswith("Use one of its children: a1"), p)
+
+    def test_domain_line(self):
+        rows = {"d": {"代碼": "d", "上層": ""}, "d1": {"代碼": "d1", "上層": "d"}}
+        f = self.common.domain_line
+        self.assertEqual(f(["# t", "", "空間類型：無", "領域：`d1`"], rows, True), (["d1"], []))
+        self.assertEqual(f(["# t", "", "空間類型：無", ""], rows, False), ([], []))
+        self.assertIn("no 「領域：」 line", f(["# t", "", "空間類型：無", ""], rows, True)[1][0])
+        self.assertIn("領域 line has no code", f(["# t", "", "空間類型：無", "領域："], rows, True)[1][0])
+        self.assertIn("領域 line: d is a level 1 code", f(["# t", "", "空間類型：無", "領域：`d`"], rows, True)[1][0])
+
+    def test_solution_type_problems(self):
+        domains = {"d": {"代碼": "d", "上層": ""}, "d1": {"代碼": "d1", "上層": "d"}, "d2": {"代碼": "d2", "上層": "d"}}
+        types = {"t": {"代碼": "t"}}
+        f = self.common.solution_type_problems
+        self.assertEqual(f("A", "`t`", "", ["d1"], types, domains), (["t"], [], []))
+        self.assertEqual(f("A", "`t`", "`d2`", ["d1"], types, domains), (["t"], ["d2"], []))
+        self.assertIn("solution A: the 解法類型 cell is empty", f("A", "", "", ["d1"], types, domains)[2][0])
+        self.assertIn("solution A: 領域: unknown code zz", f("A", "`t`", "`zz`", ["d1"], types, domains)[2][0])
+        self.assertIn("only when", f("A", "`t`", "`d1`", ["d1"], types, domains)[2][0])
+
+    def test_space_problem(self):
+        spaces = self.common.space_types(ANALYSIS)
+        self.assertIsNone(self.common.space_problem("park", spaces))
+        self.assertIn("unknown code moon (not in space-types.csv)", self.common.space_problem("moon", spaces))
+        self.assertIn("road is a level 1 code", self.common.space_problem("road", spaces))
+
     def test_spaces_are_stripped(self):
         # Spaces around 代碼 and 上層 are not part of the code.
         rows = self.rows(" a ,", " a1 , a ")

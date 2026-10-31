@@ -656,22 +656,6 @@ def parse_needs(text, stories):
     return groups, needs
 
 
-def type_list(value, rows, file_name, section_name, where):
-    """The codes of a 領域 line or a 解法類型 or 領域 cell (see
-    analysis_common.type_codes). The first problem is a ReadError."""
-    codes, problems = common.type_codes(value, rows, file_name)
-    if problems:
-        raise ReadError(section_name, f"{where}: {problems[0]}")
-    return codes
-
-
-def space_problem(code, space_rows):
-    """Why a code cannot be a space tag, or None: unknown, or a level 1 code."""
-    if code not in space_rows:
-        return f"unknown space code {code} (not in space-types.csv)"
-    return common.tag_problem(code, space_rows, common.SPACE_TYPES_FILE)
-
-
 def parse_issue(text, space_rows, domain_rows, solution_type_rows):
     """The content of one issue file. space_rows, domain_rows and
     solution_type_rows: {代碼: row} of space-types.csv, domain-types.csv and
@@ -690,19 +674,15 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
     if not spaces and not no_space:
         raise ReadError("空間類型", f"no space codes in backticks (or 「{common.NO_SPACE_LINE}」)")
     for code in spaces:
-        why = space_problem(code, space_rows)
+        why = common.space_problem(code, space_rows)
         if why:
             raise ReadError("空間類型", why)
 
     # 領域: the line right under the 空間類型 line (see analysis_common). Only
     # the old format may leave it out.
-    domains = []
-    if len(lines) > 3 and lines[3].startswith(common.DOMAIN_LINE):
-        domains = type_list(lines[3][len(common.DOMAIN_LINE):], domain_rows, common.DOMAIN_TYPES_FILE, "領域", "領域 line")
-        if not domains:
-            raise ReadError("領域", f"the 「{common.DOMAIN_LINE}」 line has no code; write 1 to {common.MAX_TYPES} codes from domain-types.csv")
-    elif needs_format:
-        raise ReadError("領域", f"no 「{common.DOMAIN_LINE}」 line right under the 空間類型 line")
+    domains, problems = common.domain_line(lines, domain_rows, needs_format)
+    if problems:
+        raise ReadError("領域", problems[0])
 
     # step 1 (1.1): the 組織 and 個人 tables
     if common.section(text, "### 1.1") is None:
@@ -831,14 +811,10 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
         sol, codes = r["代號"], re.findall(r"`([^`]+)`", r["空間類型"])
         solution_types, own_domains = [], []
         if with_types:
-            solution_types = type_list(r["解法類型"], solution_type_rows, common.SOLUTION_TYPES_FILE, "6.1", f"solution {sol}: 解法類型")
-            if not solution_types:
-                raise ReadError("6.1", f"solution {sol}: the 解法類型 cell is empty; write 1 to {common.MAX_TYPES} codes from solution-types.csv")
-            own_domains = type_list(r["領域"], domain_rows, common.DOMAIN_TYPES_FILE, "6.1", f"solution {sol}: 領域")
-            for code in own_domains:
-                if code in domains:
-                    raise ReadError("6.1", f"solution {sol}: 領域 {code} is on the issue's 領域 line. "
-                                           f"Fill the 領域 cell only when the solution's domains differ from the issue's")
+            solution_types, own_domains, problems = common.solution_type_problems(
+                sol, r["解法類型"], r["領域"], domains, solution_type_rows, domain_rows)
+            if problems:
+                raise ReadError("6.1", problems[0])
         dash = r["空間類型"].strip() == common.NO_SPACE_CELL
         if no_space and not dash:
             raise ReadError("6.1", f"solution {sol}: the 空間類型 line is 「{common.NO_SPACE_LINE}」, so the 空間類型 cell must be 「{common.NO_SPACE_CELL}」")
@@ -847,7 +823,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
         if not codes and not dash:
             raise ReadError("6.1", f"solution {sol}: no space code")
         for code in codes:
-            why = space_problem(code, space_rows)
+            why = common.space_problem(code, space_rows)
             if why:
                 raise ReadError("6.1", f"solution {sol}: {why}")
             if code not in spaces:

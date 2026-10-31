@@ -11,9 +11,8 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              split_refs, step1_tables, step7_sections, summary_lines, summary_topics, tables, without_cross_refs,
                              DEPENDENCY_HEADER, DEPENDENCY_TOPIC, NO_DISASTER, PENDING_ONLY, PLAN_HEADER, PLAN_ROWS, STEP7_HEADER,
                              STEP7_ROWS, ref_solutions, step7_tables,
-                             DOMAIN_LINE, DOMAIN_TYPES_FILE, MAX_TYPES, OLD_SOLUTION_HEADER, SOLUTION_HEADER,
-                             SOLUTION_TYPES_FILE, SPACE_TYPES_FILE, ReadError, domain_types, solution_types, space_types,
-                             tag_problem, type_codes)
+                             OLD_SOLUTION_HEADER, SOLUTION_HEADER, ReadError, domain_line, domain_types,
+                             solution_type_problems, solution_types, space_problem, space_types)
 STEP7_TAG = re.compile(rf"`\[(?:{TAG_NAMES})\]`")  # a tag in a step 7 cell (16b-2)
 STEP7_SOLUTION = re.compile(r"^### 7\.\d+ 解法 ([A-Z])：")  # the heading of a step 7 solution table
 STEP1_HEADER = ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "與本題的關係"]
@@ -598,9 +597,6 @@ def main(md_path, csv_path):
         space_rows = space_types(analysis_dir)
     except ReadError as e:
         err(str(e)); space_rows = {}
-    def space_problem(code):
-        if code not in space_rows: return f"unknown space code {code} (not in space-types.csv)"
-        return tag_problem(code, space_rows, SPACE_TYPES_FILE)
     lines = text.splitlines()
     issue_spaces = []
     # 「空間類型：無」: the issue uses no city space (see analysis_common).
@@ -614,7 +610,7 @@ def main(md_path, csv_path):
         for code in sorted({x for x in issue_spaces if issue_spaces.count(x) > 1}):
             err(f"空間類型 line: space code {code} is listed twice")
         for code in issue_spaces:
-            why = space_problem(code)
+            why = space_problem(code, space_rows)
             if why: err(f"空間類型 line: {why}")
     else:
         err("no 「空間類型：」 line right under the title (title, blank line, then the line)")
@@ -630,14 +626,8 @@ def main(md_path, csv_path):
         solution_type_rows = solution_types(analysis_dir)
     except ReadError as e:
         err(str(e)); solution_type_rows = {}
-    issue_domains = []
-    if len(lines) > 3 and lines[3].startswith(DOMAIN_LINE):
-        issue_domains, problems = type_codes(lines[3][len(DOMAIN_LINE):], domain_rows, DOMAIN_TYPES_FILE)
-        if not issue_domains and not problems:
-            err(f"領域 line has no code; write 1 to {MAX_TYPES} codes from {DOMAIN_TYPES_FILE}")
-        for p in problems: err(f"領域 line: {p}")
-    elif needs_format(text):
-        err(f"no 「{DOMAIN_LINE}」 line right under the 空間類型 line")
+    issue_domains, problems = domain_line(lines, domain_rows, needs_format(text))
+    for p in problems: err(p)
 
     # 16. 6.1 has a 空間類型 column; each code is known and in the issue's list.
     # An issue with 「空間類型：無」 has 「—」 in every cell, and only such an issue.
@@ -668,7 +658,7 @@ def main(md_path, csv_path):
             for code in sorted({x for x in codes if codes.count(x) > 1}):
                 err(f"6.1 solution {sol}: space code {code} is listed twice")
             for code in codes:
-                why = space_problem(code)
+                why = space_problem(code, space_rows)
                 if why: err(f"6.1 solution {sol}: {why}")
                 elif code not in issue_spaces: err(f"6.1 solution {sol}: space {code} is not in the issue's 空間類型 line")
 
@@ -686,16 +676,8 @@ def main(md_path, csv_path):
             c = cells(line); sol = c[0]
             if len(c) != len(hdr61):
                 err(f"6.1 solution {sol}: {len(c)} cells, expected {len(hdr61)}"); continue
-            types, problems = type_codes(c[tcol], solution_type_rows, SOLUTION_TYPES_FILE)
-            if not types and not problems:
-                err(f"6.1 solution {sol}: the 解法類型 cell is empty; write 1 to {MAX_TYPES} codes from {SOLUTION_TYPES_FILE}")
-            for p in problems: err(f"6.1 solution {sol}: 解法類型: {p}")
-            own, problems = type_codes(c[dcol61], domain_rows, DOMAIN_TYPES_FILE)
-            for p in problems: err(f"6.1 solution {sol}: 領域: {p}")
-            for code in own:
-                if code in issue_domains:
-                    err(f"6.1 solution {sol}: 領域 {code} is on the issue's 領域 line. "
-                        f"Fill the 領域 cell only when the solution's domains differ from the issue's")
+            _, _, problems = solution_type_problems(sol, c[tcol], c[dcol61], issue_domains, solution_type_rows, domain_rows)
+            for p in problems: err(f"6.1 {p}")
 
     # 16b. each solution in 6.1 has its own step 7 section 「### 7.n 解法 X：…」
     # and a row in the 總覽 table (代號: the code only; 解法: the row tag and a

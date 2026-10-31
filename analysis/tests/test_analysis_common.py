@@ -146,6 +146,8 @@ class SameStep1IdsTest(unittest.TestCase):
         cls.build = load("build_json")
         with open(os.path.join(ANALYSIS, "data", "space-types.csv"), encoding="utf-8-sig", newline="") as f:
             cls.space_codes = {r["代碼"] for r in csv.DictReader(f)}
+        cls.domains = cls.build.common.domain_types(ANALYSIS)
+        cls.solution_types = cls.build.common.solution_types(ANALYSIS)
 
     def test_same_ids_in_all_three_scripts(self):
         for folder, count in ISSUES.items():
@@ -153,7 +155,7 @@ class SameStep1IdsTest(unittest.TestCase):
                 text = read(folder)
                 from_check = [r[0] for r in self.check.step1_rows(text)[0]]
                 from_sync = self.sync.step1_ids(text)
-                from_build = [s["id"] for s in self.build.parse_issue(text, self.space_codes)["stakeholders"]]
+                from_build = [s["id"] for s in self.build.parse_issue(text, self.space_codes, self.domains, self.solution_types)["stakeholders"]]
                 self.assertEqual(len(from_check), count)
                 self.assertEqual(from_check, from_sync)
                 self.assertEqual(from_check, from_build)

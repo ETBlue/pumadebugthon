@@ -76,6 +76,7 @@ def issue_rows(index):
         "source": i["source"],
         "available": i["available"],
         "spaces": i["spaces"],
+        "domains": i.get("domains", []),
         "added": i.get("added"),
         "updated": i["updated"],
     } for i in index["issues"]]
@@ -170,6 +171,9 @@ def issue_file_rows(issue):
         with_cell(row, "name", s["name"])
         row["summary"] = s["summary"]
         row["spaces"] = s["spaces"]
+        row["solution_types"] = s["solutionTypes"]
+        row["own_domains"] = s["ownDomains"]
+        row["domains"] = s["domains"]
         needs = s["needs"] or {"must": [], "shouldCould": []}
         row["needs_must"] = [gid(n, x) for x in needs["must"]]
         row["needs_should_could"] = [gid(n, x) for x in needs["shouldCould"]]

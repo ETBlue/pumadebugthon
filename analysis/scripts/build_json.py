@@ -40,6 +40,18 @@ Lists of IDs (1.2, 相同訴求群組, 5.4 相關故事, 6.2) hold IDs of this i
 A reference to another issue there, like 「#2 O01-US01」, stops the script.
 In other text it stays as written; check_analysis.py checks that it exists.
 
+領域 and 解法類型 (ETBlue, 2026-10-31; the rules are in analysis_common.py):
+- domains on the issue (issue JSON and index.json): the codes of the
+  「領域：」 line, the line right under the 空間類型 line. [] for an issue
+  without an analysis, and for an old-format file without the line.
+- solutionTypes on each solution: the codes of its 6.1 解法類型 cell.
+- ownDomains on each solution: the codes of its 6.1 領域 cell (often []).
+- domains on each solution: ownDomains when it is not empty, else the
+  issue's domains.
+An unknown code, a level 1 domain code, an empty 解法類型 cell, more than 3
+codes, or a 領域 cell code that is also on the issue's 領域 line stops the
+script.
+
 Each solution also gets the fields for its own page in the app:
 - measures: the 6.3 rows whose 解法 cell lists its code (a cell can list
   several, separated by 「、」, for example 「A、D」).
@@ -637,7 +649,19 @@ def parse_needs(text, stories):
     return groups, needs
 
 
-def parse_issue(text, space_codes):
+def type_list(value, rows, file_name, section_name, where):
+    """The codes of a 領域 line or a 解法類型 or 領域 cell (see
+    analysis_common.type_codes). The first problem is a ReadError."""
+    codes, problems = common.type_codes(value, rows, file_name)
+    if problems:
+        raise ReadError(section_name, f"{where}: {problems[0]}")
+    return codes
+
+
+def parse_issue(text, space_codes, domain_rows, solution_type_rows):
+    """The content of one issue file. space_codes: the space codes;
+    domain_rows and solution_type_rows: {代碼: row} of domain-types.csv and
+    solution-types.csv (analysis_common.domain_types, solution_types)."""
     lines = text.splitlines()
     needs_format = common.needs_format(text)
 
@@ -653,6 +677,16 @@ def parse_issue(text, space_codes):
     for code in spaces:
         if code not in space_codes:
             raise ReadError("空間類型", f"unknown space code {code} (not in space-types.csv)")
+
+    # 領域: the line right under the 空間類型 line (see analysis_common). Only
+    # the old format may leave it out.
+    domains = []
+    if len(lines) > 3 and lines[3].startswith(common.DOMAIN_LINE):
+        domains = type_list(lines[3][len(common.DOMAIN_LINE):], domain_rows, common.DOMAIN_TYPES_FILE, "領域", "領域 line")
+        if not domains:
+            raise ReadError("領域", f"the 「{common.DOMAIN_LINE}」 line has no code; write 1 to {common.MAX_TYPES} codes from domain-types.csv")
+    elif needs_format:
+        raise ReadError("領域", f"no 「{common.DOMAIN_LINE}」 line right under the 空間類型 line")
 
     # step 1 (1.1): the 組織 and 個人 tables
     if common.section(text, "### 1.1") is None:
@@ -774,8 +808,21 @@ def parse_issue(text, space_codes):
 
     # 6.1 solutions
     solutions = []
-    for r in table_rows(common.tables(section(text, "### 6.1", "6.1")), "6.1", ["代號", "解法", "空間類型", "新增日期", "一句話說明"]):
+    tables61 = common.tables(section(text, "### 6.1", "6.1"))
+    # The old format may use the 6.1 header without 解法類型 and 領域.
+    with_types = needs_format or any(all(c in h for c in common.SOLUTION_HEADER) for h, _ in tables61)
+    for r in table_rows(tables61, "6.1", common.SOLUTION_HEADER if with_types else common.OLD_SOLUTION_HEADER):
         sol, codes = r["代號"], re.findall(r"`([^`]+)`", r["空間類型"])
+        solution_types, own_domains = [], []
+        if with_types:
+            solution_types = type_list(r["解法類型"], solution_type_rows, common.SOLUTION_TYPES_FILE, "6.1", f"solution {sol}: 解法類型")
+            if not solution_types:
+                raise ReadError("6.1", f"solution {sol}: the 解法類型 cell is empty; write 1 to {common.MAX_TYPES} codes from solution-types.csv")
+            own_domains = type_list(r["領域"], domain_rows, common.DOMAIN_TYPES_FILE, "6.1", f"solution {sol}: 領域")
+            for code in own_domains:
+                if code in domains:
+                    raise ReadError("6.1", f"solution {sol}: 領域 {code} is on the issue's 領域 line. "
+                                           f"Fill the 領域 cell only when the solution's domains differ from the issue's")
         dash = r["空間類型"].strip() == common.NO_SPACE_CELL
         if no_space and not dash:
             raise ReadError("6.1", f"solution {sol}: the 空間類型 line is 「{common.NO_SPACE_LINE}」, so the 空間類型 cell must be 「{common.NO_SPACE_CELL}」")
@@ -789,7 +836,9 @@ def parse_issue(text, space_codes):
             if code not in spaces:
                 raise ReadError("6.1", f"solution {sol}: space code {code} is not in the issue's 空間類型 line")
         solutions.append({"id": sol, "name": cell(r["解法"], "6.1", sol), "summary": r["一句話說明"],
-                          "spaces": codes, "added": check_date(r["新增日期"], "6.1", f"solution {sol}"), "updated": None,
+                          "spaces": codes, "solutionTypes": solution_types, "ownDomains": own_domains,
+                          "domains": own_domains or domains,
+                          "added": check_date(r["新增日期"], "6.1", f"solution {sol}"), "updated": None,
                           "stories": [], "needs": None})
     no_duplicates([s["id"] for s in solutions], "6.1", "solution")
     by_sol = {s["id"]: s for s in solutions}
@@ -973,7 +1022,7 @@ def parse_issue(text, space_codes):
             for c in owners:
                 by_sol[c]["pending"].append(item)
 
-    return {"spaces": spaces, "format": "needs" if needs_format else "stories", "summary": summary,
+    return {"spaces": spaces, "domains": domains, "format": "needs" if needs_format else "stories", "summary": summary,
             "summaryCross": summary_cross, "stakeholders": stakeholders, "inputSources": input_sources,
             "focusGroups": focus_groups, "stories": stories, "groups": groups, "needGroups": need_groups,
             "needs": needs, "conflicts": conflicts, "solutions": solutions, "pending": pending}
@@ -986,6 +1035,8 @@ def build(analysis_dir):
     dates = read_updated_dates(analysis_dir)
     space_rows = read_csv(analysis_dir, "space-types.csv", ["代碼", "名稱", "分組", "說明"])
     space_codes = {r["代碼"] for r in space_rows}
+    domain_rows = common.domain_types(analysis_dir)
+    solution_type_rows = common.solution_types(analysis_dir)
     label_rows = read_csv(analysis_dir, "path-labels.csv", ["分類路徑", "名稱"])
     stake_rows = read_csv(analysis_dir, "stakeholders.csv",
                           ["利害關係人編號", "利害關係人", "分類路徑", "特別關注", "議題", "備註", "新增日期"])
@@ -1001,12 +1052,12 @@ def build(analysis_dir):
         md = os.path.join(analysis_dir, folder, "issue-analysis.md")
         if not os.path.exists(md):
             index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": False,
-                                 "spaces": [], "added": None, "updated": None, "counts": None, "focusGaps": None})
+                                 "spaces": [], "domains": [], "added": None, "updated": None, "counts": None, "focusGaps": None})
             continue
         with open(md, encoding="utf-8") as f:
             text = f.read()
         try:
-            data = parse_issue(text, space_codes)
+            data = parse_issue(text, space_codes, domain_rows, solution_type_rows)
         except ReadError as e:
             raise ReadError(f"{folder}: {e.section}", e.reason)
         ids = [s["id"] for s in data["stakeholders"]]
@@ -1034,7 +1085,7 @@ def build(analysis_dir):
             "cells": cell_basis(data["stories"]),
         }
         index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": True,
-                             "spaces": data["spaces"], "added": added, "updated": updated, "counts": counts,
+                             "spaces": data["spaces"], "domains": data["domains"], "added": added, "updated": updated, "counts": counts,
                              # The groups with no stakeholder, in the fixed order (for the issue card).
                              "focusGaps": [g["tag"] for g in data["focusGroups"] if not g["stakeholders"]]})
         issue_files[folder] = {"number": num, "folder": folder, "title": title,

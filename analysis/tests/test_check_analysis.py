@@ -6,9 +6,20 @@ Before the check, run_check runs update_dates.py on the copy, so a test that cha
 because the 更新日期 file is old. The tests of the 更新日期 check pass dates=False.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import os, re, shutil, subprocess, sys, tempfile, unittest
+import importlib.util, os, re, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def load_helper():
+    """The test helper tests/new_format.py (not a test file)."""
+    spec = importlib.util.spec_from_file_location("new_format", os.path.join(ANALYSIS, "tests", "new_format.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+NEW_FORMAT = load_helper()
 SCRIPT = os.path.join(ANALYSIS, "scripts", "check_analysis.py")
 UPDATE = os.path.join(ANALYSIS, "scripts", "update_dates.py")
 SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/domain-types.csv", "data/solution-types.csv", "docs/method.md",
@@ -185,6 +196,83 @@ class CheckAnalysisTest(unittest.TestCase):
                   "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`park` |",
                   "| D | `[AI模擬]` 參與式選址流程 | `sidewalk`、`arcade`、`sidewalk` |")
         self.assertFails("solution D: space code sidewalk is listed twice")
+
+    # 領域 and 解法類型 (ETBlue, 2026-10-31; plan-types.md, Task 2).
+    def to_new_format(self):
+        """Put the copied #2 in the new format with known values: 「領域：`environment`」,
+        解法類型 `participation` on every 6.1 row and an empty 領域 cell. Another
+        copied issue without the new format gets it too (with the same values), so
+        update_dates.py can read every file."""
+        for folder in issue_folders():
+            path = os.path.join(self.dir, folder, "issue-analysis.md")
+            with open(path, encoding="utf-8") as f:
+                text = f.read()
+            if folder == ISSUE or NEW_FORMAT.OLD_HEADER in text:
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(NEW_FORMAT.set_types(text))
+
+    SOL_A_TYPES = "| `sidewalk`、`mrt-exit` | `participation` |  | 2026-10-16 |"
+
+    def test_new_format_passes(self):
+        self.to_new_format()
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_no_domain_line_fails(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", "領域：`environment`\n", "")
+        self.assertFails("「領域：」")
+
+    def test_unknown_domain_code_fails(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", "領域：`environment`\n", "領域：`environment`、`foo`\n")
+        self.assertFails("領域 line", "foo")
+
+    def test_level_1_domain_code_fails(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", "領域：`environment`\n", "領域：`community-environment`\n")
+        self.assertFails("領域 line", "community-environment is a level 1 code", "environment、community-development")
+
+    def test_empty_solution_type_cell_fails(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES, "| `sidewalk`、`mrt-exit` |  |  | 2026-10-16 |")
+        self.assertFails("solution A", "解法類型")
+
+    def test_four_solution_types_fail(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
+                  "| `sidewalk`、`mrt-exit` | `participation`、`planning`、`facility`、`intake` |  | 2026-10-16 |")
+        self.assertFails("solution A", "at most 3")
+
+    def test_unknown_solution_type_fails(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES, "| `sidewalk`、`mrt-exit` | `magic` |  | 2026-10-16 |")
+        self.assertFails("solution A", "magic")
+
+    def test_own_domain_that_repeats_the_issue_domain_fails(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
+                  "| `sidewalk`、`mrt-exit` | `participation` | `environment` | 2026-10-16 |")
+        self.assertFails("solution A", "environment", "only when")
+
+    def test_level_1_own_domain_fails(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
+                  "| `sidewalk`、`mrt-exit` | `participation` | `social-welfare` | 2026-10-16 |")
+        self.assertFails("solution A", "social-welfare is a level 1 code")
+
+    def test_valid_own_domain_passes(self):
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", self.SOL_A_TYPES,
+                  "| `sidewalk`、`mrt-exit` | `participation` | `welfare-services` | 2026-10-16 |")
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_old_6_1_header_fails_in_needs_format(self):
+        # Only the old format (the fixture) may keep the 6.1 header without the two columns.
+        self.to_new_format()
+        self.edit(f"{ISSUE}/issue-analysis.md", NEW_FORMAT.NEW_HEADER, "| 代號 | 解法 | 空間類型 | 新增日期 | 解法類型 | 領域 | 一句話說明 |")
+        self.assertFails("6.1: the header must be")
 
     def test_6_2_code_not_in_6_1(self):
         self.edit(f"{ISSUE}/issue-analysis.md", "| D | 參與式選址流程 |", "| F | 參與式選址流程 |")

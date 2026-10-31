@@ -73,6 +73,16 @@ Rules:
   row, the code of a level 1 row on a level 2 row (check_two_levels). Only
   level 2 codes (leaf_codes) are tags on issues and solutions. Types are
   labels only: no scores, weights or ranks.
+- 領域 and 解法類型 on an issue (ETBlue, 2026-10-31): the line right under
+  the 空間類型 line is 「領域：」 (DOMAIN_LINE) with 1 to 3 level 2 codes
+  from domain-types.csv, in backticks, separated by 「、」. The 6.1 header
+  is SOLUTION_HEADER. Each 解法類型 cell lists 1 to 3 codes from
+  solution-types.csv. Each 領域 cell is empty, or lists 1 to 3 level 2
+  domain codes that are not on the issue's 領域 line: a solution gets its
+  own domains only when they differ from the issue's. type_codes() and
+  tag_problem() check a list of codes. An issue with 「空間類型：無」 (#9)
+  still has a 領域 line and its 解法類型 cells. The old format may leave
+  out the 領域 line and use OLD_SOLUTION_HEADER (the fixture only).
 - Content fingerprint (fingerprint): the first 12 hex characters of the
   SHA-256 of the content as canonical JSON (keys sorted, no spaces, UTF-8).
   update_dates.py and check_analysis.py use it to see whether the content of
@@ -128,6 +138,16 @@ DOMAIN_TYPES_FILE = "domain-types.csv"
 DOMAIN_TYPE_COLS = ("代碼", "名稱", "上層", "說明", "政事別", "陳情系統主類別")
 SOLUTION_TYPES_FILE = "solution-types.csv"
 SOLUTION_TYPE_COLS = ("代碼", "名稱", "說明", "判斷方式", "政策工具")
+SPACE_TYPES_FILE = "space-types.csv"
+SPACE_TYPE_COLS = ("代碼", "名稱", "分組", "說明")
+# The 領域 line of an issue file: the line right under the 空間類型 line.
+DOMAIN_LINE = "領域："
+# A 領域 line, a 解法類型 cell and a 領域 cell list 1 to MAX_TYPES codes.
+MAX_TYPES = 3
+# The 6.1 table header. OLD_SOLUTION_HEADER (without 解法類型 and 領域) is
+# read only in the old format (tests/fixtures/old-format).
+SOLUTION_HEADER = ["代號", "解法", "空間類型", "解法類型", "領域", "新增日期", "一句話說明"]
+OLD_SOLUTION_HEADER = ["代號", "解法", "空間類型", "新增日期", "一句話說明"]
 
 
 def code_rows(analysis_dir, name, columns):
@@ -203,6 +223,51 @@ def solution_types(analysis_dir):
     """{代碼: row} of data/solution-types.csv (解法類型), in file order.
     A ReadError when the file cannot be read or a code repeats."""
     return code_rows(analysis_dir, SOLUTION_TYPES_FILE, SOLUTION_TYPE_COLS)
+
+
+def space_types(analysis_dir):
+    """{代碼: row} of data/space-types.csv (空間類型), in file order.
+    A ReadError when the file cannot be read or a code repeats."""
+    return code_rows(analysis_dir, SPACE_TYPES_FILE, SPACE_TYPE_COLS)
+
+
+def tag_problem(code, rows, file_name):
+    """Why a code cannot be a tag, or None. rows: {代碼: row} of a type list.
+    The code must be in the list. In a list with 2 levels (rows with a 上層
+    column) it must be a level 2 code: a level 1 code fails, and the message
+    names its children."""
+    row = rows.get(code)
+    if row is None:
+        return f"unknown code {code} (not in {file_name})"
+    if "上層" in row and not row["上層"].strip():
+        children = [c for c, r in rows.items() if r["上層"].strip() == code]
+        return (f"{code} is a level 1 code. Only level 2 codes are tags. "
+                f"Use one of its children: {'、'.join(children)}")
+    return None
+
+
+def type_codes(value, rows, file_name, max_count=MAX_TYPES):
+    """The codes of a 領域 line or of a 解法類型 or 領域 cell, and the
+    problems: (codes, problems). value is codes in backticks, separated by
+    「、」. An empty value gives ([], []); the caller decides whether it may
+    be empty. The problems: a wrong format, a repeated code, more than
+    max_count codes, and each code that tag_problem rejects."""
+    v = value.strip()
+    if not v:
+        return [], []
+    codes = re.findall(r"`([^`]+)`", v)
+    problems = []
+    if not codes or "、".join(f"`{c}`" for c in codes) != v:
+        problems.append(f"must be codes in backticks separated by 「、」: {v}")
+    for c in sorted({c for c in codes if codes.count(c) > 1}):
+        problems.append(f"code {c} is listed twice")
+    if len(codes) > max_count:
+        problems.append(f"{len(codes)} codes, but at most {max_count} are allowed")
+    for c in codes:
+        p = tag_problem(c, rows, file_name)
+        if p:
+            problems.append(p)
+    return codes, problems
 
 # The source tags, in display order (see method.md, section 標記):
 # 實證 = a person can check the source, or a person checked the AI summary.

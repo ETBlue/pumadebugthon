@@ -1,0 +1,52 @@
+"""A test helper (not a test file): put an issue file in the format with
+領域 and 解法類型 (ETBlue, 2026-10-31), with known values.
+
+set_types(text, domains, solution_type) returns the text with:
+- the line 「領域：」 right under the 空間類型 line, with the given domain
+  codes (added when missing, replaced when it is there);
+- the 6.1 header | 代號 | 解法 | 空間類型 | 解法類型 | 領域 | 新增日期 | 一句話說明 |
+  (the two columns are added when missing);
+- in every 6.1 row: the 解法類型 cell set to solution_type and the 領域 cell
+  set to empty.
+
+The tests use it so that each test starts from the same values, before and
+after the real issue files get the new format.
+"""
+import re
+
+OLD_HEADER = "| 代號 | 解法 | 空間類型 | 新增日期 | 一句話說明 |"
+NEW_HEADER = "| 代號 | 解法 | 空間類型 | 解法類型 | 領域 | 新增日期 | 一句話說明 |"
+DOMAIN_LINE = "領域："
+
+
+def join_cells(cells):
+    """One table line from its cells. An empty cell is written as 「|  |」."""
+    return "| " + " | ".join(cells) + " |"
+
+
+def set_types(text, domains="`environment`", solution_type="`participation`"):
+    lines = text.split("\n")
+    if not lines[2].startswith("空間類型："):
+        raise ValueError("no 空間類型 line in line 3")
+    if lines[3].startswith(DOMAIN_LINE):
+        lines[3] = DOMAIN_LINE + domains
+    else:
+        lines.insert(3, DOMAIN_LINE + domains)
+    start = lines.index("### 6.1 候選解法") if "### 6.1 候選解法" in lines else \
+        next(i for i, l in enumerate(lines) if l.startswith("### 6.1"))
+    head = next(i for i in range(start, len(lines)) if lines[i].startswith("| 代號 | 解法 | 空間類型 |"))
+    old = lines[head] == OLD_HEADER
+    if not old and lines[head] != NEW_HEADER:
+        raise ValueError(f"unknown 6.1 header: {lines[head]}")
+    lines[head] = NEW_HEADER
+    lines[head + 1] = "|---|---|---|---|---|---|---|"
+    i = head + 2
+    while i < len(lines) and re.match(r"^\| [A-Z] \|", lines[i]):
+        c = [x.strip() for x in lines[i].strip().strip("|").split(" | ")]
+        if old:
+            c = c[:3] + [solution_type, ""] + c[3:]
+        else:
+            c[3], c[4] = solution_type, ""
+        lines[i] = join_cells(c)
+        i += 1
+    return "\n".join(lines)

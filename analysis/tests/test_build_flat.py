@@ -200,5 +200,34 @@ class FlatFilesTest(unittest.TestCase):
             self.assertIsNotNone(row["need"], row["id"])
 
 
+class TypeColumnsTest(unittest.TestCase):
+    """領域 and 解法類型 (ETBlue, 2026-10-31) in the flat rows, from a small
+    made-up issue JSON."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mod = load_module()
+
+    def test_issue_row_has_domains(self):
+        index = {"issues": [{"number": 2, "folder": "2-x", "title": "t", "source": "主辦單位", "available": True,
+                             "spaces": ["park"], "domains": ["environment", "health"], "added": None, "updated": None}]}
+        row = self.mod.issue_rows(index)[0]
+        self.assertEqual(row["domains"], ["environment", "health"])
+        self.assertEqual(list(row).index("domains"), list(row).index("spaces") + 1)
+
+    def test_solution_row_has_types_and_domains(self):
+        cell = {"text": "x", "tag": "AI模擬", "pending": False}
+        sol = {"id": "A", "name": cell, "summary": "s", "spaces": ["park"], "solutionTypes": ["intake", "open-data"],
+               "ownDomains": ["welfare-services"], "domains": ["welfare-services"], "needs": None, "stories": [],
+               "overview": {k: cell for k in ("cost", "feasibility", "risk", "owner")}, "added": None, "updated": None}
+        issue = {"number": 2, "stakeholders": [], "stories": [], "groups": [], "needs": [], "needGroups": [],
+                 "conflicts": [], "solutions": [sol]}
+        row = self.mod.issue_file_rows(issue)["solutions"][0]
+        self.assertEqual(row["solution_types"], ["intake", "open-data"])
+        self.assertEqual(row["own_domains"], ["welfare-services"])
+        self.assertEqual(row["domains"], ["welfare-services"])
+        self.assertEqual(self.mod.csv_value(row["solution_types"]), "intake open-data")
+
+
 if __name__ == "__main__":
     unittest.main()

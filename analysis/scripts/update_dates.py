@@ -27,7 +27,9 @@ The content of each item (design 3.23.8):
   議題, 備註) and its stories in every issue (我想要…, 以便…, their tags,
   來源, 優先順序 and its tag, 相同訴求編號, 相同需求編號). A moved
   stakeholder (備註 starts with 已改為) has no row.
-- 解法: its 6.1 row (name, tag, summary, 空間類型), its 6.2 needs (in the
+- 解法: its 6.1 row (name, tag, summary, 空間類型, 解法類型, and its
+  domains: the 領域 cell, or the issue's 領域 line when the cell is
+  empty), its 6.2 needs (in the
   old format: its stories), its 6.3 rows, its step 7 section (evaluation,
   plan, and its dependency rows in practices), its 總覽 row,
   its 構想 rows and its practices (the related policies and practices,
@@ -92,7 +94,7 @@ STAKE_COLS = ("利害關係人", "分類路徑", "特別關注", "議題", "備�
 # The fields of a story that are the stakeholder's content.
 STORY_KEYS = ("id", "want", "soThat", "source", "priority", "priorityTag", "group", "needGroup")
 # The fields of an issue solution that are its content.
-SOLUTION_KEYS = ("name", "summary", "spaces", "needs", "measures", "evaluation", "plan", "overview", "ideas")
+SOLUTION_KEYS = ("name", "summary", "spaces", "solutionTypes", "domains", "needs", "measures", "evaluation", "plan", "overview", "ideas")
 # The fields of a cross-issue solution that are not content.
 CROSS_SKIP = ("code", "added", "updated", "controversies", "legal")
 MOVED = "已改為"

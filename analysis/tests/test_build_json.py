@@ -65,6 +65,14 @@ def load_module():
     return mod
 
 
+def load_helper():
+    """The test helper tests/new_format.py (not a test file)."""
+    spec = importlib.util.spec_from_file_location("new_format", os.path.join(ANALYSIS, "tests", "new_format.py"))
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 class BuildJsonOutputTest(unittest.TestCase):
     """Build #2 once and look at the JSON."""
 
@@ -723,6 +731,73 @@ class BuildJsonUnitTest(unittest.TestCase):
     def test_git_date_outside_repo_is_null(self):
         with tempfile.TemporaryDirectory() as t:
             self.assertIsNone(self.mod.git_updated(t))
+
+
+class BuildJsonTypesTest(unittest.TestCase):
+    """領域 and 解法類型 (ETBlue, 2026-10-31): parse_issue on #2 in the new
+    format with known values (tests/new_format.py)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.mod = load_module()
+        cls.helper = load_helper()
+        cls.common = cls.mod.common
+        cls.spaces = cls.common.space_types(ANALYSIS)
+        cls.domains = cls.common.domain_types(ANALYSIS)
+        cls.types = cls.common.solution_types(ANALYSIS)
+        with open(os.path.join(ANALYSIS, ISSUE, "issue-analysis.md"), encoding="utf-8") as f:
+            cls.text = cls.helper.set_types(f.read())
+
+    def parse(self, text):
+        return self.mod.parse_issue(text, self.spaces, self.domains, self.types)
+
+    def set_row_a(self, solution_types, own_domains):
+        """The text with new 解法類型 and 領域 cells on row A."""
+        m = re.search(r"^(\| A \| [^|]+ \| [^|]+ \| )`participation` \|  \|", self.text, re.M)
+        self.assertIsNotNone(m)
+        return self.text[:m.start()] + f"{m.group(1)}{solution_types} | {own_domains} |" + self.text[m.end():]
+
+    def test_issue_and_solution_fields(self):
+        data = self.parse(self.text)
+        self.assertEqual(data["domains"], ["environment"])
+        for s in data["solutions"]:
+            self.assertEqual(s["solutionTypes"], ["participation"])
+            self.assertEqual(s["ownDomains"], [])
+            self.assertEqual(s["domains"], ["environment"])
+
+    def test_own_domains(self):
+        data = self.parse(self.set_row_a("`digital-tool`、`planning`", "`welfare-services`"))
+        a = next(s for s in data["solutions"] if s["id"] == "A")
+        self.assertEqual(a["solutionTypes"], ["digital-tool", "planning"])
+        self.assertEqual(a["ownDomains"], ["welfare-services"])
+        self.assertEqual(a["domains"], ["welfare-services"])
+        b = next(s for s in data["solutions"] if s["id"] == "B")
+        self.assertEqual((b["ownDomains"], b["domains"]), ([], ["environment"]))
+
+    def assertReadError(self, text, *needles):
+        with self.assertRaises(self.common.ReadError) as e:
+            self.parse(text)
+        for n in needles:
+            self.assertIn(n, str(e.exception))
+
+    def test_no_domain_line(self):
+        self.assertReadError(self.text.replace("領域：`environment`\n", "", 1), "領域")
+
+    def test_unknown_domain(self):
+        self.assertReadError(self.text.replace("領域：`environment`\n", "領域：`foo`\n", 1), "領域", "foo")
+
+    def test_level_1_domain(self):
+        self.assertReadError(self.text.replace("領域：`environment`\n", "領域：`community-environment`\n", 1),
+                             "community-environment is a level 1 code")
+
+    def test_empty_solution_types(self):
+        self.assertReadError(self.set_row_a("", ""), "solution A", "解法類型")
+
+    def test_four_solution_types(self):
+        self.assertReadError(self.set_row_a("`intake`、`planning`、`facility`、`service`", ""), "solution A", "at most 3")
+
+    def test_own_domain_repeats_issue_domain(self):
+        self.assertReadError(self.set_row_a("`intake`", "`environment`"), "solution A", "only when")
 
 
 class BuildJsonErrorTest(unittest.TestCase):

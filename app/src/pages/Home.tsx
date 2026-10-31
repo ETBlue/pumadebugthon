@@ -151,7 +151,7 @@ function HomeBlocks({ index }: { index: IndexFile }) {
  * cells of the needs it covers, decision 112), then 更新日期 (decision 131).
  * The compact card has no date of its own (decision 132), so this list adds
  * it as children. An issue
- * solution also shows its issue with the title: its code 「#2 A」 has only
+ * solution also shows its issue with the title: its code 「#2 S1」 has only
  * the number (decision 112). The cross-issue card shows its issues itself. */
 function RecentSolutionList({ index, issues, cross }: {
   index: IndexFile

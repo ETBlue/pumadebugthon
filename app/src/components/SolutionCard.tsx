@@ -20,7 +20,7 @@ const ts = t.solutionsList
 
 /** The tag badge, then the code and name as a link to the solution page.
  * The badge is outside the link. showIssue: the code shows the issue too,
- * for example 「#2 A」, for lists across issues. The link keeps the
+ * for example 「#2 S1」, for lists across issues. The link keeps the
  * 「只看有資料根據」 setting. */
 export function SolutionTitleLink({ solution: sol, issueNumber, showIssue = false }: {
   solution: Solution
@@ -72,7 +72,7 @@ export function CoveredBasisField({ basis }: { basis: CoveredBasis }) {
 interface CommonProps {
   solution: Solution
   issueNumber: number
-  /** The code shows the issue too (「#2 A」). See SolutionTitleLink. */
+  /** The code shows the issue too (「#2 S1」). See SolutionTitleLink. */
   showIssue?: boolean
   /** Extra content for one page, shown at the end of the card. For example
    * the issue and 資料根據 on the home page, or the other space types on a

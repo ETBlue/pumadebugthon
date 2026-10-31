@@ -7,7 +7,7 @@ import { t } from '@/i18n/zh-TW'
  * solution has both an ID and a name (decision 99). An item with no name,
  * such as a story, has the ID only. A plain item such as 首頁 has the name only. */
 export interface BreadcrumbItem {
-  /** Shown in font-mono, for example 「#8」, 「#2 A」 or 「I06」. */
+  /** Shown in font-mono, for example 「#8」, 「#2 S1」 or 「I06」. */
   id?: string
   /** Plain text, for example 「無菸城市」. */
   name?: string

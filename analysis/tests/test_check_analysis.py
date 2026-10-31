@@ -780,7 +780,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("步驟 7 #2 解法 S4: the 「執行步驟」 cell must start with a tag")
 
     # The 相依事項與現行政策的關係 table of a step 7 section (ETBlue,
-    # 2026-10-23). In #2, 「現行的裁撤與復設做法」 names 解法 S1 and D, so it is
+    # 2026-10-23). In #2, 「現行的裁撤與復設做法」 names 解法 S1 and S4, so it is
     # under both, with the same text.
     DEP_ROW = ("| 現行的裁撤與復設做法 | `[AI模擬]` 現行做法是依家戶垃圾違規棄置量評估清潔箱的裁撤或復設（題目原文）。"
                "解法 S1、S4 在這個做法上加入行人流量與里民討論，需要和環保局確認兩者怎麼銜接。 | O04-US04、解法 S1、解法 S4 |\n")

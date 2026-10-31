@@ -153,7 +153,7 @@ export const t = {
     wantLink: (key: string) => `訴求 ${key}`,
     needLink: (key: string) => `需求 ${key}`,
   },
-  /** 「#2 A」: a solution in a list across issues. */
+  /** 「#2 S1」: a solution in a list across issues. */
   solutionId: (issueNumber: number, id: string) => `#${issueNumber} ${id}`,
   /** The home page (design 3.1): the hero and three blocks. */
   home: {
@@ -571,7 +571,7 @@ export const t = {
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',
     slugNotFoundBody: (slug: string) => `沒有代號為 ${slug} 的解法。網址可能打錯了。`,
-    /** The second part of the page title: 「#2 A 名稱 · 解法 · 市政提案小幫手」. */
+    /** The second part of the page title: 「#2 S1 名稱 · 解法 · 市政提案小幫手」. */
     titlePart: '解法',
     issueNotFoundTitle: '找不到這個議題',
     issueNotFoundBody: '網址裡的議題編號可能打錯了，或這個議題的分析還在製作中。',

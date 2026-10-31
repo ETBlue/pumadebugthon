@@ -135,8 +135,8 @@ export type SolutionSlug = { kind: 'issue'; issueNumber: number; code: string } 
 /** The solution of the path segment (design 3.12): "2-S1" is solution S1 of
  * issue #2, "X-S1" is a cross-issue solution. The issue number and the
  * number of the code are plain positive numbers (not "02", not "S01";
- * design decision 151). Anything else returns null, also an old link such
- * with one capital letter after the 「-」 (no redirect). */
+ * design decision 151). Anything else returns null. An old link, with one
+ * capital letter after the 「-」, also returns null (no redirect). */
 export function parseSolutionSlug(segment: string | undefined): SolutionSlug | null {
   if (segment === undefined) return null
   const cross = /^X-S[1-9]\d*$/.exec(segment)

@@ -424,7 +424,7 @@ Decided by ETBlue on 2026-10-20 (design decisions 34–57). ETBlue answered all 
 2. `wantKey(story)` (the same as `storyPickKey`), `issueWants(issue)` (the order of `pickList`), `wantsOfStakeholder(issue, id)`, `wantsForStakeholder(items, id | null)`. No `findWant` or `wantView`: there is no want page (design decision 45).
 3. `conflictView(issue, conflict)` → the stories of each side, the needs of each side (from `issue.needs`), the way out cell and its solutions, and `hasWayOut`. `conflictsForStakeholder(conflicts, id | null)`.
 4. `storyPage.ts`: `findStory(issue, stakeholderId, storyId)` (found, redirect to the right stakeholder, not found) and `storyView(issue, story)` → want key, need key, W group and N group with the other stakeholders, conflicts, solutions (design 3.15).
-5. Tests on #2: W08 has I06 and the other stakeholders of the group; I06 in #2 has the wants W08 and W11 and the conflict C6; C1 has needs N01 vs N06 and the way out A, B, D; `wantKey` of I06-US01 is W08; `findStory(#2, 'I01', 'I06-US01')` redirects to I06.
+5. Tests on #2: W08 has I06 and the other stakeholders of the group; I06 in #2 has the wants W08 and W11 and the conflict C6; C1 has needs N01 vs N06 and the way out S1, S2, S4; `wantKey` of I06-US01 is W08; `findStory(#2, 'I01', 'I06-US01')` redirects to I06.
 
 **Done when:** the tests above pass.
 

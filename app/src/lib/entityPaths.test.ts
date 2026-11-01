@@ -16,6 +16,9 @@ import {
   STAKEHOLDER_TABS,
   stakeholderTabPath,
   storyPath,
+  parseTypeTab,
+  TYPE_TABS,
+  typeTabPath,
   wantFocusPath,
 } from './entityPaths'
 
@@ -195,5 +198,21 @@ describe('parseSpaceTab and spaceTabPath (decision 129)', () => {
   it('the overview has no tab segment', () => {
     expect(spaceTabPath('sidewalk-furniture', 'overview')).toBe('/spaces/sidewalk-furniture')
     expect(spaceTabPath('sidewalk-furniture', 'solutions')).toBe('/spaces/sidewalk-furniture/solutions')
+  })
+})
+
+describe('parseTypeTab and typeTabPath (Task U3)', () => {
+  it('uses the space tabs for every kind', () => {
+    expect(TYPE_TABS).toBe(SPACE_TABS)
+    expect(parseTypeTab(undefined)).toBe('overview')
+    expect(parseTypeTab('people')).toBeNull()
+  })
+
+  it('builds the path of each kind; the overview has no tab segment', () => {
+    expect(typeTabPath('space', 'sidewalk-furniture', 'solutions')).toBe('/spaces/sidewalk-furniture/solutions')
+    expect(typeTabPath('domain', 'police', 'overview')).toBe('/domains/police')
+    expect(typeTabPath('domain', 'police', 'issues')).toBe('/domains/police/issues')
+    expect(typeTabPath('solutionType', 'open-data', 'overview')).toBe('/solution-types/open-data')
+    expect(typeTabPath('solutionType', 'open-data', 'stakeholders')).toBe('/solution-types/open-data/stakeholders')
   })
 })

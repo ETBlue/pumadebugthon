@@ -1,10 +1,11 @@
-// URL paths of the entity pages: stakeholder, story, solution and space
-// (design 3.3, 3.6, 3.12, 3.15, 3.16, 3.19). Wants and needs have no page of
+// URL paths of the entity pages: stakeholder, story, solution, and the type
+// pages of space, 領域 and 解法類型 (design 3.3, 3.6, 3.12, 3.15, 3.16, 3.19). Wants and needs have no page of
 // their own (decision 45). A link to one goes to the issue tab with ?focus=.
 import { withDataBasisFilter } from './dataBasis'
 import { FOCUS_PARAM } from './focus'
 import { tabPath, type IssueTab } from './issuePage'
 import { keptSearch } from './stakeholderFilter'
+import { TYPE_LIST_PAGES, type TypeKind } from './typeKinds'
 
 /** The tabs of the stakeholder page, in display order. The first one is the
  * default. 衝突 has its own tab after 需求 (decision 142). 議題 comes right
@@ -152,6 +153,12 @@ export const SPACE_TABS = ['overview', 'issues', 'solutions', 'stakeholders'] as
 
 export type SpaceTab = (typeof SPACE_TABS)[number]
 
+/** The tabs of a type page: the space, 領域 and 解法類型 pages have the
+ * same tabs (Task U3). */
+export const TYPE_TABS = SPACE_TABS
+
+export type TypeTab = SpaceTab
+
 /** The space tab of the URL segment. No segment is the overview, so an old
  * link to "/spaces/sidewalk-walkway" opens the first tab. An unknown name returns null. */
 export function parseSpaceTab(segment: string | undefined): SpaceTab | null {
@@ -159,8 +166,17 @@ export function parseSpaceTab(segment: string | undefined): SpaceTab | null {
   return (SPACE_TABS as readonly string[]).includes(segment) ? (segment as SpaceTab) : null
 }
 
+/** The tab of a type page from the URL segment (see parseSpaceTab). */
+export const parseTypeTab = parseSpaceTab
+
+/** The URL path of a type page tab, for example "/domains/police/issues".
+ * The overview has no tab segment: "/domains/police". */
+export function typeTabPath(kind: TypeKind, code: string, tab: TypeTab): string {
+  return withTab(`/${TYPE_LIST_PAGES[kind]}/${code}`, tab)
+}
+
 /** The URL path of a space tab, for example "/spaces/sidewalk-walkway/solutions".
  * The overview has no tab segment: "/spaces/sidewalk-walkway". */
 export function spaceTabPath(code: string, tab: SpaceTab): string {
-  return withTab(`/spaces/${code}`, tab)
+  return typeTabPath('space', code, tab)
 }

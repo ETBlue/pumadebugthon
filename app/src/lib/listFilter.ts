@@ -118,12 +118,23 @@ export function filterSpaces(
   filter: Pick<ListFilters, 'groups' | 'issues'>,
   issues: IssueSummary[],
 ): SpaceType[] {
-  const used = new Set(
-    issues.filter((i) => i.available && filter.issues.includes(i.number)).flatMap((i) => i.spaces),
-  )
-  return spaces.filter(
-    (s) =>
-      (filter.groups.length === 0 || filter.groups.includes(s.group)) &&
-      (filter.issues.length === 0 || used.has(s.code)),
+  const users = (code: string) => issues.filter((i) => i.available && i.spaces.includes(code)).map((i) => i.number)
+  return filterTypes(spaces, filter, users)
+}
+
+/** A type list page (#/spaces, #/domains, #/solution-types; decision 122
+ * and Task U3): 分類 and 議題. 分類 keeps a type of a picked group. 議題
+ * keeps a type that a picked issue uses. A type that no analyzed issue uses
+ * is hidden while the 議題 filter is on. issuesOf: the numbers of the
+ * issues that use a code (typeIssues). The order of types is kept. */
+export function filterTypes<T extends { code: string; group?: string }>(
+  types: T[],
+  filter: Pick<ListFilters, 'groups' | 'issues'>,
+  issuesOf: (code: string) => number[],
+): T[] {
+  return types.filter(
+    (t) =>
+      (filter.groups.length === 0 || (t.group !== undefined && filter.groups.includes(t.group))) &&
+      (filter.issues.length === 0 || issuesOf(t.code).some((n) => filter.issues.includes(n))),
   )
 }

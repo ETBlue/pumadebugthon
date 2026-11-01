@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { activeNavItem, isNavListPage } from './nav'
+import { activeNavItem, isNavListPage, NAV_ITEMS } from './nav'
 
 describe('activeNavItem', () => {
   it.each([
@@ -53,5 +53,34 @@ describe('isNavListPage', () => {
     expect(isNavListPage('/')).toBe(false)
     expect(isNavListPage('/spaces')).toBe(true)
     expect(isNavListPage('/spaces/sidewalk-furniture')).toBe(false)
+  })
+
+  it('is true on #/domains and #/solution-types, false on their detail pages (Task U3)', () => {
+    expect(isNavListPage('/domains')).toBe(true)
+    expect(isNavListPage('/solution-types')).toBe(true)
+    expect(isNavListPage('/domains/police')).toBe(false)
+    expect(isNavListPage('/solution-types/open-data/issues')).toBe(false)
+  })
+})
+
+describe('the nav items (Task U3)', () => {
+  it('are in the menu order 議題 | 利害關係人 | 空間 | 領域 | 解法 | 解法類型', () => {
+    expect(NAV_ITEMS).toEqual(['issues', 'stakeholders', 'spaces', 'domains', 'solutions', 'solution-types'])
+  })
+
+  it.each([
+    ['/domains', 'domains'],
+    ['/domains/police', 'domains'],
+    ['/domains/environment/solutions', 'domains'],
+    ['/domains/economic-development', 'domains'],
+    ['/solution-types', 'solution-types'],
+    ['/solution-types/open-data', 'solution-types'],
+    ['/solution-types/open-data/stakeholders', 'solution-types'],
+  ] as const)('%s is %s', (path, item) => {
+    expect(activeNavItem(path)).toBe(item)
+  })
+
+  it.each(['/domainsx', '/solution-type', '/solution-typesx'])('%s has no active item', (path) => {
+    expect(activeNavItem(path)).toBeNull()
   })
 })

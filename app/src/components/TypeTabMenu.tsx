@@ -2,30 +2,30 @@ import { useEffect, useMemo } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router'
 import { t } from '@/i18n/zh-TW'
 import { mergeListSearch, PAGE_SORTS, Q_MAX_LENGTH, type ListState } from '@/lib/listParams'
-import { SPACE_TAB_PAGE, spaceTabParams, type SpaceListTab } from '@/lib/spaceTabs'
+import { TYPE_TAB_PAGE, typeTabParams, type TypeListTab } from '@/lib/typeTabs'
 import type { IndexFile } from '@/types'
 import { cn } from '@/lib/utils'
 import { IssueMenuBar } from './IssueMenuBar'
 import { BarFilter, ListSortSelect, type ListBarFilter } from './ListBar'
 import { ListSearchBox, type HistoryMode } from './ListSearchBox'
 
-/** The state of a space tab from the URL (spaceTabParams), and go: the
+/** The state of a type page tab from the URL (typeTabParams), and go: the
  * function that writes a new state to the URL. A URL with a dropped value
  * is replaced with the clean URL (history replace), as on the list pages.
  * Params that are not list params (evidence, …) are kept. */
-export function useSpaceTabState(tab: SpaceListTab, index: IndexFile, issueNumbers: number[]) {
+export function useTypeTabState(tab: TypeListTab, index: IndexFile, issueNumbers: number[]) {
   const [params] = useSearchParams()
   const { pathname } = useLocation()
   const navigate = useNavigate()
   const search = params.toString()
   const key = issueNumbers.join(',')
   const parsed = useMemo(
-    () => spaceTabParams(tab, new URLSearchParams(search), index, issueNumbers),
+    () => typeTabParams(tab, new URLSearchParams(search), index, issueNumbers),
     // issueNumbers is a new array on each render; key is the real input.
     [tab, search, index, key],
   )
   const { replace, ...state } = parsed
-  const page = SPACE_TAB_PAGE[tab]
+  const page = TYPE_TAB_PAGE[tab]
   const clean = mergeListSearch(new URLSearchParams(search), page, state)
   useEffect(() => {
     if (replace) navigate({ pathname, search: clean }, { replace: true, preventScrollReset: true })
@@ -46,24 +46,25 @@ function cleanQuery(text: string): string | null {
   return cleaned === '' ? null : cleaned
 }
 
-/** The menu bar of the 解法 and 利害關係人 tabs of the space page (design
- * 3.6, decision 138). It has the look of the issue tab menu bar
- * (IssueMenuBar, a box in the content column), because the space page has
- * the same tab layout as the issue page. Its controls are the ones of the
+/** The menu bar of the 解法 and 利害關係人 tabs of a type page: the space
+ * page (design 3.6, decision 138), the 領域 page and the 解法類型 page (Task
+ * U3). It has the look of the issue tab menu bar (IssueMenuBar, a box in the
+ * content column), because a type page has the same tab layout as the
+ * issue page. Its controls are the ones of the
  * list bar (ListBar) of #/solutions and #/stakeholders: the sort <select>,
  * the filters (popover buttons, toggles, the stakeholder picker) and the
  * search box. Unlike ListBar, the filters show at every width (no phone
  * sheet): the bar wraps, so a 360 px screen has no sideways scroll.
  * sortNoteId: the id of the sort note while a share sort is on. */
-export function SpaceTabMenu({ tab, state, filters, sortNoteId, go, className }: {
-  tab: SpaceListTab
+export function TypeTabMenu({ tab, state, filters, sortNoteId, go, className }: {
+  tab: TypeListTab
   state: ListState
   filters: ListBarFilter[]
   sortNoteId?: string
   go: (next: ListState, mode?: HistoryMode) => void
   className?: string
 }) {
-  const page = SPACE_TAB_PAGE[tab]
+  const page = TYPE_TAB_PAGE[tab]
   return (
     <IssueMenuBar label={t.listSearch.barLabel} className={cn('gap-x-4', className)}>
       <ListSortSelect

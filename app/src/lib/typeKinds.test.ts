@@ -11,7 +11,7 @@ import { compareIds } from './ids'
 import { availableIssues } from './issues'
 import {
   findType, issueCodes, issuesByType, otherTypes, sameTypeIssues, solutionCodes, solutionsByType, stakeholdersByType,
-  TYPE_KINDS, typeGroups, typesOf, type TypeKind,
+  issueListsSolutionCodes, TYPE_KINDS, TYPE_LIST_PAGES, typeGroupNames, typeGroups, typeIssues, typesOf, type TypeKind,
 } from './typeKinds'
 
 const index = indexJson as IndexFile
@@ -201,5 +201,59 @@ describe('typeGroups (the list page headings)', () => {
 
   it('is empty for an empty list', () => {
     expect(typeGroups([])).toEqual([])
+  })
+})
+
+// Task U3: the issues of a type page and of a card on the list page.
+describe('typeIssues (the issues of a type page)', () => {
+  const nums = (kind: TypeKind, list: IssueFile[], code: string) => typeIssues(kind, index, list, code).map((i) => i.number)
+
+  it('space and domain: the issues with the code on the issue', () => {
+    expect(nums('space', files, 'arcade')).toEqual([2, 8])
+    expect(nums('domain', files, 'environment')).toEqual([1, 2, 8])
+    expect(nums('domain', files, 'police')).toEqual([])
+  })
+
+  it('solution type: the issues with a solution of the type', () => {
+    expect(nums('solutionType', files, 'participation')).toEqual([1, 2, 8, 9])
+    expect(nums('solutionType', [], 'participation')).toEqual([])
+  })
+
+  it('domain: also an issue whose solution has its own 領域, which is never on the issue', () => {
+    // #2 S1 gets the own 領域 police. #2 itself has only environment.
+    const own = {
+      ...trashcans,
+      solutions: trashcans.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'] } : s)),
+    }
+    expect(nums('domain', [policy, smokefree, own, trees], 'police')).toEqual([2])
+    expect(numbers('domain', 'police')).toEqual([])
+  })
+
+  it('a level 1 or unknown code gives no issue', () => {
+    for (const kind of TYPE_KINDS) {
+      expect(nums(kind, files, LEVEL_1[kind])).toEqual([])
+      expect(nums(kind, files, 'nope')).toEqual([])
+    }
+  })
+})
+
+describe('issueListsSolutionCodes', () => {
+  it('is true only for space: a solution space is always on its issue', () => {
+    expect(TYPE_KINDS.map(issueListsSolutionCodes)).toEqual([true, false, false])
+  })
+})
+
+describe('typeGroupNames', () => {
+  it('gives the level 1 names in file order; a solution type has none', () => {
+    expect(typeGroupNames('space', index)).toEqual(['道路', '地下', '公共空間', '建築'])
+    expect(typeGroupNames('domain', index)).toEqual(index.domainGroups.map((g) => g.name))
+    expect(typeGroupNames('domain', index)).toHaveLength(8)
+    expect(typeGroupNames('solutionType', index)).toEqual([])
+  })
+})
+
+describe('TYPE_LIST_PAGES', () => {
+  it('gives the list page (and the URL segment) of each kind', () => {
+    expect(TYPE_KINDS.map((k) => TYPE_LIST_PAGES[k])).toEqual(['spaces', 'domains', 'solution-types'])
   })
 })

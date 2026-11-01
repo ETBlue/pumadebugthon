@@ -12,7 +12,7 @@ const read = (page: Parameters<typeof listParamsOf>[0], search: string) => listP
 
 describe('listParamsOf', () => {
   it('gives the default state with no params, and needs no replace', () => {
-    for (const page of ['issues', 'stakeholders', 'solutions', 'spaces'] as const) {
+    for (const page of ['issues', 'stakeholders', 'solutions', 'spaces', 'domains', 'solution-types'] as const) {
       expect(read(page, '')).toEqual({ ...DEFAULT_LIST_STATE, replace: false })
     }
     expect(DEFAULT_LIST_STATE).toEqual({ ...NO_FILTERS, sort: 'updated', view: 'cards', q: null })
@@ -89,6 +89,28 @@ describe('listParamsOf', () => {
     expect(read('spaces', 'sort=added&space=park&who=I06&view=tree')).toMatchObject({ ...DEFAULT_LIST_STATE, replace: true })
     // The other pages do not read group.
     expect(read('issues', 'group=%E9%81%93%E8%B7%AF')).toMatchObject({ groups: [], replace: true })
+  })
+
+  it('reads the #/domains params: 領域分類, 議題 and q, and drops the rest (Task U3)', () => {
+    const g = (name: string) => encodeURIComponent(name)
+    expect(read('domains', `q=police&issue=1&issue=9&group=${g('一般政務')}&group=${g('社會福利')}`)).toMatchObject({
+      q: 'police', issues: [1, 9], groups: ['一般政務', '社會福利'], replace: false,
+    })
+    // The groups keep the order of domainGroups. A space group is not a 領域分類.
+    expect(read('domains', `group=${g('社會福利')}&group=${g('一般政務')}&group=${g('道路')}`)).toMatchObject({
+      groups: ['一般政務', '社會福利'], replace: true,
+    })
+    // No 「跨議題」, no unanalyzed issue (#3). #9 has 領域, so it stays.
+    expect(read('domains', 'issue=X&issue=3&issue=9')).toMatchObject({ issues: [9], crossChoice: false, replace: true })
+    expect(read('domains', 'sort=added&space=park&who=I06')).toMatchObject({ ...DEFAULT_LIST_STATE, replace: true })
+  })
+
+  it('reads the #/solution-types params: 議題 and q only (Task U3)', () => {
+    expect(read('solution-types', 'q=open&issue=2&issue=9')).toMatchObject({ q: 'open', issues: [2, 9], replace: false })
+    // No groups: a solution type has one level.
+    expect(read('solution-types', `group=${encodeURIComponent('一般政務')}&issue=X`)).toMatchObject({
+      groups: [], issues: [], crossChoice: false, replace: true,
+    })
   })
 
   it('keeps a clean URL as it is', () => {

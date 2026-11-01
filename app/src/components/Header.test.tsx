@@ -1,4 +1,4 @@
-// The header nav (design 3.7, decisions 120 and 123): 議題, 利害關係人, 空間, 解法,
+// The header nav (design 3.7, decisions 120 and 123): 議題, 利害關係人, 空間, 領域, 解法, 解法類型
 // each with a count. The data hooks are mocked, so the header renders on the
 // server with the fixtures.
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -36,8 +36,23 @@ describe('the header nav', () => {
     const html = render('/')
     const nav = html.slice(html.indexOf('<nav'), html.indexOf('</nav>'))
     const hrefs = [...nav.matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toEqual(['/issues', '/stakeholders', '/spaces', '/solutions'])
+    expect(hrefs).toEqual(['/issues', '/stakeholders', '/spaces', '/domains', '/solutions', '/solution-types'])
     expect(link(html, '/spaces')).toContain('<span>空間</span><span class="font-semibold tabular-nums">13</span>')
+  })
+
+  it('has 領域 28 after 空間 and 解法類型 13 after 解法 (Task U3)', () => {
+    const html = render('/')
+    expect(link(html, '/domains')).toContain('<span>領域</span><span class="font-semibold tabular-nums">28</span>')
+    expect(link(html, '/solution-types')).toContain('<span>解法類型</span><span class="font-semibold tabular-nums">13</span>')
+  })
+
+  it('makes 領域 and 解法類型 active on their list and detail pages', () => {
+    expect(link(render('/domains'), '/domains')).toContain('aria-current="page"')
+    expect(link(render('/domains/police/issues'), '/domains')).toContain('aria-current="true"')
+    expect(link(render('/solution-types'), '/solution-types')).toContain('aria-current="page"')
+    const detail = render('/solution-types/open-data')
+    expect(link(detail, '/solution-types')).toContain('aria-current="true"')
+    expect(link(detail, '/solutions')).not.toContain('aria-current')
   })
 
   it('makes 空間 active on #/spaces, as the current page', () => {
@@ -90,17 +105,17 @@ describe('the header layout', () => {
     }
   })
 
-  it('keeps the keyboard order: app name, then the four links', () => {
+  it('keeps the keyboard order: app name, then the six links', () => {
     const html = render('/')
     const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toEqual(['/', '/issues', '/stakeholders', '/spaces', '/solutions'])
+    expect(hrefs).toEqual(['/', '/issues', '/stakeholders', '/spaces', '/domains', '/solutions', '/solution-types'])
   })
 
   it('keeps each link on one line', () => {
     const html = render('/')
-    for (const href of ['/issues', '/stakeholders', '/spaces', '/solutions']) {
+    for (const href of ['/issues', '/stakeholders', '/spaces', '/domains', '/solutions', '/solution-types']) {
       expect(link(html, href)).toContain('whitespace-nowrap')
     }
-    expect(html.match(/<li class="flex-none">/g)).toHaveLength(4)
+    expect(html.match(/<li class="flex-none">/g)).toHaveLength(6)
   })
 })

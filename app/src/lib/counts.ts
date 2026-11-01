@@ -6,6 +6,7 @@ import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import { availableIssues } from './issues'
 import { pickList } from './opinion'
 import { listedStakeholders } from './stakeholders'
+import { typesOf, type TypeKind } from './typeKinds'
 
 /** 議題: the analyzed issues. */
 export function issueCount(index: IndexFile): number {
@@ -21,7 +22,13 @@ export function stakeholderCount(index: IndexFile): number {
 /** 空間: every space type in index.json, also the ones that no analyzed
  * issue uses yet (decision 120). #/spaces lists all of them. */
 export function spaceCount(index: IndexFile): number {
-  return index.spaceTypes.length
+  return typeCount('space', index)
+}
+
+/** 空間, 領域 and 解法類型: every type of the kind in index.json, also the
+ * ones that no analyzed issue uses yet. The list page shows all of them. */
+export function typeCount(kind: TypeKind, index: IndexFile): number {
+  return typesOf(kind, index).length
 }
 
 /** 解法: the solutions of the analyzed issues, summed, plus the cross-issue

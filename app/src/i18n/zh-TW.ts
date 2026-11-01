@@ -22,7 +22,9 @@ export const t = {
     issues: '議題',
     stakeholders: '利害關係人',
     spaces: '空間',
+    domains: '領域',
     solutions: '解法',
+    solutionTypes: '解法類型',
   },
   /** The page footer (design 3.8). */
   footer: {
@@ -480,6 +482,8 @@ export const t = {
     stakeholders: '回到利害關係人列表',
     solutions: '回到解法列表',
     spaces: '回到空間列表',
+    domains: '回到領域列表',
+    solutionTypes: '回到解法類型列表',
     /** The story page: the visible text 「回到 I06」. */
     stakeholderShort: (id: string) => `回到 ${id}`,
     /** The story page: the accessible name, which starts with the visible text. */
@@ -706,7 +710,8 @@ export const t = {
     issuesNone: '目前沒有已完成分析的議題使用這個空間類型。',
     solutionsHeading: '使用這個空間的解法',
     solutionsNone: '目前沒有解法使用這個空間類型。',
-    otherSpaces: '也使用：',
+    /** Before the other types of the same kind on a solution card. */
+    otherTypes: '也使用：',
     stakeholdersHeading: '相關的利害關係人',
     stakeholdersIntro: '這些利害關係人的故事，被使用這個空間的解法涵蓋。',
     stakeholdersNone: '目前沒有相關的利害關係人。',
@@ -757,6 +762,121 @@ export const t = {
     /** The empty state with filters and no search. */
     noMatchFilters: '沒有符合目前篩選的空間。',
     /** The link that removes only the search. */
+    clearSearch: '清除搜尋',
+  },
+  /** The 領域 page #/domains/:code/:tab? (Task U3). The same parts as the
+   * space page (spacePage). */
+  domainPage: {
+    notFoundTitle: '找不到這個領域',
+    notFoundBody: (code: string) => `沒有代碼為 ${code} 的領域。網址可能打錯了。`,
+    backHome: '回到首頁',
+    /** The 總覽 fields (decision 6 of plan-types-ui.md). */
+    parent: '上層',
+    description: '說明',
+    budgetName: '政事別',
+    petitionCategory: '陳情系統主類別',
+    intro: '領域來自臺北市的歲出政事別。同一個領域的議題和解法，可能可以一起處理。這一頁列出屬於這個領域的議題、解法和利害關係人。',
+    issuesHeading: '屬於這個領域的議題',
+    issuesNone: '目前沒有已完成分析的議題屬於這個領域。',
+    solutionsHeading: '屬於這個領域的解法',
+    solutionsNone: '目前沒有解法屬於這個領域。',
+    otherTypes: '也屬於：',
+    stakeholdersHeading: '相關的利害關係人',
+    stakeholdersIntro: '這些利害關係人的故事，被屬於這個領域的解法涵蓋。',
+    stakeholdersNone: '目前沒有相關的利害關係人。',
+    sharedHeading: '在多個議題都出現的利害關係人',
+    sharedIntro: '同樣的人會同時受到好幾個議題影響。',
+    sharedNone: '目前沒有在多個議題都出現的利害關係人。',
+    sharedIssues: '出現的議題',
+    byIssueHeading: '各議題的利害關係人',
+    tabsLabel: '領域內容',
+    tabs: {
+      overview: '總覽',
+      issues: '議題',
+      solutions: '解法',
+      stakeholders: '利害關係人',
+    },
+    tabLabels: {
+      issues: (n: number): TabLabel => ({ main: `議題 ${n}` }),
+      solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
+      stakeholders: (n: number): TabLabel => ({ main: `利害關係人 ${n}` }),
+    },
+    tabNotFound: '找不到這個分頁。',
+    goToOverview: '回到總覽',
+  },
+  /** #/domains (Task U3). The same parts as #/spaces (spacesList). */
+  domainsList: {
+    title: '領域',
+    issues: '議題',
+    stakeholders: '利害關係人',
+    solutions: '解法',
+    issuesValue: (n: number) => `${n} 個`,
+    stakeholdersValue: (n: number) => `${n} 位`,
+    solutionsValue: (n: number) => `${n} 個`,
+    noIssues: '尚無議題',
+    groupFilter: '領域分類',
+    issueFilter: '議題',
+    issueOption: (n: number, title: string) => `#${n} ${title}`,
+    issueShort: (n: number) => `#${n}`,
+    noun: '領域',
+    noMatchFilters: '沒有符合目前篩選的領域。',
+    clearSearch: '清除搜尋',
+  },
+  /** The 解法類型 page #/solution-types/:code/:tab? (Task U3). The same
+   * parts as the space page (spacePage). */
+  solutionTypePage: {
+    notFoundTitle: '找不到這個解法類型',
+    notFoundBody: (code: string) => `沒有代碼為 ${code} 的解法類型。網址可能打錯了。`,
+    backHome: '回到首頁',
+    /** The 總覽 fields (decision 6 of plan-types-ui.md). */
+    description: '說明',
+    howToJudge: '判斷方式',
+    policyTool: '政策工具',
+    intro: '解法類型說明一個解法用什麼方式處理問題。用同一種方式的解法，可能可以一起規劃。這一頁列出使用這個解法類型的議題、解法和利害關係人。',
+    issuesHeading: '使用這個解法類型的議題',
+    issuesNone: '目前沒有已完成分析的議題使用這個解法類型。',
+    solutionsHeading: '使用這個解法類型的解法',
+    solutionsNone: '目前沒有解法使用這個解法類型。',
+    otherTypes: '也使用：',
+    stakeholdersHeading: '相關的利害關係人',
+    stakeholdersIntro: '這些利害關係人的故事，被使用這個解法類型的解法涵蓋。',
+    stakeholdersNone: '目前沒有相關的利害關係人。',
+    sharedHeading: '在多個議題都出現的利害關係人',
+    sharedIntro: '同樣的人會同時受到好幾個議題影響。',
+    sharedNone: '目前沒有在多個議題都出現的利害關係人。',
+    sharedIssues: '出現的議題',
+    byIssueHeading: '各議題的利害關係人',
+    tabsLabel: '解法類型內容',
+    tabs: {
+      overview: '總覽',
+      issues: '議題',
+      solutions: '解法',
+      stakeholders: '利害關係人',
+    },
+    tabLabels: {
+      issues: (n: number): TabLabel => ({ main: `議題 ${n}` }),
+      solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
+      stakeholders: (n: number): TabLabel => ({ main: `利害關係人 ${n}` }),
+    },
+    tabNotFound: '找不到這個分頁。',
+    goToOverview: '回到總覽',
+  },
+  /** #/solution-types (Task U3). The same parts as #/spaces (spacesList),
+   * with no group filter: a solution type has one level. */
+  solutionTypesList: {
+    title: '解法類型',
+    issues: '議題',
+    stakeholders: '利害關係人',
+    solutions: '解法',
+    issuesValue: (n: number) => `${n} 個`,
+    stakeholdersValue: (n: number) => `${n} 位`,
+    solutionsValue: (n: number) => `${n} 個`,
+    noIssues: '尚無議題',
+    issueFilter: '議題',
+    issueOption: (n: number, title: string) => `#${n} ${title}`,
+    issueShort: (n: number) => `#${n}`,
+    noun: '解法類型',
+    noMatchFilters: '沒有符合目前篩選的解法類型。',
     clearSearch: '清除搜尋',
   },
   /** The page shown when a page breaks (the errorElement of the root route). */
@@ -876,6 +996,8 @@ export const t = {
       stakeholders: (n: number, total: number) => `顯示 ${n} 位利害關係人，共 ${total} 位。`,
       solutions: (n: number, total: number) => `顯示 ${n} 個解法，共 ${total} 個。`,
       spaces: (n: number, total: number) => `顯示 ${n} 個空間，共 ${total} 個。`,
+      domains: (n: number, total: number) => `顯示 ${n} 個領域，共 ${total} 個。`,
+      'solution-types': (n: number, total: number) => `顯示 ${n} 個解法類型，共 ${total} 個。`,
     },
     /** The filters that are on: 「篩選：搜尋「無菸」；空間類型：人行道、騎樓。」 */
     status: (parts: string[]) => `篩選：${parts.join('；')}。`,
@@ -886,8 +1008,17 @@ export const t = {
   listSearch: {
     label: '搜尋',
     /** Hidden after the label, so the full label is 「搜尋議題」. */
-    labelHidden: { issues: '議題', stakeholders: '利害關係人', solutions: '解法', spaces: '空間' },
-    placeholder: { issues: '輸入編號或標題', stakeholders: '輸入編號或名稱', solutions: '輸入代號或名稱', spaces: '輸入代號或名稱' },
+    labelHidden: {
+      issues: '議題', stakeholders: '利害關係人', solutions: '解法', spaces: '空間', domains: '領域', 'solution-types': '解法類型',
+    },
+    placeholder: {
+      issues: '輸入編號或標題',
+      stakeholders: '輸入編號或名稱',
+      solutions: '輸入代號或名稱',
+      spaces: '輸入代號或名稱',
+      domains: '輸入代號或名稱',
+      'solution-types': '輸入代號或名稱',
+    },
     clear: '清除搜尋',
     /** The search in the result line, before the filters. */
     statusPart: (q: string) => `搜尋「${q}」`,

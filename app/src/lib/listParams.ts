@@ -5,9 +5,20 @@
 import type { IndexFile } from '@/types'
 import { NO_FILTERS, type ListFilters } from './listFilter'
 import type { ListSort } from './listSort'
+import { availableIssues } from './issues'
 import { isListed } from './stakeholders'
+import { issueMayUseType, typeGroupNames, type TypeKind, type TypeListPage } from './typeKinds'
 
-export type ListPage = 'issues' | 'stakeholders' | 'solutions' | 'spaces'
+export type ListPage = 'issues' | 'stakeholders' | 'solutions' | TypeListPage
+
+/** The kind of type of each type list page (#/spaces, #/domains,
+ * #/solution-types). The other list pages are not here. */
+const PAGE_KIND: Record<TypeListPage, TypeKind> = { spaces: 'space', domains: 'domain', 'solution-types': 'solutionType' }
+
+/** The kind of type of a type list page, or null for another page. */
+export function pageKind(page: ListPage): TypeKind | null {
+  return page in PAGE_KIND ? PAGE_KIND[page as TypeListPage] : null
+}
 
 /** The param names, in the order listUrlSearch writes them. */
 export const LIST_PARAMS = {
@@ -28,21 +39,27 @@ export const CROSS_ISSUE_VALUE = 'X'
 export const Q_MAX_LENGTH = 100
 
 /** The sorts of each page (design 3.23.3). The first one is the default.
- * #/spaces has none: the spaces have no dates and no share of their own,
- * so the page keeps the data order and the bar has no sort (decision 122). */
+ * #/spaces has none: the spaces have no share of their own, so the page
+ * keeps the data order and the bar has no sort (decision 122). #/domains
+ * and #/solution-types are the same (Task U3). */
 export const PAGE_SORTS: Record<ListPage, readonly ListSort[]> = {
   issues: ['updated', 'added', 'evidence'],
   stakeholders: ['updated', 'added', 'evidence', 'solutions'],
   solutions: ['updated', 'added', 'evidence'],
   spaces: [],
+  domains: [],
+  'solution-types': [],
 }
 
-/** The params each page reads. Any other list param is dropped. */
+/** The params each page reads. Any other list param is dropped. A solution
+ * type has one level, so #/solution-types has no group. */
 const PAGE_PARAMS: Record<ListPage, readonly string[]> = {
   issues: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.space, LIST_PARAMS.who],
   stakeholders: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.specialOnly, LIST_PARAMS.view],
   solutions: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.who],
   spaces: [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.group],
+  domains: [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.group],
+  'solution-types': [LIST_PARAMS.q, LIST_PARAMS.issue],
 }
 
 /** The whole state of a list page. */
@@ -94,6 +111,7 @@ export function listParamsOf(
   spaceCodes: readonly string[] = index.issues.flatMap((i) => i.spaces),
 ): ListParams {
   const has = (name: string) => PAGE_PARAMS[page].includes(name)
+  const kind = pageKind(page)
   const state: ListState = { ...DEFAULT_LIST_STATE, issues: [], spaces: [], groups: [] }
 
   const sort = params.get(LIST_PARAMS.sort)
@@ -103,12 +121,13 @@ export function listParamsOf(
 
   if (has(LIST_PARAMS.issue)) {
     const values = params.getAll(LIST_PARAMS.issue)
-    // #/spaces offers only the analyzed issues that use a space, and has no
+    // A type list page offers only the analyzed issues that can use a type
+    // of its kind (for #/spaces: the issues with a space), and has no
     // 「跨議題」 (decision 122).
-    const analyzed = index.issues
-      .filter((i) => i.available && (page !== 'spaces' || i.spaces.length > 0))
+    const analyzed = availableIssues(index)
+      .filter((i) => kind === null || issueMayUseType(kind, i))
       .map((i) => i.number)
-    state.crossChoice = page !== 'spaces' && values.includes(CROSS_ISSUE_VALUE)
+    state.crossChoice = kind === null && values.includes(CROSS_ISSUE_VALUE)
     state.issues = analyzed.filter((n) => values.some((v) => /^\d+$/.test(v) && Number(v) === n))
   }
 
@@ -123,9 +142,9 @@ export function listParamsOf(
     state.who = found && isListed(found) ? found.id : null
   }
 
-  if (has(LIST_PARAMS.group)) {
+  if (has(LIST_PARAMS.group) && kind !== null) {
     const values = params.getAll(LIST_PARAMS.group)
-    state.groups = spaceGroupNames(index).filter((g) => values.includes(g))
+    state.groups = typeGroupNames(kind, index).filter((g) => values.includes(g))
   }
 
   if (has(LIST_PARAMS.specialOnly)) state.specialOnly = params.get(LIST_PARAMS.specialOnly) === '1'
@@ -138,7 +157,7 @@ export function listParamsOf(
 /** The space groups (道路, 地下, …) in the order they first come in
  * index.spaceTypes, the same order as spaceGroups. */
 export function spaceGroupNames(index: IndexFile): string[] {
-  return [...new Set(index.spaceTypes.map((s) => s.group))]
+  return typeGroupNames('space', index)
 }
 
 /** The URL search string for a list page state ("?q=…&sort=…", or "" for
@@ -175,7 +194,7 @@ export function listPath(page: ListPage, state: Partial<ListState> = {}): string
  * of the block. 最近更新 is the default sort. Since decision 131 all three
  * blocks use it, so no link has a param (before: ?sort=added for the
  * stakeholders and the solutions). */
-export const HOME_ALL_PATHS: Record<Exclude<ListPage, 'spaces'>, string> = {
+export const HOME_ALL_PATHS: Record<Exclude<ListPage, TypeListPage>, string> = {
   issues: listPath('issues'),
   stakeholders: listPath('stakeholders'),
   solutions: listPath('solutions'),

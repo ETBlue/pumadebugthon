@@ -1,17 +1,7 @@
-import { Link } from 'react-router'
-import { spaceTypeNames } from '@/lib/issues'
 import type { SpaceType } from '@/types'
-import { targetLinkClass } from './styles'
+import { TypeLinks } from './TypeLinks'
 
 /** Space type names, each a link to its space page (design 3.6). */
 export function SpaceLinks({ spaceTypes, codes }: { spaceTypes: SpaceType[]; codes: string[] }) {
-  return (
-    <ul className="flex flex-wrap gap-x-3 gap-y-1">
-      {spaceTypeNames(spaceTypes, codes).map((s) => (
-        <li key={s.code}>
-          <Link to={`/spaces/${s.code}`} className={targetLinkClass}>{s.name}</Link>
-        </li>
-      ))}
-    </ul>
-  )
+  return <TypeLinks kind="space" types={spaceTypes} codes={codes} />
 }

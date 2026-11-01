@@ -21,6 +21,22 @@ export type TypeKind = 'space' | 'domain' | 'solutionType'
 /** All kinds, in menu order. */
 export const TYPE_KINDS: TypeKind[] = ['space', 'domain', 'solutionType']
 
+/** The list page of each kind. It is also the first URL segment of the
+ * list page and of the type pages: #/domains, #/domains/<code>. */
+export const TYPE_LIST_PAGES = { space: 'spaces', domain: 'domains', solutionType: 'solution-types' } as const
+
+export type TypeListPage = (typeof TYPE_LIST_PAGES)[TypeKind]
+
+/** True when every code of a solution is also on its issue. Then the issue
+ * summaries in index.json are enough to find the issues of a type, and the
+ * page does not need the issue files for that.
+ * - space: true. method.md: 「每個解法的空間都必須在本題的清單中」.
+ * - domain: false. A solution's own 領域 is never on its issue (method.md).
+ * - solutionType: false. An issue has no solution types of its own. */
+export function issueListsSolutionCodes(kind: TypeKind): boolean {
+  return kind === 'space'
+}
+
 /** The row type of each kind. */
 export interface TypeOfKind {
   space: SpaceType
@@ -89,6 +105,40 @@ export function issueCodes(kind: TypeKind, issue: AvailableIssueSummary, files: 
  * only for a solution type. */
 export function issuesByType(kind: TypeKind, index: IndexFile, files: IssueFile[], code: string): AvailableIssueSummary[] {
   return availableIssues(index).filter((i) => issueCodes(kind, i, files).includes(code))
+}
+
+/** The issues of a type page and of a card on the list page (Task U3): the
+ * analyzed issues that have the code on the issue, or that have a solution
+ * with the code. By issue number. files are the loaded issue files.
+ * - space: the same as issuesByType, because a solution space is always on
+ *   its issue.
+ * - domain: also an issue with a solution that has its own 領域.
+ * - solutionType: the same as issuesByType. */
+export function typeIssues(kind: TypeKind, index: IndexFile, files: IssueFile[], code: string): AvailableIssueSummary[] {
+  return availableIssues(index).filter(
+    (i) =>
+      issueCodes(kind, i, files).includes(code) ||
+      (files.find((f) => f.number === i.number)?.solutions.some((s) => solutionCodes(kind, s).includes(code)) ?? false),
+  )
+}
+
+/** True when the issue can use a type of the kind, from index.json alone:
+ * an issue with no space types uses no space type (for example #9). Every
+ * analyzed issue has 1 to 3 領域, and its solutions have solution types.
+ * The 議題 filter of a type list page offers only these issues. */
+export function issueMayUseType(kind: TypeKind, issue: AvailableIssueSummary): boolean {
+  if (kind === 'space') return issue.spaces.length > 0
+  if (kind === 'domain') return issue.domains.length > 0
+  return true
+}
+
+/** The level 1 names of the kind, in file order: the headings of the list
+ * page and the options of its 分類 filter. A solution type has one level,
+ * so it has none. */
+export function typeGroupNames(kind: TypeKind, index: IndexFile): string[] {
+  if (kind === 'domain') return index.domainGroups.map((g) => g.name)
+  if (kind === 'space') return [...new Set(index.spaceTypes.map((s) => s.group))]
+  return []
 }
 
 /** Every solution that has the type, by issue number, then in the order of

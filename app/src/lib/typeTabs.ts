@@ -1,6 +1,6 @@
 // The sort, filter and search of the 解法 and 利害關係人 tabs of a type page
 // (design 3.6, decision 138). The space page uses them through spaceTabs.ts.
-// The 領域 and 解法類型 pages are to use them with the kind 'domain' and
+// The 領域 and 解法類型 pages use them with the kind 'domain' and
 // 'solutionType' (app/docs/plan-types-ui.md, Task U3). They
 // use the URL params, the sorts and the search rules of #/solutions and
 // #/stakeholders, limited to the items of one type. The list is filtered,
@@ -26,8 +26,9 @@ export type TypeListTab = keyof typeof TYPE_TAB_PAGE
  * what the tab does not offer:
  * - 議題: only the issues of the tab (issueNumbers). No 「跨議題」.
  * - 空間類型 (space=): the tabs of a type page have no space filter. On a
- *   space page every item already uses this space. For the 領域 and 解法類型
- *   pages, Task U3 decides if their tabs get a space filter.
+ *   space page every item already uses this space. The 領域 and 解法類型
+ *   pages have the same tabs and filters as the space page, so they have
+ *   no space filter either (Task U3).
  * - The view of #/stakeholders (view=tree): the tab has no tree view.
  * replace is true when the URL had a list param that was dropped or
  * changed. Params that are not list params (evidence, …) are not looked at. */

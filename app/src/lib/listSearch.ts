@@ -81,10 +81,14 @@ export function solutionMatches(item: SearchSolutionItem, query: ListQuery | nul
   return titleHas(item.solution.name, query)
 }
 
-/** #/spaces (decision 122): the code (the whole code, 「-」 and spaces
+/** A type list page (#/spaces, decision 122; #/domains and
+ * #/solution-types, Task U3): the code (the whole code, 「-」 and spaces
  * ignored, so `bikelane` finds bike-lane) or a part of the name. */
-export function spaceMatches(space: { code: string; name: string }, query: ListQuery | null): boolean {
+export function typeMatches(type: { code: string; name: string }, query: ListQuery | null): boolean {
   if (!query) return true
-  if (query.key === space.code.toLowerCase().replace(/-/g, '')) return true
-  return titleHas(space.name, query)
+  if (query.key === type.code.toLowerCase().replace(/-/g, '')) return true
+  return titleHas(type.name, query)
 }
+
+/** #/spaces: the same search as every type list page (typeMatches). */
+export const spaceMatches = typeMatches

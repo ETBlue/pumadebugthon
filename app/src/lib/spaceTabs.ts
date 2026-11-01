@@ -1,6 +1,7 @@
 // The 解法 and 利害關係人 tabs of the space page (design 3.6, decision 138).
 // These are thin wrappers over the generic helpers in typeTabs.ts, with the
-// kind 'space'. They keep the old names, so the space page did not change.
+// kind 'space'. They keep the old names. Since Task U3 the type page
+// (TypePage.tsx) calls typeTabs.ts directly; these names stay for the tests.
 import type { IndexFile, IssueFile } from '@/types'
 import type { ListState } from './listParams'
 import type { RecentSolution } from './recent'

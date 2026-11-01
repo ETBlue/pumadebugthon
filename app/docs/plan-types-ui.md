@@ -173,6 +173,8 @@ The kinds differ in where the codes are:
 **Files:**
 - Modify: `app/docs/design.md` (decisions 152 and up, one per decision above, plus the screen sections for the new pages and tab), `app/README.md` (zh-TW), the root `README.md` if it lists the app pages.
 
+- Record the choices U3 made that this plan did not fix (see the U3 report): the 「used 領域」 rule (`typeIssues`: the issue's 領域 line, or a solution's own 領域), cards wait for the issue files on the new list pages, 上層 as plain text, empty fields left out, 「也屬於：」 / 「也使用：」, `h2` card titles on `#/solution-types`, header counts include unused types.
+- Clean up the space wrappers that only tests use after U3 (`SpaceCard.tsx`, `lib/spaceTabs.ts`, and in `lib/spaces.ts` `issuesBySpace`, `solutionsBySpace`, `stakeholdersBySpace`, `findSpaceType`, `otherSpaces`, `spaceGroups`, `spaceStakeholderCount`; `listSearch.spaceMatches`, `listFilter.filterSpaces`, `entityPaths.spaceTabPath`). Move their tests to the generic helpers so the same cases stay covered.
 - [ ] Write the entries. All checks. **Commit.**
 
 - [ ] **GATE: Part 3 review.** The main session runs all checks on `main`, starts the local app for ETBlue, reports, and pushes only after ETBlue says OK.

@@ -48,7 +48,8 @@ export function backListPath(page: ListPage): string {
 export function forgetListSearches(): void {
   memory.clear()
   try {
-    for (const page of ['issues', 'stakeholders', 'solutions', 'spaces', 'domains', 'solution-types'] as const) sessionStorage.removeItem(STORAGE_KEY + page)
+    const pages = ['issues', 'stakeholders', 'solutions', 'spaces', 'domains', 'solution-types'] as const
+    for (const page of pages) sessionStorage.removeItem(STORAGE_KEY + page)
   } catch {
     // Nothing to clear.
   }

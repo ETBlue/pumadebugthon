@@ -113,6 +113,8 @@ export function issuesByType(kind: TypeKind, index: IndexFile, files: IssueFile[
  * - space: the same as issuesByType, because a solution space is always on
  *   its issue.
  * - domain: also an issue with a solution that has its own 領域.
+ *   solution.domains is ownDomains when that is not empty, else the
+ *   issue's 領域.
  * - solutionType: the same as issuesByType. */
 export function typeIssues(kind: TypeKind, index: IndexFile, files: IssueFile[], code: string): AvailableIssueSummary[] {
   return availableIssues(index).filter(

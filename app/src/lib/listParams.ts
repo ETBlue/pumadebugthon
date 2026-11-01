@@ -16,7 +16,7 @@ export type ListPage = 'issues' | 'stakeholders' | 'solutions' | TypeListPage
 const PAGE_KIND: Record<TypeListPage, TypeKind> = { spaces: 'space', domains: 'domain', 'solution-types': 'solutionType' }
 
 /** The kind of type of a type list page, or null for another page. */
-export function pageKind(page: ListPage): TypeKind | null {
+function pageKind(page: ListPage): TypeKind | null {
   return page in PAGE_KIND ? PAGE_KIND[page as TypeListPage] : null
 }
 
@@ -152,12 +152,6 @@ export function listParamsOf(
   state.q = cleanQuery(params.get(LIST_PARAMS.q))
 
   return { ...state, replace: listUrlSearch(page, state) !== listOnlySearch(params) }
-}
-
-/** The space groups (道路, 地下, …) in the order they first come in
- * index.spaceTypes, the same order as spaceGroups. */
-export function spaceGroupNames(index: IndexFile): string[] {
-  return typeGroupNames('space', index)
 }
 
 /** The URL search string for a list page state ("?q=…&sort=…", or "" for

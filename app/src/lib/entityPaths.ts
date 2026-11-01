@@ -1,6 +1,7 @@
 // URL paths of the entity pages: stakeholder, story, solution, and the type
-// pages of space, 領域 and 解法類型 (design 3.3, 3.6, 3.12, 3.15, 3.16, 3.19). Wants and needs have no page of
-// their own (decision 45). A link to one goes to the issue tab with ?focus=.
+// pages of space, 領域 and 解法類型 (design 3.3, 3.6, 3.12, 3.15, 3.16,
+// 3.19). Wants and needs have no page of their own (decision 45). A link to
+// one goes to the issue tab with ?focus=.
 import { withDataBasisFilter } from './dataBasis'
 import { FOCUS_PARAM } from './focus'
 import { tabPath, type IssueTab } from './issuePage'

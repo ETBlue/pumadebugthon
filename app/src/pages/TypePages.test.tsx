@@ -19,14 +19,25 @@ import TypePage from './TypePage'
 const index = indexJson as IndexFile
 const issueFiles = [treesJson, trashcansJson, smokefreeJson, policyJson] as IssueFile[]
 
-const state: { issuesReady: boolean } = { issuesReady: true }
+const state: { issuesReady: boolean; files: IssueFile[] } = { issuesReady: true, files: issueFiles }
+
+/** The fixture files, with #2 S1 changed to have its own 領域 police. No
+ * fixture solution has an own 領域, and #2 itself has only environment. */
+const ownPolice: IssueFile[] = issueFiles.map((f) =>
+  f.number !== 2
+    ? f
+    : {
+        ...f,
+        solutions: f.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)),
+      },
+)
 
 vi.mock('@/data', () => ({
   useIndex: () => ({ status: 'ready', data: index }),
   // Like the real hook: the files of the folders asked for.
   useIssues: (folders: string[]) =>
     state.issuesReady
-      ? { status: 'ready', data: issueFiles.filter((f) => folders.some((x) => x.startsWith(`${f.number}-`))) }
+      ? { status: 'ready', data: state.files.filter((f) => folders.some((x) => x.startsWith(`${f.number}-`))) }
       : { status: 'loading', message: '載入中…' },
 }))
 
@@ -39,6 +50,7 @@ vi.mock('@/components/PageTitle', async () => {
 
 beforeEach(() => {
   state.issuesReady = true
+  state.files = issueFiles
   forgetListSearches()
 })
 
@@ -101,6 +113,7 @@ describe('#/domains (Task U3)', () => {
     const tabs = expectedTabs('domain', 'environment')
     expect(c).toContain(`<dd>${tabs[1].split(' ')[1]} 個`)
     expect(c).toContain(`${tabs[3].split(' ')[1]} 位`)
+    expect(c).toContain(`<dd>${tabs[2].split(' ')[1]} 個</dd>`)
     expect(c).toContain('href="/issues/1"')
     expect(c).not.toContain('尚無議題')
   })
@@ -110,6 +123,15 @@ describe('#/domains (Task U3)', () => {
     expect(c).toContain('尚無議題')
     expect(c).toContain('border-dashed')
     expect(c).toContain('警政')
+  })
+
+  it('a 領域 that only a solution has as its own 領域: the card shows its issue', () => {
+    state.files = ownPolice
+    const c = card(renderList('domain'), '/domains/police')
+    expect(c).not.toContain('尚無議題')
+    expect(c).toContain('<dd>1 個')
+    expect(c).toContain('href="/issues/2"')
+    expect(c).toContain('<dd>1 個</dd>')
   })
 
   it('waits for the issue files: a solution can have its own 領域, so no wrong 尚無議題', () => {
@@ -208,6 +230,15 @@ describe('the 領域 page (Task U3)', () => {
     expect(renderPage('domain', '/domains/police/issues')).toContain('目前沒有已完成分析的議題屬於這個領域。')
     expect(renderPage('domain', '/domains/police/solutions')).toContain('目前沒有解法屬於這個領域。')
     expect(renderPage('domain', '/domains/police/stakeholders')).toContain('目前沒有相關的利害關係人。')
+  })
+
+  it('a 領域 that only a solution has as its own 領域: the page lists its issue and the solution', () => {
+    state.files = ownPolice
+    expect(tabNames(renderPage('domain', '/domains/police'))[1]).toBe('議題 1')
+    expect(renderPage('domain', '/domains/police/issues')).toContain('href="/issues/2"')
+    const solutions = renderPage('domain', '/domains/police/solutions')
+    expect(solutions).toContain('id="domain-solutions-2"')
+    expect(solutions).toContain('href="/solutions/2-S1"')
   })
 
   it('a level 1 code, a space code or an unknown code shows the not-found page', () => {

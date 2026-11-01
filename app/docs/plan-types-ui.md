@@ -18,6 +18,7 @@
 4. The candidate pairs show on issue solution pages, in a new tab 「可能合併」 at `#/solutions/<id>/candidates`. X- solution pages do not get this tab.
 5. A solution's 領域 tags show whether they come from the issue or are the solution's own. By decision 14 of `plan-types.md`, they are either all from the issue or all its own, never mixed. Tags from the issue use a muted style and are followed by the text 「（沿用議題）」. Screen readers read the text too.
 6. The detail pages show all fields: 領域 shows 上層, 說明, 政事別 and 陳情系統主類別. 解法類型 shows 說明, 判斷方式 and 政策工具.
+7. On an issue's 解法 tab, a solution card shows a 領域 row only when the solution has its own 領域 (ETBlue, 2026-11-02). The issue's 領域 already shows at the top of that page. Other places keep the muted 「（沿用議題）」 row of decision 5.
 
 ## Global constraints
 

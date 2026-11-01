@@ -7,8 +7,8 @@ import { sharePercent, type Share } from '@/lib/coverage'
 import { focusGapsText } from '@/lib/focusGroups'
 import { isParticipantIssue, type SharedForCard } from '@/lib/issues'
 import { CROSS_STAKEHOLDERS_PATH } from '@/lib/listParams'
-import type { IssueSummary, SpaceType } from '@/types'
-import { SpaceLinks } from './SpaceLinks'
+import type { IssueSummary } from '@/types'
+import { TypeFields, type TypeLists } from './TypeLinks'
 import { linkClass } from './styles'
 
 const tc = t.issueCard
@@ -23,7 +23,8 @@ export type IssueCardProps =
   | {
       variant: 'detailed'
       issue: IssueSummary
-      spaceTypes: SpaceType[]
+      /** The type lists for the 空間類型 and 領域 links (index). */
+      types: TypeLists
       shared: SharedForCard | null
       headingLevel?: 2 | 3
       /** The 資料根據比例 share, shown as a percent next to the counts. Only
@@ -33,7 +34,8 @@ export type IssueCardProps =
   | {
       variant: 'compact'
       issue: IssueSummary
-      spaceTypes: SpaceType[]
+      /** The type lists for the 空間類型 and 領域 links (index). */
+      types: TypeLists
       shared: SharedForCard | null
       /** Show 更新日期. Only the home page does; the space page shows no
        * date on its small cards (decision 132). */
@@ -42,22 +44,20 @@ export type IssueCardProps =
 
 /** One issue in a list (design 3.9). Two variants:
  * - detailed: a box with all the counts, 資料根據, 特別關注族群 (the groups not
- *   included yet), 更新日期 and 空間類型.
+ *   included yet), 更新日期, 空間類型 and 領域.
  * - compact: the title link, 跨議題共用的利害關係人, 資料根據 (counts and bar
- *   only, decision 72), 更新日期 (home page only) and 空間類型, in a smaller box. It uses
+ *   only, decision 72), 更新日期 (home page only) 空間類型 and 領域, in a smaller box. It uses
  *   the same box as the compact SolutionCard, so the home blocks look alike.
  *   The home page and the space page list only analyzed issues, but an issue
  *   that is 製作中 still shows its badge and a dashed border, and no fields.
  * An issue without an analysis shows 製作中, with no numbers and no link. */
 export function IssueCard(props: IssueCardProps) {
-  const { issue, spaceTypes } = props
+  const { issue, types } = props
   const title = tc.numberTitle(issue.number, issue.title)
   const updated = issue.updated && <Field label={tc.updated}><time dateTime={issue.updated}>{issue.updated}</time></Field>
-  const spaces = issue.spaces.length > 0 && (
-    <Field label={tc.spaces}>
-      <SpaceLinks spaceTypes={spaceTypes} codes={issue.spaces} />
-    </Field>
-  )
+  // 空間類型 and 領域. An issue has no 解法類型 of its own (Task U4).
+  const typeFields = <TypeFields types={types} codes={{ space: issue.spaces, domain: issue.domains }} />
+
   // The same text and link in both variants (decision 72). The other
   // issues show their titles (decision 112).
   const sharedField = props.shared && (
@@ -85,7 +85,7 @@ export function IssueCard(props: IssueCardProps) {
               <CellBasis cells={issue.counts.cells} stories={issue.counts.stories} compact inlineLabel={false} />
             </Field>
             {props.showUpdated && updated}
-            {spaces}
+            {typeFields}
           </dl>
         )}
       </article>
@@ -131,7 +131,7 @@ export function IssueCard(props: IssueCardProps) {
         ))}
         {/* A card shows only 更新日期 (decision 131). 新增日期 is on the issue page. */}
         {updated}
-        {spaces}
+        {typeFields}
       </dl>
     </article>
   )

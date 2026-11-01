@@ -93,7 +93,6 @@ export const t = {
     issuesTitle: '議題',
     stakeholdersTitle: '利害關係人',
     solutionsTitle: '解法',
-    solutionSpaces: '空間類型',
     /** The number of needs a solution covers, as plain text (decision 54). */
     solutionNeeds: (n: number) => `涵蓋 ${n} 個需求`,
   },
@@ -122,6 +121,17 @@ export const t = {
   dates: {
     added: '新增日期',
     updated: '更新日期',
+  },
+  /** The type tag rows on the issue and solution pages and cards
+   * (TypeFields, Task U4 of plan-types-ui.md). */
+  typeTags: {
+    space: '空間類型',
+    domain: '領域',
+    solutionType: '解法類型',
+    /** After the 領域 tags of a solution that has no own 領域: they come
+     * from its issue (decision 5 of plan-types-ui.md). Screen readers read
+     * it too. */
+    fromIssue: '（沿用議題）',
   },
   /** MoSCoW labels (design 3.4). */
   priority: {
@@ -192,7 +202,6 @@ export const t = {
     sharedValue: (n: number, titles: string[]) =>
       titles.length > 0 ? `${n} 位，也出現在 ${titles.join('、')}` : `${n} 位`,
     updated: '更新日期',
-    spaces: '空間類型',
     /** 特別關注族群 (design 3.9). Never a count like 「4／6」: it reads like a score. */
     focusGaps: '尚未納入的特別關注族群',
     focusGapsValue: (groups: string[]) => groups.join('、'),
@@ -228,7 +237,6 @@ export const t = {
     unavailableBody: '這個議題的分析還在製作中，目前還不能打開。',
     tabNotFound: '找不到這個分頁。',
     tabsLabel: '議題內容',
-    spaces: '空間類型',
     backHome: '回到首頁',
     goToOverview: '回到總覽',
     /** The tab names, also for the page title (design 3.2). */
@@ -346,7 +354,6 @@ export const t = {
   },
   /** The issue page's 解法 tab (design 3.2). */
   solutionsTab: {
-    spaces: '空間類型',
     needs: '涵蓋的需求',
     /** The two parts of step 6.2. */
     must: '必須有',
@@ -585,7 +592,6 @@ export const t = {
     allSolutionsLink: '看全部議題的解法',
     issuesLink: '看全部議題',
     backHome: '回到首頁',
-    spaces: '空間類型',
     /** The line under the h1 (design 3.12): 「議題：#2 找回消失的垃圾桶」. */
     issueLine: '議題：',
     groupsHeading: '涵蓋的相同訴求群組',

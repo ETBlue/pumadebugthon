@@ -12,6 +12,14 @@ export const targetSizeClass = 'inline-block min-h-6 min-w-6 py-0.5'
 /** linkClass for a link that stands alone (see targetSizeClass). */
 export const targetLinkClass = `${linkClass} ${targetSizeClass}`
 
+/** targetLinkClass in the muted text color, for a link that is less
+ * important than the others, for example the 領域 tags that a solution
+ * takes from its issue. Still underlined, so it is not shown by color only.
+ * --muted-foreground passes AA on the page and muted backgrounds in both
+ * themes (designTokens.test.ts). */
+export const mutedTargetLinkClass =
+  `text-muted-foreground underline underline-offset-4 hover:decoration-2 rounded-sm ${targetSizeClass}`
+
 /** Extra classes for a toggle or toggle group item: a clear "on" state.
  * The check icon (see ToggleCheck) shows the state without color. */
 export const toggleOnClass =

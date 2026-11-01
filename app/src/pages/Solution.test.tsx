@@ -489,3 +489,66 @@ describe('相關政策: the dependency rows have the 「相關：」 line (decis
     expect(cross).toContain('href="/stakeholders/O04/stories/2/O04-US04"')
   })
 })
+
+describe('領域 and 解法類型 tags in the solution header (Task U4 of plan-types-ui.md)', () => {
+  const tt = t.typeTags
+  /** The <dd> of the field with this label, or null when there is none. */
+  const field = (html: string, label: string) =>
+    new RegExp(`<dt class="text-muted-foreground">${label}</dt><dd>([\\s\\S]*?)</dd>`).exec(html)?.[1] ?? null
+  const links = (html: string) => [...html.matchAll(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], m[2]])
+  const labels = (html: string) => [...html.matchAll(/<dt class="text-muted-foreground">([^<]+)<\/dt>/g)].map((m) => m[1])
+
+  it('a solution with no own 領域: the issue 領域, muted, then 「（沿用議題）」 (decision 5)', () => {
+    const html = render('/solutions/8-S1')
+    const domains = field(html, tt.domain) ?? ''
+    expect(links(domains)).toEqual([['/domains/health', '醫療保健'], ['/domains/environment', '環境保護']])
+    expect(domains).toContain('text-muted-foreground')
+    expect(domains).toContain(tt.fromIssue)
+  })
+
+  it('a solution with its own 領域: normal links, no 「（沿用議題）」 (decision 5)', () => {
+    const trashcans = files['2-trashcans']
+    files['2-trashcans'] = {
+      ...trashcans,
+      solutions: trashcans.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)),
+    }
+    try {
+      const domains = field(render('/solutions/2-S1'), tt.domain) ?? ''
+      expect(links(domains)).toEqual([['/domains/police', '警政']])
+      expect(domains).not.toContain('text-muted-foreground')
+      expect(domains).not.toContain(tt.fromIssue)
+    } finally {
+      files['2-trashcans'] = trashcans
+    }
+  })
+
+  it('解法類型 in the order of the cell; the rows are 空間類型, 領域, 解法類型', () => {
+    const html = render('/solutions/2-S1')
+    expect(links(field(html, tt.solutionType) ?? '')).toEqual([
+      ['/solution-types/digital-tool', '數位工具'], ['/solution-types/planning', '調查與規劃'],
+    ])
+    const l = labels(html)
+    expect(l.indexOf(tt.domain)).toBe(l.indexOf(tt.space) + 1)
+    expect(l.indexOf(tt.solutionType)).toBe(l.indexOf(tt.domain) + 1)
+  })
+
+  it('the tags show only on 總覽, like 空間類型', () => {
+    const html = render('/solutions/2-S1/plan')
+    expect(field(html, tt.domain)).toBeNull()
+    expect(field(html, tt.solutionType)).toBeNull()
+  })
+
+  it('an X- solution: the union of 領域 in normal style, and its 解法類型', () => {
+    const html = render('/solutions/X-S4')
+    const domains = field(html, tt.domain) ?? ''
+    expect(links(domains)).toEqual([
+      ['/domains/environment', '環境保護'], ['/domains/health', '醫療保健'],
+      ['/domains/administration', '行政'], ['/domains/civil-affairs', '民政'],
+    ])
+    expect(domains).not.toContain('text-muted-foreground')
+    expect(html).not.toContain(tt.fromIssue)
+    expect(links(field(html, tt.solutionType) ?? '')).toEqual([
+      ['/solution-types/digital-tool', '數位工具'], ['/solution-types/open-data', '資料公開'],
+    ])
+  })
+})

@@ -77,11 +77,11 @@ describe('the full-size cards show only 更新日期 (decision 131), the small c
   const crossSolution = { ...cross.solutions[0], added: ADDED, updated: UPDATED }
 
   it('IssueCard, both variants', () => {
-    expectUpdatedOnly(html(<IssueCard variant="compact" showUpdated issue={issue} spaceTypes={index.spaceTypes} shared={null} />))
+    expectUpdatedOnly(html(<IssueCard variant="compact" showUpdated issue={issue} types={index} shared={null} />))
     // The space page passes no showUpdated: a small card shows no date.
-    expectNoDate(html(<IssueCard variant="compact" issue={issue} spaceTypes={index.spaceTypes} shared={null} />))
+    expectNoDate(html(<IssueCard variant="compact" issue={issue} types={index} shared={null} />))
     expectUpdatedOnly(html(
-      <IssueCard variant="detailed" issue={issue} spaceTypes={index.spaceTypes} shared={null} />,
+      <IssueCard variant="detailed" issue={issue} types={index} shared={null} />,
     ))
   })
 
@@ -108,7 +108,7 @@ describe('the full-size cards show only 更新日期 (decision 131), the small c
     const basis = { cells: { evidence: 0, aiSummary: 0, aiSimulated: 0, pending: 0 }, percent: null }
     expectUpdatedOnly(html(
       <SolutionCard
-        variant="detailed" solution={solution} issueNumber={2} spaceTypes={index.spaceTypes}
+        variant="detailed" solution={solution} issueNumber={2} types={index}
         coveredNeeds={null} issueTitle="找回消失的垃圾桶" basis={basis}
       />,
     ))
@@ -120,7 +120,7 @@ describe('the full-size cards show only 更新日期 (decision 131), the small c
     expectUpdatedOnly(html(
       <CrossSolutionCard
         solution={crossSolution} issueTitles={index.issues}
-        detailed={{ spaceTypes: index.spaceTypes, coveredNeeds: null, basis, alsoCovers: [] }}
+        detailed={{ types: index, coveredNeeds: null, basis, alsoCovers: [] }}
       />,
     ))
   })

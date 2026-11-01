@@ -6,7 +6,7 @@ import { Markdown } from '@/components/Markdown'
 import { UpdatedField } from '@/components/DateFields'
 import { CoveredBasisField, type CoveredBasis } from '@/components/SolutionCard'
 import { Badge } from '@/components/ui/badge'
-import { SpaceLinks } from '@/components/SpaceLinks'
+import { SolutionTypeFields, type TypeLists } from '@/components/TypeLinks'
 import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
@@ -16,7 +16,7 @@ import { crossSolutionPath } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
 import { issueNumberTitle, type IssueTitles } from '@/lib/issues'
 import { cn } from '@/lib/utils'
-import type { CrossSolution, SpaceType } from '@/types'
+import type { CrossSolution } from '@/types'
 
 const tx = t.crossIssue
 const tl = t.lists
@@ -67,7 +67,7 @@ export function CrossIssueLinks({ solution, titles }: { solution: CrossSolution;
 /** One cross-issue solution in a list (design 3.9, 3.18): the code and name,
  * the summary and the issues. The detailed variant (#/solutions, design
  * 3.23.9) also shows the badge 「跨議題解法」, 「也涵蓋 #1 的需求」 when it
- * covers needs of issues outside its parts, the space types, 更新日期,
+ * covers needs of issues outside its parts, 空間類型, 領域, 解法類型, 更新日期,
  * the number of needs it covers and 「涵蓋需求的資料根據」. children come
  * last (for example 資料根據 on the home page). A card never shows 新增日期
  * (decision 131). Without detailed, the card is small and shows no date
@@ -77,10 +77,10 @@ export function CrossSolutionCard({ solution: sol, issueTitles, detailed, childr
   /** The titles of the issues (index.issues), for 「#1 把三千棵樹種回來」
    * (decision 112). */
   issueTitles: IssueTitles
-  /** For #/solutions: spaceTypes for the links, the covered need count,
+  /** For #/solutions: types (index) for the type links, the covered need count,
    * the cells of the covered needs (with the percent while 資料根據比例 is
    * on), and the issues of crossAlsoCovers. */
-  detailed?: { spaceTypes: SpaceType[]; coveredNeeds: number | null; basis: CoveredBasis; alsoCovers: number[] }
+  detailed?: { types: TypeLists; coveredNeeds: number | null; basis: CoveredBasis; alsoCovers: number[] }
   children?: ReactNode
   /** Extra classes for the card, for example `h-full` in a grid. */
   className?: string
@@ -101,9 +101,7 @@ export function CrossSolutionCard({ solution: sol, issueTitles, detailed, childr
             <span className="block">{ts.alsoCovers(detailed.alsoCovers.map((n) => issueNumberTitle(issueTitles, n)))}</span>
           )}
         </Field>
-        {detailed && sol.spaces.length > 0 && (
-          <Field label={tl.solutionSpaces}><SpaceLinks spaceTypes={detailed.spaceTypes} codes={sol.spaces} /></Field>
-        )}
+        {detailed && <SolutionTypeFields types={detailed.types} solution={sol} />}
         {/* A card shows only 更新日期 (decision 131). */}
         {detailed && <UpdatedField updated={sol.updated} />}
       </dl>

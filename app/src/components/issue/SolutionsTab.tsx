@@ -6,7 +6,7 @@ import { Markdown } from '@/components/Markdown'
 import { NeedSummaryLink } from '@/components/NeedItem'
 import { SolutionTitleLink } from '@/components/SolutionCard'
 import { CrossSolutionLink } from '@/components/solution/CrossSolutionCard'
-import { SpaceLinks } from '@/components/SpaceLinks'
+import { SolutionTypeFields } from '@/components/TypeLinks'
 import { cardGridClass, targetLinkClass } from '@/components/styles'
 import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
@@ -120,11 +120,11 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
                   <SolutionTitleLink solution={sol} issueNumber={n} />
                 </h3>
                 <p className="mt-2"><Markdown text={sol.summary} /></p>
-                {sol.spaces.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-x-2 text-sm">
-                    <span className="text-muted-foreground">{ts.spaces}</span>
-                    <SpaceLinks spaceTypes={index.spaceTypes} codes={sol.spaces} />
-                  </div>
+                {/* 空間類型, 領域 and 解法類型 (Task U4 of plan-types-ui.md). */}
+                {sol.spaces.length + sol.domains.length + sol.solutionTypes.length > 0 && (
+                  <dl className="mt-2 space-y-1 text-sm">
+                    <SolutionTypeFields types={index} solution={sol} />
+                  </dl>
                 )}
 
                 <h4 id={`${key}-needs`} className="mt-4 font-medium">{ts.needs}</h4>

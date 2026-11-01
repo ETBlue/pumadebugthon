@@ -20,7 +20,7 @@ export function IssueList({ index, issues, headingLevel, showShare = false }: {
           <IssueCard
             variant="detailed"
             issue={issue}
-            spaceTypes={index.spaceTypes}
+            types={index}
             shared={sharedForCard(index, issue)}
             share={showShare && issue.available ? evidenceShare(issue.counts.cells) : null}
             headingLevel={headingLevel}

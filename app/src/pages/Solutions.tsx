@@ -267,7 +267,7 @@ function SolutionItemCard({ item, index, ctx, shareOn }: {
         solution={sol}
         issueTitles={index.issues}
         detailed={{
-          spaceTypes: index.spaceTypes,
+          types: index,
           coveredNeeds: issuesOfCross(sol, ctx.issues).length === 0 ? null : crossSolutionTabCounts(cross, sol, ctx.issues).needs.covered,
           basis,
           alsoCovers: crossAlsoCovers(cross, sol),
@@ -282,7 +282,7 @@ function SolutionItemCard({ item, index, ctx, shareOn }: {
       solution={item.solution}
       issueNumber={item.issueNumber}
       showIssue
-      spaceTypes={index.spaceTypes}
+      types={index}
       coveredNeeds={coveredNeedCount(issue, item.solution)}
       issueTitle={issue.title}
       basis={basis}

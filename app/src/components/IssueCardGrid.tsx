@@ -12,7 +12,7 @@ export function IssueCardGrid({ index, issues }: { index: IndexFile; issues: Ava
     <ul className={cardGridClass}>
       {issues.map((i) => (
         <li key={i.number}>
-          <IssueCard variant="compact" issue={i} spaceTypes={index.spaceTypes} shared={sharedForCard(index, i)} />
+          <IssueCard variant="compact" issue={i} types={index} shared={sharedForCard(index, i)} />
         </li>
       ))}
     </ul>

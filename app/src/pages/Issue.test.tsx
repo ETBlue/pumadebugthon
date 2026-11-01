@@ -892,3 +892,53 @@ describe('the 我的想法 result links each conflict ID to the 衝突 tab (deci
     expect(withConflict.length).toBeGreaterThan(0)
   })
 })
+
+describe('領域 tags (Task U4 of plan-types-ui.md)', () => {
+  afterEach(() => { state.override = {} })
+  const tt = t.typeTags
+  /** The <dd> of the field with this label, or null when there is none. */
+  const field = (html: string, label: string) =>
+    new RegExp(`<dt class="text-muted-foreground">${label}</dt><dd>([\\s\\S]*?)</dd>`).exec(html)?.[1] ?? null
+  const links = (html: string) => [...html.matchAll(/<a [^>]*href="([^"]+)"[^>]*>([^<]*)<\/a>/g)].map((m) => [m[1], m[2]])
+  /** The part of a solution card on the 解法 tab before its 涵蓋的需求 heading. */
+  const solutionHead = (html: string, id: string) => {
+    const start = html.indexOf(`id="solution-${id}"`)
+    return html.slice(start, html.indexOf(`id="solution-${id}-needs"`, start))
+  }
+
+  it('the issue header has 領域 after 空間類型, in the order of the issue, and no 解法類型', () => {
+    const html = render('/issues/8')
+    expect(links(field(html, tt.domain) ?? '')).toEqual([['/domains/health', '醫療保健'], ['/domains/environment', '環境保護']])
+    expect(field(html, tt.solutionType)).toBeNull()
+    expect(html.indexOf(`>${tt.domain}</dt>`)).toBeGreaterThan(html.indexOf(`>${tt.space}</dt>`))
+    // The issue's own 領域 are never marked as taken from the issue.
+    expect(html).not.toContain(tt.fromIssue)
+  })
+
+  it('the solution cards on the 解法 tab show 領域 (muted, 「（沿用議題）」) and 解法類型 (decision 5)', () => {
+    const head = solutionHead(render('/issues/2/solutions'), 'S1')
+    const domains = field(head, tt.domain) ?? ''
+    expect(links(domains)).toEqual([['/domains/environment', '環境保護']])
+    expect(domains).toContain('text-muted-foreground')
+    expect(domains).toContain(tt.fromIssue)
+    expect(links(field(head, tt.solutionType) ?? '')).toEqual([
+      ['/solution-types/digital-tool', '數位工具'], ['/solution-types/planning', '調查與規劃'],
+    ])
+    expect(field(head, tt.space)).not.toBeNull()
+  })
+
+  it('a solution card with its own 領域 shows normal links and no 「（沿用議題）」 (decision 5)', () => {
+    const trashcans = files['2-trashcans']
+    state.override['2-trashcans'] = {
+      ...trashcans,
+      solutions: trashcans.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)),
+    }
+    const html = render('/issues/2/solutions')
+    const own = field(solutionHead(html, 'S1'), tt.domain) ?? ''
+    expect(links(own)).toEqual([['/domains/police', '警政']])
+    expect(own).not.toContain('text-muted-foreground')
+    expect(own).not.toContain(tt.fromIssue)
+    // S2 still has no own 領域.
+    expect(field(solutionHead(html, 'S2'), tt.domain)).toContain(tt.fromIssue)
+  })
+})

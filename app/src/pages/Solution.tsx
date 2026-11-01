@@ -4,11 +4,10 @@ import { PageBand, PageBody, type BackTarget } from '@/components/PageBand'
 import { PageTabs } from '@/components/PageTabs'
 import { CellText } from '@/components/CellText'
 import { DateFields } from '@/components/DateFields'
-import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
 import { PageTitle } from '@/components/PageTitle'
-import { SpaceLinks } from '@/components/SpaceLinks'
+import { SolutionTypeFields } from '@/components/TypeLinks'
 import { linkClass, targetLinkClass } from '@/components/styles'
 import { CrossIssueLinks } from '@/components/solution/CrossSolutionCard'
 import { CrossOverviewTab } from '@/components/solution/CrossOverviewTab'
@@ -135,10 +134,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
                   <>
                     {/* The metadata is at the top of 總覽 (decision 111). */}
                     <SolutionMeta
-                      spaces={sol.spaces}
-                      added={sol.added}
-                      updated={sol.updated}
-                      summary={sol.summary}
+                      solution={sol}
                       index={index}
                       issueLine={
                         <>
@@ -239,10 +235,7 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
                   <>
                     {/* The metadata is at the top of 總覽 (decision 111). */}
                     <SolutionMeta
-                      spaces={sol.spaces}
-                      added={sol.added}
-                      updated={sol.updated}
-                      summary={sol.summary}
+                      solution={sol}
                       index={index}
                       issueLine={
                         <>
@@ -274,25 +267,20 @@ function CrossSolutionContent({ index, data, issues, solution: sol }: {
 }
 
 /** The metadata of a solution at the top of the 總覽 tab (decision 111): the
- * 議題 line, the summary, the space types, 新增日期 and 更新日期 (decision
- * 131). */
-function SolutionMeta({ issueLine, summary, spaces, added, updated, index }: {
+ * 議題 line, the summary, 空間類型, 領域 and 解法類型 (Task U4 of
+ * plan-types-ui.md), 新增日期 and 更新日期 (decision 131). */
+function SolutionMeta({ issueLine, solution, index }: {
   issueLine: ReactNode
-  summary: string
-  spaces: string[]
-  added: string
-  updated?: string | null
+  solution: SolutionType | CrossSolution
   index: IndexFile
 }) {
   return (
     <div className="mb-8">
       <p>{issueLine}</p>
-      <p className="mt-3 leading-relaxed"><Markdown text={summary} /></p>
+      <p className="mt-3 leading-relaxed"><Markdown text={solution.summary} /></p>
       <dl className="mt-3 space-y-1.5 text-sm">
-        {spaces.length > 0 && (
-          <Field label={tp.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={spaces} /></Field>
-        )}
-        <DateFields added={added} updated={updated} />
+        <SolutionTypeFields types={index} solution={solution} />
+        <DateFields added={solution.added} updated={solution.updated} />
       </dl>
     </div>
   )

@@ -9,9 +9,8 @@ import { SummaryTab } from '@/components/issue/SummaryTab'
 import { WantsTab } from '@/components/issue/WantsTab'
 import type { IssueTabProps } from '@/components/issue/types'
 import { DateFields } from '@/components/DateFields'
-import { Field } from '@/components/Field'
 import { LoadState } from '@/components/LoadState'
-import { SpaceLinks } from '@/components/SpaceLinks'
+import { TypeFields } from '@/components/TypeLinks'
 import { PageBand, PageBody, type BackTarget } from '@/components/PageBand'
 import { PageTabs } from '@/components/PageTabs'
 import { linkClass } from '@/components/styles'
@@ -160,15 +159,14 @@ function IssueContent({ index, summary }: { index: IndexFile; summary: Available
 }
 
 /** The metadata of the issue at the top of the 總覽 tab (decision 111): the
- * space types, 新增日期 and 更新日期 (decision 131). Nothing when all are
- * empty. */
+ * 空間類型, the 領域 (Task U4 of plan-types-ui.md), 新增日期 and 更新日期
+ * (decision 131). Nothing when all are empty. An issue has no 解法類型 of
+ * its own. */
 function IssueMeta({ index, summary }: { index: IndexFile; summary: AvailableIssueSummary }) {
-  if (summary.spaces.length === 0 && !summary.added && !summary.updated) return null
+  if (summary.spaces.length === 0 && summary.domains.length === 0 && !summary.added && !summary.updated) return null
   return (
     <dl className="mb-6 space-y-1.5 text-sm">
-      {summary.spaces.length > 0 && (
-        <Field label={ti.spaces}><SpaceLinks spaceTypes={index.spaceTypes} codes={summary.spaces} /></Field>
-      )}
+      <TypeFields types={index} codes={{ space: summary.spaces, domain: summary.domains }} />
       <DateFields added={summary.added} updated={summary.updated} />
     </dl>
   )

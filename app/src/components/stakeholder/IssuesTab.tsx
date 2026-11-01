@@ -52,7 +52,7 @@ export function IssuesTab({ index, shown, issues, id }: {
             <IssueCard
               variant="compact"
               issue={summary}
-              spaceTypes={index.spaceTypes}
+              types={index}
               shared={sharedForCard(index, summary)}
             />
             {issue !== null && (

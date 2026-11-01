@@ -6,12 +6,12 @@ import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { stripMarkdown } from '@/lib/markdown'
 import { solutionPath } from '@/lib/entityPaths'
 import { tabPath } from '@/lib/issuePage'
-import type { CellCounts, Solution, SpaceType } from '@/types'
+import type { CellCounts, Solution } from '@/types'
 import { CellBasis } from './CellBasis'
 import { UpdatedField } from './DateFields'
 import { Field } from './Field'
 import { Markdown } from './Markdown'
-import { SpaceLinks } from './SpaceLinks'
+import { SolutionTypeFields, type TypeLists } from './TypeLinks'
 import { linkClass } from './styles'
 import { TagBadge } from './TagBadge'
 
@@ -81,15 +81,15 @@ interface CommonProps {
 }
 
 /** The props of SolutionCard. Each variant has its own props.
- * - detailed: the solution list (#/solutions). Needs spaceTypes for the
- *   space type links, coveredNeeds for 「涵蓋 9 個需求」, issueTitle for the
+ * - detailed: the solution list (#/solutions). Needs types (index) for the
+ *   type links, coveredNeeds for 「涵蓋 9 個需求」, issueTitle for the
  *   issue line and basis for 「涵蓋需求的資料根據」.
  * - compact: short lists (home page, space page, stakeholder page, opinion
  *   check). */
 export type SolutionCardProps =
   | (CommonProps & {
       variant: 'detailed'
-      spaceTypes: SpaceType[]
+      types: TypeLists
       /** The number of needs it covers (coveredNeedCount). null: not shown. */
       coveredNeeds: number | null
       /** The title of its issue, for 「議題：#2 找回消失的垃圾桶」. */
@@ -101,7 +101,7 @@ export type SolutionCardProps =
 /** One solution in a list (design 3.9). Both variants show the tag, the code
  * and name as a link to the solution page, and the one-line summary. The
  * detailed variant (#/solutions, design 3.23.9) also shows the issue,
- * 空間類型, 更新日期, the number of needs it covers (decision 54)
+ * 空間類型, 領域, 解法類型, 更新日期, the number of needs it covers (decision 54)
  * and 「涵蓋需求的資料根據」. children come last. The compact variant is a
  * small card, so it shows no date (decision 132). */
 export function SolutionCard(props: SolutionCardProps) {
@@ -118,9 +118,7 @@ export function SolutionCard(props: SolutionCardProps) {
             <Field label={ts.issue}>
               <Link to={tabPath(issueNumber, 'overview')} className={linkClass}>{ts.issueValue(issueNumber, props.issueTitle)}</Link>
             </Field>
-            {sol.spaces.length > 0 && (
-              <Field label={tl.solutionSpaces}><SpaceLinks spaceTypes={props.spaceTypes} codes={sol.spaces} /></Field>
-            )}
+            <SolutionTypeFields types={props.types} solution={sol} />
             {/* A card shows only 更新日期 (decision 131). */}
             <UpdatedField updated={sol.updated} />
           </dl>

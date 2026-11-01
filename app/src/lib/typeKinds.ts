@@ -12,7 +12,7 @@
 // Only level 2 codes are on issues and solutions, and only level 2 rows are in
 // the type lists. So a level 1 code finds nothing in every helper.
 // Orders are fixed: issue number, then the order of the file. Never a count.
-import type { AvailableIssueSummary, DomainType, IndexFile, IssueFile, Solution, SolutionType, SpaceType } from '@/types'
+import type { AvailableIssueSummary, CrossSolution, DomainType, IndexFile, IssueFile, Solution, SolutionType, SpaceType } from '@/types'
 import { compareIds } from './ids'
 import { availableIssues } from './issues'
 
@@ -238,4 +238,32 @@ export function typeGroups<T extends { code: string; group?: string }>(types: T[
     else groups.push({ group, types: [type] })
   }
   return groups
+}
+
+/** The codes of each kind on one issue or solution, for the tag rows
+ * (TypeFields). A kind that is left out or empty gets no row. */
+export type TypeCodes = { [k in TypeKind]?: string[] }
+
+/** True when the 領域 of a solution come from its issue: an issue solution
+ * with no own 領域 (decision 5 of plan-types-ui.md). An X- solution has no
+ * ownDomains (its 領域 are the union of its parts), so it is false for it. */
+export function takesIssueDomains(sol: Solution | CrossSolution): boolean {
+  return 'ownDomains' in sol && sol.ownDomains.length === 0
+}
+
+/** The tag codes of a solution, in the order of the data.
+ * issueDomains false: leave out the 領域 that come from the issue. The
+ * issue 解法 tab uses this, because the issue 領域 are already at the top of
+ * the issue page (ETBlue, 2026-11-02). Own 領域 always stay. */
+export function solutionTagCodes(sol: Solution | CrossSolution, { issueDomains = true } = {}): TypeCodes {
+  return {
+    space: sol.spaces,
+    domain: !issueDomains && takesIssueDomains(sol) ? [] : sol.domains,
+    solutionType: sol.solutionTypes,
+  }
+}
+
+/** True when at least one kind has a code, so there is a row to show. */
+export function hasTagCodes(codes: TypeCodes): boolean {
+  return Object.values(codes).some((list) => list !== undefined && list.length > 0)
 }

@@ -11,7 +11,7 @@ import { CellBasis } from './CellBasis'
 import { UpdatedField } from './DateFields'
 import { Field } from './Field'
 import { Markdown } from './Markdown'
-import { SolutionTypeFields, type TypeLists } from './TypeLinks'
+import { SolutionTagFields, type TypeLists } from './TypeLinks'
 import { linkClass } from './styles'
 import { TagBadge } from './TagBadge'
 
@@ -118,7 +118,7 @@ export function SolutionCard(props: SolutionCardProps) {
             <Field label={ts.issue}>
               <Link to={tabPath(issueNumber, 'overview')} className={linkClass}>{ts.issueValue(issueNumber, props.issueTitle)}</Link>
             </Field>
-            <SolutionTypeFields types={props.types} solution={sol} />
+            <SolutionTagFields types={props.types} solution={sol} />
             {/* A card shows only 更新日期 (decision 131). */}
             <UpdatedField updated={sol.updated} />
           </dl>

@@ -10,7 +10,7 @@ import type { IndexFile, IssueFile } from '@/types'
 import { compareIds } from './ids'
 import { availableIssues } from './issues'
 import {
-  findType, issueCodes, issuesByType, otherTypes, sameTypeIssues, solutionCodes, solutionsByType, stakeholdersByType,
+  findType, hasTagCodes, issueCodes, issuesByType, solutionTagCodes, otherTypes, sameTypeIssues, solutionCodes, solutionsByType, stakeholdersByType,
   issueListsSolutionCodes, TYPE_KINDS, TYPE_LIST_PAGES, typeGroupNames, typeGroups, typeIssues, typesOf, type TypeKind,
 } from './typeKinds'
 
@@ -255,5 +255,26 @@ describe('typeGroupNames', () => {
 describe('TYPE_LIST_PAGES', () => {
   it('gives the list page (and the URL segment) of each kind', () => {
     expect(TYPE_KINDS.map((k) => TYPE_LIST_PAGES[k])).toEqual(['spaces', 'domains', 'solution-types'])
+  })
+})
+
+describe('solutionTagCodes and hasTagCodes (the tag rows of a solution, Task U4)', () => {
+  const s1 = trashcans.solutions.find((s) => s.id === 'S1')!
+  const own = { ...s1, domains: ['police'], ownDomains: ['police'] }
+
+  it('gives the codes of each kind in the order of the data', () => {
+    expect(solutionTagCodes(s1)).toEqual({ space: s1.spaces, domain: ['environment'], solutionType: ['digital-tool', 'planning'] })
+  })
+
+  it('issueDomains false: leaves out the 領域 taken from the issue, keeps own 領域', () => {
+    expect(solutionTagCodes(s1, { issueDomains: false }).domain).toEqual([])
+    expect(solutionTagCodes(own, { issueDomains: false }).domain).toEqual(['police'])
+  })
+
+  it('hasTagCodes is true when any kind has a code', () => {
+    expect(hasTagCodes(solutionTagCodes(s1))).toBe(true)
+    expect(hasTagCodes({ space: [], domain: [], solutionType: [] })).toBe(false)
+    expect(hasTagCodes({})).toBe(false)
+    expect(hasTagCodes({ domain: ['police'] })).toBe(true)
   })
 })

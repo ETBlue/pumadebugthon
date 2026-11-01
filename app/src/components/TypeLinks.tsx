@@ -1,7 +1,7 @@
 import { Link } from 'react-router'
 import { t } from '@/i18n/zh-TW'
 import { typeTabPath } from '@/lib/entityPaths'
-import { TYPE_KINDS, type TypeKind } from '@/lib/typeKinds'
+import { solutionTagCodes, takesIssueDomains, TYPE_KINDS, type TypeCodes, type TypeKind } from '@/lib/typeKinds'
 import type { CrossSolution, IndexFile, Solution } from '@/types'
 import { Field } from './Field'
 import { mutedTargetLinkClass, targetLinkClass } from './styles'
@@ -46,10 +46,6 @@ export function TypeLinks({ kind, types, codes, fromIssue = false }: {
 /** The three type lists of index.json. */
 export type TypeLists = Pick<IndexFile, 'spaceTypes' | 'domainTypes' | 'solutionTypes'>
 
-/** The codes of each kind on one issue or solution. A kind that is left out
- * or empty gets no row. */
-export type TypeCodes = { [k in TypeKind]?: string[] }
-
 /** The type tag rows of an issue or a solution, inside a <dl>: 空間類型,
  * 領域 and 解法類型, in this order (TYPE_KINDS, the menu order). A row with
  * no codes is left out. domainsFromIssue: see fromIssue in TypeLinks. */
@@ -74,17 +70,12 @@ export function TypeFields({ types, codes, domainsFromIssue = false }: {
   })
 }
 
-/** The type tag rows of a solution: an issue solution or an X- solution.
+/** The tag rows of a solution: an issue solution or an X- solution.
  * The 領域 of an issue solution with no own 領域 come from its issue, so
  * they are marked (decision 5 of plan-types-ui.md). An X- solution shows the
  * union of the 領域 of its parts. It has no ownDomains, so it is never
- * marked. */
-export function SolutionTypeFields({ types, solution: sol }: { types: TypeLists; solution: Solution | CrossSolution }) {
-  return (
-    <TypeFields
-      types={types}
-      codes={{ space: sol.spaces, domain: sol.domains, solutionType: sol.solutionTypes }}
-      domainsFromIssue={'ownDomains' in sol && sol.ownDomains.length === 0}
-    />
-  )
+ * marked. The issue 解法 tab does not use this: it leaves out the 領域 from
+ * the issue (see solutionTagCodes). */
+export function SolutionTagFields({ types, solution: sol }: { types: TypeLists; solution: Solution | CrossSolution }) {
+  return <TypeFields types={types} codes={solutionTagCodes(sol)} domainsFromIssue={takesIssueDomains(sol)} />
 }

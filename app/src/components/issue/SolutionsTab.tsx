@@ -6,7 +6,7 @@ import { Markdown } from '@/components/Markdown'
 import { NeedSummaryLink } from '@/components/NeedItem'
 import { SolutionTitleLink } from '@/components/SolutionCard'
 import { CrossSolutionLink } from '@/components/solution/CrossSolutionCard'
-import { SolutionTypeFields } from '@/components/TypeLinks'
+import { TypeFields } from '@/components/TypeLinks'
 import { cardGridClass, targetLinkClass } from '@/components/styles'
 import { useCrossIssueOrNull } from '@/data'
 import { t } from '@/i18n/zh-TW'
@@ -14,6 +14,7 @@ import { crossSolutionsOfIssue } from '@/lib/crossIssue'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { conflictFocusPath, solutionPath } from '@/lib/entityPaths'
 import { solutionsTabView } from '@/lib/issueTabs'
+import { hasTagCodes, solutionTagCodes } from '@/lib/typeKinds'
 import type { CoveredNeed } from '@/lib/solutionPage'
 import { cn } from '@/lib/utils'
 import { IssueFilterLayout } from './IssueFilterLayout'
@@ -113,6 +114,7 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
         {view.map((item) => {
           const sol = item.solution
           const key = `solution-${sol.id}`
+          const tagCodes = solutionTagCodes(sol, { issueDomains: false })
           return (
             <li key={sol.id}>
               <article aria-labelledby={key} className="h-full min-w-0 rounded-lg border p-3 md:p-4">
@@ -120,10 +122,12 @@ export function SolutionsTab({ index, issue }: IssueTabProps) {
                   <SolutionTitleLink solution={sol} issueNumber={n} />
                 </h3>
                 <p className="mt-2"><Markdown text={sol.summary} /></p>
-                {/* 空間類型, 領域 and 解法類型 (Task U4 of plan-types-ui.md). */}
-                {sol.spaces.length + sol.domains.length + sol.solutionTypes.length > 0 && (
+                {/* 空間類型, 領域 and 解法類型 (Task U4 of plan-types-ui.md).
+                    領域 shows only when the solution has its own: the issue
+                    領域 is already at the top of the page (ETBlue, 2026-11-02). */}
+                {hasTagCodes(tagCodes) && (
                   <dl className="mt-2 space-y-1 text-sm">
-                    <SolutionTypeFields types={index} solution={sol} />
+                    <TypeFields types={index} codes={tagCodes} />
                   </dl>
                 )}
 

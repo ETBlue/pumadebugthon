@@ -1,7 +1,11 @@
 // Shared class names, so links and chips look the same on every page.
 
+/** The look of every text link except its color: underlined, so it is not
+ * shown by color only. linkClass and mutedTargetLinkClass add the color. */
+const linkBaseClass = 'underline underline-offset-4 hover:decoration-2 rounded-sm'
+
 /** A text link in the accent color. Underlined, so it is not shown by color only. */
-export const linkClass = 'text-link underline underline-offset-4 hover:decoration-2 rounded-sm'
+export const linkClass = `text-link ${linkBaseClass}`
 
 /** Extra classes that make a link at least 24 x 24 px (WCAG 2.2 target size,
  * 2.5.8). Use them for a link that stands alone: in a list of links, in a
@@ -18,7 +22,7 @@ export const targetLinkClass = `${linkClass} ${targetSizeClass}`
  * --muted-foreground passes AA on the page and muted backgrounds in both
  * themes (designTokens.test.ts). */
 export const mutedTargetLinkClass =
-  `text-muted-foreground underline underline-offset-4 hover:decoration-2 rounded-sm ${targetSizeClass}`
+  `text-muted-foreground ${linkBaseClass} ${targetSizeClass}`
 
 /** Extra classes for a toggle or toggle group item: a clear "on" state.
  * The check icon (see ToggleCheck) shows the state without color. */

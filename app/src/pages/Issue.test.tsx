@@ -915,19 +915,19 @@ describe('領域 tags (Task U4 of plan-types-ui.md)', () => {
     expect(html).not.toContain(tt.fromIssue)
   })
 
-  it('the solution cards on the 解法 tab show 領域 (muted, 「（沿用議題）」) and 解法類型 (decision 5)', () => {
-    const head = solutionHead(render('/issues/2/solutions'), 'S1')
-    const domains = field(head, tt.domain) ?? ''
-    expect(links(domains)).toEqual([['/domains/environment', '環境保護']])
-    expect(domains).toContain('text-muted-foreground')
-    expect(domains).toContain(tt.fromIssue)
+  it('a solution card on the 解法 tab with no own 領域 has no 領域 row, and shows 解法類型 (ETBlue, 2026-11-02)', () => {
+    // The issue 領域 is already at the top of the issue page.
+    const html = render('/issues/2/solutions')
+    expect(html).not.toContain(tt.fromIssue)
+    const head = solutionHead(html, 'S1')
+    expect(field(head, tt.domain)).toBeNull()
     expect(links(field(head, tt.solutionType) ?? '')).toEqual([
       ['/solution-types/digital-tool', '數位工具'], ['/solution-types/planning', '調查與規劃'],
     ])
     expect(field(head, tt.space)).not.toBeNull()
   })
 
-  it('a solution card with its own 領域 shows normal links and no 「（沿用議題）」 (decision 5)', () => {
+  it('a solution card on the 解法 tab with its own 領域 shows them as normal links, with no mark (ETBlue, 2026-11-02)', () => {
     const trashcans = files['2-trashcans']
     state.override['2-trashcans'] = {
       ...trashcans,
@@ -938,7 +938,8 @@ describe('領域 tags (Task U4 of plan-types-ui.md)', () => {
     expect(links(own)).toEqual([['/domains/police', '警政']])
     expect(own).not.toContain('text-muted-foreground')
     expect(own).not.toContain(tt.fromIssue)
-    // S2 still has no own 領域.
-    expect(field(solutionHead(html, 'S2'), tt.domain)).toContain(tt.fromIssue)
+    expect(html).not.toContain(tt.fromIssue)
+    // S2 still has no own 領域, so it has no 領域 row.
+    expect(field(solutionHead(html, 'S2'), tt.domain)).toBeNull()
   })
 })

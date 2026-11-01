@@ -6,7 +6,7 @@ import { Markdown } from '@/components/Markdown'
 import { UpdatedField } from '@/components/DateFields'
 import { CoveredBasisField, type CoveredBasis } from '@/components/SolutionCard'
 import { Badge } from '@/components/ui/badge'
-import { SolutionTypeFields, type TypeLists } from '@/components/TypeLinks'
+import { SolutionTagFields, type TypeLists } from '@/components/TypeLinks'
 import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
@@ -101,7 +101,7 @@ export function CrossSolutionCard({ solution: sol, issueTitles, detailed, childr
             <span className="block">{ts.alsoCovers(detailed.alsoCovers.map((n) => issueNumberTitle(issueTitles, n)))}</span>
           )}
         </Field>
-        {detailed && <SolutionTypeFields types={detailed.types} solution={sol} />}
+        {detailed && <SolutionTagFields types={detailed.types} solution={sol} />}
         {/* A card shows only 更新日期 (decision 131). */}
         {detailed && <UpdatedField updated={sol.updated} />}
       </dl>

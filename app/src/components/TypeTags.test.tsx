@@ -21,6 +21,7 @@ import type { AvailableIssueSummary, CrossIssueFile, IndexFile, IssueFile } from
 import { IssueCard } from './IssueCard'
 import { CrossSolutionCard } from './solution/CrossSolutionCard'
 import { SolutionCard } from './SolutionCard'
+import { linkClass, mutedTargetLinkClass, targetSizeClass } from './styles'
 import { TypeLinks } from './TypeLinks'
 
 const index = indexJson as IndexFile
@@ -68,6 +69,13 @@ function solutionCard(solution = s1): string {
     />,
   )
 }
+
+describe('the link classes', () => {
+  it('linkClass and mutedTargetLinkClass share one base; only the color differs', () => {
+    expect(linkClass).toBe('text-link underline underline-offset-4 hover:decoration-2 rounded-sm')
+    expect(mutedTargetLinkClass).toBe(`text-muted-foreground underline underline-offset-4 hover:decoration-2 rounded-sm ${targetSizeClass}`)
+  })
+})
 
 describe('TypeLinks', () => {
   it('links each code to its type page, with the level 2 name, in the order given', () => {

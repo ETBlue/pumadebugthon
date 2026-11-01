@@ -7,7 +7,7 @@ import { DateFields } from '@/components/DateFields'
 import { LoadState } from '@/components/LoadState'
 import { Markdown } from '@/components/Markdown'
 import { PageTitle } from '@/components/PageTitle'
-import { SolutionTypeFields } from '@/components/TypeLinks'
+import { SolutionTagFields } from '@/components/TypeLinks'
 import { linkClass, targetLinkClass } from '@/components/styles'
 import { CrossIssueLinks } from '@/components/solution/CrossSolutionCard'
 import { CrossOverviewTab } from '@/components/solution/CrossOverviewTab'
@@ -279,7 +279,7 @@ function SolutionMeta({ issueLine, solution, index }: {
       <p>{issueLine}</p>
       <p className="mt-3 leading-relaxed"><Markdown text={solution.summary} /></p>
       <dl className="mt-3 space-y-1.5 text-sm">
-        <SolutionTypeFields types={index} solution={solution} />
+        <SolutionTagFields types={index} solution={solution} />
         <DateFields added={solution.added} updated={solution.updated} />
       </dl>
     </div>

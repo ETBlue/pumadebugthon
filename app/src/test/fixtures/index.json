@@ -15,6 +15,9 @@
       "domains": [
         "environment"
       ],
+      "usedDomains": [
+        "environment"
+      ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
       "counts": {
@@ -50,6 +53,9 @@
       "domains": [
         "environment"
       ],
+      "usedDomains": [
+        "environment"
+      ],
       "added": "2026-10-16",
       "updated": "2026-10-22",
       "counts": {
@@ -77,6 +83,7 @@
       "available": false,
       "spaces": [],
       "domains": [],
+      "usedDomains": [],
       "added": null,
       "updated": null,
       "counts": null,
@@ -90,6 +97,7 @@
       "available": false,
       "spaces": [],
       "domains": [],
+      "usedDomains": [],
       "added": null,
       "updated": null,
       "counts": null,
@@ -103,6 +111,7 @@
       "available": false,
       "spaces": [],
       "domains": [],
+      "usedDomains": [],
       "added": null,
       "updated": null,
       "counts": null,
@@ -116,6 +125,7 @@
       "available": false,
       "spaces": [],
       "domains": [],
+      "usedDomains": [],
       "added": null,
       "updated": null,
       "counts": null,
@@ -136,6 +146,10 @@
         "indoor-home"
       ],
       "domains": [
+        "health",
+        "environment"
+      ],
+      "usedDomains": [
         "health",
         "environment"
       ],
@@ -164,6 +178,10 @@
       "available": true,
       "spaces": [],
       "domains": [
+        "administration",
+        "civil-affairs"
+      ],
+      "usedDomains": [
         "administration",
         "civil-affairs"
       ],

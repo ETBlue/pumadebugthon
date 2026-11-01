@@ -3,7 +3,7 @@
 // match ALL of them. Nothing picked in a filter means no limit. The text
 // search is not here (src/lib/listSearch.ts): the pages apply both.
 // Every function keeps the order of the list it gets. Nothing here sorts.
-import type { IssueFile, IssueSummary, SpaceType, Stakeholder } from '@/types'
+import type { IssueSummary, SpaceType, Stakeholder } from '@/types'
 import { crossCoverageIssueNumbers, crossNeedCoverage } from './crossIssue'
 import type { ListContext } from './listSort'
 import { needsForStakeholder } from './needs'
@@ -66,20 +66,19 @@ function matchesTypeFilters(filter: TypeFilters, codesOf: (kind: TypeKind) => st
 
 /** #/issues: 空間類型, 領域 and 利害關係人. A 製作中 issue has no codes and no
  * stakeholders, so any filter hides it. 空間類型 and 領域 keep an issue that
- * uses a picked code by the rule of the type pages (issueUsedCodes): on the
- * issue, or on one of its solutions (a solution's own 領域, Task U5).
- * files: the loaded issue files. Without them only the issue's own codes
- * count. */
+ * uses a picked code by the rule of the type pages (issueUsedCodes): for
+ * 領域 that is usedDomains, so a solution's own 領域 counts too (Task U5).
+ * index.json is enough: no issue files are needed. */
 export function filterIssues(
   issues: IssueSummary[],
-  filter: Pick<ListFilters, 'spaces' | 'who'> & TypeFilters,
+  filter: Pick<ListFilters, 'spaces' | 'who'> & Partial<Pick<ListFilters, 'domains'>>,
   stakeholders: Stakeholder[],
-  files: IssueFile[] = [],
 ): IssueSummary[] {
   const whoIssues = filter.who === null ? null : (stakeholders.find((s) => s.id === filter.who)?.issues ?? [])
+  const types = { spaces: filter.spaces, domains: filter.domains }
   return issues.filter(
     (i) =>
-      matchesTypeFilters(filter, (kind) => (i.available ? issueUsedCodes(kind, i, files) : [])) &&
+      matchesTypeFilters(types, (kind) => (i.available ? issueUsedCodes(kind, i, []) : [])) &&
       (whoIssues === null || (i.available && whoIssues.includes(i.number))),
   )
 }

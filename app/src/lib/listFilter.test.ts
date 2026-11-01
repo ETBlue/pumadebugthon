@@ -32,6 +32,12 @@ const ownPolice: IssueFile[] = files.map((f) =>
     : { ...f, solutions: f.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)) },
 )
 
+/** index.json to go with ownPolice: #2 uses police too (usedDomains). */
+const ownIndex: IndexFile = {
+  ...index,
+  issues: index.issues.map((i) => (i.number === 2 && i.available ? { ...i, usedDomains: [...i.usedDomains, 'police'] } : i)),
+}
+
 describe('filterIssues', () => {
   const stakeholders = index.stakeholders
 
@@ -64,8 +70,8 @@ describe('filterIssues', () => {
 
 describe('filterIssues: 領域 (Task U5)', () => {
   const stakeholders = index.stakeholders
-  const kept = (f: Partial<typeof NO_FILTERS>, list: IssueFile[] = files) =>
-    numbers(filterIssues(index.issues, { ...NO_FILTERS, ...f }, stakeholders, list))
+  const kept = (f: Partial<typeof NO_FILTERS>, from: IndexFile = index) =>
+    numbers(filterIssues(from.issues, { ...NO_FILTERS, ...f }, stakeholders))
 
   it('keeps an issue whose 領域 line has ANY picked 領域', () => {
     expect(kept({ domains: ['health'] })).toEqual([8])
@@ -73,11 +79,10 @@ describe('filterIssues: 領域 (Task U5)', () => {
     expect(kept({ domains: ['environment'] })).toEqual([1, 2, 8])
   })
 
-  it('keeps an issue with a solution that has the 領域 as its own (the rule of the type pages)', () => {
-    expect(kept({ domains: ['police'] }, ownPolice)).toEqual([2])
-    // Without the issue files only the 領域 line counts.
-    expect(kept({ domains: ['police'] }, [])).toEqual([])
-    expect(kept({ domains: ['environment'] }, [])).toEqual([1, 2, 8])
+  it('keeps an issue with a solution that has the 領域 as its own (usedDomains, the rule of the type pages)', () => {
+    expect(kept({ domains: ['police'] }, ownIndex)).toEqual([2])
+    expect(kept({ domains: ['police'] })).toEqual([])
+    expect(kept({ domains: ['environment'] }, ownIndex)).toEqual([1, 2, 8])
   })
 
   it('needs ALL filters to match: 空間類型, 領域 and 利害關係人', () => {

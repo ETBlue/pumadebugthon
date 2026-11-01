@@ -7,7 +7,7 @@ import { NO_FILTERS, TYPE_FILTER_FIELDS, type ListFilters } from './listFilter'
 import type { ListSort } from './listSort'
 import { availableIssues } from './issues'
 import { isListed } from './stakeholders'
-import { issueCodes, issueMayUseType, TYPE_KINDS, typeGroupNames, typesOf, type TypeKind, type TypeListPage } from './typeKinds'
+import { issueMayUseType, issueUsedCodes, TYPE_KINDS, typeGroupNames, typesOf, type TypeKind, type TypeListPage } from './typeKinds'
 
 export type ListPage = 'issues' | 'stakeholders' | 'solutions' | TypeListPage
 
@@ -43,9 +43,9 @@ const TYPE_PARAMS: Record<TypeKind, string> = {
 }
 
 /** The codes each type filter of a page offers. A kind that is left out
- * offers the codes the analyzed issues have on the issue (index.json):
- * spaces and 領域 lines. A solution type is never on an issue, so a page
- * must give its codes. */
+ * offers the codes the analyzed issues use by index.json alone
+ * (issueUsedCodes with no issue files): spaces, and usedDomains for 領域.
+ * A solution type needs the issue files, so a page must give its codes. */
 export type OfferedCodes = { [k in TypeKind]?: readonly string[] }
 
 /** The value of issue= for 「跨議題」 (and 「跨議題解法」). */
@@ -154,7 +154,7 @@ export function listParamsOf(
     const name = TYPE_PARAMS[typeKind]
     if (!has(name)) continue
     const values = params.getAll(name)
-    const codes = offered[typeKind] ?? availableIssues(index).flatMap((i) => issueCodes(typeKind, i, []))
+    const codes = offered[typeKind] ?? availableIssues(index).flatMap((i) => issueUsedCodes(typeKind, i, []))
     state[TYPE_FILTER_FIELDS[typeKind]] = typesOf(typeKind, index)
       .map((t) => t.code)
       .filter((c) => values.includes(c) && codes.includes(c))

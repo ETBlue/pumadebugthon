@@ -70,6 +70,11 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
   /** 領域 codes from the issue's 「領域：」 line (level 2 only), for example
    * "environment". */
   domains: string[]
+  /** Every 領域 the issue uses (Task U5): domains, then the own 領域 of its
+   * solutions in solution order, each code once. The 領域 filter of
+   * #/issues and the 領域 pages use it, so they do not need the issue
+   * files. */
+  usedDomains: string[]
   /** 新增日期 in issues.csv: the day the issue's analysis was first committed
    * (YYYY-MM-DD). Optional in the type so test data and older JSON still fit (design 3.23.8). */
   added?: string | null
@@ -87,6 +92,7 @@ export interface UnavailableIssueSummary extends IssueSummaryBase {
   available: false
   spaces: []
   domains: []
+  usedDomains: []
   added?: null
   updated: null
   counts: null

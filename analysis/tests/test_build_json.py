@@ -432,6 +432,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertFalse(seven["available"])
         self.assertEqual((seven["counts"], seven["spaces"], seven["updated"], seven["added"], seven["focusGaps"]),
                          (None, [], None, None, None))
+        self.assertEqual(seven["usedDomains"], [])
 
     def test_index_issue_source(self):
         # 來源 in issues.csv becomes "source": 主辦單位 for the host's issues,
@@ -526,6 +527,24 @@ class BuildJsonOutputTest(unittest.TestCase):
             c = self.solution("S3", json.load(f))
         self.assertEqual((c["solutionTypes"], c["ownDomains"], c["domains"]),
                          (["service", "subsidy"], ["welfare-services"], ["welfare-services"]))
+
+    def test_index_used_domains(self):
+        # usedDomains (Task U5): the issue's 領域 line, then the own 領域 of its
+        # solutions in solution order, each code once.
+        for summary in self.index["issues"]:
+            if not summary["available"]:
+                continue
+            with open(os.path.join(self.out, "issues", f"{summary['folder']}.json"), encoding="utf-8") as f:
+                issue = json.load(f)
+            expected = list(summary["domains"])
+            for s in issue["solutions"]:
+                expected += [d for d in s["ownDomains"] if d not in expected]
+            self.assertEqual(summary["usedDomains"], expected, summary["folder"])
+        used = {i["number"]: i["usedDomains"] for i in self.index["issues"]}
+        self.assertEqual(used[2], ["environment"])
+        # #6 S3 has the own 領域 welfare-services, which is not on the 領域 line of #6.
+        self.assertEqual(used[6][:3], ["industry", "community-development", "civil-affairs"])
+        self.assertIn("welfare-services", used[6])
 
     def test_story_shape(self):
         # added and updated come from updated-dates.csv. This copy has no
@@ -826,6 +845,13 @@ class BuildJsonTypesTest(unittest.TestCase):
             self.assertEqual(s["solutionTypes"], ["participation"])
             self.assertEqual(s["ownDomains"], [])
             self.assertEqual(s["domains"], ["environment"])
+
+    def test_used_domains(self):
+        mod = load_module()
+        sols = [{"ownDomains": []}, {"ownDomains": ["police", "environment"]}, {"ownDomains": ["health", "police"]}]
+        self.assertEqual(mod.used_domains(["environment"], sols), ["environment", "police", "health"])
+        self.assertEqual(mod.used_domains(["environment"], []), ["environment"])
+        self.assertEqual(mod.used_domains([], []), [])
 
     def test_own_domains(self):
         data = self.parse(self.set_row_a("`digital-tool`、`planning`", "`welfare-services`"))

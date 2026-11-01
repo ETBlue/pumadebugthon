@@ -55,6 +55,10 @@ stops the script.
 - ownDomains on each solution: the codes of its 6.1 領域 cell (often []).
 - domains on each solution: ownDomains when it is not empty, else the
   issue's domains.
+- usedDomains on each issue in index.json (plan-types-ui.md, Task U5): the
+  issue's domains, then the ownDomains of its solutions in solution order,
+  each code once. [] for an issue without an analysis. The app's 領域
+  filter and 領域 pages use it, so they do not need the issue files.
 An unknown code, a level 1 domain code, an empty 解法類型 cell, more than 3
 codes, or a 領域 cell code that is also on the issue's 領域 line stops the
 script.
@@ -1050,6 +1054,15 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
 
 # ---------- whole build ----------
 
+def used_domains(domains, solutions):
+    """The 領域 an issue uses: its 領域 line, then the own 領域 of its
+    solutions in solution order, each code once."""
+    used = list(domains)
+    for s in solutions:
+        used += [d for d in s["ownDomains"] if d not in used]
+    return used
+
+
 def build(analysis_dir):
     issues_csv = read_csv(analysis_dir, "issues.csv", ["編號", "資料夾", "題目", "來源", "新增日期"])
     dates = read_updated_dates(analysis_dir)
@@ -1071,7 +1084,7 @@ def build(analysis_dir):
         md = os.path.join(analysis_dir, folder, "issue-analysis.md")
         if not os.path.exists(md):
             index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": False,
-                                 "spaces": [], "domains": [], "added": None, "updated": None, "counts": None, "focusGaps": None})
+                                 "spaces": [], "domains": [], "usedDomains": [], "added": None, "updated": None, "counts": None, "focusGaps": None})
             continue
         with open(md, encoding="utf-8") as f:
             text = f.read()
@@ -1104,7 +1117,8 @@ def build(analysis_dir):
             "cells": cell_basis(data["stories"]),
         }
         index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": True,
-                             "spaces": data["spaces"], "domains": data["domains"], "added": added, "updated": updated, "counts": counts,
+                             "spaces": data["spaces"], "domains": data["domains"],
+                             "usedDomains": used_domains(data["domains"], data["solutions"]), "added": added, "updated": updated, "counts": counts,
                              # The groups with no stakeholder, in the fixed order (for the issue card).
                              "focusGaps": [g["tag"] for g in data["focusGroups"] if not g["stakeholders"]]})
         issue_files[folder] = {"number": num, "folder": folder, "title": title,

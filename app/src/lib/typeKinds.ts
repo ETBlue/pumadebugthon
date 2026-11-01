@@ -109,31 +109,27 @@ export function issuesByType(kind: TypeKind, index: IndexFile, files: IssueFile[
 }
 
 /** The codes of the kind that an issue "uses" (Task U3 and U5): the codes
- * on the issue (issueCodes), then the codes of its solutions that are not
- * there yet, in solution order, each code once. An issue whose file is not
- * in files has only the codes on the issue.
- * - space: the same as issueCodes, because a solution space is always on its
- *   issue.
- * - domain: also the own 領域 of a solution. solution.domains is ownDomains
- *   when that is not empty, else the issue's 領域.
- * - solutionType: the same as issueCodes. */
+ * on the issue, or on one of its solutions.
+ * - space: issueCodes, because a solution space is always on its issue.
+ * - domain: usedDomains of index.json: the 領域 line, then the own 領域 of
+ *   its solutions. No issue files are needed.
+ * - solutionType: issueCodes, from the issue files (an issue whose file is
+ *   not in files has none). */
 export function issueUsedCodes(kind: TypeKind, issue: AvailableIssueSummary, files: IssueFile[]): string[] {
-  const codes = [...issueCodes(kind, issue, files)]
-  const file = files.find((f) => f.number === issue.number)
-  for (const s of file?.solutions ?? []) for (const c of solutionCodes(kind, s)) if (!codes.includes(c)) codes.push(c)
-  return codes
+  return kind === 'domain' ? issue.usedDomains : issueCodes(kind, issue, files)
 }
 
 /** The issues of a type page and of a card on the list page (Task U3): the
  * analyzed issues that use the code (issueUsedCodes), by issue number.
- * files are the loaded issue files. */
+ * files are the loaded issue files. Only a solution type needs them. */
 export function typeIssues(kind: TypeKind, index: IndexFile, files: IssueFile[], code: string): AvailableIssueSummary[] {
   return availableIssues(index).filter((i) => issueUsedCodes(kind, i, files).includes(code))
 }
 
 /** The options of a type filter on #/issues (Task U5): the types of the
  * kind that an analyzed issue uses (issueUsedCodes), in file order. Never
- * ordered by a count. For a space index.json is enough (files can be []). */
+ * ordered by a count. For a space and a 領域, index.json is enough (files
+ * can be []). A solution type needs the issue files. */
 export function issueTypeOptions<K extends TypeKind>(kind: K, index: IndexFile, files: IssueFile[]): TypeOfKind[K][] {
   const used = new Set(availableIssues(index).flatMap((i) => issueUsedCodes(kind, i, files)))
   return typesOf(kind, index).filter((t) => used.has(t.code))

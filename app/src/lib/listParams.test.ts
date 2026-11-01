@@ -52,7 +52,13 @@ describe('listParamsOf', () => {
     expect(read('issues', 'domain=environment&domain=health')).toMatchObject({ domains: ['health', 'environment'], replace: true })
     // police: no issue uses it. general-affairs: a level 1 code.
     expect(read('issues', 'domain=police&domain=general-affairs&domain=nope')).toMatchObject({ domains: [], replace: true })
-    // The page can offer more codes (a solution's own 領域).
+    // A solution's own 領域 counts (usedDomains of index.json).
+    const ownIndex: IndexFile = {
+      ...index,
+      issues: index.issues.map((i) => (i.number === 2 && i.available ? { ...i, usedDomains: [...i.usedDomains, 'police'] } : i)),
+    }
+    expect(listParamsOf('issues', new URLSearchParams('domain=police'), ownIndex)).toMatchObject({ domains: ['police'], replace: false })
+    // A page can also give the codes it offers.
     const withPolice = listParamsOf('issues', new URLSearchParams('domain=police'), index, { domain: ['police'] })
     expect(withPolice).toMatchObject({ domains: ['police'], replace: false })
     // Only #/issues and #/solutions have 領域. Only #/solutions has 解法類型.

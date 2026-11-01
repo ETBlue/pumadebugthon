@@ -6,39 +6,46 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
-import treesJson from '@/test/fixtures/issues/1-trees.json'
-import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
-import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
-import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
-import type { IndexFile, IssueFile } from '@/types'
+import type { IndexFile } from '@/types'
 import Issues from './Issues'
 
 const index = indexJson as IndexFile
-const issueFiles = [treesJson, trashcansJson, smokefreeJson, policyJson] as IssueFile[]
 
-/** The fixture files, with #2 S1 changed to have its own 領域 police. No
- * fixture solution has an own 領域, and no fixture issue has police. */
-const ownPolice: IssueFile[] = issueFiles.map((f) =>
-  f.number !== 2
-    ? f
-    : { ...f, solutions: f.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)) },
-)
+/** A changed copy of index.json: #2 S1 has the own 領域 police, so #2 uses
+ * police (usedDomains). No fixture solution has an own 領域, and no fixture
+ * issue has police on its 領域 line. */
+const ownIndex: IndexFile = {
+  ...index,
+  issues: index.issues.map((i) => (i.number === 2 && i.available ? { ...i, usedDomains: [...i.usedDomains, 'police'] } : i)),
+}
 
-const state: { issuesReady: boolean; files: IssueFile[] } = { issuesReady: true, files: issueFiles }
+const state: { index: IndexFile } = { index }
+
+/** The issue file hooks record each call: #/issues must never ask for an
+ * issue file. */
+const fileRequests: string[][] = []
 
 vi.mock('@/data', () => ({
-  useIndex: () => ({ status: 'ready', data: index }),
-  useIssues: (folders: string[]) =>
-    state.issuesReady
-      ? { status: 'ready', data: state.files.filter((f) => folders.some((x) => x.startsWith(`${f.number}-`))) }
-      : { status: 'loading', message: '載入中…' },
+  useIndex: () => ({ status: 'ready', data: state.index }),
+  useIssues: (folders: string[]) => {
+    fileRequests.push(folders)
+    return { status: 'loading', message: '載入中…' }
+  },
+  useIssue: (folder: string) => {
+    fileRequests.push([folder])
+    return { status: 'loading', message: '載入中…' }
+  },
+  useCrossIssue: () => {
+    fileRequests.push(['cross-issue'])
+    return { status: 'loading', message: '載入中…' }
+  },
 }))
 
 vi.mock('@/components/PageTitle', () => ({ PageTitle: () => null }))
 
 beforeEach(() => {
-  state.issuesReady = true
-  state.files = issueFiles
+  state.index = index
+  fileRequests.length = 0
 })
 
 function render(search: string): string {
@@ -92,8 +99,8 @@ describe('#/issues 領域 filter (Task U5)', () => {
     expect(resultLine(html)).toBe(`顯示 1 個議題，共 ${total} 個。篩選：空間類型：${spaceName('bike-lane')}；領域：環境保護。 清除篩選`)
   })
 
-  it('keeps an issue whose solution has the 領域 as its own (the rule of the type pages)', () => {
-    state.files = ownPolice
+  it('keeps an issue whose solution has the 領域 as its own (usedDomains, the rule of the type pages)', () => {
+    state.index = ownIndex
     const html = render('?domain=police')
     expect(cards(html)).toEqual([2])
     expect(resultLine(html)).toBe(`顯示 1 個議題，共 ${total} 個。篩選：領域：警政。 清除篩選`)
@@ -105,13 +112,9 @@ describe('#/issues 領域 filter (Task U5)', () => {
     expect(render('?sort=added&domain=health')).toContain('href="/issues?sort=added"')
   })
 
-  it('while the issue files load: no 領域 button, and no wrong list with domain=', () => {
-    state.issuesReady = false
-    expect(buttons(render(''))).not.toContain('領域')
-    // Without domain= the cards show from index.json alone.
-    expect(cards(render('')).length).toBe(analyzed)
-    const html = render('?domain=health')
-    expect(cards(html)).toEqual([])
-    expect(html).toContain('載入中…')
+  it('works from index.json alone: it never asks for an issue file', () => {
+    state.index = ownIndex
+    for (const search of ['', '?domain=police', '?domain=health&space=park', '?who=I06']) render(search)
+    expect(fileRequests).toEqual([])
   })
 })

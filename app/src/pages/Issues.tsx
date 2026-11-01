@@ -9,10 +9,9 @@ import { ResultLine } from '@/components/ResultLine'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
 import { linkClass, listBodyClass } from '@/components/styles'
 import { typeChoiceFilter, typeFilterPart } from '@/components/typeFilters'
-import { useIndex, useIssues } from '@/data'
+import { useIndex } from '@/data'
 import { rememberListSearch } from '@/lib/backLink'
 import { t } from '@/i18n/zh-TW'
-import { availableIssues } from '@/lib/issues'
 import { filterIssues } from '@/lib/listFilter'
 import {
   clearListFilters, DEFAULT_LIST_STATE, listParamsOf, listUrlSearch, PAGE_SORTS, Q_MAX_LENGTH,
@@ -21,14 +20,13 @@ import {
 import { issueMatches, parseListQuery } from '@/lib/listSearch'
 import { sortIssues, type IssueSort, type ListSort } from '@/lib/listSort'
 import { findStakeholder } from '@/lib/stakeholders'
-import { issueTypeOptions, typesOf } from '@/lib/typeKinds'
-import type { IndexFile, IssueFile } from '@/types'
+import { issueTypeOptions } from '@/lib/typeKinds'
+import type { IndexFile } from '@/types'
 
 const tp = t.issuesPage
 const tb = t.listBar
 const ts = t.listSearch
 const PAGE = 'issues'
-const NO_FILES: IssueFile[] = []
 
 /** The state while index.json loads: only q and sort, from the URL. The
  * filters need the data to be checked, so they wait. listParamsOf cleans
@@ -51,13 +49,8 @@ function loadingState(params: URLSearchParams): ListState {
  *
  * Every sort, filter and search is in the URL. The list is: the filters
  * (空間類型, 領域, 利害關係人), then the search (number or title), then the
- * sort. The search never changes the order (decision 96).
- *
- * The 領域 filter uses the rule of the type pages (typeIssues): an issue
- * matches by its 領域 line or by a solution's own 領域. That needs the issue
- * files. While they load, the 領域 filter is not in the bar, a domain= in
- * the URL is kept as it is, and the list waits only when domain= is on
- * (Task U5). When they fail to load, only the 領域 lines count.
+ * sort. The search never changes the order (decision 96). index.json is
+ * enough for all of them: the 領域 filter uses usedDomains (Task U5).
  *
  * The bar stays mounted when the URL changes (no key that depends on the
  * URL), so the search box and the popovers keep their state. */
@@ -68,22 +61,8 @@ export default function Issues() {
   const navigate = useNavigate()
   const noteId = useId()
   const data = index.status === 'ready' ? index.data : null
-  const folders = useMemo(() => (data ? availableIssues(data).map((i) => i.folder) : []), [data])
-  const issuesState = useIssues(folders)
-  // null while the issue files load. [] when they fail: then only the 領域
-  // lines of index.json count.
-  const files: IssueFile[] | null =
-    issuesState.status === 'ready' ? issuesState.data : issuesState.status === 'error' ? NO_FILES : null
 
-  const parsed = useMemo(() => {
-    if (!data) return null
-    if (files) return listParamsOf(PAGE, params, data, { domain: issueTypeOptions('domain', data, files).map((d) => d.code) })
-    // While the issue files load, keep every known 領域 code, so nothing in
-    // the URL is lost before the own 領域 of the solutions are known. No
-    // replace yet: the clean URL comes when the files are there.
-    const all = { domain: typesOf('domain', data).map((d) => d.code) }
-    return { ...listParamsOf(PAGE, params, data, all), replace: false }
-  }, [data, files, params])
+  const parsed = useMemo(() => (data ? listParamsOf(PAGE, params, data) : null), [data, params])
   const state: ListState = parsed ?? loadingState(params)
   // A URL with a value the page drops: replace it with the clean URL, so
   // the back button does not loop (design 3.23.5).
@@ -96,17 +75,16 @@ export default function Issues() {
   // Remember the clean URL, so the back button of a detail page comes back
   // to this list with the same sort, filters and search (decision 111).
   useEffect(() => {
-    if (parsed && files && !parsed.replace) rememberListSearch(PAGE, listUrlSearch(PAGE, parsed))
-  }, [parsed, files])
+    if (parsed && !parsed.replace) rememberListSearch(PAGE, listUrlSearch(PAGE, parsed))
+  }, [parsed])
 
   function onNavigate(next: string, mode: HistoryMode) {
     navigate({ pathname, search: next }, { replace: mode === 'replace', preventScrollReset: true })
   }
 
-  // With domain= on, the list waits for the issue files.
-  const view = data && (files || state.domains.length === 0) ? issueView(data, state, files ?? []) : null
+  const view = data ? issueView(data, state) : null
   const evidenceSort = state.sort === 'evidence'
-  const filters: ListBarFilter[] = data ? barFilters(data, state, files) : []
+  const filters: ListBarFilter[] = data ? barFilters(data, state) : []
   const resultLine = (clearLink: boolean, className?: string) =>
     view && (
       <ResultLine
@@ -146,10 +124,7 @@ export default function Issues() {
         <div className="mt-4">
           {index.status !== 'ready' ? (
             <LoadState state={index} />
-          ) : !data ? null : !view ? (
-            // Only while the issue files load (with domain= on).
-            issuesState.status === 'loading' && <LoadState state={issuesState} />
-          ) : view.shown.length === 0 ? (
+          ) : !data || !view ? null : view.shown.length === 0 ? (
             <EmptyState state={state} filtersOn={view.parts.length > 0} params={params} />
           ) : (
             <IssueList index={data} issues={view.shown} headingLevel={2} showShare={evidenceSort} />
@@ -161,11 +136,10 @@ export default function Issues() {
 }
 
 /** The issues to show, the whole number, and the filters that are on as
- * text for the result line (the search is added by ResultLine). files: the
- * loaded issue files, for the 領域 of the solutions. */
-function issueView(index: IndexFile, state: ListState, files: IssueFile[]) {
+ * text for the result line (the search is added by ResultLine). */
+function issueView(index: IndexFile, state: ListState) {
   const query = state.q === null ? null : parseListQuery(state.q)
-  const filtered = filterIssues(index.issues, state, index.stakeholders, files).filter((i) => issueMatches(i, query))
+  const filtered = filterIssues(index.issues, state, index.stakeholders).filter((i) => issueMatches(i, query))
   const shown = sortIssues(filtered, state.sort as IssueSort)
   const parts: string[] = []
   for (const part of [
@@ -183,15 +157,16 @@ function issueView(index: IndexFile, state: ListState, files: IssueFile[]) {
 
 /** The filters of #/issues, in the order of design 3.23.5: 空間類型, 領域
  * (Task U5), then 利害關係人 (the stakeholder picker, which writes the URL
- * itself). Each type filter offers only the types an analyzed issue uses,
- * in file order. 領域 waits for the issue files (files is null while they
- * load). */
-function barFilters(index: IndexFile, state: ListState, files: IssueFile[] | null): ListBarFilter[] {
+ * itself). Each type filter offers only the types an analyzed issue uses
+ * (issueTypeOptions), in file order. */
+function barFilters(index: IndexFile, state: ListState): ListBarFilter[] {
   const filters: ListBarFilter[] = []
-  const space = typeChoiceFilter('space', tp.spaceFilter, issueTypeOptions('space', index, []), state)
-  if (space) filters.push(space)
-  const domain = files && typeChoiceFilter('domain', tp.domainFilter, issueTypeOptions('domain', index, files), state)
-  if (domain) filters.push(domain)
+  for (const filter of [
+    typeChoiceFilter('space', tp.spaceFilter, issueTypeOptions('space', index, []), state),
+    typeChoiceFilter('domain', tp.domainFilter, issueTypeOptions('domain', index, []), state),
+  ]) {
+    if (filter) filters.push(filter)
+  }
   filters.push({
     kind: 'slot',
     key: 'who',

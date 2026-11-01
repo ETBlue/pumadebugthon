@@ -19,7 +19,7 @@ import TypePage from './TypePage'
 const index = indexJson as IndexFile
 const issueFiles = [treesJson, trashcansJson, smokefreeJson, policyJson] as IssueFile[]
 
-const state: { issuesReady: boolean; files: IssueFile[] } = { issuesReady: true, files: issueFiles }
+const state: { issuesReady: boolean; files: IssueFile[]; index: IndexFile } = { issuesReady: true, files: issueFiles, index }
 
 /** The fixture files, with #2 S1 changed to have its own 領域 police. No
  * fixture solution has an own 領域, and #2 itself has only environment. */
@@ -32,8 +32,14 @@ const ownPolice: IssueFile[] = issueFiles.map((f) =>
       },
 )
 
+/** index.json to go with ownPolice: #2 uses police too (usedDomains). */
+const ownIndex: IndexFile = {
+  ...index,
+  issues: index.issues.map((i) => (i.number === 2 && i.available ? { ...i, usedDomains: [...i.usedDomains, 'police'] } : i)),
+}
+
 vi.mock('@/data', () => ({
-  useIndex: () => ({ status: 'ready', data: index }),
+  useIndex: () => ({ status: 'ready', data: state.index }),
   // Like the real hook: the files of the folders asked for.
   useIssues: (folders: string[]) =>
     state.issuesReady
@@ -51,6 +57,7 @@ vi.mock('@/components/PageTitle', async () => {
 beforeEach(() => {
   state.issuesReady = true
   state.files = issueFiles
+  state.index = index
   forgetListSearches()
 })
 
@@ -127,6 +134,7 @@ describe('#/domains (Task U3)', () => {
 
   it('a 領域 that only a solution has as its own 領域: the card shows its issue', () => {
     state.files = ownPolice
+    state.index = ownIndex
     const c = card(renderList('domain'), '/domains/police')
     expect(c).not.toContain('尚無議題')
     expect(c).toContain('<dd>1 個')
@@ -234,6 +242,7 @@ describe('the 領域 page (Task U3)', () => {
 
   it('a 領域 that only a solution has as its own 領域: the page lists its issue and the solution', () => {
     state.files = ownPolice
+    state.index = ownIndex
     expect(tabNames(renderPage('domain', '/domains/police'))[1]).toBe('議題 1')
     expect(renderPage('domain', '/domains/police/issues')).toContain('href="/issues/2"')
     const solutions = renderPage('domain', '/domains/police/solutions')

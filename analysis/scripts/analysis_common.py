@@ -174,7 +174,13 @@ class ReadError(Exception):
 
 def read_csv(analysis_dir, name, columns):
     """Rows of a shared CSV file. A missing file or column is a ReadError."""
-    path = data_file(analysis_dir, name)
+    return read_csv_path(data_file(analysis_dir, name), name, columns)
+
+
+def read_csv_path(path, name, columns):
+    """Rows of the CSV file at path (UTF-8, with or without a BOM). name is
+    the file name in a ReadError. A missing file or column, or a row with
+    the wrong number of cells, is a ReadError."""
     try:
         with open(path, encoding="utf-8-sig", newline="") as f:
             reader = csv.DictReader(f)
@@ -200,6 +206,10 @@ SOLUTION_TYPES_FILE = "solution-types.csv"
 SOLUTION_TYPE_COLS = ("代碼", "名稱", "說明", "判斷方式", "政策工具")
 SPACE_TYPES_FILE = "space-types.csv"
 SPACE_TYPE_COLS = ("代碼", "名稱", "上層", "說明")
+# The columns of cross-issue/candidates.csv (written by cross_candidates.py,
+# read by build_json.py).
+CANDIDATES_FILE = "candidates.csv"
+CANDIDATE_COLS = ("解法甲", "解法乙", "共同解法類型", "共同領域", "共同空間類型", "共同需求", "已在跨議題解法")
 # The 領域 line of an issue file: the line right under the 空間類型 line.
 DOMAIN_LINE = "領域："
 # A 領域 line, a 解法類型 cell and a 領域 cell list 1 to MAX_TYPES codes.

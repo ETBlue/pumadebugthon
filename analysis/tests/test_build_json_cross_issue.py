@@ -5,7 +5,7 @@ from the working tree into a temp dir and run the script there as a
 subprocess.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
-import json, os, shutil, subprocess, sys, tempfile, unittest
+import csv, json, os, shutil, subprocess, sys, tempfile, unittest
 
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "scripts", "build_json.py")
@@ -13,7 +13,9 @@ SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "d
           "docs/method.md", "docs/human-inputs.md")
 CROSS = os.path.join("cross-issue", "cross-issue-analysis.md")
 # The fields of index.json. The cross-issue data must not change them (the app reads them).
-INDEX_KEYS = {"issues", "stakeholders", "pathLabels", "spaceTypes", "spaceGroups", "openData"}
+INDEX_KEYS = {"issues", "stakeholders", "pathLabels", "spaceTypes", "spaceGroups", "domainTypes", "domainGroups",
+              "solutionTypes", "openData"}
+CANDIDATES = os.path.join("cross-issue", "candidates.csv")
 
 
 def make_copy(root):
@@ -119,6 +121,47 @@ class CrossIssueJsonTest(unittest.TestCase):
         for s in self.data["solutions"]:
             self.assertTrue(1 <= len(s["solutionTypes"]) <= 3, s["code"])
 
+    def test_solution_domains_are_the_union_of_the_parts(self):
+        # domains of an X- solution: the domains of its parts, in part order,
+        # each code once (plan-types-ui.md, Task U1).
+        issues = {}
+        for name in os.listdir(os.path.join(self.out, "issues")):
+            with open(os.path.join(self.out, "issues", name), encoding="utf-8") as f:
+                data = json.load(f)
+            issues[data["number"]] = {s["id"]: s for s in data["solutions"]}
+        for s in self.data["solutions"]:
+            expected = []
+            for p in s["parts"]:
+                for d in issues[p["issue"]][p["code"]]["domains"]:
+                    if d not in expected:
+                        expected.append(d)
+            self.assertEqual(s["domains"], expected, s["code"])
+            self.assertEqual(len(s["domains"]), len(set(s["domains"])), s["code"])
+            self.assertTrue(s["domains"], s["code"])
+        # X-S1 is 1-S3, 2-S4 and 8-S1. environment comes from #1 and #2,
+        # health from #8. Each is there once.
+        self.assertEqual(self.solution("X-S1")["domains"], ["environment", "health"])
+        # X-S9 is 4-S3, then 6-S6: the order of the parts, not of the codes.
+        self.assertEqual(self.solution("X-S9")["domains"][0], "civil-affairs")
+
+    def test_candidates_are_the_csv_rows(self):
+        with open(os.path.join(self.dir, CANDIDATES), encoding="utf-8-sig", newline="") as f:
+            rows = list(csv.DictReader(f))
+        def split(v):
+            return v.split("、") if v else []
+        expected = [{"a": r["解法甲"], "b": r["解法乙"], "solutionTypes": split(r["共同解法類型"]),
+                     "domains": split(r["共同領域"]), "spaces": split(r["共同空間類型"]),
+                     "needs": split(r["共同需求"]), "crossSolutions": split(r["已在跨議題解法"])} for r in rows]
+        self.assertEqual(self.data["candidates"], expected)
+        self.assertEqual(len(self.data["candidates"]), 133)
+        first = self.data["candidates"][0]
+        self.assertEqual(first, {"a": "1-S1", "b": "2-S1", "solutionTypes": ["digital-tool", "planning"],
+                                 "domains": ["environment"], "spaces": ["sidewalk-furniture"],
+                                 "needs": ["1.2 O12"], "crossSolutions": ["X-S2"]})
+        # An empty cell is [] (1-S1 and 3-S1 are in no X- solution).
+        third = self.data["candidates"][2]
+        self.assertEqual((third["a"], third["b"], third["crossSolutions"]), ("1-S1", "3-S1", []))
+
     def test_evaluation_and_plan(self):
         # The tables of the 「### 4.5.n 解法 X-S1：…」 section: the same keys as
         # for an issue solution (ETBlue, 2026-10-23). Each cell is a list of one Cell.
@@ -213,6 +256,24 @@ class CrossIssueJsonErrorTest(unittest.TestCase):
         self.assertIn("X-S5", out)
         self.assertNotIn("Traceback", out)
         self.assertFalse(os.path.exists(os.path.join(self.out, "index.json")))
+
+    def test_candidates_file_is_needed(self):
+        os.remove(os.path.join(self.dir, CANDIDATES))
+        code, out = run_build(self.dir, self.out)
+        self.assertEqual(code, 1, out)
+        self.assertIn("candidates.csv", out)
+        self.assertNotIn("Traceback", out)
+
+    def test_candidate_with_an_unknown_solution(self):
+        path = os.path.join(self.dir, CANDIDATES)
+        with open(path, encoding="utf-8-sig") as f:
+            text = f.read()
+        with open(path, "w", encoding="utf-8-sig") as f:
+            f.write(text.replace("1-S1,2-S1,", "1-S1,2-S99,", 1))
+        code, out = run_build(self.dir, self.out)
+        self.assertEqual(code, 1, out)
+        self.assertIn("2-S99", out)
+        self.assertNotIn("Traceback", out)
 
     def test_no_cross_issue_file(self):
         shutil.rmtree(os.path.join(self.dir, "cross-issue"))

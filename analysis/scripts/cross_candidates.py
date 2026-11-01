@@ -40,10 +40,10 @@ import csv, io, os, sys
 # python3 -I does not put the script folder on sys.path, so add it.
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_json
-from analysis_common import ReadError, id_key
+from analysis_common import CANDIDATE_COLS, ReadError, id_key
 
 PLATFORM_TYPES = ("open-data", "intake")
-HEADER = ["解法甲", "解法乙", "共同解法類型", "共同領域", "共同空間類型", "共同需求", "已在跨議題解法"]
+HEADER = list(CANDIDATE_COLS)
 JOIN = "、"
 
 

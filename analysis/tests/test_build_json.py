@@ -87,6 +87,7 @@ class BuildJsonOutputTest(unittest.TestCase):
             cls.index = json.load(f)
         with open(os.path.join(cls.out, "issues", f"{ISSUE}.json"), encoding="utf-8") as f:
             cls.issue = json.load(f)
+        cls.mod_common = load_module().common
 
     @classmethod
     def tearDownClass(cls):
@@ -471,6 +472,46 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual([(g["code"], g["name"]) for g in self.index["spaceGroups"]],
                          [("road", "道路"), ("underground", "地下"), ("public-space", "公共空間"), ("building", "建築")])
         self.assertEqual({s["group"] for s in self.index["spaceTypes"]}, {g["name"] for g in self.index["spaceGroups"]})
+
+    def test_index_domain_lists(self):
+        # 領域 (plan-types-ui.md, Task U1): domainTypes has only the level 2
+        # rows of domain-types.csv, in file order. domainGroups has the level 1 rows.
+        rows = self.mod_common.domain_types(self.dir)
+        leaves = [c for c, r in rows.items() if r["上層"]]
+        groups = [c for c, r in rows.items() if not r["上層"]]
+        types = self.index["domainTypes"]
+        self.assertEqual([t["code"] for t in types], leaves)
+        self.assertEqual(len(types), 28)
+        self.assertNotIn("general-affairs", [t["code"] for t in types])
+        for t in types:
+            self.assertEqual(list(t), ["code", "name", "parent", "group", "description", "budgetName",
+                                       "petitionCategory", "added", "updated"])
+            # This copy has no updated-dates.csv, so both dates are null.
+            self.assertIsNone(t["added"])
+            self.assertIsNone(t["updated"])
+        first = types[0]
+        self.assertEqual((first["code"], first["name"], first["parent"], first["group"]),
+                         ("administration", "行政", "general-affairs", "一般政務"))
+        self.assertEqual(first["description"], rows["administration"]["說明"])
+        self.assertEqual(first["budgetName"], "行政支出")
+        self.assertEqual(first["petitionCategory"], rows["administration"]["陳情系統主類別"])
+        self.assertEqual(types[1]["petitionCategory"], "")  # legislature has no 陳情系統主類別
+        self.assertEqual([g["code"] for g in self.index["domainGroups"]], groups)
+        self.assertEqual(len(groups), 8)
+        self.assertEqual(self.index["domainGroups"][0],
+                         {"code": "general-affairs", "name": "一般政務", "description": rows["general-affairs"]["說明"]})
+
+    def test_index_solution_types(self):
+        rows = self.mod_common.solution_types(self.dir)
+        types = self.index["solutionTypes"]
+        self.assertEqual([t["code"] for t in types], list(rows))
+        self.assertEqual(len(types), 13)
+        for t in types:
+            self.assertEqual(list(t), ["code", "name", "description", "howToJudge", "policyTool", "added", "updated"])
+        self.assertEqual((types[0]["code"], types[0]["name"], types[0]["policyTool"]),
+                         ("digital-tool", "數位工具", "Nodality / Organisation"))
+        self.assertEqual(types[0]["howToJudge"], rows["digital-tool"]["判斷方式"])
+        self.assertEqual(types[0]["description"], rows["digital-tool"]["說明"])
 
     def test_domains_and_solution_types(self):
         # 領域 and 解法類型 of the real files (spec analysis/docs/types-research.md, R2.2 and R3.3).

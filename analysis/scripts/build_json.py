@@ -59,6 +59,18 @@ An unknown code, a level 1 domain code, an empty 解法類型 cell, more than 3
 codes, or a 領域 cell code that is also on the issue's 領域 line stops the
 script.
 
+The type lists in index.json (app/docs/plan-types-ui.md, Task U1), in the
+order of the CSV files:
+- domainTypes: only the level 2 rows of domain-types.csv, the codes that are
+  tags: {code, name, parent (the code of the parent), group (the 名稱 of the
+  parent), description, budgetName (政事別), petitionCategory (陳情系統主類別,
+  "" when empty), added, updated}. domainGroups: the level 1 rows {code,
+  name, description}.
+- solutionTypes: the rows of solution-types.csv: {code, name, description,
+  howToJudge (判斷方式), policyTool (政策工具), added, updated}.
+added and updated come from updated-dates.csv (領域類型, 解法類型), as for
+the space types.
+
 Each solution also gets the fields for its own page in the app:
 - measures: the 6.3 rows whose 解法 cell lists its code (a cell can list
   several, separated by 「、」, for example 「S1、S4」).
@@ -167,8 +179,17 @@ spaces, solutionTypes, added, summary, updated, needs {must, shouldCould, crossI
 steps} (the tables of its 「### 4.5.n 解法 X-S1：…」 section, the same shape
 as for an issue solution), controversies, legal (as for an issue solution;
 summary items have solutions with X codes, for example "X-S1"), practices
-(dependency rows only, see above)}], solutionFocus [{tag, solutions, note}], pending
-[{text, section}].
+(dependency rows only, see above), domains}], solutionFocus [{tag, solutions, note}], pending
+[{text, section}], candidates.
+- solutions[].domains: the domains of its parts (from the issue JSON), in
+  part order, each code once. main() adds it after build_cross_issue, so it
+  is not in the X- solution fingerprint of update_dates.py.
+- candidates: the rows of cross-issue/candidates.csv (rule R3, written by
+  cross_candidates.py), in file order: {a, b (like "4-S2"), solutionTypes,
+  domains, spaces, needs (X-N IDs and 1.2 rows such as "1.2 O12", as in the
+  CSV), crossSolutions (X- codes)}. An empty cell is []. Rule R3 is not run
+  again here. A missing file, or a row with an unknown solution or X-
+  solution, stops the script (run cross_candidates.py).
 """
 import csv, datetime, glob, json, os, re, subprocess, sys
 
@@ -1143,6 +1164,17 @@ def build(analysis_dir):
                        for code, r in space_rows.items() if r["上層"]],
         "spaceGroups": [{"code": code, "name": r["名稱"], "description": r["說明"]}
                         for code, r in space_rows.items() if not r["上層"]],
+        # 領域 in the same shape as the space types: only the level 2 rows
+        # are tags (domainTypes), the level 1 rows are in domainGroups.
+        "domainTypes": [{"code": code, "name": r["名稱"], "parent": r["上層"], "group": domain_rows[r["上層"]]["名稱"],
+                         "description": r["說明"], "budgetName": r["政事別"], "petitionCategory": r["陳情系統主類別"],
+                         **dates_of(dates, "領域類型", code)}
+                        for code, r in domain_rows.items() if r["上層"]],
+        "domainGroups": [{"code": code, "name": r["名稱"], "description": r["說明"]}
+                         for code, r in domain_rows.items() if not r["上層"]],
+        "solutionTypes": [{"code": code, "name": r["名稱"], "description": r["說明"], "howToJudge": r["判斷方式"],
+                           "policyTool": r["政策工具"], **dates_of(dates, "解法類型", code)}
+                          for code, r in solution_type_rows.items()],
         "openData": open_data,
     }
     return index, issue_files
@@ -1183,10 +1215,60 @@ def build_cross_issue(analysis_dir):
             **{k: v for k, v in data.items() if k != "title"}}
 
 
+def add_cross_domains(cross, issue_files):
+    """Give each X- solution its domains: the domains of its parts, in part
+    order, each code once. Done here and not in build_cross_issue, so the
+    fingerprint of an X- solution in update_dates.py does not change."""
+    by_part = {(d["number"], s["id"]): s for d in issue_files.values() for s in d["solutions"]}
+    for x in cross["solutions"]:
+        domains = []
+        for p in x["parts"]:
+            part = by_part.get((p["issue"], p["code"]))
+            if part is None:
+                raise ReadError(CROSS_SECTION, f"{x['code']}: part #{p['issue']} {p['code']} is not a solution")
+            domains += [d for d in part["domains"] if d not in domains]
+        x["domains"] = domains
+
+
+CANDIDATES_SECTION = f"{check_cross_issue.CROSS_FOLDER}/{common.CANDIDATES_FILE}"
+
+
+def read_candidates(analysis_dir, issue_files, cross):
+    """The rows of cross-issue/candidates.csv (rule R3, written by
+    cross_candidates.py), in file order. Rule R3 is not run again here.
+    {a, b, solutionTypes, domains, spaces, needs, crossSolutions}: a list
+    cell is split on 「、」, an empty cell is []. A missing file, or a row
+    that names an unknown solution or X- solution, is a ReadError."""
+    path = os.path.join(analysis_dir, check_cross_issue.CROSS_FOLDER, common.CANDIDATES_FILE)
+    rows = common.read_csv_path(path, CANDIDATES_SECTION, common.CANDIDATE_COLS)
+    sols = {f"{d['number']}-{s['id']}" for d in issue_files.values() for s in d["solutions"]}
+    xs = {x["code"] for x in cross["solutions"]}
+
+    def split(value):
+        return [v.strip() for v in value.split("、") if v.strip()]
+
+    out = []
+    for i, r in enumerate(rows, start=2):
+        row = {"a": r["解法甲"].strip(), "b": r["解法乙"].strip(), "solutionTypes": split(r["共同解法類型"]),
+               "domains": split(r["共同領域"]), "spaces": split(r["共同空間類型"]), "needs": split(r["共同需求"]),
+               "crossSolutions": split(r["已在跨議題解法"])}
+        for sid in (row["a"], row["b"]):
+            if sid not in sols:
+                raise ReadError(CANDIDATES_SECTION, f"row {i}: {sid} is not a solution. Run cross_candidates.py")
+        for x in row["crossSolutions"]:
+            if x not in xs:
+                raise ReadError(CANDIDATES_SECTION, f"row {i}: {x} is not a cross-issue solution. Run cross_candidates.py")
+        out.append(row)
+    return out
+
+
 def main(analysis_dir, out_dir):
     try:
         index, issue_files = build(analysis_dir)
         cross = build_cross_issue(analysis_dir)
+        if cross is not None:
+            add_cross_domains(cross, issue_files)
+            cross["candidates"] = read_candidates(analysis_dir, issue_files, cross)
     except ReadError as e:
         print(f"{e.section}: {e.reason}", file=sys.stderr)
         return 1
@@ -1197,7 +1279,8 @@ def main(analysis_dir, out_dir):
     if cross is not None:
         write_json(cross_path, cross)
         print(f"cross-issue: {len(cross['sharedStakeholders'])} shared stakeholders, {len(cross['needGroups'])} X-N groups, "
-              f"{len(cross['conflicts'])} conflicts, {len(cross['solutions'])} combined solutions")
+              f"{len(cross['conflicts'])} conflicts, {len(cross['solutions'])} combined solutions, "
+              f"{len(cross['candidates'])} candidate pairs")
     elif os.path.exists(cross_path):
         os.remove(cross_path)
         print(f"removed {cross_path}")

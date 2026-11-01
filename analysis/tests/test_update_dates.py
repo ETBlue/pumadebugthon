@@ -400,6 +400,12 @@ class ScriptTest(unittest.TestCase):
         for s in index["spaceTypes"]:
             r = rows[("空間類型", s["code"])]
             self.assertEqual((s["added"], s["updated"]), (r["新增日期"], r["更新日期"]), s["code"])
+        # The 領域 and 解法類型 lists get their dates the same way.
+        for key, type_ in (("domainTypes", "領域類型"), ("solutionTypes", "解法類型")):
+            self.assertTrue(index[key], key)
+            for s in index[key]:
+                r = rows[(type_, s["code"])]
+                self.assertEqual((s["added"], s["updated"]), (r["新增日期"], r["更新日期"]), s["code"])
         # First values from git history (2026-10-23): the first space types
         # (arcade is one of them; the split of sidewalk and indoor came on
         # 2026-10-31) were added on 2026-10-18; O01-US01 of #2 was first

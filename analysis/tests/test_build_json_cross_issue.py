@@ -142,7 +142,7 @@ class CrossIssueJsonTest(unittest.TestCase):
         # health from #8. Each is there once.
         self.assertEqual(self.solution("X-S1")["domains"], ["environment", "health"])
         # X-S9 is 4-S3, then 6-S6: the order of the parts, not of the codes.
-        self.assertEqual(self.solution("X-S9")["domains"][0], "civil-affairs")
+        self.assertEqual(self.solution("X-S9")["domains"], ["civil-affairs", "industry", "community-development"])
 
     def test_candidates_are_the_csv_rows(self):
         with open(os.path.join(self.dir, CANDIDATES), encoding="utf-8-sig", newline="") as f:
@@ -273,6 +273,19 @@ class CrossIssueJsonErrorTest(unittest.TestCase):
         code, out = run_build(self.dir, self.out)
         self.assertEqual(code, 1, out)
         self.assertIn("2-S99", out)
+        self.assertNotIn("Traceback", out)
+
+    def test_candidate_with_an_unknown_cross_solution(self):
+        path = os.path.join(self.dir, CANDIDATES)
+        with open(path, encoding="utf-8-sig") as f:
+            text = f.read()
+        old = "1-S1,2-S1,digital-tool、planning,environment,sidewalk-furniture,1.2 O12,X-S2\n"
+        self.assertIn(old, text)
+        with open(path, "w", encoding="utf-8-sig") as f:
+            f.write(text.replace(old, old.replace("X-S2", "X-S99"), 1))
+        code, out = run_build(self.dir, self.out)
+        self.assertEqual(code, 1, out)
+        self.assertIn("X-S99", out)
         self.assertNotIn("Traceback", out)
 
     def test_no_cross_issue_file(self):

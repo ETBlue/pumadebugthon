@@ -1038,6 +1038,7 @@ export const t = {
   issuesPage: {
     /** The filter labels in the bar and in the result line. */
     spaceFilter: '空間類型',
+    domainFilter: '領域',
     whoFilter: '利害關係人',
     /** The noun in the empty states with a search. */
     noun: '議題',
@@ -1168,6 +1169,8 @@ export const t = {
     /** 議題 in the result line: 「#1」. */
     issueShort: (n: number) => `#${n}`,
     spaceFilter: '空間類型',
+    domainFilter: '領域',
+    solutionTypeFilter: '解法類型',
     whoFilter: '利害關係人',
     /** The fields of the cards (design 3.23.9). */
     issue: '議題',

@@ -3,11 +3,11 @@
 // The names do not reuse stakeholder, evidence, cross, special, focus, pick
 // or from, because those mean other things on other pages (3.19).
 import type { IndexFile } from '@/types'
-import { NO_FILTERS, type ListFilters } from './listFilter'
+import { NO_FILTERS, TYPE_FILTER_FIELDS, type ListFilters } from './listFilter'
 import type { ListSort } from './listSort'
 import { availableIssues } from './issues'
 import { isListed } from './stakeholders'
-import { issueMayUseType, typeGroupNames, type TypeKind, type TypeListPage } from './typeKinds'
+import { issueCodes, issueMayUseType, TYPE_KINDS, typeGroupNames, typesOf, type TypeKind, type TypeListPage } from './typeKinds'
 
 export type ListPage = 'issues' | 'stakeholders' | 'solutions' | TypeListPage
 
@@ -26,11 +26,27 @@ export const LIST_PARAMS = {
   sort: 'sort',
   issue: 'issue',
   space: 'space',
+  domain: 'domain',
+  solutionType: 'solutiontype',
   who: 'who',
   specialOnly: 'specialonly',
   view: 'view',
   group: 'group',
 } as const
+
+/** The param of each type filter (空間類型, 領域, 解法類型), in the order
+ * listUrlSearch writes them. */
+const TYPE_PARAMS: Record<TypeKind, string> = {
+  space: LIST_PARAMS.space,
+  domain: LIST_PARAMS.domain,
+  solutionType: LIST_PARAMS.solutionType,
+}
+
+/** The codes each type filter of a page offers. A kind that is left out
+ * offers the codes the analyzed issues have on the issue (index.json):
+ * spaces and 領域 lines. A solution type is never on an issue, so a page
+ * must give its codes. */
+export type OfferedCodes = { [k in TypeKind]?: readonly string[] }
 
 /** The value of issue= for 「跨議題」 (and 「跨議題解法」). */
 export const CROSS_ISSUE_VALUE = 'X'
@@ -54,9 +70,11 @@ export const PAGE_SORTS: Record<ListPage, readonly ListSort[]> = {
 /** The params each page reads. Any other list param is dropped. A solution
  * type has one level, so #/solution-types has no group. */
 const PAGE_PARAMS: Record<ListPage, readonly string[]> = {
-  issues: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.space, LIST_PARAMS.who],
+  issues: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.space, LIST_PARAMS.domain, LIST_PARAMS.who],
   stakeholders: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.specialOnly, LIST_PARAMS.view],
-  solutions: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.who],
+  solutions: [
+    LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.domain, LIST_PARAMS.solutionType, LIST_PARAMS.who,
+  ],
   spaces: [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.group],
   domains: [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.group],
   'solution-types': [LIST_PARAMS.q, LIST_PARAMS.issue],
@@ -99,20 +117,21 @@ export function listOnlySearch(params: URLSearchParams): string {
 }
 
 /** The state of a list page from its URL params. Unknown values are dropped:
- * a sort the page does not have, an issue with
- * no analysis, a space code that is not used, an unknown or unlisted
- * stakeholder, and every param the page does not have. A moved ID in who
- * is dropped too: it is not listed (decision 113). spaceCodes: the space codes the page offers; by
- * default the ones the analyzed issues use (index.json). */
+ * a sort the page does not have, an issue with no analysis, a type code
+ * (space, 領域, 解法類型) that the page does not offer, an unknown or
+ * unlisted stakeholder, and every param the page does not have. A moved ID
+ * in who is dropped too: it is not listed (decision 113). offered: the
+ * codes each type filter offers (OfferedCodes). The picked codes keep the
+ * order of the type list (level 2 only, file order). */
 export function listParamsOf(
   page: ListPage,
   params: URLSearchParams,
   index: IndexFile,
-  spaceCodes: readonly string[] = index.issues.flatMap((i) => i.spaces),
+  offered: OfferedCodes = {},
 ): ListParams {
   const has = (name: string) => PAGE_PARAMS[page].includes(name)
   const kind = pageKind(page)
-  const state: ListState = { ...DEFAULT_LIST_STATE, issues: [], spaces: [], groups: [] }
+  const state: ListState = { ...DEFAULT_LIST_STATE, issues: [], spaces: [], domains: [], solutionTypes: [], groups: [] }
 
   const sort = params.get(LIST_PARAMS.sort)
   if (has(LIST_PARAMS.sort) && sort !== null && (PAGE_SORTS[page] as readonly string[]).includes(sort)) {
@@ -131,9 +150,14 @@ export function listParamsOf(
     state.issues = analyzed.filter((n) => values.some((v) => /^\d+$/.test(v) && Number(v) === n))
   }
 
-  if (has(LIST_PARAMS.space)) {
-    const values = params.getAll(LIST_PARAMS.space)
-    state.spaces = index.spaceTypes.map((s) => s.code).filter((c) => values.includes(c) && spaceCodes.includes(c))
+  for (const typeKind of TYPE_KINDS) {
+    const name = TYPE_PARAMS[typeKind]
+    if (!has(name)) continue
+    const values = params.getAll(name)
+    const codes = offered[typeKind] ?? availableIssues(index).flatMap((i) => issueCodes(typeKind, i, []))
+    state[TYPE_FILTER_FIELDS[typeKind]] = typesOf(typeKind, index)
+      .map((t) => t.code)
+      .filter((c) => values.includes(c) && codes.includes(c))
   }
 
   const who = params.get(LIST_PARAMS.who)
@@ -168,7 +192,10 @@ export function listUrlSearch(page: ListPage, state: ListState): string {
     if (state.crossChoice) out.append(LIST_PARAMS.issue, CROSS_ISSUE_VALUE)
     for (const n of [...state.issues].sort((a, b) => a - b)) out.append(LIST_PARAMS.issue, String(n))
   }
-  if (has(LIST_PARAMS.space)) for (const c of state.spaces) out.append(LIST_PARAMS.space, c)
+  for (const typeKind of TYPE_KINDS) {
+    const name = TYPE_PARAMS[typeKind]
+    if (has(name)) for (const c of state[TYPE_FILTER_FIELDS[typeKind]]) out.append(name, c)
+  }
   if (has(LIST_PARAMS.who) && state.who !== null) out.set(LIST_PARAMS.who, state.who)
   if (has(LIST_PARAMS.specialOnly) && state.specialOnly) out.set(LIST_PARAMS.specialOnly, '1')
   if (has(LIST_PARAMS.view) && state.view === 'tree') out.set(LIST_PARAMS.view, 'tree')
@@ -201,7 +228,7 @@ export const CROSS_STAKEHOLDERS_PATH = listPath('stakeholders', { crossChoice: t
  * view and any other param are kept. "" when nothing is left. */
 export function clearListFilters(params: URLSearchParams): string {
   const next = new URLSearchParams(params)
-  for (const name of [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.who, LIST_PARAMS.specialOnly, LIST_PARAMS.group]) {
+  for (const name of [LIST_PARAMS.q, LIST_PARAMS.issue, ...TYPE_KINDS.map((k) => TYPE_PARAMS[k]), LIST_PARAMS.who, LIST_PARAMS.specialOnly, LIST_PARAMS.group]) {
     next.delete(name)
   }
   const s = next.toString()

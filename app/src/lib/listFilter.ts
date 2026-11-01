@@ -3,13 +3,14 @@
 // match ALL of them. Nothing picked in a filter means no limit. The text
 // search is not here (src/lib/listSearch.ts): the pages apply both.
 // Every function keeps the order of the list it gets. Nothing here sorts.
-import type { IssueSummary, SpaceType, Stakeholder } from '@/types'
+import type { IssueFile, IssueSummary, SpaceType, Stakeholder } from '@/types'
 import { crossCoverageIssueNumbers, crossNeedCoverage } from './crossIssue'
 import type { ListContext } from './listSort'
 import { needsForStakeholder } from './needs'
 import type { RecentSolution } from './recent'
 import { solutionNeedCoverage } from './solutionPage'
 import { isListed } from './stakeholders'
+import { issueUsedCodes, solutionCodes, TYPE_KINDS, type TypeKind } from './typeKinds'
 
 /** The filters of the list pages, as listParamsOf reads them from the URL.
  * A page uses only its own filters. */
@@ -20,6 +21,10 @@ export interface ListFilters {
   crossChoice: boolean
   /** 空間類型: picked space codes (space=<code>). */
   spaces: string[]
+  /** 領域: picked level 2 domain codes (domain=<code>), Task U5. */
+  domains: string[]
+  /** 解法類型: picked solution type codes (solutiontype=<code>), Task U5. */
+  solutionTypes: string[]
   /** 利害關係人: one stakeholder ID (who=<id>), or null. */
   who: string | null
   /** 只看特別關注族群 (specialonly=1). */
@@ -29,19 +34,52 @@ export interface ListFilters {
 }
 
 /** No filter on. */
-export const NO_FILTERS: ListFilters = { issues: [], crossChoice: false, spaces: [], who: null, specialOnly: false, groups: [] }
+export const NO_FILTERS: ListFilters = {
+  issues: [], crossChoice: false, spaces: [], domains: [], solutionTypes: [], who: null, specialOnly: false, groups: [],
+}
 
-/** #/issues: 空間類型 and 利害關係人. A 製作中 issue has no spaces and no
- * stakeholders, so any filter hides it. */
+/** The filter field of each kind of type: 空間類型, 領域 and 解法類型. */
+export const TYPE_FILTER_FIELDS = { space: 'spaces', domain: 'domains', solutionType: 'solutionTypes' } as const satisfies Record<
+  TypeKind,
+  keyof ListFilters
+>
+
+export type TypeFilterField = (typeof TYPE_FILTER_FIELDS)[TypeKind]
+
+/** The type filters a page may have. A page leaves out the ones it does not
+ * have; a left-out filter is off. */
+type TypeFilters = Partial<Pick<ListFilters, TypeFilterField>>
+
+/** True when a 空間類型, 領域 or 解法類型 filter is on. */
+export function typeFiltersOn(filter: Partial<ListFilters>): boolean {
+  return TYPE_KINDS.some((kind) => (filter[TYPE_FILTER_FIELDS[kind]] ?? []).length > 0)
+}
+
+/** True when the item passes every type filter that is on: for each such
+ * filter, codesOf(kind) has ANY picked code. */
+function matchesTypeFilters(filter: TypeFilters, codesOf: (kind: TypeKind) => string[]): boolean {
+  return TYPE_KINDS.every((kind) => {
+    const picked = filter[TYPE_FILTER_FIELDS[kind]] ?? []
+    return picked.length === 0 || codesOf(kind).some((c) => picked.includes(c))
+  })
+}
+
+/** #/issues: 空間類型, 領域 and 利害關係人. A 製作中 issue has no codes and no
+ * stakeholders, so any filter hides it. 空間類型 and 領域 keep an issue that
+ * uses a picked code by the rule of the type pages (issueUsedCodes): on the
+ * issue, or on one of its solutions (a solution's own 領域, Task U5).
+ * files: the loaded issue files. Without them only the issue's own codes
+ * count. */
 export function filterIssues(
   issues: IssueSummary[],
-  filter: Pick<ListFilters, 'spaces' | 'who'>,
+  filter: Pick<ListFilters, 'spaces' | 'who'> & TypeFilters,
   stakeholders: Stakeholder[],
+  files: IssueFile[] = [],
 ): IssueSummary[] {
   const whoIssues = filter.who === null ? null : (stakeholders.find((s) => s.id === filter.who)?.issues ?? [])
   return issues.filter(
     (i) =>
-      (filter.spaces.length === 0 || i.spaces.some((c) => filter.spaces.includes(c))) &&
+      matchesTypeFilters(filter, (kind) => (i.available ? issueUsedCodes(kind, i, files) : [])) &&
       (whoIssues === null || (i.available && whoIssues.includes(i.number))),
   )
 }
@@ -74,7 +112,10 @@ function issueSolutionCovers(item: Extract<RecentSolution, { kind: 'issue' }>, w
   return needsForStakeholder(solutionNeedCoverage(issue, item.solution).covered, who).length > 0
 }
 
-/** #/solutions: 議題 (with 「跨議題解法」), 空間類型 and 利害關係人.
+/** #/solutions: 議題 (with 「跨議題解法」), 空間類型, 領域, 解法類型 and
+ * 利害關係人. The type filters keep a solution with ANY picked code
+ * (solutionCodes). An issue solution's domains are its own 領域, or else its
+ * issue's. An X- solution's domains are the union of its parts.
  * 議題 keeps an issue solution of a picked issue. It keeps a cross-issue
  * solution when 「跨議題解法」 is picked, or a picked issue is in its parts
  * or in the issues of the needs it covers (X-S5 matches #1).
@@ -82,12 +123,12 @@ function issueSolutionCovers(item: Extract<RecentSolution, { kind: 'issue' }>, w
  * stakeholder's needs in any issue (decision 60). */
 export function filterSolutions(
   items: RecentSolution[],
-  filter: Pick<ListFilters, 'issues' | 'crossChoice' | 'spaces' | 'who'>,
+  filter: Pick<ListFilters, 'issues' | 'crossChoice' | 'spaces' | 'who'> & TypeFilters,
   ctx: ListContext,
 ): RecentSolution[] {
   const issueFilterOn = filter.issues.length > 0 || filter.crossChoice
   return items.filter((item) => {
-    if (filter.spaces.length > 0 && !item.solution.spaces.some((c) => filter.spaces.includes(c))) return false
+    if (!matchesTypeFilters(filter, (kind) => solutionCodes(kind, item.solution))) return false
     if (item.kind === 'issue') {
       if (issueFilterOn && !filter.issues.includes(item.issueNumber)) return false
       return filter.who === null || issueSolutionCovers(item, filter.who, ctx)

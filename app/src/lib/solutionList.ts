@@ -2,14 +2,15 @@
 // list of the issue solutions and the cross-issue solutions. The list is
 // filtered, then searched, then sorted by the sort the reader picks
 // (listSort.ts). The search never changes the order.
-import type { CellCounts, CrossIssueFile, CrossSolution, IndexFile, IssueFile, Solution, SpaceType } from '@/types'
+import type { CellCounts, CrossIssueFile, CrossSolution, IndexFile, IssueFile, Solution } from '@/types'
 import { crossSolutionCells, solutionCells } from './coverage'
 import { crossCoverageIssueNumbers, crossIssueNumbers } from './crossIssue'
 import { filterSolutions } from './listFilter'
-import { listParamsOf, type ListParams, type ListState } from './listParams'
+import { listParamsOf, type ListParams, type ListState, type OfferedCodes } from './listParams'
 import { parseListQuery, solutionMatches } from './listSearch'
 import { compareSolutionItems, sortSolutions, type ListContext } from './listSort'
 import type { RecentSolution } from './recent'
+import { solutionCodes, TYPE_KINDS, typesOf, type TypeKind, type TypeOfKind } from './typeKinds'
 
 /** Every solution of the given issue files and every cross-issue solution,
  * in the fixed ID order: the cross-issue solutions first, then by issue
@@ -25,8 +26,8 @@ export function solutionListItems(issues: IssueFile[], cross: CrossIssueFile | n
   return items.sort(compareSolutionItems)
 }
 
-/** The state of #/solutions from its URL params (listParamsOf). The space
- * codes are the ones a solution uses (solutionSpaceOptions). Without
+/** The state of #/solutions from its URL params (listParamsOf). The space,
+ * 領域 and 解法類型 codes are the ones a solution uses (solutionTypeOptions). Without
  * cross-issue.json, 「跨議題解法」 (issue=X) is dropped too. replace is true
  * when the URL must be replaced with the cleaned state. */
 export function solutionsParams(
@@ -35,8 +36,9 @@ export function solutionsParams(
   issues: IssueFile[],
   cross: CrossIssueFile | null,
 ): ListParams {
-  const spaceCodes = solutionSpaceOptions(index.spaceTypes, issues, cross).map((s) => s.code)
-  const read = listParamsOf('solutions', params, index, spaceCodes)
+  const offered: OfferedCodes = {}
+  for (const kind of TYPE_KINDS) offered[kind] = solutionTypeOptions(kind, index, issues, cross).map((t) => t.code)
+  const read = listParamsOf('solutions', params, index, offered)
   if (cross !== null || !read.crossChoice) return read
   return { ...read, crossChoice: false, replace: true }
 }
@@ -66,15 +68,21 @@ export function solutionItemCells(item: RecentSolution, ctx: ListContext): CellC
   return issue ? solutionCells(issue, item.solution) : none
 }
 
-/** The space types that at least one solution uses, in the order of
- * space-types.csv. For the space type filter. cross adds the space types of
- * the cross-issue solutions (null when cross-issue.json does not exist). */
-export function solutionSpaceOptions(spaceTypes: SpaceType[], issues: IssueFile[], cross: CrossIssueFile | null = null): SpaceType[] {
+/** The types of the kind that at least one solution uses (solutionCodes),
+ * in file order (level 2 only). For the 空間類型, 領域 and 解法類型 filters
+ * (Task U5). Never ordered by a count. cross adds the codes of the
+ * cross-issue solutions (null when cross-issue.json does not exist). */
+export function solutionTypeOptions<K extends TypeKind>(
+  kind: K,
+  index: IndexFile,
+  issues: IssueFile[],
+  cross: CrossIssueFile | null = null,
+): TypeOfKind[K][] {
   const used = new Set([
-    ...issues.flatMap((i) => i.solutions.flatMap((s) => s.spaces)),
-    ...(cross?.solutions.flatMap((s) => s.spaces) ?? []),
+    ...issues.flatMap((i) => i.solutions.flatMap((s) => solutionCodes(kind, s))),
+    ...(cross?.solutions.flatMap((s) => solutionCodes(kind, s)) ?? []),
   ])
-  return spaceTypes.filter((s) => used.has(s.code))
+  return typesOf(kind, index).filter((t) => used.has(t.code))
 }
 
 /** The number of needs the solution covers, for 「涵蓋 9 個需求」 on

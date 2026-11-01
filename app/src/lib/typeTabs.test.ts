@@ -70,4 +70,9 @@ describe('typeTabParams', () => {
     const p = typeTabParams('solutions', new URLSearchParams('issue=9&issue=X&issue=1&space=park'), index, [1])
     expect(p).toMatchObject({ issues: [1], crossChoice: false, spaces: [], replace: true })
   })
+
+  it('drops domain= and solutiontype= too (Task U5: only the list pages have them)', () => {
+    const p = typeTabParams('solutions', new URLSearchParams('domain=environment&solutiontype=open-data'), index, [1])
+    expect(p).toMatchObject({ domains: [], solutionTypes: [], replace: true })
+  })
 })

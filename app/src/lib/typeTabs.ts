@@ -45,6 +45,8 @@ export function typeTabParams(
     issues: read.issues.filter((n) => issueNumbers.includes(n)),
     crossChoice: false,
     spaces: [],
+    domains: [],
+    solutionTypes: [],
     view: 'cards',
   }
   delete (state as Partial<ListParams>).replace

@@ -47,6 +47,20 @@ describe('listParamsOf', () => {
     expect(read('stakeholders', 'space=sidewalk-furniture')).toMatchObject({ spaces: [], replace: true })
   })
 
+  it('reads 領域 on #/issues: codes the analyzed issues use, level 2 only, in file order (Task U5)', () => {
+    expect(read('issues', 'domain=administration&domain=health')).toMatchObject({ domains: ['administration', 'health'], replace: false })
+    expect(read('issues', 'domain=environment&domain=health')).toMatchObject({ domains: ['health', 'environment'], replace: true })
+    // police: no issue uses it. general-affairs: a level 1 code.
+    expect(read('issues', 'domain=police&domain=general-affairs&domain=nope')).toMatchObject({ domains: [], replace: true })
+    // The page can offer more codes (a solution's own 領域).
+    const withPolice = listParamsOf('issues', new URLSearchParams('domain=police'), index, { domain: ['police'] })
+    expect(withPolice).toMatchObject({ domains: ['police'], replace: false })
+    // Only #/issues and #/solutions have 領域. Only #/solutions has 解法類型.
+    expect(read('issues', 'solutiontype=service')).toMatchObject({ solutionTypes: [], replace: true })
+    expect(read('stakeholders', 'domain=health')).toMatchObject({ domains: [], replace: true })
+    expect(read('domains', 'domain=health')).toMatchObject({ domains: [], replace: true })
+  })
+
   it('reads who, and drops a moved, unknown or unlisted ID (decision 113: a moved ID is not changed)', () => {
     expect(read('issues', 'who=I06')).toMatchObject({ who: 'I06', replace: false })
     expect(read('solutions', 'who=O02')).toMatchObject({ who: null, replace: true })
@@ -122,13 +136,15 @@ describe('listParamsOf', () => {
 describe('listUrlSearch', () => {
   const state: ListState = {
     sort: 'evidence', issues: [2], crossChoice: true, spaces: ['sidewalk-furniture'], who: 'I06', specialOnly: true, view: 'tree', q: '無菸',
-    groups: ['道路'],
+    groups: ['道路'], domains: ['health'], solutionTypes: [],
   }
 
   it('writes only the params of the page, in a fixed order', () => {
-    expect(listUrlSearch('issues', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&space=sidewalk-furniture&who=I06')
+    expect(listUrlSearch('issues', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&space=sidewalk-furniture&domain=health&who=I06')
     expect(listUrlSearch('stakeholders', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&issue=X&issue=2&specialonly=1&view=tree')
-    expect(listUrlSearch('solutions', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&issue=X&issue=2&space=sidewalk-furniture&who=I06')
+    expect(listUrlSearch('solutions', state)).toBe('?q=%E7%84%A1%E8%8F%B8&sort=evidence&issue=X&issue=2&space=sidewalk-furniture&domain=health&who=I06')
+    expect(listUrlSearch('solutions', { ...DEFAULT_LIST_STATE, domains: ['administration', 'health'], solutionTypes: ['open-data'] }))
+      .toBe('?domain=administration&domain=health&solutiontype=open-data')
     // #/spaces: no sort and no 「跨議題」 (decision 122).
     expect(listUrlSearch('spaces', { ...state, crossChoice: false })).toBe('?q=%E7%84%A1%E8%8F%B8&issue=2&group=%E9%81%93%E8%B7%AF')
   })
@@ -154,6 +170,7 @@ describe('clearListFilters', () => {
     expect(clearListFilters(params)).toBe('?sort=added&view=tree')
     expect(clearListFilters(new URLSearchParams('q=x&space=park'))).toBe('')
     expect(clearListFilters(new URLSearchParams('q=x&issue=1&group=%E9%81%93%E8%B7%AF'))).toBe('')
+    expect(clearListFilters(new URLSearchParams('sort=added&domain=health&solutiontype=service'))).toBe('?sort=added')
   })
 })
 
@@ -180,7 +197,7 @@ describe('links to the list pages', () => {
 describe('param names', () => {
   it('do not reuse the names that mean other things on other pages', () => {
     const names = Object.values(LIST_PARAMS)
-    expect(names).toEqual(['q', 'sort', 'issue', 'space', 'who', 'specialonly', 'view', 'group'])
+    expect(names).toEqual(['q', 'sort', 'issue', 'space', 'domain', 'solutiontype', 'who', 'specialonly', 'view', 'group'])
     for (const old of ['stakeholder', 'evidence', 'cross', 'special', 'focus', 'pick', 'from']) {
       expect(names).not.toContain(old)
     }

@@ -12,7 +12,7 @@ import { filterSolutions, NO_FILTERS } from './listFilter'
 import { compareSolutionItems, solutionItemKey, sortSolutions, type ListContext } from './listSort'
 import { recentSolutionItems, type RecentSolution } from './recent'
 import {
-  coveredNeedCount, crossAlsoCovers, solutionItemCells, solutionListItems, solutionListView, solutionSpaceOptions,
+  coveredNeedCount, crossAlsoCovers, solutionItemCells, solutionListItems, solutionListView, solutionTypeOptions,
   solutionsParams,
 } from './solutionList'
 import { solutionTabCounts } from './tabCounts'
@@ -58,7 +58,7 @@ describe('solutionsParams', () => {
   })
 
   it('drops a space code that no solution uses', () => {
-    const used = new Set(solutionSpaceOptions(index.spaceTypes, files, cross).map((s) => s.code))
+    const used = new Set(solutionTypeOptions('space', index, files, cross).map((s) => s.code))
     const unused = index.spaceTypes.find((s) => !used.has(s.code))
     if (unused) {
       expect(solutionsParams(new URLSearchParams(`space=${unused.code}`), index, files, cross)).toMatchObject({ spaces: [], replace: true })
@@ -66,9 +66,26 @@ describe('solutionsParams', () => {
     expect(solutionsParams(new URLSearchParams('space=nothing'), index, files, cross)).toMatchObject({ spaces: [], replace: true })
   })
 
+  it('reads 領域 and 解法類型: used codes only, level 2 only, in file order (Task U5)', () => {
+    const read = (search: string, list: IssueFile[] = files) => solutionsParams(new URLSearchParams(search), index, list, cross)
+    expect(read('domain=health&domain=administration&solutiontype=service&solutiontype=open-data')).toMatchObject({
+      domains: ['administration', 'health'],
+      solutionTypes: ['open-data', 'service'],
+      replace: true,
+    })
+    expect(read('domain=administration&solutiontype=open-data')).toMatchObject({ replace: false })
+    // police: no solution uses it. general-affairs: a level 1 code. subsidy: no solution has it.
+    expect(read('domain=police&domain=general-affairs&solutiontype=subsidy')).toMatchObject({ domains: [], solutionTypes: [], replace: true })
+    // A solution's own 領域 is kept.
+    const own = files.map((f) =>
+      f.number !== 2 ? f : { ...f, solutions: f.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)) },
+    )
+    expect(read('domain=police', own)).toMatchObject({ domains: ['police'], replace: false })
+  })
+
   it('keeps a space code that only a cross-issue solution uses', () => {
-    const issueSpaces = new Set(solutionSpaceOptions(index.spaceTypes, files, null).map((s) => s.code))
-    const crossOnly = solutionSpaceOptions(index.spaceTypes, files, cross).find((s) => !issueSpaces.has(s.code))
+    const issueSpaces = new Set(solutionTypeOptions('space', index, files, null).map((s) => s.code))
+    const crossOnly = solutionTypeOptions('space', index, files, cross).find((s) => !issueSpaces.has(s.code))
     if (crossOnly) {
       expect(solutionsParams(new URLSearchParams(`space=${crossOnly.code}`), index, files, cross)).toMatchObject({
         spaces: [crossOnly.code],
@@ -147,9 +164,22 @@ describe('solutionItemCells', () => {
   })
 })
 
-describe('solutionSpaceOptions', () => {
+describe('solutionTypeOptions', () => {
+  it('lists the 領域 and 解法類型 that a solution (issue or X-) uses, in file order (Task U5)', () => {
+    const codes = (kind: 'domain' | 'solutionType', list: IssueFile[], c: CrossIssueFile | null) =>
+      solutionTypeOptions(kind, index, list, c).map((s) => s.code)
+    expect(codes('domain', files, cross)).toEqual(['administration', 'civil-affairs', 'health', 'environment'])
+    expect(codes('solutionType', [policy], null)).toEqual(['open-data', 'participation', 'procedure', 'regulation', 'planning'])
+    // An X- solution adds its types: X-S4 has digital-tool, which #9 does not.
+    expect(codes('solutionType', [policy], cross)).toContain('digital-tool')
+    // A solution's own 領域 is offered.
+    const own = { ...trashcans, solutions: trashcans.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)) }
+    expect(codes('domain', [own], null)).toEqual(['police', 'environment'])
+  })
+
+
   it('lists the space types that a solution uses, in the order of space-types.csv', () => {
-    const codes = solutionSpaceOptions(index.spaceTypes, all).map((s) => s.code)
+    const codes = solutionTypeOptions('space', index, all).map((s) => s.code)
     const used = new Set(all.flatMap((i) => i.solutions.flatMap((s) => s.spaces)))
     expect(new Set(codes)).toEqual(used)
     const order = index.spaceTypes.map((s) => s.code).filter((c) => used.has(c))
@@ -158,10 +188,10 @@ describe('solutionSpaceOptions', () => {
 
   it('adds the space types of the cross-issue solutions, once each, in the same order', () => {
     const cross = { solutions: [{ spaces: ['utility', 'sidewalk-furniture'] }] } as unknown as CrossIssueFile
-    const codes = solutionSpaceOptions(index.spaceTypes, [trashcans], cross).map((s) => s.code)
+    const codes = solutionTypeOptions('space', index, [trashcans], cross).map((s) => s.code)
     const used = new Set([...trashcans.solutions.flatMap((s) => s.spaces), 'utility', 'sidewalk-furniture'])
     expect(codes).toEqual(index.spaceTypes.map((s) => s.code).filter((c) => used.has(c)))
-    expect(solutionSpaceOptions(index.spaceTypes, [trashcans], null)).toEqual(solutionSpaceOptions(index.spaceTypes, [trashcans]))
+    expect(solutionTypeOptions('space', index, [trashcans], null)).toEqual(solutionTypeOptions('space', index, [trashcans]))
   })
 })
 

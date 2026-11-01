@@ -8,7 +8,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IndexFile, IssueFile, IssueSummary, Stakeholder } from '@/types'
 import { crossCoverageIssueNumbers, crossStakeholderCoverage } from './crossIssue'
 import { solutionsTabView } from './issueTabs'
-import { filterIssues, filterSolutions, filterSpaces, filterStakeholders, NO_FILTERS } from './listFilter'
+import { filterIssues, filterSolutions, filterSpaces, filterStakeholders, NO_FILTERS, typeFiltersOn } from './listFilter'
 import { compareSolutionItems, solutionItemKey, type ListContext } from './listSort'
 import { recentSolutionItems } from './recent'
 import { isListed } from './stakeholders'
@@ -23,6 +23,14 @@ const numbers = (list: IssueSummary[]) => list.map((i) => i.number)
 const spacesOf = (i: IssueSummary): string[] => i.spaces
 const issueByNumber = (n: number) => index.issues.find((i) => i.number === n)!
 const ids = (list: Stakeholder[]) => list.map((s) => s.id)
+
+/** The fixture files, with #2 S1 changed to have its own 領域 police. No
+ * fixture solution has an own 領域, and no fixture issue has police. */
+const ownPolice: IssueFile[] = files.map((f) =>
+  f.number !== 2
+    ? f
+    : { ...f, solutions: f.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)) },
+)
 
 describe('filterIssues', () => {
   const stakeholders = index.stakeholders
@@ -51,6 +59,31 @@ describe('filterIssues', () => {
     // A space that an issue of O09 uses keeps that issue.
     const used = spacesOf(issueByNumber(o09.issues[0]))[0]
     expect(numbers(filterIssues(index.issues, { ...NO_FILTERS, who: 'O09', spaces: [used] }, stakeholders))).toContain(o09.issues[0])
+  })
+})
+
+describe('filterIssues: 領域 (Task U5)', () => {
+  const stakeholders = index.stakeholders
+  const kept = (f: Partial<typeof NO_FILTERS>, list: IssueFile[] = files) =>
+    numbers(filterIssues(index.issues, { ...NO_FILTERS, ...f }, stakeholders, list))
+
+  it('keeps an issue whose 領域 line has ANY picked 領域', () => {
+    expect(kept({ domains: ['health'] })).toEqual([8])
+    expect(kept({ domains: ['health', 'civil-affairs'] })).toEqual([8, 9])
+    expect(kept({ domains: ['environment'] })).toEqual([1, 2, 8])
+  })
+
+  it('keeps an issue with a solution that has the 領域 as its own (the rule of the type pages)', () => {
+    expect(kept({ domains: ['police'] }, ownPolice)).toEqual([2])
+    // Without the issue files only the 領域 line counts.
+    expect(kept({ domains: ['police'] }, [])).toEqual([])
+    expect(kept({ domains: ['environment'] }, [])).toEqual([1, 2, 8])
+  })
+
+  it('needs ALL filters to match: 空間類型, 領域 and 利害關係人', () => {
+    expect(kept({ domains: ['environment'], spaces: ['bike-lane'] })).toEqual([1])
+    expect(kept({ domains: ['health'], spaces: ['bike-lane'] })).toEqual([])
+    expect(kept({ domains: ['civil-affairs'], who: 'I06' })).toEqual([9])
   })
 })
 
@@ -128,6 +161,48 @@ describe('filterSolutions', () => {
   it('works with no cross-issue file', () => {
     const issueOnly = all.filter((x) => x.kind === 'issue')
     expect(filterSolutions(issueOnly, { ...NO_FILTERS, issues: [1], who: 'I06' }, { issues: files, cross: null }).length).toBeGreaterThan(0)
+  })
+})
+
+describe('filterSolutions: 領域 and 解法類型 (Task U5)', () => {
+  const keys = (f: Partial<typeof NO_FILTERS>, c: ListContext = ctx) =>
+    filterSolutions(c === ctx ? all : [...recentSolutionItems(c.issues, c.cross)].sort(compareSolutionItems), { ...NO_FILTERS, ...f }, c).map(solutionItemKey)
+
+  it('領域: an issue solution matches by its domains (the issue 領域 when it has no own)', () => {
+    expect(keys({ domains: ['health'] })).toEqual(['X-S1', 'X-S2', 'X-S3', 'X-S4', 'X-S5', '8-S1', '8-S2', '8-S3', '8-S4', '8-S5'])
+  })
+
+  it('領域: an X- solution matches by the union of the 領域 of its parts', () => {
+    expect(keys({ domains: ['civil-affairs'] })).toEqual(['X-S4', '9-S1', '9-S2', '9-S3', '9-S4', '9-S5'])
+  })
+
+  it('領域: a solution with its own 領域 matches by it, not by the issue 領域', () => {
+    const own: ListContext = { issues: ownPolice, cross }
+    expect(keys({ domains: ['police'] }, own)).toEqual(['2-S1'])
+    expect(keys({ domains: ['environment'] }, own)).not.toContain('2-S1')
+    expect(keys({ domains: ['environment'] }, own)).toContain('2-S2')
+  })
+
+  it('解法類型: ANY of the picked types, for both kinds', () => {
+    expect(keys({ solutionTypes: ['enforcement'] })).toEqual(['8-S4'])
+    expect(keys({ solutionTypes: ['open-data', 'enforcement'] })).toEqual(['X-S4', '1-S2', '2-S3', '8-S3', '8-S4', '9-S4'])
+  })
+
+  it('needs ALL filters to match', () => {
+    expect(keys({ domains: ['administration'], solutionTypes: ['digital-tool'] })).toEqual(['X-S4'])
+    expect(keys({ domains: ['health'], solutionTypes: ['open-data'], spaces: ['bus-stop'] })).toEqual(['8-S3'])
+    expect(keys({ domains: ['administration'], solutionTypes: ['digital-tool'], issues: [9] })).toEqual(['X-S4'])
+    expect(keys({ solutionTypes: ['enforcement'], issues: [1] })).toEqual([])
+  })
+})
+
+describe('typeFiltersOn', () => {
+  it('is true when a 空間類型, 領域 or 解法類型 filter is on', () => {
+    expect(typeFiltersOn(NO_FILTERS)).toBe(false)
+    expect(typeFiltersOn({ ...NO_FILTERS, who: 'I06', issues: [1] })).toBe(false)
+    expect(typeFiltersOn({ ...NO_FILTERS, spaces: ['park'] })).toBe(true)
+    expect(typeFiltersOn({ ...NO_FILTERS, domains: ['health'] })).toBe(true)
+    expect(typeFiltersOn({ ...NO_FILTERS, solutionTypes: ['service'] })).toBe(true)
   })
 })
 

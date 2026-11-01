@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
 import type { IndexFile, IssueSummary, Stakeholder } from '@/types'
 import {
-  availableIssues, focusOptions, isParticipantIssue, issueNumberTitle, sharedForCard, sharedStakeholders, spaceTypeNames, usedSpaceTypes,
+  availableIssues, focusOptions, isParticipantIssue, issueNumberTitle, sharedForCard, sharedStakeholders, spaceTypeNames,
 } from './issues'
 
 const index = indexJson as IndexFile
@@ -84,15 +84,6 @@ describe('sharedStakeholders', () => {
 
   it('returns 0 for an issue with no shared stakeholders', () => {
     expect(sharedStakeholders([person('I01', [2])], 2)).toEqual({ count: 0, issues: [] })
-  })
-})
-
-describe('usedSpaceTypes', () => {
-  it('lists the space types of analyzed issues, in space-types.csv order', () => {
-    const codes = usedSpaceTypes(index).map((s) => s.code)
-    const all = index.spaceTypes.map((s) => s.code)
-    expect(new Set(codes)).toEqual(new Set(['sidewalk-furniture', 'arcade', 'bus-stop', 'park', 'mrt-exit', 'indoor-home', 'utility', 'bike-lane']))
-    expect(codes).toEqual(all.filter((c) => codes.includes(c)))
   })
 })
 

@@ -60,13 +60,6 @@ export function sharedForCard(index: IndexFile, issue: IssueSummary): SharedForC
   return { ...shared, titles: shared.issues.map((n) => issueNumberTitle(index.issues, n)) }
 }
 
-/** The space types that at least one analyzed issue uses, in the order of
- * space-types.csv. */
-export function usedSpaceTypes(index: IndexFile): SpaceType[] {
-  const used = new Set(availableIssues(index).flatMap((i) => i.spaces))
-  return index.spaceTypes.filter((s) => used.has(s.code))
-}
-
 /** The name of each code, in the order given. An unknown code keeps the code
  * as its name. */
 export function spaceTypeNames(spaceTypes: SpaceType[], codes: string[]): { code: string; name: string }[] {

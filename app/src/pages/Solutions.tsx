@@ -9,22 +9,25 @@ import { SolutionCard } from '@/components/SolutionCard'
 import { CrossSolutionCard } from '@/components/solution/CrossSolutionCard'
 import { StakeholderPicker } from '@/components/StakeholderPicker'
 import { linkClass, listBodyClass } from '@/components/styles'
+import { typeChoiceFilter, typeFilterPart } from '@/components/typeFilters'
 import { useCrossIssue, useIndex, useIssues } from '@/data'
 import { t } from '@/i18n/zh-TW'
 import { evidenceShare, sharePercent } from '@/lib/coverage'
 import { crossSolutionTabCounts, issuesOfCross } from '@/lib/crossIssue'
 import { rememberListSearch } from '@/lib/backLink'
 import { availableIssues } from '@/lib/issues'
+import { typeFiltersOn } from '@/lib/listFilter'
 import {
   clearListFilters, CROSS_ISSUE_VALUE, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
 } from '@/lib/listParams'
 import { solutionItemKey, type ListContext } from '@/lib/listSort'
 import type { RecentSolution } from '@/lib/recent'
 import {
-  coveredNeedCount, crossAlsoCovers, solutionItemCells, solutionListItems, solutionListView, solutionSpaceOptions,
+  coveredNeedCount, crossAlsoCovers, solutionItemCells, solutionListItems, solutionListView, solutionTypeOptions,
   solutionsParams,
 } from '@/lib/solutionList'
 import { findStakeholder } from '@/lib/stakeholders'
+import { TYPE_KINDS, typesOf, type TypeKind } from '@/lib/typeKinds'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 
 const tl = t.lists
@@ -77,9 +80,11 @@ function SolutionsBody({ index }: { index: IndexFile }) {
   const p: ListParams = useMemo(() => {
     const read = new URLSearchParams(search)
     if (ready) return solutionsParams(read, index, issueFiles, cross)
-    // While the data loads, keep every known space code, so nothing in the
-    // URL is lost before the solutions are known. No replace yet.
-    return { ...listParamsOf('solutions', read, index, index.spaceTypes.map((s) => s.code)), replace: false }
+    // While the data loads, keep every known space, 領域 and 解法類型 code,
+    // so nothing in the URL is lost before the solutions are known. No
+    // replace yet.
+    const all = Object.fromEntries(TYPE_KINDS.map((k) => [k, typesOf(k, index).map((x) => x.code)]))
+    return { ...listParamsOf('solutions', read, index, all), replace: false }
   }, [search, ready, index, issueFiles, cross])
   const replace = p.replace
   const state: ListState = useMemo(() => {
@@ -155,8 +160,17 @@ function SolutionsBody({ index }: { index: IndexFile }) {
   )
 }
 
+/** The label of each type filter of #/solutions, in the bar order. */
+const TYPE_FILTER_LABELS: Record<TypeKind, string> = {
+  space: ts.spaceFilter,
+  domain: ts.domainFilter,
+  solutionType: ts.solutionTypeFilter,
+}
+
 /** The filters of #/solutions, in the order of design 3.23.5: 議題 (with
- * 「跨議題解法」 when cross-issue.json exists), 空間類型, 利害關係人. */
+ * 「跨議題解法」 when cross-issue.json exists), 空間類型, 領域, 解法類型
+ * (Task U5), 利害關係人. Each type filter offers only the types a solution
+ * uses, in file order, and waits for the data. */
 function barFilters(
   index: IndexFile,
   state: ListState,
@@ -168,7 +182,6 @@ function barFilters(
     ...(cross !== null ? [{ value: CROSS_ISSUE_VALUE, label: ts.crossChoice }] : []),
     ...availableIssues(index).map((i) => ({ value: String(i.number), label: ts.issueOption(i.number, i.title) })),
   ]
-  const spaceOptions = ready ? solutionSpaceOptions(index.spaceTypes, issueFiles, cross) : []
   const filters: ListBarFilter[] = [
     {
       kind: 'choices',
@@ -184,15 +197,10 @@ function barFilters(
       }),
     },
   ]
-  if (spaceOptions.length > 0) {
-    filters.push({
-      kind: 'choices',
-      key: 'space',
-      label: ts.spaceFilter,
-      options: spaceOptions.map((s) => ({ value: s.code, label: s.name })),
-      value: state.spaces,
-      next: (v) => ({ ...state, spaces: v }),
-    })
+  for (const kind of TYPE_KINDS) {
+    const options = ready ? solutionTypeOptions(kind, index, issueFiles, cross) : []
+    const filter = typeChoiceFilter(kind, TYPE_FILTER_LABELS[kind], options, state)
+    if (filter) filters.push(filter)
   }
   filters.push({
     kind: 'slot',
@@ -211,9 +219,9 @@ function resultParts(index: IndexFile, state: ListState): string[] {
   const parts: string[] = []
   const issues = [...(state.crossChoice ? [ts.crossChoice] : []), ...state.issues.map(ts.issueShort)]
   if (issues.length > 0) parts.push(tb.filterPart(ts.issueFilter, issues))
-  if (state.spaces.length > 0) {
-    const names = index.spaceTypes.filter((s) => state.spaces.includes(s.code)).map((s) => s.name)
-    parts.push(tb.filterPart(ts.spaceFilter, names))
+  for (const kind of TYPE_KINDS) {
+    const part = typeFilterPart(kind, TYPE_FILTER_LABELS[kind], index, state)
+    if (part !== null) parts.push(part)
   }
   if (state.who !== null) {
     const s = findStakeholder(index.stakeholders, state.who)
@@ -224,7 +232,7 @@ function resultParts(index: IndexFile, state: ListState): string[] {
 
 /** The card area when nothing is shown (design 3.23.6 and 3.23.13). */
 function EmptyState({ state, params, pathname }: { state: ListState; params: URLSearchParams; pathname: string }) {
-  const filtersOn = state.issues.length > 0 || state.crossChoice || state.spaces.length > 0 || state.who !== null
+  const filtersOn = state.issues.length > 0 || state.crossChoice || typeFiltersOn(state) || state.who !== null
   const noQ = new URLSearchParams(params)
   noQ.delete(LIST_PARAMS.q)
   const noQSearch = noQ.toString() ? `?${noQ.toString()}` : ''

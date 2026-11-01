@@ -11,7 +11,7 @@ import { compareIds } from './ids'
 import { availableIssues } from './issues'
 import {
   findType, hasTagCodes, issueCodes, issuesByType, solutionTagCodes, otherTypes, sameTypeIssues, solutionCodes, solutionsByType, stakeholdersByType,
-  issueListsSolutionCodes, TYPE_KINDS, TYPE_LIST_PAGES, typeGroupNames, typeGroups, typeIssues, typesOf, type TypeKind,
+  issueListsSolutionCodes, issueTypeOptions, issueUsedCodes, TYPE_KINDS, TYPE_LIST_PAGES, typeGroupNames, typeGroups, typeIssues, typesOf, type TypeKind,
 } from './typeKinds'
 
 const index = indexJson as IndexFile
@@ -234,6 +234,42 @@ describe('typeIssues (the issues of a type page)', () => {
       expect(nums(kind, files, LEVEL_1[kind])).toEqual([])
       expect(nums(kind, files, 'nope')).toEqual([])
     }
+  })
+})
+
+// Task U5: the 領域 filter of #/issues uses the same rule as typeIssues.
+describe('issueUsedCodes and issueTypeOptions (the #/issues filters)', () => {
+  const own = {
+    ...trashcans,
+    solutions: trashcans.solutions.map((s) => (s.id === 'S1' ? { ...s, domains: ['police'], ownDomains: ['police'] } : s)),
+  }
+  const issue = (n: number) => availableIssues(index).find((i) => i.number === n)!
+
+  it('gives the codes on the issue, then the codes of its solutions, each once', () => {
+    expect(issueUsedCodes('domain', issue(2), files)).toEqual(['environment'])
+    expect(issueUsedCodes('domain', issue(2), [own])).toEqual(['environment', 'police'])
+    expect(issueUsedCodes('domain', issue(2), [])).toEqual(['environment'])
+    expect(issueUsedCodes('space', issue(1), [])).toEqual(issue(1).spaces)
+    expect(issueUsedCodes('solutionType', issue(9), files)).toEqual(['planning', 'procedure', 'regulation', 'participation', 'open-data'])
+  })
+
+  it('agrees with typeIssues for every kind and code', () => {
+    const list = [policy, smokefree, own, trees]
+    for (const kind of TYPE_KINDS) {
+      for (const t of typesOf(kind, index)) {
+        const users = availableIssues(index).filter((i) => issueUsedCodes(kind, i, list).includes(t.code)).map((i) => i.number)
+        expect(users).toEqual(typeIssues(kind, index, list, t.code).map((i) => i.number))
+      }
+    }
+  })
+
+  it('offers the used types only, in file order (never by a count)', () => {
+    const codes = (kind: TypeKind, list: IssueFile[]) => issueTypeOptions(kind, index, list).map((t) => t.code)
+    // The space options need only index.json (the old usedSpaceTypes).
+    expect(new Set(codes('space', []))).toEqual(new Set(['sidewalk-furniture', 'arcade', 'bus-stop', 'park', 'mrt-exit', 'indoor-home', 'utility', 'bike-lane']))
+    expect(codes('space', [])).toEqual(index.spaceTypes.map((s) => s.code).filter((c) => codes('space', []).includes(c)))
+    expect(codes('domain', files)).toEqual(['administration', 'civil-affairs', 'health', 'environment'])
+    expect(codes('domain', [policy, smokefree, own, trees])).toEqual(['administration', 'civil-affairs', 'police', 'health', 'environment'])
   })
 })
 

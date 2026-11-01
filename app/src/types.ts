@@ -68,9 +68,8 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
   /** Space type codes (level 2 only), for example "sidewalk-walkway". */
   spaces: string[]
   /** 領域 codes from the issue's 「領域：」 line (level 2 only), for example
-   * "environment". Optional so test data and older JSON still fit. Not used by
-   * the UI yet. */
-  domains?: string[]
+   * "environment". */
+  domains: string[]
   /** 新增日期 in issues.csv: the day the issue's analysis was first committed
    * (YYYY-MM-DD). Optional in the type so test data and older JSON still fit (design 3.23.8). */
   added?: string | null
@@ -87,7 +86,7 @@ export interface AvailableIssueSummary extends IssueSummaryBase {
 export interface UnavailableIssueSummary extends IssueSummaryBase {
   available: false
   spaces: []
-  domains?: []
+  domains: []
   added?: null
   updated: null
   counts: null
@@ -124,9 +123,8 @@ export interface SpaceType {
   name: string
   /** The 名稱 of the parent row, for example "道路". The space list groups by it. */
   group: string
-  /** The code of the parent row (上層), for example "road". Optional so test
-   * data and older JSON still fit. Not used by the UI yet. */
-  parent?: string
+  /** The code of the parent row (上層), for example "road". */
+  parent: string
   description: string
   /** 新增日期 from analysis/data/updated-dates.csv (YYYY-MM-DD): the day the
    * row was added to space-types.csv. null when the file has no row for it.
@@ -159,9 +157,14 @@ export interface IndexFile {
   pathLabels: Record<string, string>
   spaceTypes: SpaceType[]
   /** The level 1 rows of space-types.csv (the groups), for example
-   * {code: "road", name: "道路", ...}. Optional so test data and older JSON
-   * still fit. Not used by the UI yet. */
-  spaceGroups?: SpaceGroup[]
+   * {code: "road", name: "道路", ...}. Not used by the UI yet. */
+  spaceGroups: SpaceGroup[]
+  /** The level 2 rows of domain-types.csv, in file order. */
+  domainTypes: DomainType[]
+  /** The level 1 rows of domain-types.csv (政事別 大分類), in file order. */
+  domainGroups: DomainGroup[]
+  /** The rows of solution-types.csv, in file order. */
+  solutionTypes: SolutionType[]
   openData: OpenDataset[]
 }
 
@@ -170,6 +173,51 @@ export interface SpaceGroup {
   code: string
   name: string
   description: string
+}
+
+/** A level 2 row of analysis/data/domain-types.csv (領域). Only level 2
+ * codes go on issues and solutions. The level 1 rows are in
+ * IndexFile.domainGroups. */
+export interface DomainType {
+  code: string
+  name: string
+  /** The code of the parent row (上層), for example "general-affairs". */
+  parent: string
+  /** The 名稱 of the parent row, for example "一般政務". */
+  group: string
+  /** 說明 */
+  description: string
+  /** 政事別, for example "行政支出". */
+  budgetName: string
+  /** 陳情系統主類別. An empty string when the row has none. */
+  petitionCategory: string
+  /** 新增日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null. */
+  added: string | null
+  /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null. */
+  updated: string | null
+}
+
+/** A level 1 row of analysis/data/domain-types.csv (a 政事別 大分類). */
+export interface DomainGroup {
+  code: string
+  name: string
+  description: string
+}
+
+/** A row of analysis/data/solution-types.csv (解法類型). It has one level. */
+export interface SolutionType {
+  code: string
+  name: string
+  /** 說明 */
+  description: string
+  /** 判斷方式 */
+  howToJudge: string
+  /** 政策工具, for example "Nodality / Organisation". */
+  policyTool: string
+  /** 新增日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null. */
+  added: string | null
+  /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null. */
+  updated: string | null
 }
 
 // ---------- issues/<folder>.json ----------
@@ -301,15 +349,14 @@ export interface Solution {
   summary: string
   /** Space type codes. */
   spaces: string[]
-  /** 解法類型 codes from the 6.1 cell (1 to 3), for example "open-data".
-   * Optional so test data and older JSON still fit. Not used by the UI yet. */
-  solutionTypes?: string[]
+  /** 解法類型 codes from the 6.1 cell (1 to 3), for example "open-data". */
+  solutionTypes: string[]
   /** 領域 codes from the 6.1 cell: only when they differ from the issue's
-   * 領域. Often []. Optional, not used by the UI yet. */
-  ownDomains?: string[]
+   * 領域. Often []. */
+  ownDomains: string[]
   /** The solution's 領域: ownDomains when it is not empty, else the issue's
-   * 領域. Optional, not used by the UI yet. */
-  domains?: string[]
+   * 領域. Never a mix of both. */
+  domains: string[]
   /** 新增日期: the date the solution was added to 6.1 (YYYY-MM-DD). */
   added: string
   /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null when
@@ -478,9 +525,8 @@ export interface IssueFile {
   title: string
   spaces: string[]
   updated: string | null
-  /** 領域 codes from the 「領域：」 line (level 2 only). Optional so test data
-   * and older JSON still fit. Not used by the UI yet. */
-  domains?: string[]
+  /** 領域 codes from the 「領域：」 line (level 2 only). */
+  domains: string[]
   /** "needs": the needs-based format (has 相同需求群組). "stories": the old
    * format. #1, #2 and #8 use "needs". */
   format: 'needs' | 'stories'
@@ -608,9 +654,10 @@ export interface CrossSolution {
   /** The issue solutions it combines. */
   parts: CrossPart[]
   spaces: string[]
-  /** 解法類型 codes, for example "open-data". Optional so test data and
-   * older JSON still fit. Not used by the UI yet. */
-  solutionTypes?: string[]
+  /** 解法類型 codes, for example "open-data". */
+  solutionTypes: string[]
+  /** 領域: the domains of its parts, in part order, each code once. */
+  domains: string[]
   /** 新增日期 (YYYY-MM-DD). */
   added: string
   /** 更新日期 from analysis/data/updated-dates.csv (YYYY-MM-DD), or null when
@@ -665,4 +712,26 @@ export interface CrossIssueFile {
   solutions: CrossSolution[]
   solutionFocus: CrossSolutionFocus[]
   pending: CrossPending[]
+  /** The rows of analysis/cross-issue/candidates.csv, in file order. */
+  candidates: Candidate[]
+}
+
+/** A row of analysis/cross-issue/candidates.csv: two solutions of different
+ * issues that might be merged (rule R3). Only a suggestion: a person decides.
+ * It has no score and no rank. Empty cells are []. */
+export interface Candidate {
+  /** 解法甲, a full ID such as "1-S1". */
+  a: string
+  /** 解法乙, a full ID such as "2-S1". */
+  b: string
+  /** 共同解法類型: codes. */
+  solutionTypes: string[]
+  /** 共同領域: codes. */
+  domains: string[]
+  /** 共同空間類型: codes. */
+  spaces: string[]
+  /** 共同需求: X-N IDs and 1.2 rows such as "1.2 O12", as written. */
+  needs: string[]
+  /** 已在跨議題解法: X- solution codes that hold both solutions. */
+  crossSolutions: string[]
 }

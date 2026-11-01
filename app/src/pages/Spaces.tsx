@@ -17,7 +17,9 @@ import {
   type ListState,
 } from '@/lib/listParams'
 import { parseListQuery, spaceMatches } from '@/lib/listSearch'
-import { issuesBySpace, solutionsBySpace, spaceGroups, spaceStakeholderCount, stakeholdersBySpace } from '@/lib/spaces'
+import {
+  issuesBySpace, solutionsBySpace, spaceGroups, spaceStakeholderCount, stakeholdersBySpace, type SpaceGroup,
+} from '@/lib/spaces'
 import type { IndexFile, IssueFile } from '@/types'
 
 const ts = t.spacesList
@@ -155,7 +157,7 @@ function barFilters(index: IndexFile, state: ListState): ListBarFilter[] {
   return filters
 }
 
-function SpacesBody({ index, groups }: { index: IndexFile; groups: ReturnType<typeof spaceGroups> }) {
+function SpacesBody({ index, groups }: { index: IndexFile; groups: SpaceGroup[] }) {
   const folders = useMemo(() => availableIssues(index).map((i) => i.folder), [index])
   const issuesState = useIssues(folders)
   const files = issuesState.status === 'ready' ? issuesState.data : null

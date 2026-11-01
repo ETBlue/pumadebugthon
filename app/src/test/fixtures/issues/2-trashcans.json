@@ -9,6 +9,9 @@
     "mrt-exit"
   ],
   "updated": "2026-10-22",
+  "domains": [
+    "environment"
+  ],
   "format": "needs",
   "summary": [
     {
@@ -2812,6 +2815,14 @@
         "sidewalk-furniture",
         "mrt-exit"
       ],
+      "solutionTypes": [
+        "digital-tool",
+        "planning"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
+      ],
       "added": "2026-10-16",
       "updated": "2026-10-22",
       "stories": [
@@ -3139,6 +3150,14 @@
         "sidewalk-furniture",
         "mrt-exit",
         "park"
+      ],
+      "solutionTypes": [
+        "digital-tool",
+        "intake"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
       ],
       "added": "2026-10-16",
       "updated": "2026-10-22",
@@ -3515,6 +3534,14 @@
         "park",
         "arcade"
       ],
+      "solutionTypes": [
+        "digital-tool",
+        "open-data"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
+      ],
       "added": "2026-10-16",
       "updated": "2026-10-22",
       "stories": [
@@ -3702,6 +3729,13 @@
         "sidewalk-furniture",
         "arcade",
         "park"
+      ],
+      "solutionTypes": [
+        "participation"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
       ],
       "added": "2026-10-16",
       "updated": "2026-10-22",
@@ -3933,6 +3967,14 @@
       "spaces": [
         "sidewalk-furniture",
         "park"
+      ],
+      "solutionTypes": [
+        "facility",
+        "service"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
       ],
       "added": "2026-10-18",
       "updated": "2026-10-22",

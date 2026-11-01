@@ -1853,6 +1853,9 @@
         "arcade",
         "park"
       ],
+      "solutionTypes": [
+        "participation"
+      ],
       "added": "2026-10-20",
       "summary": "補植與移樹（#1）、清潔箱新設或撤除（#2）、吸菸區設置或移動（#8）的候選點，放在同一張地圖上公告，並在同一場以里為單位的工作坊一起討論。主動邀請高齡者、身障者、推車家長、外籍居民、回收者、無家者與吸菸者，請社會局與社工協助。危險樹木的緊急移除不等合併的工作坊。可以參考美國費城選點前和商圈團體一起評估人流的做法（見 #2 6.1）",
       "needs": {
@@ -2124,6 +2127,10 @@
             "X-S1"
           ]
         }
+      ],
+      "domains": [
+        "environment",
+        "health"
       ]
     },
     {
@@ -2151,6 +2158,10 @@
       "spaces": [
         "sidewalk-furniture",
         "utility"
+      ],
+      "solutionTypes": [
+        "facility",
+        "regulation"
       ],
       "added": "2026-10-20",
       "summary": "每個候選點用同一張檢查清單：通行淨寬（吸菸區另有保留 1.5 公尺淨寬的規定）、地下管線、建築物出入口與學校的距離、清潔箱和吸菸區的距離。先畫出通行淨寬，再把樹、清潔箱、管線箱與吸菸區放進同一條設施帶；設施帶太窄的路段，各議題改用其他空間。設施集中在綠帶的做法可以參考新加坡（見 #1 6.1，只有新聞報導，需真人查證）",
@@ -2427,6 +2438,10 @@
             "X-S2"
           ]
         }
+      ],
+      "domains": [
+        "environment",
+        "health"
       ]
     },
     {
@@ -2451,6 +2466,10 @@
         "sidewalk-furniture",
         "park",
         "mrt-exit"
+      ],
+      "solutionTypes": [
+        "digital-tool",
+        "intake"
       ],
       "added": "2026-10-20",
       "summary": "清潔箱滿溢、菸蒂、違規吸菸與危險樹木的通報，用同一個入口，帶有地點與時段，直接轉給負責的單位（環保局、衛生局或公園處）。兩種稽查的分工先談好；對經濟弱勢者先勸導與轉介",
@@ -2695,6 +2714,10 @@
             "X-S3"
           ]
         }
+      ],
+      "domains": [
+        "environment",
+        "health"
       ]
     },
     {
@@ -2724,6 +2747,10 @@
         "arcade",
         "park",
         "mrt-exit"
+      ],
+      "solutionTypes": [
+        "digital-tool",
+        "open-data"
       ],
       "added": "2026-10-20",
       "summary": "清潔箱、行道樹的移除與補植紀錄、吸菸區與禁菸範圍放在同一張地圖，也提供開放資料與 API；有英文與圖示。可以參考法國巴黎的砍樹、種樹互動地圖（見 #1 6.1），以及新加坡把吸菸區位置放進地圖與 app 的做法（見 #8 6.1）。各議題的分析資料（利害關係人與需求）也用同樣的規則發布（#9 解法 S4）：用現有的平臺（例如臺北市資料大平臺），不另建系統；每個資料集指定由誰更新；市民意見只開放彙總與改寫後的摘要，開放前去識別",
@@ -3026,6 +3053,12 @@
             "X-S4"
           ]
         }
+      ],
+      "domains": [
+        "environment",
+        "health",
+        "administration",
+        "civil-affairs"
       ]
     },
     {
@@ -3050,6 +3083,10 @@
         "sidewalk-furniture",
         "mrt-exit",
         "park"
+      ],
+      "solutionTypes": [
+        "facility",
+        "planning"
       ],
       "added": "2026-10-20",
       "summary": "選址時檢查清潔箱和吸菸區的距離，兩者分開設置；菸蒂收集設備放在吸菸區內，不放在清潔箱上。清潔箱的動態清運（#2）和吸菸區的菸蒂清理（#8）排入同一條清運路線。距離在現場試辦後決定（見 X-C2）",
@@ -3230,7 +3267,11 @@
         }
       ],
       "controversies": [],
-      "legal": []
+      "legal": [],
+      "domains": [
+        "environment",
+        "health"
+      ]
     }
   ],
   "solutionFocus": [
@@ -3398,6 +3439,335 @@
     {
       "text": "【待補：兩個局處在同一條清運路線上的分工，需要市府決定】",
       "section": "4.5 資源、法規、隱私與風險"
+    }
+  ],
+  "candidates": [
+    {
+      "a": "1-S1",
+      "b": "2-S1",
+      "solutionTypes": [
+        "digital-tool",
+        "planning"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture"
+      ],
+      "needs": [
+        "1.2 O12"
+      ],
+      "crossSolutions": [
+        "X-S2"
+      ]
+    },
+    {
+      "a": "1-S2",
+      "b": "2-S2",
+      "solutionTypes": [
+        "intake"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture",
+        "park"
+      ],
+      "needs": [
+        "X-N3"
+      ],
+      "crossSolutions": [
+        "X-S3"
+      ]
+    },
+    {
+      "a": "1-S2",
+      "b": "2-S3",
+      "solutionTypes": [
+        "open-data"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture",
+        "park"
+      ],
+      "needs": [
+        "X-N4"
+      ],
+      "crossSolutions": [
+        "X-S4"
+      ]
+    },
+    {
+      "a": "1-S2",
+      "b": "8-S3",
+      "solutionTypes": [
+        "open-data"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "park"
+      ],
+      "needs": [
+        "X-N4"
+      ],
+      "crossSolutions": [
+        "X-S4"
+      ]
+    },
+    {
+      "a": "1-S2",
+      "b": "8-S4",
+      "solutionTypes": [
+        "intake"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "park"
+      ],
+      "needs": [
+        "X-N3",
+        "X-N7"
+      ],
+      "crossSolutions": [
+        "X-S3"
+      ]
+    },
+    {
+      "a": "1-S2",
+      "b": "9-S4",
+      "solutionTypes": [
+        "open-data",
+        "regulation"
+      ],
+      "domains": [],
+      "spaces": [],
+      "needs": [
+        "X-N4"
+      ],
+      "crossSolutions": [
+        "X-S4"
+      ]
+    },
+    {
+      "a": "1-S3",
+      "b": "2-S4",
+      "solutionTypes": [
+        "participation"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture",
+        "park"
+      ],
+      "needs": [
+        "X-N1"
+      ],
+      "crossSolutions": [
+        "X-S1"
+      ]
+    },
+    {
+      "a": "1-S3",
+      "b": "8-S1",
+      "solutionTypes": [
+        "participation"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture",
+        "park"
+      ],
+      "needs": [
+        "X-N1"
+      ],
+      "crossSolutions": [
+        "X-S1"
+      ]
+    },
+    {
+      "a": "1-S4",
+      "b": "8-S1",
+      "solutionTypes": [
+        "regulation"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture"
+      ],
+      "needs": [
+        "X-N2",
+        "1.2 O12"
+      ],
+      "crossSolutions": [
+        "X-S2"
+      ]
+    },
+    {
+      "a": "1-S5",
+      "b": "2-S4",
+      "solutionTypes": [
+        "participation"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture",
+        "park"
+      ],
+      "needs": [
+        "X-N1"
+      ],
+      "crossSolutions": []
+    },
+    {
+      "a": "1-S5",
+      "b": "8-S1",
+      "solutionTypes": [
+        "participation"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture",
+        "park"
+      ],
+      "needs": [
+        "X-N1"
+      ],
+      "crossSolutions": []
+    },
+    {
+      "a": "2-S2",
+      "b": "8-S2",
+      "solutionTypes": [
+        "intake"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture",
+        "park",
+        "mrt-exit"
+      ],
+      "needs": [
+        "X-N6"
+      ],
+      "crossSolutions": [
+        "X-S5"
+      ]
+    },
+    {
+      "a": "2-S2",
+      "b": "8-S4",
+      "solutionTypes": [
+        "intake"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "park",
+        "mrt-exit"
+      ],
+      "needs": [
+        "X-N3",
+        "X-N6"
+      ],
+      "crossSolutions": [
+        "X-S3"
+      ]
+    },
+    {
+      "a": "2-S3",
+      "b": "8-S3",
+      "solutionTypes": [
+        "open-data"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "arcade",
+        "park",
+        "mrt-exit"
+      ],
+      "needs": [
+        "X-N4",
+        "X-N5"
+      ],
+      "crossSolutions": [
+        "X-S4"
+      ]
+    },
+    {
+      "a": "2-S3",
+      "b": "9-S4",
+      "solutionTypes": [
+        "open-data"
+      ],
+      "domains": [],
+      "spaces": [],
+      "needs": [
+        "X-N4"
+      ],
+      "crossSolutions": [
+        "X-S4"
+      ]
+    },
+    {
+      "a": "2-S4",
+      "b": "8-S1",
+      "solutionTypes": [
+        "participation"
+      ],
+      "domains": [
+        "environment"
+      ],
+      "spaces": [
+        "sidewalk-furniture",
+        "arcade",
+        "park"
+      ],
+      "needs": [
+        "X-N1",
+        "1.2 O12"
+      ],
+      "crossSolutions": [
+        "X-S1"
+      ]
+    },
+    {
+      "a": "8-S3",
+      "b": "9-S4",
+      "solutionTypes": [
+        "open-data"
+      ],
+      "domains": [],
+      "spaces": [],
+      "needs": [
+        "X-N4"
+      ],
+      "crossSolutions": [
+        "X-S4"
+      ]
     }
   ]
 }

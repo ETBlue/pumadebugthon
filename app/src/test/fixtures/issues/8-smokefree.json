@@ -11,6 +11,10 @@
     "indoor-home"
   ],
   "updated": "2026-10-22",
+  "domains": [
+    "health",
+    "environment"
+  ],
   "format": "needs",
   "summary": [
     {
@@ -2521,6 +2525,15 @@
         "park",
         "mrt-exit"
       ],
+      "solutionTypes": [
+        "participation",
+        "regulation"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "health",
+        "environment"
+      ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
       "stories": [
@@ -2828,6 +2841,15 @@
         "park",
         "mrt-exit"
       ],
+      "solutionTypes": [
+        "facility",
+        "intake"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "health",
+        "environment"
+      ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
       "stories": [
@@ -3081,6 +3103,15 @@
         "bus-stop",
         "park",
         "mrt-exit"
+      ],
+      "solutionTypes": [
+        "open-data",
+        "outreach"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "health",
+        "environment"
       ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
@@ -3371,6 +3402,15 @@
         "bus-stop",
         "park",
         "mrt-exit"
+      ],
+      "solutionTypes": [
+        "enforcement",
+        "intake"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "health",
+        "environment"
       ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
@@ -3685,6 +3725,15 @@
       "spaces": [
         "indoor-home",
         "arcade"
+      ],
+      "solutionTypes": [
+        "regulation",
+        "service"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "health",
+        "environment"
       ],
       "added": "2026-10-18",
       "updated": "2026-10-22",

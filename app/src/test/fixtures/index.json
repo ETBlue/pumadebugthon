@@ -12,6 +12,9 @@
         "utility",
         "bike-lane"
       ],
+      "domains": [
+        "environment"
+      ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
       "counts": {
@@ -44,6 +47,9 @@
         "park",
         "mrt-exit"
       ],
+      "domains": [
+        "environment"
+      ],
       "added": "2026-10-16",
       "updated": "2026-10-22",
       "counts": {
@@ -70,6 +76,7 @@
       "source": "主辦單位",
       "available": false,
       "spaces": [],
+      "domains": [],
       "added": null,
       "updated": null,
       "counts": null,
@@ -82,6 +89,7 @@
       "source": "主辦單位",
       "available": false,
       "spaces": [],
+      "domains": [],
       "added": null,
       "updated": null,
       "counts": null,
@@ -94,6 +102,7 @@
       "source": "主辦單位",
       "available": false,
       "spaces": [],
+      "domains": [],
       "added": null,
       "updated": null,
       "counts": null,
@@ -106,6 +115,7 @@
       "source": "主辦單位",
       "available": false,
       "spaces": [],
+      "domains": [],
       "added": null,
       "updated": null,
       "counts": null,
@@ -124,6 +134,10 @@
         "park",
         "mrt-exit",
         "indoor-home"
+      ],
+      "domains": [
+        "health",
+        "environment"
       ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
@@ -149,6 +163,10 @@
       "source": "參加者補充",
       "available": true,
       "spaces": [],
+      "domains": [
+        "administration",
+        "civil-affairs"
+      ],
       "added": "2026-10-20",
       "updated": "2026-10-22",
       "counts": {
@@ -1182,6 +1200,477 @@
       "code": "building",
       "name": "建築",
       "description": "建築物的室內空間與外牆、結構。"
+    }
+  ],
+  "domainTypes": [
+    {
+      "code": "administration",
+      "name": "行政",
+      "parent": "general-affairs",
+      "group": "一般政務",
+      "description": "綜合的政策規劃、主計、人事、資訊與研考工作。",
+      "budgetName": "行政支出",
+      "petitionCategory": "文教、體育、資訊、觀光及媒體（資訊服務）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "legislature",
+      "name": "立法",
+      "parent": "general-affairs",
+      "group": "一般政務",
+      "description": "議會運作所需的各項工作。",
+      "budgetName": "立法支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "civil-affairs",
+      "name": "民政",
+      "parent": "general-affairs",
+      "group": "一般政務",
+      "description": "選舉、民政、戶政、役政、地政與消防等業務。",
+      "budgetName": "民政支出",
+      "petitionCategory": "衛福、勞動、民政、區政及動保（民政、區政）；警消、法務及政風（消防）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "police",
+      "name": "警政",
+      "parent": "general-affairs",
+      "group": "一般政務",
+      "description": "警察的各項業務。",
+      "budgetName": "警政支出",
+      "petitionCategory": "警消、法務及政風（警政）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "finance",
+      "name": "財務",
+      "parent": "general-affairs",
+      "group": "一般政務",
+      "description": "稅務、公庫、公產、金融與財稅人員訓練等業務。",
+      "budgetName": "財務支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "education",
+      "name": "教育",
+      "parent": "education-culture",
+      "group": "教育科學文化",
+      "description": "教育計畫、教學研究、教材與教育機構，不含軍警教育。",
+      "budgetName": "教育支出",
+      "petitionCategory": "文教、體育、資訊、觀光及媒體（教育）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "science",
+      "name": "科學",
+      "parent": "education-culture",
+      "group": "教育科學文化",
+      "description": "自然科學、工程、醫學、產業、環境與人文社會等研究發展。",
+      "budgetName": "科學支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "culture",
+      "name": "文化",
+      "parent": "education-culture",
+      "group": "教育科學文化",
+      "description": "藝術、運動、文化資產、大眾傳播、出版與宗教民俗等業務。",
+      "budgetName": "文化支出",
+      "petitionCategory": "文教、體育、資訊、觀光及媒體（文化、體育）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "agriculture",
+      "name": "農業",
+      "parent": "economic-development",
+      "group": "經濟發展",
+      "description": "農林漁牧、水利與自然資源保育等業務。",
+      "budgetName": "農業支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "industry",
+      "name": "工業",
+      "parent": "economic-development",
+      "group": "經濟發展",
+      "description": "工礦、營造、建築管理與水電等業務。",
+      "budgetName": "工業支出",
+      "petitionCategory": "都市發展、建管、產業、財稅及地政（建管）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "transport",
+      "name": "交通",
+      "parent": "economic-development",
+      "group": "經濟發展",
+      "description": "陸運、海運、空運、郵政與電信等業務。",
+      "budgetName": "交通支出",
+      "petitionCategory": "交通運輸；道路、山坡地、路樹及路燈（道路、人行道）；警消、法務及政風（交通事故、違規停車）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "other-economic",
+      "name": "其他經濟服務",
+      "parent": "economic-development",
+      "group": "經濟發展",
+      "description": "一般經濟與商業事務、投資促進、度量衡檢定、觀光與其他經濟發展。",
+      "budgetName": "其他經濟服務支出",
+      "petitionCategory": "都市發展、建管、產業、財稅及地政（產業發展）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "social-insurance",
+      "name": "社會保險",
+      "parent": "social-welfare",
+      "group": "社會福利",
+      "description": "各項社會保險的補助與業務，例如勞保、健保與國民年金。",
+      "budgetName": "社會保險支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "social-assistance",
+      "name": "社會救助",
+      "parent": "social-welfare",
+      "group": "社會福利",
+      "description": "補助生活困難、遭遇急難或重大災害的人。",
+      "budgetName": "社會救助支出",
+      "petitionCategory": "衛福、勞動、民政、區政及動保（社會救助、街友）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "welfare-services",
+      "name": "福利服務",
+      "parent": "social-welfare",
+      "group": "社會福利",
+      "description": "給兒童、青少年、婦女、老人、身心障礙者、勞工與農民等的福利服務或補助。",
+      "budgetName": "福利服務支出",
+      "petitionCategory": "衛福、勞動、民政、區政及動保（福利服務、長照）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "employment",
+      "name": "國民就業",
+      "parent": "social-welfare",
+      "group": "社會福利",
+      "description": "職業訓練、技能檢定、促進就業與就業服務。",
+      "budgetName": "國民就業支出",
+      "petitionCategory": "衛福、勞動、民政、區政及動保（勞工、就業）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "health",
+      "name": "醫療保健",
+      "parent": "social-welfare",
+      "group": "社會福利",
+      "description": "醫療、保健、防疫、公共衛生、藥品與食品衛生等業務。",
+      "budgetName": "醫療保健支出",
+      "petitionCategory": "衛福、勞動、民政、區政及動保（疾病防治、菸害防制、食品衛生）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "environment",
+      "name": "環境保護",
+      "parent": "community-environment",
+      "group": "社區發展及環境保護",
+      "description": "環境衛生、空氣與水質、污染防治、噪音、廢棄物與毒物管理等業務。",
+      "budgetName": "環境保護支出",
+      "petitionCategory": "垃圾、噪音、污染及資源回收；公園、排水溝、下水道及自來水；道路、山坡地、路樹及路燈（路樹）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "community-development",
+      "name": "社區發展",
+      "parent": "community-environment",
+      "group": "社區發展及環境保護",
+      "description": "國民住宅輔助興建、公共建設管線、新市鎮與社區開發等業務。",
+      "budgetName": "社區發展支出",
+      "petitionCategory": "都市發展、建管、產業、財稅及地政（都市發展）",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "pension-payments",
+      "name": "退休撫卹給付",
+      "parent": "pension",
+      "group": "退休撫卹",
+      "description": "軍公教人員的退休與撫卹給付。",
+      "budgetName": "退休撫卹給付支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "pension-admin",
+      "name": "退休撫卹業務",
+      "parent": "pension",
+      "group": "退休撫卹",
+      "description": "辦理軍公教人員退休撫卹的業務。",
+      "budgetName": "退休撫卹業務支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "debt-interest",
+      "name": "債務付息",
+      "parent": "debt",
+      "group": "債務",
+      "description": "公共債務的利息。",
+      "budgetName": "債務付息支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "debt-admin",
+      "name": "還本付息事務",
+      "parent": "debt",
+      "group": "債務",
+      "description": "公共債務的發行、還本與付息事務。",
+      "budgetName": "還本付息事務支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "project-grants",
+      "name": "專案補助",
+      "parent": "other-expenses",
+      "group": "補助及其他",
+      "description": "上級政府給下級政府的統籌性專案補助。",
+      "budgetName": "專案補助支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "balancing-grants",
+      "name": "平衡預算補助",
+      "parent": "other-expenses",
+      "group": "補助及其他",
+      "description": "上級政府補助下級政府預算收支的差額。",
+      "budgetName": "平衡預算補助支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "assistance",
+      "name": "協助",
+      "parent": "other-expenses",
+      "group": "補助及其他",
+      "description": "協助上級政府的支出。",
+      "budgetName": "協助支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "reserve",
+      "name": "第二預備金",
+      "parent": "other-expenses",
+      "group": "補助及其他",
+      "description": "總預算編列的第二預備金。",
+      "budgetName": "第二預備金",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "other",
+      "name": "其他",
+      "parent": "other-expenses",
+      "group": "補助及其他",
+      "description": "無法歸入其他政事別的支出。",
+      "budgetName": "其他支出",
+      "petitionCategory": "",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    }
+  ],
+  "domainGroups": [
+    {
+      "code": "general-affairs",
+      "name": "一般政務",
+      "description": "市政府的行政、議會、民政、警政與財務等一般政務。"
+    },
+    {
+      "code": "education-culture",
+      "name": "教育科學文化",
+      "description": "教育、科學研究與文化的各項業務。"
+    },
+    {
+      "code": "economic-development",
+      "name": "經濟發展",
+      "description": "農業、工業、交通與其他經濟服務。"
+    },
+    {
+      "code": "social-welfare",
+      "name": "社會福利",
+      "description": "社會保險、社會救助、福利服務、就業與醫療保健。"
+    },
+    {
+      "code": "community-environment",
+      "name": "社區發展及環境保護",
+      "description": "環境保護與社區發展。"
+    },
+    {
+      "code": "pension",
+      "name": "退休撫卹",
+      "description": "軍公教人員的退休撫卹給付與相關業務。"
+    },
+    {
+      "code": "debt",
+      "name": "債務",
+      "description": "公共債務的利息與還本付息事務。"
+    },
+    {
+      "code": "other-expenses",
+      "name": "補助及其他",
+      "description": "給其他政府的補助與協助、預備金和其他支出。"
+    }
+  ],
+  "solutionTypes": [
+    {
+      "code": "digital-tool",
+      "name": "數位工具",
+      "description": "App、網站、地圖、儀表板、線上表單或感測系統。",
+      "howToJudge": "需要建置或修改軟體系統。",
+      "policyTool": "Nodality / Organisation",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "open-data",
+      "name": "資料公開",
+      "description": "公開資料、紀錄、進度與成果。",
+      "howToJudge": "主要產出是任何人都能讀的資料或紀錄，例如開放資料、API、公布的數量或進度。",
+      "policyTool": "Nodality",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "outreach",
+      "name": "宣導與教育",
+      "description": "標示、指引、易懂的規則說明與宣導活動。",
+      "howToJudge": "只靠提供資訊來改變人的做法，不加新的義務，也不給錢。",
+      "policyTool": "Nodality",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "participation",
+      "name": "參與與協商",
+      "description": "工作坊、意見徵集、提名，以及和居民或業者協商。",
+      "howToJudge": "居民、使用者或業者在決定做出之前參與其中。",
+      "policyTool": "Nodality (two-way)",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "intake",
+      "name": "受理與派工",
+      "description": "通報管道、預約、把案件轉給正確的單位與回覆。",
+      "howToJudge": "改變民眾的通報或申請怎麼進來、怎麼轉給單位、怎麼得到回覆。",
+      "policyTool": "Organisation",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "procedure",
+      "name": "作業流程",
+      "description": "內部步驟、通知、審查順序、時程與跨機關協調。",
+      "howToJudge": "改變公務人員自己的做事方式（步驟、順序、時程、分工），不含受理與派工。",
+      "policyTool": "Organisation",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "regulation",
+      "name": "法規與規則",
+      "description": "法律、規則、標準、設計準則、檢核表與範本（例如規約範本）。",
+      "howToJudge": "訂定或修改別人必須遵守或被建議採用的規則、標準或範本。",
+      "policyTool": "Authority",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "enforcement",
+      "name": "稽查與執法",
+      "description": "稽查、罰款、移除違規與警告。",
+      "howToJudge": "檢查大家是否遵守規則，並在沒有遵守時採取行動。",
+      "policyTool": "Authority",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "facility",
+      "name": "設施與工程",
+      "description": "興建、修繕或改變實體設施。",
+      "howToJudge": "改變實體空間或設備，例如道路、號誌、垃圾桶、下水道、路燈。",
+      "policyTool": "Organisation",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "service",
+      "name": "直接服務",
+      "description": "由公務人員或委外廠商提供給個人或家戶的協助。",
+      "howToJudge": "由人員直接提供服務給民眾，例如家訪、搬運、接駁、調解、戒菸協助。",
+      "policyTool": "Organisation",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "subsidy",
+      "name": "補助與獎勵",
+      "description": "鼓勵某種行為的金錢、折扣、標章或獎勵。",
+      "howToJudge": "給民眾或業者金錢或其他好處，讓他們採取行動。",
+      "policyTool": "Treasure",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "resources",
+      "name": "人力與預算",
+      "description": "政府自己的預算、人力、訓練與採購。",
+      "howToJudge": "改變政府有多少經費或人力，或改變政府怎麼採購服務。",
+      "policyTool": "Treasure / Organisation",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
+    },
+    {
+      "code": "planning",
+      "name": "調查與規劃",
+      "description": "調查、優先順序清單、評估與附帶評估的試辦。",
+      "howToJudge": "主要產出是政府做決定的依據（計畫、優先順序、評估），而不是行動本身。",
+      "policyTool": "Nodality (collect)",
+      "added": "2026-10-31",
+      "updated": "2026-10-31"
     }
   ],
   "openData": [

@@ -9,6 +9,9 @@
     "bike-lane"
   ],
   "updated": "2026-10-22",
+  "domains": [
+    "environment"
+  ],
   "format": "needs",
   "summary": [
     {
@@ -3287,6 +3290,14 @@
         "utility",
         "bike-lane"
       ],
+      "solutionTypes": [
+        "digital-tool",
+        "planning"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
+      ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
       "stories": [
@@ -3890,6 +3901,15 @@
         "sidewalk-furniture",
         "park"
       ],
+      "solutionTypes": [
+        "intake",
+        "open-data",
+        "regulation"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
+      ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
       "stories": [
@@ -4305,6 +4325,14 @@
         "sidewalk-furniture",
         "park"
       ],
+      "solutionTypes": [
+        "participation",
+        "procedure"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
+      ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
       "stories": [
@@ -4560,6 +4588,14 @@
         "sidewalk-furniture",
         "utility",
         "bike-lane"
+      ],
+      "solutionTypes": [
+        "facility",
+        "regulation"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
       ],
       "added": "2026-10-18",
       "updated": "2026-10-22",
@@ -4874,6 +4910,14 @@
       "spaces": [
         "sidewalk-furniture",
         "park"
+      ],
+      "solutionTypes": [
+        "participation",
+        "procedure"
+      ],
+      "ownDomains": [],
+      "domains": [
+        "environment"
       ],
       "added": "2026-10-18",
       "updated": "2026-10-22",

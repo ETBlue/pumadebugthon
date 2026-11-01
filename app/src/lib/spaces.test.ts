@@ -160,9 +160,9 @@ describe('spaceGroups (decision 120)', () => {
 
   it('does not order by the number of space types in a group', () => {
     const groups = spaceGroups([
-      { code: 'a', name: 'A', group: '少', description: '' },
-      { code: 'b', name: 'B', group: '多', description: '' },
-      { code: 'c', name: 'C', group: '多', description: '' },
+      { code: 'a', name: 'A', group: '少', parent: 'few', description: '' },
+      { code: 'b', name: 'B', group: '多', parent: 'many', description: '' },
+      { code: 'c', name: 'C', group: '多', parent: 'many', description: '' },
     ])
     expect(groups.map((g) => g.group)).toEqual(['少', '多'])
   })

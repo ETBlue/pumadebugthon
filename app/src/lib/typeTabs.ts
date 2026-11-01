@@ -25,8 +25,9 @@ export type TypeListTab = keyof typeof TYPE_TAB_PAGE
  * of type. It reads the params of the list page (listParamsOf), then drops
  * what the tab does not offer:
  * - 議題: only the issues of the tab (issueNumbers). No 「跨議題」.
- * - 空間類型 (space=): the tab has no space filter. On a space page every
- *   item already uses this space.
+ * - 空間類型 (space=): the tabs of a type page have no space filter. On a
+ *   space page every item already uses this space. For the 領域 and 解法類型
+ *   pages, Task U3 decides if their tabs get a space filter.
  * - The view of #/stakeholders (view=tree): the tab has no tree view.
  * replace is true when the URL had a list param that was dropped or
  * changed. Params that are not list params (evidence, …) are not looked at. */

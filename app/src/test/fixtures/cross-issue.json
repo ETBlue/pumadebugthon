@@ -3512,6 +3512,7 @@
         "environment"
       ],
       "spaces": [
+        "sidewalk-furniture",
         "park"
       ],
       "needs": [
@@ -3531,6 +3532,7 @@
         "environment"
       ],
       "spaces": [
+        "sidewalk-furniture",
         "park"
       ],
       "needs": [
@@ -3664,8 +3666,8 @@
       ],
       "spaces": [
         "sidewalk-furniture",
-        "park",
-        "mrt-exit"
+        "mrt-exit",
+        "park"
       ],
       "needs": [
         "X-N6"
@@ -3684,8 +3686,9 @@
         "environment"
       ],
       "spaces": [
-        "park",
-        "mrt-exit"
+        "sidewalk-furniture",
+        "mrt-exit",
+        "park"
       ],
       "needs": [
         "X-N3",
@@ -3705,9 +3708,10 @@
         "environment"
       ],
       "spaces": [
-        "arcade",
+        "sidewalk-furniture",
+        "mrt-exit",
         "park",
-        "mrt-exit"
+        "arcade"
       ],
       "needs": [
         "X-N4",

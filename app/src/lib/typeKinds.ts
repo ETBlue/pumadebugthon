@@ -28,17 +28,6 @@ export interface TypeOfKind {
   solutionType: SolutionType
 }
 
-/** The fields every kind has. group is the level 1 name; a solution type has
- * no level 1, so it has no group. */
-export interface TypeEntry {
-  code: string
-  name: string
-  description: string
-  group?: string
-  added?: string | null
-  updated?: string | null
-}
-
 export interface TypeSolution {
   issueNumber: number
   solution: Solution

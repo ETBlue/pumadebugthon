@@ -49,17 +49,17 @@ export function otherSpaces(solution: Solution, code: string): string[] {
   return otherTypes('space', solution, code)
 }
 
-export interface SpaceGroup<T extends { code: string; group: string } = SpaceType> {
+export interface SpaceGroup {
   /** The group name, for example 道路. */
   group: string
   /** The space types of the group, in the order of index.spaceTypes. */
-  spaces: T[]
+  spaces: SpaceType[]
 }
 
 /** #/spaces (decision 120): the space types by group. The groups are in the
  * order they first appear in spaceTypes, and each group keeps the order of
  * spaceTypes. A fixed order: never sorted by a count. */
-export function spaceGroups<T extends { code: string; group: string }>(spaceTypes: T[]): SpaceGroup<T>[] {
+export function spaceGroups(spaceTypes: SpaceType[]): SpaceGroup[] {
   return typeGroups(spaceTypes).map((g) => ({ group: g.group ?? '', spaces: g.types }))
 }
 

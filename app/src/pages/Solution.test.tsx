@@ -13,6 +13,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { METHOD_URL } from '@/components/links'
 import { t } from '@/i18n/zh-TW'
 import { crossIssueNumbers } from '@/lib/crossIssue'
+import { stripMarkdown } from '@/lib/markdown'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import Solution from './Solution'
 
@@ -22,11 +23,14 @@ const files: Record<string, IssueFile> = Object.fromEntries(
   [treesJson, trashcansJson, smokefreeJson].map((f) => [(f as IssueFile).folder, f as IssueFile]),
 )
 
+// crossLoading: true makes useCrossIssue return the loading state.
+const mockState = vi.hoisted(() => ({ crossLoading: false }))
+
 vi.mock('@/data', () => ({
   useIndex: () => ({ status: 'ready', data: index }),
   useIssue: (folder: string) => ({ status: 'ready', data: files[folder] }),
   useIssues: (folders: string[]) => ({ status: 'ready', data: folders.flatMap((f) => files[f] ?? []) }),
-  useCrossIssue: () => ({ status: 'ready', data: cross }),
+  useCrossIssue: () => (mockState.crossLoading ? { status: 'loading', message: '載入中' } : { status: 'ready', data: cross }),
   useCrossIssueOrNull: () => cross,
 }))
 
@@ -583,6 +587,9 @@ describe('the 可能合併 tab (Task U6 of plan-types-ui.md, decision 4)', () =>
 
   it('lists each paired solution once, by issue number then ID (8-S1 is side b of every row)', () => {
     expect(pairLinks(render('/solutions/8-S1/candidates'), '8-S1')).toEqual(['1-S3', '1-S4', '1-S5', '2-S4'])
+    // The card shows the name of the other solution, from its issue file.
+    const name = stripMarkdown((treesJson as IssueFile).solutions.find((s) => s.id === 'S3')!.name.text)
+    expect(cards(render('/solutions/8-S1/candidates'))).toContain(name)
     // #9 has no file in this test: 9-S4 still gets its link.
     expect(pairLinks(render('/solutions/2-S3/candidates'), '2-S3')).toEqual(['1-S2', '8-S3', '9-S4'])
   })
@@ -591,6 +598,17 @@ describe('the 可能合併 tab (Task U6 of plan-types-ui.md, decision 4)', () =>
     const panel = cards(render('/solutions/8-S1/candidates'))
     expect(panel).toContain(tc.solutionTypes)
     expect(panel).not.toMatch(/共同\S* \d/)
+  })
+
+  it('while cross-issue.json loads, the label is 「可能合併」 with no number', () => {
+    mockState.crossLoading = true
+    try {
+      const html = render('/solutions/8-S1/candidates')
+      expect(tabNames(html).at(-1)).toBe('可能合併')
+      expect(html).not.toContain(tc.intro)
+    } finally {
+      mockState.crossLoading = false
+    }
   })
 
   it('a solution with no pair keeps the tab with 0 and shows only the empty note (8-S5)', () => {

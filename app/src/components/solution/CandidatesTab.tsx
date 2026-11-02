@@ -24,8 +24,10 @@ export function CandidatesTab({ index, issueNumber, code, cross }: {
 }) {
   if (cross.status !== 'ready') return <LoadState state={cross} />
   const list = solutionCandidates(cross.data, issueNumber, code)
-  if (cross.data === null || list.length === 0) return <PartEmpty>{tc.none}</PartEmpty>
-  return <CandidateList index={index} data={cross.data} list={list} />
+  if (list.length === 0) return <PartEmpty>{tc.none}</PartEmpty>
+  // solutionCandidates gives [] when the file is missing, so here the file
+  // exists. TypeScript cannot see this, so the type needs the "!".
+  return <CandidateList index={index} data={cross.data!} list={list} />
 }
 
 /** The intro, the rule link and the cards. It loads the issue files of the

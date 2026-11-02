@@ -11,7 +11,7 @@ import { compareIds } from './ids'
 import { availableIssues } from './issues'
 import {
   findType, hasTagCodes, issueCodes, issuesByType, solutionTagCodes, otherTypes, sameTypeIssues, solutionCodes, solutionsByType, stakeholdersByType,
-  issueListsSolutionCodes, issueTypeOptions, issueUsedCodes, stakeholdersInSeveralIssues, TYPE_KINDS, TYPE_LIST_PAGES, typeGroupNames,
+  issueListsSolutionCodes, issueMayUseType, issueTypeOptions, issueUsedCodes, stakeholdersInSeveralIssues, TYPE_KINDS, TYPE_LIST_PAGES, typeGroupNames,
   typeGroups, typeIssues, typesOf, typeStakeholderCount, type TypeKind,
 } from './typeKinds'
 
@@ -285,6 +285,26 @@ describe('issueUsedCodes and issueTypeOptions (the #/issues filters)', () => {
     expect(codes('space', [])).toEqual(index.spaceTypes.map((s) => s.code).filter((c) => codes('space', []).includes(c)))
     expect(codes('domain', [])).toEqual(['administration', 'civil-affairs', 'health', 'environment'])
     expect(issueTypeOptions('domain', ownIndex, []).map((t) => t.code)).toEqual(['administration', 'civil-affairs', 'police', 'health', 'environment'])
+  })
+})
+
+describe('issueMayUseType (the 議題 filter of a type list page)', () => {
+  const issue2 = availableIssues(index).find((i) => i.number === 2)!
+
+  it('space: only an issue with space types; #9 has none', () => {
+    expect(issueMayUseType('space', issue2)).toBe(true)
+    expect(issueMayUseType('space', availableIssues(index).find((i) => i.number === 9)!)).toBe(false)
+  })
+
+  it('domain: uses usedDomains, so an own 領域 counts when the 領域 line is empty', () => {
+    // A changed copy: no 領域 line, but a solution has the own 領域 police.
+    const ownOnly = { ...issue2, domains: [], usedDomains: ['police'] }
+    expect(issueMayUseType('domain', ownOnly)).toBe(true)
+    expect(issueMayUseType('domain', { ...issue2, domains: ['environment'], usedDomains: [] })).toBe(false)
+  })
+
+  it('solution type: every analyzed issue', () => {
+    expect(availableIssues(index).every((i) => issueMayUseType('solutionType', i))).toBe(true)
   })
 })
 

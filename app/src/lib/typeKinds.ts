@@ -136,12 +136,13 @@ export function issueTypeOptions<K extends TypeKind>(kind: K, index: IndexFile, 
 }
 
 /** True when the issue can use a type of the kind, from index.json alone:
- * an issue with no space types uses no space type (for example #9). Every
- * analyzed issue has 1 to 3 領域, and its solutions have solution types.
+ * an issue with no space types uses no space type (for example #9). For a
+ * 領域 it uses usedDomains, the same rule as typeIssues (the 領域 line, or
+ * a solution's own 領域). The solutions of an issue have solution types.
  * The 議題 filter of a type list page offers only these issues. */
 export function issueMayUseType(kind: TypeKind, issue: AvailableIssueSummary): boolean {
   if (kind === 'space') return issue.spaces.length > 0
-  if (kind === 'domain') return issue.domains.length > 0
+  if (kind === 'domain') return issue.usedDomains.length > 0
   return true
 }
 

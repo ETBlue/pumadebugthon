@@ -1,7 +1,7 @@
 // The sort, filter and search of the 解法 and 利害關係人 tabs of a type page
-// (design 3.6, decision 138). The space page uses them through spaceTabs.ts.
-// The 領域 and 解法類型 pages use them with the kind 'domain' and
-// 'solutionType' (app/docs/plan-types-ui.md, Task U3). They
+// (design 3.6, decision 138). The type page (TypePage.tsx) uses them with
+// the kind 'space', 'domain' or 'solutionType' (app/docs/plan-types-ui.md,
+// Task U3). They
 // use the URL params, the sorts and the search rules of #/solutions and
 // #/stakeholders, limited to the items of one type. The list is filtered,
 // then searched, then sorted, as on the list pages.

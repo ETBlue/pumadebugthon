@@ -16,9 +16,9 @@ import { DateFields, UpdatedField } from './DateFields'
 import { IssueCard } from './IssueCard'
 import { CrossSolutionCard } from './solution/CrossSolutionCard'
 import { SolutionCard } from './SolutionCard'
-import { SpaceCard } from './SpaceCard'
 import { StakeholderCard } from './StakeholderCard'
 import { StoryCard } from './StoryCard'
+import { TypeCard } from './TypeCard'
 
 const index = indexJson as IndexFile
 const trashcans = trashcansJson as IssueFile
@@ -131,9 +131,9 @@ describe('the full-size cards show only 更新日期 (decision 131), the small c
     expectNoDate(html(<StoryCard story={story} issue={trashcans} stakeholderName="x" compact />))
   })
 
-  it('SpaceCard, also for a space with no analyzed issue', () => {
+  it("TypeCard with the kind 'space', also for a space with no analyzed issue", () => {
     const space = { ...index.spaceTypes[0], added: ADDED, updated: UPDATED }
-    expectUpdatedOnly(html(<SpaceCard space={space} issues={[2]} titles={index.issues} counts={null} />))
-    expectUpdatedOnly(html(<SpaceCard space={space} issues={[]} titles={index.issues} counts={null} />))
+    expectUpdatedOnly(html(<TypeCard kind="space" type={space} issues={[2]} titles={index.issues} counts={null} />))
+    expectUpdatedOnly(html(<TypeCard kind="space" type={space} issues={[]} titles={index.issues} counts={null} />))
   })
 })

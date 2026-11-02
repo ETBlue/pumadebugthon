@@ -89,6 +89,3 @@ export function typeMatches(type: { code: string; name: string }, query: ListQue
   if (query.key === type.code.toLowerCase().replace(/-/g, '')) return true
   return titleHas(type.name, query)
 }
-
-/** #/spaces: the same search as every type list page (typeMatches). */
-export const spaceMatches = typeMatches

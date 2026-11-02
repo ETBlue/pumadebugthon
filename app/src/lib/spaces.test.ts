@@ -1,49 +1,11 @@
+// sameSpaceIssues (design 3.2 「使用相同空間的議題」). The other space cases
+// moved to typeKinds.test.ts in Task U7, with the kind 'space'.
 import { describe, expect, it } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
-import treesJson from '@/test/fixtures/issues/1-trees.json'
-import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
-import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
-import type { IndexFile, IssueFile } from '@/types'
-import { compareIds } from './ids'
-import {
-  findSpaceType, issuesBySpace, otherSpaces, sameSpaceIssues, solutionsBySpace, spaceGroups, spaceStakeholderCount,
-  stakeholdersBySpace, stakeholdersInSeveralIssues,
-} from './spaces'
+import type { IndexFile } from '@/types'
+import { sameSpaceIssues } from './spaces'
 
 const index = indexJson as IndexFile
-const trees = treesJson as IssueFile
-const trashcans = trashcansJson as IssueFile
-const policy = policyJson as IssueFile
-
-const pairs = (list: { issueNumber: number; solution: { id: string } }[]) =>
-  list.map((x) => `#${x.issueNumber} ${x.solution.id}`)
-
-describe('issuesBySpace', () => {
-  it('sidewalk-furniture: issues 1, 2 and 8', () => {
-    expect(issuesBySpace(index, 'sidewalk-furniture').map((i) => i.number)).toEqual([1, 2, 8])
-  })
-
-  it('arcade: issues 2 and 8; an unused or unknown code: none', () => {
-    expect(issuesBySpace(index, 'arcade').map((i) => i.number)).toEqual([2, 8])
-    expect(issuesBySpace(index, 'parking')).toEqual([])
-    expect(issuesBySpace(index, 'nope')).toEqual([])
-  })
-})
-
-describe('solutionsBySpace', () => {
-  it('sidewalk-furniture: every solution of both issues, by issue number then solution ID', () => {
-    const list = solutionsBySpace([trashcans, trees], 'sidewalk-furniture')
-    expect(pairs(list)).toEqual(['#1 S1', '#1 S2', '#1 S3', '#1 S4', '#1 S5', '#2 S1', '#2 S2', '#2 S3', '#2 S4', '#2 S5'])
-    expect(list.find((x) => x.issueNumber === 2 && x.solution.id === 'S1')?.solution.summary).toBe(
-      trashcans.solutions[0].summary,
-    )
-  })
-
-  it('arcade: #2 S3 and S4; utility: #1 S1 and S4', () => {
-    expect(pairs(solutionsBySpace([trees, trashcans], 'arcade'))).toEqual(['#2 S3', '#2 S4'])
-    expect(pairs(solutionsBySpace([trees, trashcans], 'utility'))).toEqual(['#1 S1', '#1 S4'])
-  })
-})
 
 describe('sameSpaceIssues', () => {
   it('#2 shares spaces with #1 and #8, in the order of the #2 space list', () => {
@@ -70,110 +32,8 @@ describe('sameSpaceIssues', () => {
   })
 })
 
-describe('stakeholdersBySpace', () => {
-  it('utility: only #1, the stakeholders of the stories of #1 S1 and S4, in ID order', () => {
-    expect(stakeholdersBySpace([trashcans, trees], 'utility')).toEqual([
-      {
-        issueNumber: 1,
-        stakeholders: [
-          'O01', 'O06', 'O07', 'O12', 'O14', 'O15', 'O16', 'O17', 'O18', 'O19', 'O20', 'O21',
-          'I01', 'I05', 'I06', 'I07', 'I14', 'I15', 'I16', 'I17', 'I18', 'I19', 'I20',
-        ],
-      },
-    ])
-  })
-
-  it('sidewalk-furniture: an entry for each issue, by issue number; unused code: none', () => {
-    expect(stakeholdersBySpace([trashcans, trees], 'sidewalk-furniture').map((x) => x.issueNumber)).toEqual([1, 2])
-    expect(stakeholdersBySpace([trashcans, trees], 'parking')).toEqual([])
-  })
-})
-
-describe('findSpaceType', () => {
-  it('finds a known code and returns null for an unknown one', () => {
-    expect(findSpaceType(index.spaceTypes, 'sidewalk-furniture')?.name).toBe('人行道設施帶')
-    expect(findSpaceType(index.spaceTypes, 'nope')).toBeNull()
-  })
-})
-
-describe('otherSpaces', () => {
-  it('gives the other space types of a solution, in its own order', () => {
-    expect(otherSpaces({ ...trashcans.solutions[2], spaces: ['sidewalk-furniture', 'mrt-exit', 'park'] }, 'sidewalk-furniture')).toEqual([
-      'mrt-exit', 'park',
-    ])
-    expect(otherSpaces({ ...trashcans.solutions[0], spaces: ['sidewalk-furniture'] }, 'sidewalk-furniture')).toEqual([])
-  })
-})
-
-describe('stakeholdersInSeveralIssues', () => {
-  it('sidewalk-furniture: the stakeholders in 2 or more issues, in ID order, with their issues', () => {
-    const list = stakeholdersInSeveralIssues(stakeholdersBySpace([trashcans, trees], 'sidewalk-furniture'))
-    const ids = list.map((x) => x.id)
-    expect(ids).toContain('I06')
-    expect(ids).toContain('I07')
-    expect(list.find((x) => x.id === 'I06')?.issues).toEqual([1, 2])
-    expect([...ids].sort(compareIds)).toEqual(ids)
-  })
-
-  it('is empty with one issue only', () => {
-    expect(stakeholdersInSeveralIssues(stakeholdersBySpace([trees, trashcans], 'utility'))).toEqual([])
-  })
-
-  it('counts each issue once', () => {
-    expect(
-      stakeholdersInSeveralIssues([
-        { issueNumber: 1, stakeholders: ['I06', 'O01'] },
-        { issueNumber: 2, stakeholders: ['I06'] },
-        { issueNumber: 3, stakeholders: ['O01', 'I06'] },
-      ]),
-    ).toEqual([
-      { id: 'O01', issues: [1, 3] },
-      { id: 'I06', issues: [1, 2, 3] },
-    ])
-  })
-})
-
 describe('an issue with no space type (#9, 空間類型：無)', () => {
-  it('is on no space page, and its solutions are on no space page', () => {
-    expect(policy.spaces).toEqual([])
-    expect(index.spaceTypes.length).toBeGreaterThan(0)
-    for (const { code } of index.spaceTypes) {
-      expect(issuesBySpace(index, code).map((i) => i.number)).not.toContain(9)
-      expect(solutionsBySpace([policy], code)).toEqual([])
-      expect(stakeholdersBySpace([policy], code)).toEqual([])
-    }
-  })
-
   it('has no other issues with the same space', () => {
     expect(sameSpaceIssues(index, 9)).toEqual([])
-  })
-})
-
-describe('spaceGroups (decision 120)', () => {
-  it('keeps the order in which the groups first appear, and the order of spaceTypes inside a group', () => {
-    const groups = spaceGroups(index.spaceTypes)
-    expect(groups.map((g) => g.group)).toEqual(['道路', '地下', '公共空間', '建築'])
-    expect(groups[0].spaces.map((s) => s.code)).toEqual(['sidewalk-furniture', 'arcade', 'bike-lane', 'scooter-lane', 'car-lane', 'bus-stop'])
-    expect(groups[2].spaces.map((s) => s.code)).toEqual(['park', 'mrt-exit', 'parking'])
-    expect(groups.flatMap((g) => g.spaces)).toHaveLength(13)
-  })
-
-  it('does not order by the number of space types in a group', () => {
-    const groups = spaceGroups([
-      { code: 'a', name: 'A', group: '少', parent: 'few', description: '' },
-      { code: 'b', name: 'B', group: '多', parent: 'many', description: '' },
-      { code: 'c', name: 'C', group: '多', parent: 'many', description: '' },
-    ])
-    expect(groups.map((g) => g.group)).toEqual(['少', '多'])
-  })
-})
-
-describe('spaceStakeholderCount', () => {
-  it('counts a stakeholder in two issues once', () => {
-    expect(spaceStakeholderCount([
-      { issueNumber: 1, stakeholders: ['I06', 'O01'] },
-      { issueNumber: 2, stakeholders: ['I06'] },
-    ])).toBe(2)
-    expect(spaceStakeholderCount([])).toBe(0)
   })
 })

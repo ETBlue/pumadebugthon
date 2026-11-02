@@ -188,9 +188,3 @@ export const parseTypeTab = parseSpaceTab
 export function typeTabPath(kind: TypeKind, code: string, tab: TypeTab): string {
   return withTab(`/${TYPE_LIST_PAGES[kind]}/${code}`, tab)
 }
-
-/** The URL path of a space tab, for example "/spaces/sidewalk-walkway/solutions".
- * The overview has no tab segment: "/spaces/sidewalk-walkway". */
-export function spaceTabPath(code: string, tab: SpaceTab): string {
-  return typeTabPath('space', code, tab)
-}

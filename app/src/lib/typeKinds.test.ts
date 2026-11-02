@@ -11,7 +11,8 @@ import { compareIds } from './ids'
 import { availableIssues } from './issues'
 import {
   findType, hasTagCodes, issueCodes, issuesByType, solutionTagCodes, otherTypes, sameTypeIssues, solutionCodes, solutionsByType, stakeholdersByType,
-  issueListsSolutionCodes, issueTypeOptions, issueUsedCodes, TYPE_KINDS, TYPE_LIST_PAGES, typeGroupNames, typeGroups, typeIssues, typesOf, type TypeKind,
+  issueListsSolutionCodes, issueTypeOptions, issueUsedCodes, stakeholdersInSeveralIssues, TYPE_KINDS, TYPE_LIST_PAGES, typeGroupNames,
+  typeGroups, typeIssues, typesOf, typeStakeholderCount, type TypeKind,
 } from './typeKinds'
 
 const index = indexJson as IndexFile
@@ -326,5 +327,147 @@ describe('solutionTagCodes and hasTagCodes (the tag rows of a solution, Task U4)
     expect(hasTagCodes({ space: [], domain: [], solutionType: [] })).toBe(false)
     expect(hasTagCodes({})).toBe(false)
     expect(hasTagCodes({ domain: ['police'] })).toBe(true)
+  })
+})
+
+// Kind 'space'. These cases were in spaces.test.ts and tested the space
+// wrappers (issuesBySpace, solutionsBySpace, stakeholdersBySpace,
+// findSpaceType, otherSpaces, spaceGroups, spaceStakeholderCount). Task U7
+// removed the wrappers, so the same cases now call the generic helpers.
+describe("kind 'space' (moved from spaces.test.ts)", () => {
+  const spaceIssues = (code: string) => issuesByType('space', index, [], code).map((i) => i.number)
+  const spaceStakeholders = (list: IssueFile[], code: string) => stakeholdersByType('space', list, code)
+
+  describe('issuesByType', () => {
+    it('sidewalk-furniture: issues 1, 2 and 8', () => {
+      expect(spaceIssues('sidewalk-furniture')).toEqual([1, 2, 8])
+    })
+
+    it('arcade: issues 2 and 8; an unused or unknown code: none', () => {
+      expect(spaceIssues('arcade')).toEqual([2, 8])
+      expect(issuesByType('space', index, [], 'parking')).toEqual([])
+      expect(issuesByType('space', index, [], 'nope')).toEqual([])
+    })
+  })
+
+  describe('solutionsByType', () => {
+    it('sidewalk-furniture: every solution of both issues, by issue number then solution ID', () => {
+      const list = solutionsByType('space', [trashcans, trees], 'sidewalk-furniture')
+      expect(pairs(list)).toEqual(['#1 S1', '#1 S2', '#1 S3', '#1 S4', '#1 S5', '#2 S1', '#2 S2', '#2 S3', '#2 S4', '#2 S5'])
+      expect(list.find((x) => x.issueNumber === 2 && x.solution.id === 'S1')?.solution.summary).toBe(
+        trashcans.solutions[0].summary,
+      )
+    })
+
+    it('arcade: #2 S3 and S4; utility: #1 S1 and S4', () => {
+      expect(pairs(solutionsByType('space', [trees, trashcans], 'arcade'))).toEqual(['#2 S3', '#2 S4'])
+      expect(pairs(solutionsByType('space', [trees, trashcans], 'utility'))).toEqual(['#1 S1', '#1 S4'])
+    })
+  })
+
+  describe('stakeholdersByType', () => {
+    it('utility: only #1, the stakeholders of the stories of #1 S1 and S4, in ID order', () => {
+      expect(spaceStakeholders([trashcans, trees], 'utility')).toEqual([
+        {
+          issueNumber: 1,
+          stakeholders: [
+            'O01', 'O06', 'O07', 'O12', 'O14', 'O15', 'O16', 'O17', 'O18', 'O19', 'O20', 'O21',
+            'I01', 'I05', 'I06', 'I07', 'I14', 'I15', 'I16', 'I17', 'I18', 'I19', 'I20',
+          ],
+        },
+      ])
+    })
+
+    it('sidewalk-furniture: an entry for each issue, by issue number; unused code: none', () => {
+      expect(spaceStakeholders([trashcans, trees], 'sidewalk-furniture').map((x) => x.issueNumber)).toEqual([1, 2])
+      expect(spaceStakeholders([trashcans, trees], 'parking')).toEqual([])
+    })
+  })
+
+  describe('findType', () => {
+    it('finds a known code and returns null for an unknown one', () => {
+      expect(findType('space', index, 'sidewalk-furniture')?.name).toBe('人行道設施帶')
+      expect(findType('space', index, 'nope')).toBeNull()
+    })
+  })
+
+  describe('otherTypes', () => {
+    it('gives the other space types of a solution, in its own order', () => {
+      const three = { ...trashcans.solutions[2], spaces: ['sidewalk-furniture', 'mrt-exit', 'park'] }
+      expect(otherTypes('space', three, 'sidewalk-furniture')).toEqual(['mrt-exit', 'park'])
+      const one = { ...trashcans.solutions[0], spaces: ['sidewalk-furniture'] }
+      expect(otherTypes('space', one, 'sidewalk-furniture')).toEqual([])
+    })
+  })
+
+  describe('stakeholdersInSeveralIssues', () => {
+    it('sidewalk-furniture: the stakeholders in 2 or more issues, in ID order, with their issues', () => {
+      const list = stakeholdersInSeveralIssues(spaceStakeholders([trashcans, trees], 'sidewalk-furniture'))
+      const ids = list.map((x) => x.id)
+      expect(ids).toContain('I06')
+      expect(ids).toContain('I07')
+      expect(list.find((x) => x.id === 'I06')?.issues).toEqual([1, 2])
+      expect([...ids].sort(compareIds)).toEqual(ids)
+    })
+
+    it('is empty with one issue only', () => {
+      expect(stakeholdersInSeveralIssues(spaceStakeholders([trees, trashcans], 'utility'))).toEqual([])
+    })
+
+    it('counts each issue once', () => {
+      expect(
+        stakeholdersInSeveralIssues([
+          { issueNumber: 1, stakeholders: ['I06', 'O01'] },
+          { issueNumber: 2, stakeholders: ['I06'] },
+          { issueNumber: 3, stakeholders: ['O01', 'I06'] },
+        ]),
+      ).toEqual([
+        { id: 'O01', issues: [1, 3] },
+        { id: 'I06', issues: [1, 2, 3] },
+      ])
+    })
+  })
+
+  describe('an issue with no space type (#9, 空間類型：無)', () => {
+    it('is on no space page, and its solutions are on no space page', () => {
+      expect(policy.spaces).toEqual([])
+      expect(index.spaceTypes.length).toBeGreaterThan(0)
+      for (const { code } of index.spaceTypes) {
+        expect(spaceIssues(code)).not.toContain(9)
+        expect(solutionsByType('space', [policy], code)).toEqual([])
+        expect(spaceStakeholders([policy], code)).toEqual([])
+      }
+    })
+  })
+
+  describe('typeGroups (decision 120)', () => {
+    it('keeps the order in which the groups first appear, and the order of spaceTypes inside a group', () => {
+      const groups = typeGroups(index.spaceTypes)
+      expect(groups.map((g) => g.group)).toEqual(['道路', '地下', '公共空間', '建築'])
+      expect(groups[0].types.map((s) => s.code)).toEqual([
+        'sidewalk-furniture', 'arcade', 'bike-lane', 'scooter-lane', 'car-lane', 'bus-stop',
+      ])
+      expect(groups[2].types.map((s) => s.code)).toEqual(['park', 'mrt-exit', 'parking'])
+      expect(groups.flatMap((g) => g.types)).toHaveLength(13)
+    })
+
+    it('does not order by the number of space types in a group', () => {
+      const groups = typeGroups([
+        { code: 'a', name: 'A', group: '少', parent: 'few', description: '' },
+        { code: 'b', name: 'B', group: '多', parent: 'many', description: '' },
+        { code: 'c', name: 'C', group: '多', parent: 'many', description: '' },
+      ])
+      expect(groups.map((g) => g.group)).toEqual(['少', '多'])
+    })
+  })
+
+  describe('typeStakeholderCount', () => {
+    it('counts a stakeholder in two issues once', () => {
+      expect(typeStakeholderCount([
+        { issueNumber: 1, stakeholders: ['I06', 'O01'] },
+        { issueNumber: 2, stakeholders: ['I06'] },
+      ])).toBe(2)
+      expect(typeStakeholderCount([])).toBe(0)
+    })
   })
 })

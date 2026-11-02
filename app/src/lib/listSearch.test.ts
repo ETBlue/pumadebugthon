@@ -10,8 +10,8 @@ import {
   issueMatches,
   parseListQuery,
   solutionMatches,
-  spaceMatches,
   stakeholderMatches,
+  typeMatches,
   type SearchSolutionItem,
 } from './listSearch'
 
@@ -192,8 +192,10 @@ describe('search with a filter and a sort', () => {
   })
 })
 
-describe('spaceMatches (decision 122)', () => {
-  const codes = (q: string) => index.spaceTypes.filter((s) => spaceMatches(s, parseListQuery(q))).map((s) => s.code)
+// Before Task U7 these cases tested spaceMatches, a wrapper with the same
+// rule. They now call typeMatches with the space types.
+describe('typeMatches with the space types (decision 122)', () => {
+  const codes = (q: string) => index.spaceTypes.filter((s) => typeMatches(s, parseListQuery(q))).map((s) => s.code)
 
   it('finds a space by its whole code, in any case, with or without 「-」', () => {
     expect(codes('sidewalk-furniture')).toEqual(['sidewalk-furniture'])

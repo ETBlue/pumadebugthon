@@ -8,10 +8,11 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IndexFile, IssueFile, IssueSummary, Stakeholder } from '@/types'
 import { crossCoverageIssueNumbers, crossStakeholderCoverage } from './crossIssue'
 import { solutionsTabView } from './issueTabs'
-import { filterIssues, filterSolutions, filterSpaces, filterStakeholders, NO_FILTERS, typeFiltersOn } from './listFilter'
+import { filterIssues, filterSolutions, filterStakeholders, filterTypes, NO_FILTERS, typeFiltersOn } from './listFilter'
 import { compareSolutionItems, solutionItemKey, type ListContext } from './listSort'
 import { recentSolutionItems } from './recent'
 import { isListed } from './stakeholders'
+import { issuesByType } from './typeKinds'
 
 const cross = crossJson as CrossIssueFile
 const index = indexJson as IndexFile
@@ -211,8 +212,13 @@ describe('typeFiltersOn', () => {
   })
 })
 
-describe('filterSpaces (decision 122)', () => {
-  const codes = (f: Partial<typeof NO_FILTERS>) => filterSpaces(index.spaceTypes, { ...NO_FILTERS, ...f }, index.issues).map((s) => s.code)
+// Before Task U7 these cases tested filterSpaces, a wrapper over
+// filterTypes. They now call filterTypes with the space types, and the
+// issues of a space from issuesByType, as the #/spaces page does.
+describe('filterTypes with the space types (decision 122)', () => {
+  const spaceIssues = (code: string) => issuesByType('space', index, [], code).map((i) => i.number)
+  const codes = (f: Partial<typeof NO_FILTERS>) =>
+    filterTypes(index.spaceTypes, { ...NO_FILTERS, ...f }, spaceIssues).map((s) => s.code)
 
   it('keeps every space in the data order with no filter', () => {
     expect(codes({})).toEqual(index.spaceTypes.map((s) => s.code))

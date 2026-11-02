@@ -13,7 +13,7 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { t } from '@/i18n/zh-TW'
 import { forgetListSearches, rememberListSearch } from '@/lib/backLink'
 import { listParamsOf, listUrlSearch } from '@/lib/listParams'
-import { issuesBySpace, solutionsBySpace, spaceStakeholderCount, stakeholdersBySpace } from '@/lib/spaces'
+import { issuesByType, solutionsByType, stakeholdersByType, typeStakeholderCount } from '@/lib/typeKinds'
 import type { IndexFile, IssueFile } from '@/types'
 import Space from './Space'
 import Spaces from './Spaces'
@@ -78,11 +78,11 @@ describe('#/spaces', () => {
     expect(c).toContain('人行道上放置行道樹、樹穴、垃圾桶、電桿、箱體、標誌、公車站牌與吸菸區的帶狀空間。')
     expect(c).not.toContain('border-dashed')
     // The same helpers as Space.tsx, with the files of the issues that use it.
-    const numbers = issuesBySpace(index, 'sidewalk-furniture').map((i) => i.number)
+    const numbers = issuesByType('space', index, [], 'sidewalk-furniture').map((i) => i.number)
     const used = issueFiles.filter((f) => numbers.includes(f.number))
     expect(numbers).toEqual([1, 2, 8])
-    expect(spaceStakeholderCount(stakeholdersBySpace(used, 'sidewalk-furniture'))).toBe(50)
-    expect(solutionsBySpace(used, 'sidewalk-furniture')).toHaveLength(14)
+    expect(typeStakeholderCount(stakeholdersByType('space', used, 'sidewalk-furniture'))).toBe(50)
+    expect(solutionsByType('space', used, 'sidewalk-furniture')).toHaveLength(14)
     expect(c).toContain('<dt class="text-muted-foreground">議題</dt><dd>3 個')
     expect(c).toContain('href="/issues/1"')
     expect(c).toContain('#1 把三千棵樹種回來')

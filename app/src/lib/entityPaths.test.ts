@@ -14,7 +14,6 @@ import {
   SOLUTION_TABS,
   solutionPath,
   SPACE_TABS,
-  spaceTabPath,
   STAKEHOLDER_TABS,
   stakeholderTabPath,
   storyPath,
@@ -203,7 +202,9 @@ describe('keyStoryPath', () => {
   })
 })
 
-describe('parseSpaceTab and spaceTabPath (decision 129)', () => {
+// The path case called spaceTabPath before Task U7. It now calls typeTabPath
+// with the kind 'space'.
+describe("parseSpaceTab and typeTabPath with the kind 'space' (decision 129)", () => {
   it('no tab is the overview, so an old space link opens the first tab', () => {
     expect(SPACE_TABS).toEqual(['overview', 'issues', 'solutions', 'stakeholders'])
     expect(parseSpaceTab(undefined)).toBe('overview')
@@ -215,8 +216,8 @@ describe('parseSpaceTab and spaceTabPath (decision 129)', () => {
   })
 
   it('the overview has no tab segment', () => {
-    expect(spaceTabPath('sidewalk-furniture', 'overview')).toBe('/spaces/sidewalk-furniture')
-    expect(spaceTabPath('sidewalk-furniture', 'solutions')).toBe('/spaces/sidewalk-furniture/solutions')
+    expect(typeTabPath('space', 'sidewalk-furniture', 'overview')).toBe('/spaces/sidewalk-furniture')
+    expect(typeTabPath('space', 'sidewalk-furniture', 'solutions')).toBe('/spaces/sidewalk-furniture/solutions')
   })
 })
 

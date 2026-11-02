@@ -10,8 +10,8 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import { DEFAULT_LIST_STATE } from '@/lib/listParams'
-import { spaceSolutionItems, spaceSolutionsView } from '@/lib/spaceTabs'
-import { issuesBySpace } from '@/lib/spaces'
+import { issuesByType } from '@/lib/typeKinds'
+import { typeSolutionItems, typeSolutionsView } from '@/lib/typeTabs'
 import type { IndexFile, IssueFile } from '@/types'
 import Space from './Space'
 
@@ -60,7 +60,7 @@ const menuLinks = (html: string) => {
   return [...nav.matchAll(/<a ([^>]*)>/g)].map((m) => m[1])
 }
 
-const sidewalkIssues = issuesBySpace(index, 'sidewalk-furniture').length
+const sidewalkIssues = issuesByType('space', index, [], 'sidewalk-furniture').length
 
 describe('the space page tabs (decision 129)', () => {
   it('has four tabs with counts: the same numbers as the card on #/spaces', () => {
@@ -135,7 +135,7 @@ describe('the space page tabs (decision 129)', () => {
   })
 
   it('a space that no issue uses has 0 counts and the empty texts', () => {
-    const unused = index.spaceTypes.find((s) => issuesBySpace(index, s.code).length === 0)
+    const unused = index.spaceTypes.find((s) => issuesByType('space', index, [], s.code).length === 0)
     expect(unused).toBeDefined()
     const code = unused!.code
     expect(tabNames(render(`/spaces/${code}`))).toEqual(['總覽', '議題 0', '解法 0', '利害關係人 0'])
@@ -190,8 +190,8 @@ describe('the menu bar of the 解法 and 利害關係人 tabs (decision 138)', (
     // 最近更新: all on the same date, so the highest code first.
     expect(solutionOrder(render('/spaces/sidewalk-furniture/solutions'), 1)).toEqual(['1-S5', '1-S4', '1-S3', '1-S2', '1-S1'])
     const html = render('/spaces/sidewalk-furniture/solutions?sort=evidence')
-    const items = spaceSolutionItems(issueFiles, 'sidewalk-furniture')
-    const expected = spaceSolutionsView(items, { ...DEFAULT_LIST_STATE, sort: 'evidence' }, issueFiles)
+    const items = typeSolutionItems('space', issueFiles, 'sidewalk-furniture')
+    const expected = typeSolutionsView(items, { ...DEFAULT_LIST_STATE, sort: 'evidence' }, issueFiles)
       .filter((x) => x.kind === 'issue' && x.issueNumber === 1)
       .map((x) => `1-${'id' in x.solution ? x.solution.id : ''}`)
     expect(solutionOrder(html, 1)).toEqual(expected)

@@ -3,7 +3,7 @@
 // match ALL of them. Nothing picked in a filter means no limit. The text
 // search is not here (src/lib/listSearch.ts): the pages apply both.
 // Every function keeps the order of the list it gets. Nothing here sorts.
-import type { IssueSummary, SpaceType, Stakeholder } from '@/types'
+import type { IssueSummary, Stakeholder } from '@/types'
 import { crossCoverageIssueNumbers, crossNeedCoverage } from './crossIssue'
 import type { ListContext } from './listSort'
 import { needsForStakeholder } from './needs'
@@ -147,19 +147,6 @@ export function filterSolutions(
       i.coverage.covered.some((n) => n.stakeholders.includes(who)),
     )
   })
-}
-
-/** #/spaces (decision 122): 空間分類 and 議題. 空間分類 keeps a space of a
- * picked group. 議題 keeps a space that a picked issue uses. A space that
- * no analyzed issue uses is hidden while the 議題 filter is on. issues: the
- * issue list of index.json. */
-export function filterSpaces(
-  spaces: SpaceType[],
-  filter: Pick<ListFilters, 'groups' | 'issues'>,
-  issues: IssueSummary[],
-): SpaceType[] {
-  const users = (code: string) => issues.filter((i) => i.available && i.spaces.includes(code)).map((i) => i.number)
-  return filterTypes(spaces, filter, users)
 }
 
 /** A type list page (#/spaces, #/domains, #/solution-types; decision 122

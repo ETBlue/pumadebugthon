@@ -10,6 +10,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
+import { METHOD_URL } from '@/components/links'
 import { t } from '@/i18n/zh-TW'
 import { crossIssueNumbers } from '@/lib/crossIssue'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
@@ -52,10 +53,11 @@ const titleOf = (html: string) => /data-title="([^"]*)"/.exec(html)?.[1]
 const activeTab = (html: string) => /role="tab" aria-selected="true"[^>]*aria-label="([^"]+)"/.exec(html)?.[1]
 
 describe('the solution page tabs (decision 103)', () => {
-  it('has eleven tabs in order, with their counts (#2 S1); 利害關係人, 訴求, 需求, 衝突 in the order of the issue page (decision 142); 潛在風險 after 成效衡量 (decision 143)', () => {
+  it('has twelve tabs in order, with their counts (#2 S1); 利害關係人, 訴求, 需求, 衝突 in the order of the issue page (decision 142); 潛在風險 after 成效衡量 (decision 143); 可能合併 last (Task U6)', () => {
     expect(tabNames(render('/solutions/2-S1'))).toEqual([
       '總覽', '利害關係人　涵蓋 14・未涵蓋 13', '訴求　涵蓋 28・未涵蓋 25', '需求　滿足 9・未滿足 13',
       '衝突　解開 5・相關 3', '執行計畫', '成效衡量 4', '潛在風險 2', '可能爭議 2', '法規障礙 2', '相關政策　國內 2・國外 2',
+      '可能合併 1',
     ])
   })
 
@@ -550,5 +552,58 @@ describe('領域 and 解法類型 tags in the solution header (Task U4 of plan-t
     expect(links(field(html, tt.solutionType) ?? '')).toEqual([
       ['/solution-types/digital-tool', '數位工具'], ['/solution-types/open-data', '資料公開'],
     ])
+  })
+})
+
+describe('the 可能合併 tab (Task U6 of plan-types-ui.md, decision 4)', () => {
+  const tc = t.candidates
+  /** The tab content after the intro. */
+  const cards = (html: string) => html.split(tc.intro)[1] ?? ''
+  /** The other solutions linked in the tab content, in page order. */
+  const pairLinks = (html: string, self: string) =>
+    [...cards(html).matchAll(/href="\/solutions\/(\d+-S\d+)"/g)].map((m) => m[1]).filter((id) => id !== self)
+
+  it('is the last tab of an issue solution, 「可能合併 n」 with the number of paired solutions', () => {
+    expect(tabNames(render('/solutions/8-S1')).at(-1)).toBe('可能合併 4')
+    expect(tabNames(render('/solutions/2-S3')).at(-1)).toBe('可能合併 3')
+  })
+
+  it('opens at #/solutions/<id>/candidates, with the tab name in the page title', () => {
+    const html = render('/solutions/8-S1/candidates')
+    expect(activeTab(html)).toBe('可能合併 4')
+    expect(titleOf(html)).toMatch(/^#8 S1 .+ · 可能合併 · 解法 · 市政提案小幫手$/)
+    expect(html).toContain('href="/solutions/8-S1/candidates"')
+  })
+
+  it('shows the intro and a link to the rule in method.md', () => {
+    const html = render('/solutions/8-S1/candidates')
+    expect(html).toContain('這些是其他議題中，可能可以和這個解法合併的解法。這份清單由規則產生，只是建議，由人決定是否合併。')
+    expect(html).toContain(`href="${METHOD_URL}#跨議題分析"`)
+  })
+
+  it('lists each paired solution once, by issue number then ID (8-S1 is side b of every row)', () => {
+    expect(pairLinks(render('/solutions/8-S1/candidates'), '8-S1')).toEqual(['1-S3', '1-S4', '1-S5', '2-S4'])
+    // #9 has no file in this test: 9-S4 still gets its link.
+    expect(pairLinks(render('/solutions/2-S3/candidates'), '2-S3')).toEqual(['1-S2', '8-S3', '9-S4'])
+  })
+
+  it('shows no number of shared things on the cards', () => {
+    const panel = cards(render('/solutions/8-S1/candidates'))
+    expect(panel).toContain(tc.solutionTypes)
+    expect(panel).not.toMatch(/共同\S* \d/)
+  })
+
+  it('a solution with no pair keeps the tab with 0 and shows only the empty note (8-S5)', () => {
+    const html = render('/solutions/8-S5/candidates')
+    expect(activeTab(html)).toBe('可能合併 0')
+    expect(html).toContain(tc.none)
+    expect(html).not.toContain(tc.intro)
+  })
+
+  it('an X- solution has no 可能合併 tab, and its candidates URL is an unknown tab', () => {
+    expect(tabNames(render('/solutions/X-S1')).some((n) => n.startsWith('可能合併'))).toBe(false)
+    const html = render('/solutions/X-S1/candidates')
+    expect(html).toContain('找不到這個分頁。')
+    expect(activeTab(html)).toBeUndefined()
   })
 })

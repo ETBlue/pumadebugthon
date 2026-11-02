@@ -18,12 +18,20 @@ export type StakeholderTab = (typeof STAKEHOLDER_TABS)[number]
 /** The tabs of the solution page, in display order. The first one is the
  * default (design 3.12, decisions 103, 140, 142 and 143). The order of 利害關係人,
  * 訴求, 需求 and 衝突 is the same as on the issue page (decision 142). A
- * cross-issue solution has the same tabs. */
+ * cross-issue solution has these tabs. An issue solution also has 可能合併
+ * (ISSUE_SOLUTION_TABS). */
 export const SOLUTION_TABS = [
   'overview', 'stakeholders', 'wants', 'needs', 'conflicts', 'plan', 'measures', 'risks', 'controversies', 'legal', 'policies',
 ] as const
 
 export type SolutionTab = (typeof SOLUTION_TABS)[number]
+
+/** The tabs of an issue solution: SOLUTION_TABS, then 可能合併
+ * (`candidates`) last (Task U6 of plan-types-ui.md, decision 4). A
+ * cross-issue solution does not have 可能合併. */
+export const ISSUE_SOLUTION_TABS = [...SOLUTION_TABS, 'candidates'] as const
+
+export type IssueSolutionTab = (typeof ISSUE_SOLUTION_TABS)[number]
 
 /** A link target for react-router: a path and a search part ("" or "?…"). */
 export interface PathTarget {
@@ -115,13 +123,18 @@ export function parseSolutionTab(segment: string | undefined): SolutionTab | nul
   return (SOLUTION_TABS as readonly string[]).includes(segment) ? (segment as SolutionTab) : null
 }
 
+/** The tab of an issue solution page: parseSolutionTab, plus `candidates`. */
+export function parseIssueSolutionTab(segment: string | undefined): IssueSolutionTab | null {
+  return segment === 'candidates' ? 'candidates' : parseSolutionTab(segment)
+}
+
 function withTab(base: string, tab: string | undefined): string {
   return tab === undefined || tab === 'overview' ? base : `${base}/${tab}`
 }
 
 /** The URL path of the solution page of an issue, for example
  * "/solutions/2-S1" or "/solutions/2-S1/needs". The overview has no tab segment. */
-export function solutionPath(issueNumber: number, code: string, tab?: SolutionTab): string {
+export function solutionPath(issueNumber: number, code: string, tab?: IssueSolutionTab): string {
   return withTab(`/solutions/${issueNumber}-${code}`, tab)
 }
 

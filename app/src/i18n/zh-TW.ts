@@ -553,6 +553,8 @@ export const t = {
       controversies: '可能爭議',
       legal: '法規障礙',
       policies: '相關政策',
+      /** Issue solutions only (Task U6 of plan-types-ui.md). */
+      candidates: '可能合併',
     },
     /** The tab labels with the counts (solutionTabCounts). Plain numbers:
      * no percent, no bar. */
@@ -578,6 +580,9 @@ export const t = {
       policies: (domestic: number, foreign: number): TabLabel => ({
         main: '相關政策', sep: '　', sub: `國內 ${domestic}・國外 ${foreign}`,
       }),
+      /** 可能合併 (Task U6): the number of paired solutions. null while
+       * cross-issue.json loads: then the name only. */
+      candidates: (n: number | null): TabLabel => ({ main: n === null ? '可能合併' : `可能合併 ${n}` }),
     },
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',
@@ -1117,6 +1122,23 @@ export const t = {
     /** 相關的衝突 of a cross-issue solution (decision 103). */
     relatedConflictsIntro: '跨議題衝突的一方或另一方，有這個解法涵蓋的故事，但衝突的解方沒有用到這個解法。',
     relatedConflictsNone: '沒有其他和這個解法涵蓋的故事有關的跨議題衝突。',
+  },
+  /** The 可能合併 tab of an issue solution (Task U6 of plan-types-ui.md,
+   * decision 4): the candidate pairs of candidates.csv. No score, no rank,
+   * and no count of the shared things. */
+  candidates: {
+    intro: '這些是其他議題中，可能可以和這個解法合併的解法。這份清單由規則產生，只是建議，由人決定是否合併。',
+    /** The link to the cross-issue section of analysis/docs/method.md. */
+    methodLink: '產生這份清單的規則',
+    none: '合併的候選清單上，沒有其他議題的解法和這個解法成對。',
+    /** The rows of a card, in this order. */
+    solutionTypes: '共同解法類型',
+    domains: '共同領域',
+    spaces: '共同空間類型',
+    needs: '共同需求',
+    crossSolutions: '已在跨議題解法',
+    /** 已在跨議題解法 when no X- solution holds both solutions. */
+    notMerged: '尚未合併',
   },
   /** One conflict (ConflictView, design 3.2). */
   conflict: {

@@ -5,6 +5,8 @@ import {
   crossSolutionPath,
   issueFocusPath,
   needFocusPath,
+  ISSUE_SOLUTION_TABS,
+  parseIssueSolutionTab,
   parseSolutionSlug,
   parseSolutionTab,
   parseSpaceTab,
@@ -126,6 +128,23 @@ describe('parseSolutionTab', () => {
 
   it('returns null for an unknown tab', () => {
     for (const s of ['solutions', 'practices', '', 'Needs', 'Wants']) expect(parseSolutionTab(s)).toBeNull()
+  })
+
+  it('returns null for candidates: an X- solution has no 可能合併 tab (Task U6)', () => {
+    expect(parseSolutionTab('candidates')).toBeNull()
+  })
+})
+
+describe('parseIssueSolutionTab (Task U6)', () => {
+  it('the tabs of an issue solution: SOLUTION_TABS, then candidates last', () => {
+    expect(ISSUE_SOLUTION_TABS).toEqual([...SOLUTION_TABS, 'candidates'])
+    for (const tab of ISSUE_SOLUTION_TABS) expect(parseIssueSolutionTab(tab)).toBe(tab)
+    expect(parseIssueSolutionTab(undefined)).toBe('overview')
+    expect(parseIssueSolutionTab('practices')).toBeNull()
+  })
+
+  it('solutionPath has the candidates segment', () => {
+    expect(solutionPath(2, 'S1', 'candidates')).toBe('/solutions/2-S1/candidates')
   })
 })
 

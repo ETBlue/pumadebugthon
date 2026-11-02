@@ -5,6 +5,11 @@ export const REPO_URL = 'https://github.com/ETBlue/pumadebugthon'
 /** analysis/docs/method.md: how to read the analysis, with the meaning of each tag. */
 export const METHOD_URL = `${REPO_URL}/blob/main/analysis/docs/method.md`
 
+/** The section 「跨議題分析」 of method.md. It has the rule of the candidate
+ * pairs (合併的候選清單), for the 可能合併 tab. The anchor is the one GitHub
+ * makes from the heading. */
+export const METHOD_CROSS_ISSUE_URL = `${METHOD_URL}#跨議題分析`
+
 /** analysis/docs/data-guide.md: the guide to the flat data files (design 3.13). */
 export const DATA_GUIDE_URL = `${REPO_URL}/blob/main/analysis/docs/data-guide.md`
 

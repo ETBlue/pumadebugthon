@@ -11,6 +11,7 @@ import { SolutionTagFields } from '@/components/TypeLinks'
 import { linkClass, targetLinkClass } from '@/components/styles'
 import { CrossIssueLinks } from '@/components/solution/CrossSolutionCard'
 import { CrossOverviewTab } from '@/components/solution/CrossOverviewTab'
+import { CandidatesTab } from '@/components/solution/CandidatesTab'
 import { ConcernsTab } from '@/components/solution/ConcernsTab'
 import { ConflictsTab, CrossConflictsTab } from '@/components/solution/ConflictsTab'
 import { CrossNeedsTab, CrossStakeholdersTab } from '@/components/solution/CrossTabs'
@@ -28,9 +29,11 @@ import { backListPath } from '@/lib/backLink'
 import { dataBasisFilterSearch } from '@/lib/dataBasis'
 import { crossCoverageIssueNumbers, crossSolutionTabCounts, crossSolutionTitle, findCrossSolution } from '@/lib/crossIssue'
 import {
-  crossSolutionPath, parseSolutionSlug, parseSolutionTab, SOLUTION_TABS, solutionPath, type SolutionTab,
+  crossSolutionPath, ISSUE_SOLUTION_TABS, parseIssueSolutionTab, parseSolutionSlug, parseSolutionTab, SOLUTION_TABS, solutionPath,
+  type IssueSolutionTab,
 } from '@/lib/entityPaths'
 import { findIssue, tabPath } from '@/lib/issuePage'
+import { solutionCandidates } from '@/lib/candidates'
 import { findSolution, solutionTitle } from '@/lib/solutionPage'
 import { crossSummaryRefTo, summaryRefTo } from '@/lib/summary'
 import { solutionTabCounts, solutionTabLabel } from '@/lib/tabCounts'
@@ -41,7 +44,7 @@ const tx = t.crossIssue
 
 /** The name of a tab for its hidden h2 (decision 103). 相關政策 uses its full
  * name 「相關或類似的政策與做法」. The page title uses the short tab name. */
-const tabHeading = (name: SolutionTab) => (name === 'policies' ? tp.policiesHeading : tp.tabs[name])
+const tabHeading = (name: IssueSolutionTab) => (name === 'policies' ? tp.policiesHeading : tp.tabs[name])
 
 /** The back button of the band (decision 111): the solution list, with the
  * sort, filters and search the reader last used there in this session. */
@@ -102,8 +105,15 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
   const [params] = useSearchParams()
   const search = dataBasisFilterSearch(params)
   const issueTitle = t.issueCard.numberTitle(n, issue.title)
-  const tab = parseSolutionTab(useParams().tab)
+  const tab = parseIssueSolutionTab(useParams().tab)
   const counts = useMemo(() => solutionTabCounts(issue, sol), [issue, sol])
+  // 可能合併 (Task U6): the count shows when cross-issue.json is ready.
+  const cross = useCrossIssue()
+  const crossData = cross.status === 'ready' ? cross.data : undefined
+  const candidateCount = useMemo(
+    () => (crossData === undefined ? null : solutionCandidates(crossData, n, sol.id).length),
+    [crossData, n, sol.id],
+  )
   const refTarget = (ref: string, dataBasedOnly: boolean) => summaryRefTo(ref, n, issue, dataBasedOnly)
 
   return (
@@ -117,10 +127,10 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
       <PageBody>
         <PageTabs
           label={tp.tabsLabel}
-          tabs={SOLUTION_TABS}
+          tabs={ISSUE_SOLUTION_TABS}
           current={tab}
           nameOf={tabHeading}
-          labelOf={(name) => solutionTabLabel(name, counts)}
+          labelOf={(name) => (name === 'candidates' ? tp.tabLabels.candidates(candidateCount) : solutionTabLabel(name, counts))}
           scrollOnPhone
           pathOf={(name) => solutionPath(n, sol.id, name)}
           notFound={tp.tabNotFound}
@@ -157,6 +167,7 @@ function SolutionContent({ index, issue, solution: sol }: { index: IndexFile; is
               case 'legal':
                 return <ConcernsTab tab={name} solution={sol} targetOf={refTarget} step7Source={tp.step7Source} />
               case 'policies': return <PoliciesTab practices={sol.practices} issueNumber={n} targetOf={refTarget} />
+              case 'candidates': return <CandidatesTab index={index} issueNumber={n} code={sol.id} cross={cross} />
             }
           }}
         </PageTabs>

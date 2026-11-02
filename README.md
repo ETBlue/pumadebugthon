@@ -20,7 +20,7 @@
 
 黑客松的時間很短，參加者容易直接從題目裡的資料和舉例開始動手。這個專案想補上一個步驟：在動手做之前，先看見各方利害關係人的多樣與衝突。這樣做出來的提案，比較容易說明「為什麼」。
 
-分析都用同一種格式，所以結果是結構化資料。市民、公務員與公民科技社群可以依利害關係人或城市空間，找到相關議題的分析，再拿來使用。
+分析都用同一種格式，所以結果是結構化資料。市民、公務員與公民科技社群可以依利害關係人、城市空間、領域（例如[環境保護](https://etblue.github.io/pumadebugthon/#/domains/environment)）或解法類型，找到相關議題的分析，再拿來使用。
 
 ## Repo 的結構
 
@@ -49,7 +49,7 @@
 | #11 | 大型廢棄物清運 | 自行新增 | [議題分析](analysis/11-bulkywaste/issue-analysis.md) | [議題頁](https://etblue.github.io/pumadebugthon/#/issues/11) |
 | #12 | 行人安全／高齡行人 | 自行新增 | [議題分析](analysis/12-pedestrian/issue-analysis.md) | [議題頁](https://etblue.github.io/pumadebugthon/#/issues/12) |
 
-**跨議題分析：** [`analysis/cross-issue/cross-issue-analysis.md`](analysis/cross-issue/cross-issue-analysis.md) 比較 #1、#2、#3、#4、#5、#6、#8、#9、#10、#11、#12。它列出共用的利害關係人、跨議題的共同需求與衝突，以及合併的解法。合併的解法在網站上也有自己的頁面，例如 [`#/solutions/X-S1`](https://etblue.github.io/pumadebugthon/#/solutions/X-S1)。
+**跨議題分析：** [`analysis/cross-issue/cross-issue-analysis.md`](analysis/cross-issue/cross-issue-analysis.md) 比較 #1、#2、#3、#4、#5、#6、#8、#9、#10、#11、#12。它列出共用的利害關係人、跨議題的共同需求與衝突，以及合併的解法。合併的解法在網站上也有自己的頁面，例如 [`#/solutions/X-S1`](https://etblue.github.io/pumadebugthon/#/solutions/X-S1)。規則找出的「可能合併」解法配對（[`candidates.csv`](analysis/cross-issue/candidates.csv)），在網站上各議題解法的「可能合併」分頁，例如 [`#/solutions/2-S1/candidates`](https://etblue.github.io/pumadebugthon/#/solutions/2-S1/candidates)。這份清單只是建議，由人決定是否合併。
 
 ## 再利用資料
 

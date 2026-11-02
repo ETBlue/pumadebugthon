@@ -6,6 +6,7 @@ Updated 2026-10-22 (Phase L, draft) with ETBlue's notes in `human-inputs.md` (co
 Updated 2026-10-22 again with ETBlue's answers to Q21–Q24 and ETBlue's notes in `human-inputs.md` (commit e879ba7): decisions 83, 84, 88 and 90 are final, decision 82 has no 依編號 sort now (Q24), the search box on the three list pages (new section 3.23.13, decisions 95–98) and the breadcrumb on the issue page (decision 99). Section 14 has no open questions now.
 Updated 2026-10-22 again with ETBlue's answer about the breadcrumb (ETBlue, 2026-10-22): an item that names an issue, a stakeholder or a solution shows the ID and the name, for example 首頁 › 議題 › #8 無菸城市, on every page (3.2, 3.12, 3.15, 3.18, 3.23.10, decisions 94 and 99).
 Updated 2026-10-22 again with ETBlue's decision 「drop all redirects」: a moved stakeholder ID and a story under the wrong stakeholder do not redirect any more (decision 113; 3.3, 3.14, 3.15, 3.19, 3.23.5, 3.23.10).
+Updated 2026-11-02 (Task U7 of `app/docs/plan-types-ui.md`) for the 領域 and 解法類型 pages, the type tags, the new filters and the 可能合併 tab: ETBlue's decisions 152–158 (2026-11-01 and 2026-11-02), and decisions 159–180, which were chosen during the build (Tasks U3–U6), not by ETBlue. New sections 3.24 and 5.9. Changed sections: 3.2, 3.6, 3.7, 3.9, 3.12, 3.18, 3.19, 3.23.5, 7 and 8.
 Source of the idea: [human-inputs.md](human-inputs.md). When the two files differ, `human-inputs.md` is the one that counts.
 
 ## 1. Problem
@@ -112,7 +113,7 @@ Rules for the tab labels:
 - Below `md` the issue tab list is one row that scrolls sideways inside itself (`PageTabs` with `scrollOnPhone`). The page itself has no sideways scroll. When the current tab is outside the visible part, the list scrolls to put it in the middle. From `md` the tab list is replaced by the side menu (decision 111, **Page layout** below). The stakeholder page keeps the old phone rule: its tab list wraps onto two rows and never scrolls sideways (decision 102).
 - A label with counts has two parts (`TabLabel` in `src/lib/tabLabel.ts`): the name and the counts. In a tab list that wraps (the stakeholder page on a phone) and in the side menu (from `md`), the second part is on its own line under the first, in smaller text, for example 「利害關係人 27」 over 「弱勢 5」, and 「需求」 over 「涵蓋 9・未涵蓋 12」 on the solution page. Neither part breaks inside. In a tab list that scrolls sideways the label is one line. The tab's `aria-label` is the one-line text, so every count stays in the accessible name. (Review of N4–N9, 2026-10-20: the one-part label broke onto 3 lines at 360 px.)
 
-Above the tabs: the band with the back button and the h1 (「#2 找回消失的垃圾桶」). The space types and the update date are at the top of the 總覽 tab (decision 111).
+Above the tabs: the band with the back button and the h1 (「#2 找回消失的垃圾桶」). The space types and the update date are at the top of the 總覽 tab (decision 111). Since Task U4 the tag rows there are 空間類型 and 領域, in this order, each tag a link to its type page (decisions 167 and 168). An issue has no 解法類型 row.
 
 **Page layout (decision 111).** The issue page, the stakeholder page (3.3), the solution page (3.12, also cross-issue, 3.18) and the space page (3.6, since decision 129) share this layout. The story page (3.15) has the band and the back button too, but no tabs.
 
@@ -227,7 +228,7 @@ The filters are the ones the 訴求 tab used for the conflicts (`wantsTabView` i
 With a stakeholder picked, the tab shows only the needs with a story of that stakeholder. 「出現在衝突」 then lists only the conflicts that the 衝突 tab shows with the same stakeholder (a story of that stakeholder on either side), because the links keep `?stakeholder=` and a hidden conflict would be a link to nothing. The 「有衝突」 list of a want follows the same rule.
 
 **解法.** The menu bar (decision 116: the stakeholder picker, 特別關注 and the data toggle) and the filter status line, then each solution in code order (S2 before S10), as a card grid (`cardGridClass`: 1 column on a phone, 2 columns from `lg`, decisions 130 and 139):
-- the title link, the summary and the space types (as before)
+- the title link, the summary and the tag rows: 空間類型, then 領域 only when the solution has its own 領域 (decision 158), then 解法類型 (decision 167)
 - 「涵蓋的需求」, in two parts as in step 6.2: 「必須有」 (`needs.must`) and 「應該有、可以有」 (`needs.shouldCould`). Each need shows its summary with its tag and its stakeholders as plain IDs. The summary links to the need on the 需求 tab (`?focus=`).
 - 「解開的衝突」: the conflicts whose `wayOutSolutions` lists this solution, as links to `?focus=C1` on the 衝突 tab (decision 142). Left out when there are none.
 - the cross-issue box (3.18) when the solution is part of a cross-issue solution
@@ -362,7 +363,7 @@ Rules:
 
 URL: `#/spaces/<code>/<tab>`, for example `#/spaces/sidewalk-walkway/solutions`. The 總覽 tab has no tab segment: `#/spaces/sidewalk-walkway` (decision 129). An unknown tab shows 「找不到這個分頁。」 and a link 「回到總覽」.
 
-City space is limited, so this page shows what competes for the same space. Since decision 129 each group is a tab (`PageTabs`, the same as the issue page):
+City space is limited, so this page shows what competes for the same space. Since Task U3 the page is the generic type page `TypePage` (`src/pages/TypePage.tsx`) with the kind `space`; `src/pages/Space.tsx` is a thin wrapper. The 領域 and 解法類型 pages use the same page (3.24, decision 152). Since decision 129 each group is a tab (`PageTabs`, the same as the issue page):
 
 | Tab | Label | Content |
 |---|---|---|
@@ -371,9 +372,9 @@ City space is limited, so this page shows what competes for the same space. Sinc
 | 解法 (`solutions`) | 「解法 N」 | Every solution, from every issue, that uses it, grouped by issue, with its one-line summary and a link. Since decision 138 a menu bar is at the top: 排序 (最近更新, 最近新增, 資料根據比例), 議題, 利害關係人 and 搜尋, the same as `#/solutions`. |
 | 利害關係人 (`stakeholders`) | 「利害關係人 N」 | The stakeholders of those solutions' stories, with links to their stakeholder pages: first the ones in several issues, then by issue. Since decision 138 a menu bar is at the top: 排序 (最近更新, 最近新增, 資料根據比例, 解法涵蓋比例), 議題, 只看特別關注族群 and 搜尋, the same as `#/stakeholders` but with no tree view. The block 「在多個議題都出現的利害關係人」 has no border box (decision 138). |
 
-The counts are the same numbers as the card on `#/spaces` (3.9): `issuesBySpace`, `solutionsBySpace` and `spaceStakeholderCount(stakeholdersBySpace(…))`. 議題 needs only `index.json`. While the issue files load, 解法 and 利害關係人 show the name only. Each tab has a hidden h2 with the old section heading, for example 「使用這個空間的解法」.
+The counts are the same numbers as the card on `#/spaces` (3.9): `issuesByType`, `solutionsByType` and `typeStakeholderCount(stakeholdersByType(…))` in `src/lib/typeKinds.ts`, with the kind `space` (before Task U7: the wrappers `issuesBySpace`, `solutionsBySpace`, `stakeholdersBySpace` and `spaceStakeholderCount`). 議題 needs only `index.json`. While the issue files load, 解法 and 利害關係人 show the name only. Each tab has a hidden h2 with the old section heading, for example 「使用這個空間的解法」.
 
-**Menu bar of the 解法 and 利害關係人 tabs (decision 138).** Each of these tabs starts with a menu bar (`SpaceTabMenu`). It has the look of the issue tab menu bar (`IssueMenuBar`): a box in the content column. Its controls are the ones of the list bar (`ListBar`): the sort `<select>`, the filter popover buttons and toggles, the stakeholder picker, and the search box. The filters show at every width (no phone sheet), and the bar wraps. Under the bar: the result line with 「清除篩選」 (`ResultLine`), then the sort note while a share sort is on. The URL params are the ones of the list page (`q`, `sort`, `issue`, `who`, `specialonly`). The groups stay: the solutions stay grouped by issue, and the stakeholders stay in 「在多個議題都出現的利害關係人」 and 「各議題的利害關係人」. The sort works inside each group. The tab counts stay the totals (decision 49). The card lists of the 議題, 解法 and 利害關係人 tabs use the card grid of the tabs (`cardGridClass`, decision 138 (9)).
+**Menu bar of the 解法 and 利害關係人 tabs (decision 138).** Each of these tabs starts with a menu bar (`TypeTabMenu`; before Task U3: `SpaceTabMenu`). The tab helpers are in `src/lib/typeTabs.ts` (before Task U7 also through the wrappers in `src/lib/spaceTabs.ts`). It has the look of the issue tab menu bar (`IssueMenuBar`): a box in the content column. Its controls are the ones of the list bar (`ListBar`): the sort `<select>`, the filter popover buttons and toggles, the stakeholder picker, and the search box. The filters show at every width (no phone sheet), and the bar wraps. Under the bar: the result line with 「清除篩選」 (`ResultLine`), then the sort note while a share sort is on. The URL params are the ones of the list page (`q`, `sort`, `issue`, `who`, `specialonly`). The groups stay: the solutions stay grouped by issue, and the stakeholders stay in 「在多個議題都出現的利害關係人」 and 「各議題的利害關係人」. The sort works inside each group. The tab counts stay the totals (decision 49). The card lists of the 議題, 解法 and 利害關係人 tabs use the card grid of the tabs (`cardGridClass`, decision 138 (9)).
 
 For example, under 人行道設施帶: #2 解法 S1 (bins), the #1 solutions about tree pits, and I06 身心障礙者, who needs sidewalk width in both issues.
 
@@ -387,14 +388,16 @@ Layout (decision 111): the band with the back button 「回到空間列表」 (t
 On every page. A `<header>` landmark with:
 
 - the app name 「市政提案小幫手」 on the left, a link to the home page
-- a `<nav>` with four links, each with a count (空間 since decision 120):
+- a `<nav>` with six links, each with a count (空間 since decision 120; 領域 and 解法類型 since decision 166, in this order: 議題, 利害關係人, 空間, 領域, 解法, 解法類型, `NAV_ITEMS`):
 
 | Link | Count | Goes to |
 |---|---|---|
 | 議題 | Analyzed issues (`available: true`) | `#/issues` |
 | 利害關係人 | Active stakeholders (moved IDs left out) | `#/stakeholders` |
-| 空間 | Every space type in `index.spaceTypes` (13), also the ones no analyzed issue uses yet (`spaceCount`) | `#/spaces` |
+| 空間 | Every space type in `index.spaceTypes`, also the ones no analyzed issue uses yet (`spaceCount`; 13 at first, 19 since decision 150) | `#/spaces` |
+| 領域 | Every 領域 in `index.domainTypes` (28), also the unused ones (`typeCount('domain', …)`, decision 165) | `#/domains` |
 | 解法 | Solutions of every analyzed issue, summed | `#/solutions` |
+| 解法類型 | Every 解法類型 in `index.solutionTypes` (13), also the unused ones (`typeCount('solutionType', …)`, decision 165) | `#/solution-types` |
 
 The header has no 訴求 or 需求 link, and no link to 關於本站 (decision 30). The pages `#/wants` and `#/needs` are removed; their old URLs show the not-found page.
 
@@ -408,6 +411,8 @@ A link looks active (bold and underlined) on its list page and on the pages unde
 | `#/stakeholders`, `#/stakeholders/<id>`, its tabs and its story pages (`#/stakeholders/<id>/stories/…`, 3.15) | 利害關係人 |
 | `#/solutions` and the solution pages under it: `#/solutions/2-S1`, `#/solutions/X-S1` and their tabs (3.12, 3.18). | 解法 |
 | `#/spaces` and the space pages `#/spaces/<code>` (3.6, decision 120) | 空間 |
+| `#/domains` and the 領域 pages `#/domains/<code>` (3.24, decision 166) | 領域 |
+| `#/solution-types` and the 解法類型 pages `#/solution-types/<code>` (3.24, decision 166) | 解法類型 |
 | `#/`, `#/about`, unknown pages (also the old `#/wants` and `#/needs`) | none |
 
 Solution pages are under 解法, not 議題, because a solution path is under `#/solutions` now (decision 56).
@@ -424,11 +429,11 @@ Below `md` the header has two rows (decision 123; before, at 360 px it had three
 - Row 2: the nav, full width. The link list is one row that scrolls sideways inside itself, like the issue page tab list (`PHONE_SCROLL_CLASS` of `PageTabs`, decision 102). It goes from screen edge to screen edge, with the 16 px page padding inside. It never scrolls up and down, and its scrollbar is hidden. Touch, a trackpad and the keyboard still scroll it. The list has 4 px of space above and below (`py-1`), so the focus outline is not cut off. The page does not scroll sideways.
 - When the active link is outside the visible part of the list, the list (not the page) scrolls to put it in the middle, on load and when the counts come in. This is the same rule as the issue page tab list.
 
-At 360 px the header is 109 px high, and all four links fit in row 2. The list scrolls only on a narrower screen. The class string is `NAV_LIST_CLASS` in `src/components/Header.tsx`.
+At 360 px the header is 109 px high. With four links, all of them fit in row 2, and the list scrolls only on a narrower screen. With the six links of decision 166 the list is expected to be wider than a 360 px screen, so it scrolls sideways inside itself there (the rule above). This was not measured again after Task U3. The class string is `NAV_LIST_CLASS` in `src/components/Header.tsx`.
 
-In the HTML the nav comes before the toggle, so the keyboard order is the same at every width: app name, 議題, 利害關係人, 空間, 解法, then the toggle. Below `md` the nav is moved to row 2 with CSS (`order-last`), so on a phone the toggle is on screen before the links but is reached after them with Tab.
+In the HTML the nav comes before the toggle, so the keyboard order is the same at every width: app name, 議題, 利害關係人, 空間, 領域, 解法, 解法類型, then the toggle. Below `md` the nav is moved to row 2 with CSS (`order-last`), so on a phone the toggle is on screen before the links but is reached after them with Tab.
 
-From `md` the header is one row, as before: app name, the four links, and the toggle on the right.
+From `md` the header is one row, as before: app name, the six links, and the toggle on the right.
 
 ### 3.8 Footer
 
@@ -461,6 +466,7 @@ Each list page has its own URL and an h1. The header links to it.
 | 尚未納入的特別關注族群 | 呼吸道疾病、外籍 (from `focusGaps`, in the fixed order). When every group is included: 「特別關注族群　都已納入」. Never a count like 「4／6」: it reads like a score (decision 25). |
 | 更新日期 | Date of the last git commit that changed the issue folder. Left out if the build has no git history. |
 | 空間類型 | The issue's space types, for example 人行道、騎樓. Each one links to its space page (section 3.6). |
+| 領域 | Since Task U4: the issue's 領域 (its 「領域：」 line), after 空間類型. Each one links to its 領域 page (3.24, decisions 167 and 168). |
 
 A space type filter sits above the issue list. *Replaced by the bar of 3.23 (decision 85): the filters are in the URL now.*
 
@@ -500,16 +506,16 @@ The 「只看跨議題」 filter is in the URL (`#/stakeholders?cross=1`), so an
 | Filters | Space type and issue, both as toggle chips. Several picked chips in one filter: a solution matches ANY of them. Nothing picked: all. A status line says how many solutions match. |
 | Logic | `solutionGroups` and `solutionSpaceOptions` in `src/lib/solutionList.ts` |
 
-**`#/spaces`: 空間列表 (decisions 120 and 122).** Every space type in `index.spaceTypes` (13), also the ones that no analyzed issue uses yet. The page is `src/pages/Spaces.tsx`.
+**`#/spaces`: 空間列表 (decisions 120 and 122).** Every space type in `index.spaceTypes` (13 at first, 19 since decision 150), also the ones that no analyzed issue uses yet. The page is `src/pages/Spaces.tsx`. Since Task U3 it is a thin wrapper over the generic list page `TypeList` (`src/pages/TypeList.tsx`) with the kind `space`. `#/domains` and `#/solution-types` use the same page (3.24).
 
 | Part | Design |
 |---|---|
 | Title | As on the other list pages (decision 79): no visible title. The highlighted header link 空間 is the title. A visually hidden h1 「空間」. Page title 「空間 · 市政提案小幫手」. |
 | Bar | *Changed by decision 122.* The shared `ListBar` (3.23.2) with the filters 空間分類 and 議題 and the search box (3.23.5, 3.23.13). It has no sort (3.23.3). The route has `handle.fullWidth`, and the content under the bar uses `listBodyClass`, like the other list pages. Under the bar: the result line (「顯示 13 個空間，共 13 個。」, 3.23.6), then the groups, or the empty state. Before decision 122: no bar, and no `handle.fullWidth`. |
-| Groups | One section per `group`, with the group name as an h2 (道路, 地下, 公共空間, 建築). A fixed order: the order in which the groups first appear in `index.spaceTypes` (`spaceGroups` in `src/lib/spaces.ts`). Inside a group, the order of `index.spaceTypes`. Never ordered by a count. With a filter or a search on, the groups and their h2 stay; a group with no space left is not shown (decision 122). |
+| Groups | One section per `group`, with the group name as an h2 (道路, 地下, 公共空間, 建築). A fixed order: the order in which the groups first appear in `index.spaceTypes` (`typeGroups` in `src/lib/typeKinds.ts`; before Task U7 through the wrapper `spaceGroups`). Inside a group, the order of `index.spaceTypes`. Never ordered by a count. With a filter or a search on, the groups and their h2 stay; a group with no space left is not shown (decision 122). |
 | Grid | 1 column on a phone, 2 from `md`, 3 from `xl`, like the other list pages. |
-| Card | `SpaceCard` (`src/components/SpaceCard.tsx`), the compact box `rounded-md border p-3`: the name as a link to `#/spaces/<code>` (an h3), the code, the description, then the fields 議題 (「3 個」 and the titles with `IssueTitleLinks`, one per line), 利害關係人 (「50 位」) and 解法 (「14 個」). |
-| Counts | The same helpers as the space page (3.6), with the files of the issues that use the space: `issuesBySpace`, `stakeholdersBySpace` (each stakeholder once, `spaceStakeholderCount`) and `solutionsBySpace`. So the numbers match the space page. 利害關係人 and 解法 need the issue files (`useIssues`). While they load, or when they fail, the two fields are left out (never a wrong 0), and one load line shows above the groups. |
+| Card | `TypeCard` (`src/components/TypeCard.tsx`) with the kind `space` (before Task U3: `SpaceCard`, removed in Task U7), the compact box `rounded-md border p-3`: the name as a link to `#/spaces/<code>` (an h3), the code, the description, then the fields 議題 (「3 個」 and the titles with `IssueTitleLinks`, one per line), 利害關係人 (「50 位」) and 解法 (「14 個」). |
+| Counts | The same helpers as the space page (3.6), with the files of the issues that use the space: `issuesByType`, `stakeholdersByType` (each stakeholder once, `typeStakeholderCount`) and `solutionsByType`, with the kind `space`. So the numbers match the space page. 利害關係人 and 解法 need the issue files (`useIssues`). While they load, or when they fail, the two fields are left out (never a wrong 0), and one load line shows above the groups. |
 | Unused space | A space that no analyzed issue uses shows the badge 「尚無議題」 and a dashed border, like a 製作中 issue card, and no fields. |
 
 The list pages `#/wants` (訴求列表) and `#/needs` (需求列表) were removed (decision 31). Their old URLs show the not-found page. The opinion check pick links they used stay in `src/lib/opinion.ts`: `opinionPickTo` and `storyPickKey` (the old `needPickKey`). The 分析摘要 links (`src/lib/summary.ts`) use them.
@@ -518,8 +524,8 @@ The list pages `#/wants` (訴求列表) and `#/needs` (需求列表) were remove
 
 | Card | `detailed` | `compact` |
 |---|---|---|
-| `IssueCard` (`src/components/IssueCard.tsx`) | `#/issues`: a box with all the fields in the issue table above, with 資料根據 and the 特別關注族群 line. Props: `shared`, `headingLevel`. | Home 「最近更新的議題」 and the space page: the title link, 跨議題共用的利害關係人 (prop `shared`, the same text and link as `detailed`), 資料根據 (`CellBasis` with `compact`: the label, the counts and the bar, no totals, no 實證 percent), 更新日期 and 空間類型, in a smaller box (decisions 26 and 72) |
-| `SolutionCard` (`src/components/SolutionCard.tsx`) | `#/solutions`: the code and name, the summary, 空間類型, 更新日期 (decision 131; before: 新增日期) and the number of covered needs (「涵蓋 9 個需求」, decision 54). Props: `spaceTypes`, `coveredNeeds` (from `coveredNeedCount` in `src/lib/solutionList.ts`). | Home 「最近更新的解法」, the space page, the stakeholder page and the opinion check result: the code and name, and the one-line summary. Since decision 112 the pages add 涵蓋需求的資料根據 (`CoveredBasisField`, counts and bar, no share) as `children`; the home page also adds 議題 「#2 找回消失的垃圾桶」 and 更新日期. The compact card shows no date of its own (decision 132). Not yet on the story page (`StakeholderStory.tsx`). |
+| `IssueCard` (`src/components/IssueCard.tsx`) | `#/issues`: a box with all the fields in the issue table above, with 資料根據 and the 特別關注族群 line. Props: `shared`, `headingLevel`. | Home 「最近更新的議題」 and the space page: the title link, 跨議題共用的利害關係人 (prop `shared`, the same text and link as `detailed`), 資料根據 (`CellBasis` with `compact`: the label, the counts and the bar, no totals, no 實證 percent), 更新日期, 空間類型 and 領域 (領域 since decision 169), in a smaller box (decisions 26 and 72) |
+| `SolutionCard` (`src/components/SolutionCard.tsx`) | `#/solutions`: the code and name, the summary, the tag rows 空間類型, 領域 and 解法類型 (decisions 156 and 167; before Task U4 only 空間類型), 更新日期 (decision 131; before: 新增日期) and the number of covered needs (「涵蓋 9 個需求」, decision 54). Props: `types` (the three type lists; before Task U4: `spaceTypes`), `coveredNeeds` (from `coveredNeedCount` in `src/lib/solutionList.ts`). | Home 「最近更新的解法」, the space page, the stakeholder page and the opinion check result: the code and name, and the one-line summary. No tag rows (decision 169). Since decision 112 the pages add 涵蓋需求的資料根據 (`CoveredBasisField`, counts and bar, no share) as `children`; the home page also adds 議題 「#2 找回消失的垃圾桶」 and 更新日期. The compact card shows no date of its own (decision 132). Not yet on the story page (`StakeholderStory.tsx`). |
 | `StakeholderCard` (`src/components/StakeholderCard.tsx`) | The tree of the issue's 利害關係人 tab (decision 115; before decision 109, the 「利害關係人」 section of 總覽) (and `#/stakeholders` before Phase S, decision 62): the name link, the ID, the 特別關注 badges, then one line per issue (「#2 找回消失的垃圾桶」, decision 112) with the story counts by priority, then the stories (`StoryLines` as `children`, decision 116). Props: `entries` (from `storyCountsByStakeholder`) and `issueTitles`. | Home 「最近更新的族群」 (with 出現的議題, 資料根據 and 更新日期 as `children`; decision 132), the solution page's 利害關係人 tab, the stakeholder page's 訴求 and 需求 tabs (「同樣想要的人」, 「同樣需要的人」), the space page (both lists) and the opinion check 「這個意見沒有直接提到的人」: the name link, the ID and the 特別關注 badges. `children` add 「也出現在 #1 把三千棵樹種回來」 (`AlsoInLine`) or, on the space page's shared list, 出現的議題 with titles, one per line. Since decision 112 every compact stakeholder card also gets 資料根據 (`BasisField`) as `children`. The compact card shows no date of its own (decision 132). |
 
 Every card is a box. `detailed` uses `rounded-lg border p-4` (`StakeholderCard` uses `p-3` on a phone, because the tree has many cards). `compact` uses `rounded-md border p-3`, the same box for all three cards, so the home blocks look alike. An issue that is 製作中 has a dashed border in both variants. Compact cards are stacked with a gap (`space-y-3`), not split by lines. Inline issue links inside a sentence or a field are references, not lists, so they stay plain links: the 「議題」 field on the stakeholder page and 「同空間的其他議題」 on the 總覽 tab. The same rule applies to stakeholders: the members of a W group (solution page, stakeholder page) and the 特別關注族群 rows on the 總覽 tab stay plain links.
@@ -555,20 +561,22 @@ On every page, the text 「市政 debug 松參加者作品・展示用 MVP」 (`
 
 ### 3.12 Solution page
 
-URL: `#/solutions/<n>-<code>` (the 總覽 tab) and `#/solutions/<n>-<code>/<tab>`, for example `#/solutions/2-S1/needs` (ETBlue, 2026-10-20, decision 56). Solutions have their own path, not a path under the issue, because solutions and issues are many-to-many: a cross-issue solution combines solutions of several issues. A cross-issue solution uses the same path format and the same page: `#/solutions/X-S1` (3.18). One page per solution, because the content of a solution can be long (ETBlue, `human-inputs.md`). Page title: 「#2 S1 清潔箱佈建建議地圖 · 解法 · 市政提案小幫手」; on another tab the tab name comes after the solution: 「#2 S1 清潔箱佈建建議地圖 · 衝突 · 解法 · 市政提案小幫手」. The page has ten tabs (ETBlue, 2026-10-23, decision 140; before: seven tabs, decision 103; before that: three tabs, decision 36). Since decision 142, 利害關係人, 訴求, 需求 and 衝突 are in the same order as on the issue page. Before, the order was 需求, 訴求, 利害關係人, 衝突. The URLs did not change. The labels are from the fixture data of #2 S1:
+URL: `#/solutions/<n>-<code>` (the 總覽 tab) and `#/solutions/<n>-<code>/<tab>`, for example `#/solutions/2-S1/needs` (ETBlue, 2026-10-20, decision 56). Solutions have their own path, not a path under the issue, because solutions and issues are many-to-many: a cross-issue solution combines solutions of several issues. A cross-issue solution uses the same path format and the same page: `#/solutions/X-S1` (3.18). One page per solution, because the content of a solution can be long (ETBlue, `human-inputs.md`). Page title: 「#2 S1 清潔箱佈建建議地圖 · 解法 · 市政提案小幫手」; on another tab the tab name comes after the solution: 「#2 S1 清潔箱佈建建議地圖 · 衝突 · 解法 · 市政提案小幫手」. The page has eleven tabs (ETBlue, 2026-10-24, decision 143; before: ten tabs, decision 140; before that: seven tabs, decision 103; before that: three tabs, decision 36). An issue solution has a twelfth tab, 可能合併, last (decision 155). A cross-issue solution does not have it. Since decision 142, 利害關係人, 訴求, 需求 and 衝突 are in the same order as on the issue page. Before, the order was 需求, 訴求, 利害關係人, 衝突. The URLs did not change. The labels are from the fixture data of #2 S1 (the 需求 label says 滿足・未滿足 since decision 142; 可能爭議 and 潛在風險 as in decision 143):
 
 | Tab | URL | Tab label (example #2 S1) |
 |---|---|---|
 | 總覽 | `#/solutions/2-S1` | 總覽 |
 | 利害關係人 | `#/solutions/2-S1/stakeholders` | 利害關係人　涵蓋 14・未涵蓋 13 |
 | 訴求 | `#/solutions/2-S1/wants` | 訴求　涵蓋 28・未涵蓋 25 |
-| 需求 | `#/solutions/2-S1/needs` | 需求　涵蓋 9・未涵蓋 13 |
+| 需求 | `#/solutions/2-S1/needs` | 需求　滿足 9・未滿足 13 |
 | 衝突 | `#/solutions/2-S1/conflicts` | 衝突　解開 5・相關 3 |
-| 可能爭議 | `#/solutions/2-S1/controversies` | 可能爭議 4 |
-| 法規障礙 | `#/solutions/2-S1/legal` | 法規障礙 2 |
 | 執行計畫 | `#/solutions/2-S1/plan` | 執行計畫 |
 | 成效衡量 | `#/solutions/2-S1/measures` | 成效衡量 4 |
+| 潛在風險 | `#/solutions/2-S1/risks` | 潛在風險 2 |
+| 可能爭議 | `#/solutions/2-S1/controversies` | 可能爭議 2 |
+| 法規障礙 | `#/solutions/2-S1/legal` | 法規障礙 2 |
 | 相關政策 | `#/solutions/2-S1/policies` | 相關政策　國內 2・國外 2 |
+| 可能合併 (issue solutions only) | `#/solutions/2-S1/candidates` | 可能合併 1 |
 
 Below `md` the tab list is one row that scrolls sideways, as on the issue page (`scrollOnPhone`, decision 102). The page itself does not scroll sideways. From `md` the tabs are a side menu on the left (decision 111, 3.2 **Page layout**).
 
@@ -588,7 +596,7 @@ Definitions (`solutionTabCounts` in `src/lib/tabCounts.ts`, decision 50):
 - 成效衡量: the number of 6.3 rows of the solution. 相關政策: the number of `practices` items with `domestic: true` (國內) and with `domestic: false` (國外) (decision 104).
 - The counts are plain numbers. There is no percent and no bar, because a ratio would look like a score. A solution does not need to cover every need. The counts do not change when the filter is on (decision 49).
 
-Above the tabs, on every tab: the band with the back button 「回到解法列表」 and the h1 (「#2 S1」 and the name with its tag) (decision 111). At the top of the 總覽 tab: the line 「議題：#2 找回消失的垃圾桶」 (a link to the issue), the one-line summary, the space types (links), 新增日期 and 更新日期 (decision 131). *Before decision 111 these were above the tabs, under a breadcrumb (首頁 › 解法 › #2 S1 清潔箱佈建建議地圖, decision 99).*
+Above the tabs, on every tab: the band with the back button 「回到解法列表」 and the h1 (「#2 S1」 and the name with its tag) (decision 111). At the top of the 總覽 tab: the line 「議題：#2 找回消失的垃圾桶」 (a link to the issue), the one-line summary, the tag rows (links), 新增日期 and 更新日期 (decision 131). The tag rows are 空間類型, 領域 and 解法類型, in this order (decision 167; before Task U4: the space types only). When the solution has no own 領域, its 領域 come from the issue: the links are muted and 「（沿用議題）」 follows them (decision 156). *Before decision 111 these were above the tabs, under a breadcrumb (首頁 › 解法 › #2 S1 清潔箱佈建建議地圖, decision 99).*
 
 **總覽**, in this order (decision 103 moved 解開的衝突 and 相關的衝突 to 衝突, 涵蓋的相同訴求群組 to 訴求, and 成效衡量 to its own tab; decision 140 moved the step 7 tables to 可能爭議, 法規障礙 and 執行計畫):
 
@@ -633,11 +641,31 @@ The items are not entities, so they are in the article style of decision 137: on
 
 **相關政策** (decisions 103 and 104). The hidden h2 is the full name 「相關或類似的政策與做法」. One intro line, and a note when there is a practice row: the 相關做法 items come from step 6.1, other places' practices are only for reference, and 本文件怎麼用 is the AI's idea (the words of the analysis). Then two h3 parts, 「國內 N」 and 「國外 M」, side by side from `lg` (decision 136), each in file order. Each item is in article style, not a card (decision 137): an h4 with a small label (「相關做法」 or 「相依與現行政策」), the place and the name, the content with its tag badge, 本文件怎麼用 when present, and a source line: 「來源：#2 議題分析步驟 6.1 的相關做法表。」 for a practice row, or 「來源：議題分析步驟 7 這個解法的「相依事項與現行政策的關係」」 for a dependency row (decision 140: the dependency rows come from the solution's own step 7 table; before, they came from the 分析摘要 and linked to the issue tab 相關解法與政策, which is removed). A dependency row also has the 「相關：」 line with its `refs` as links, as on the 可能爭議 tab. An empty group says so. With no item at all (#8 S5, #9 S5): 「分析裡沒有和這個解法相關或類似的政策與做法。」 The filter does not change this tab, the same as the issue's 相依與現行政策 tab (decision 102).
 
+**可能合併** (decisions 155 and 176–180; Task U6). Issue solutions only. `CandidatesTab` in `src/components/solution/CandidatesTab.tsx`, one `CandidateCard` per other solution, and the helper `solutionCandidates` in `src/lib/candidates.ts`. The data is `candidates` in `cross-issue.json`: the rows of `analysis/cross-issue/candidates.csv` (rule R3). The app does not run rule R3. A pair is only a suggestion; a person decides.
+- Intro line: 「這些是其他議題中，可能可以和這個解法合併的解法。這份清單由規則產生，只是建議，由人決定是否合併。」, then the link 「產生這份清單的規則」 to the 跨議題分析 section of `method.md` (decision 180).
+- One card per other solution: the other side of each row where this solution is `a` or `b`. Each other solution shows once; the first row in file order wins. The cards are in the card grid of the tabs (`cardGridClass`).
+- Order: issue number, then solution ID, both as numbers (`compareCodes`), so `#4 S2` comes before `#4 S10` and before `#12 S1`. Never by a count.
+- Card rows, in this order:
+
+| Row | Shows |
+|---|---|
+| (title) | 「#n Sk」 and the name, a link to the solution page (`SolutionTitleLink` with `showIssue`). While the issue file is missing, only 「#n Sk」 as a link. |
+| 共同解法類型 | Names, links to `#/solution-types/<code>` |
+| 共同領域 | Names, links to `#/domains/<code>`. Left out when empty. |
+| 共同空間類型 | Names, links to `#/spaces/<code>`. Left out when empty. |
+| 共同需求 | An X-N group: the ID and its summary, as text (decision 176). A 1.2 row such as 「1.2 O12」: text as written (decision 177). |
+| 已在跨議題解法 | The X- solutions that hold both solutions, as links (`CrossSolutionLink`), or 「尚未合併」 |
+
+- No score, no rank, and no number of shared things on the card.
+- Label: 「可能合併 n」, n is the number of cards. While `cross-issue.json` loads: 「可能合併」 with no number (decision 179). Without `cross-issue.json` there is no pair.
+- No pair: the label 「可能合併 0」 and the short gray note 「合併的候選清單上，沒有其他議題的解法和這個解法成對。」 (decision 178).
+- The tab loads the issue files of the other solutions, for their names.
+
 Rules:
 - Every mention of a solution links to its page (as before). The link text is the code and the name. The link keeps `?evidence=1`.
 - A tab change keeps `?evidence=1`.
 - An unknown path segment, an unknown issue, an issue with no analysis, an unknown code or an unknown tab shows a short message with links (the issue's 解法 tab when the issue is known, `#/solutions`, the home page).
-- The logic is in `src/lib/solutionPage.ts`: the existing functions, plus `solutionNeedCoverage`, `solutionStakeholderCoverage`, `solutionWayOutConflicts`, `solutionWantCoverage`, `practiceSides`. The counts and the labels are in `src/lib/tabCounts.ts` (`solutionTabCounts`, `solutionTabLabel`). The paths are in `src/lib/entityPaths.ts`: `parseSolutionSlug`, `parseSolutionTab`, `solutionPath`, `crossSolutionPath`. Nothing is sorted by a count.
+- The logic is in `src/lib/solutionPage.ts`: the existing functions, plus `solutionNeedCoverage`, `solutionStakeholderCoverage`, `solutionWayOutConflicts`, `solutionWantCoverage`, `practiceSides`. The counts and the labels are in `src/lib/tabCounts.ts` (`solutionTabCounts`, `solutionTabLabel`). The paths are in `src/lib/entityPaths.ts`: `parseSolutionSlug`, `parseSolutionTab`, `parseIssueSolutionTab` (also `candidates`), `SOLUTION_TABS`, `ISSUE_SOLUTION_TABS`, `solutionPath`, `crossSolutionPath`. Nothing is sorted by a count.
 
 ### 3.13 About page
 
@@ -764,7 +792,8 @@ Today the file has 5 solutions (X-S1 to X-S5), 7 X-N groups and 2 conflicts (X-C
 | Part | Cross-issue solution |
 |---|---|
 | Band, h1, title | The band with the back button 「回到解法列表」 (decision 111; before: the breadcrumb 首頁 › 解法 › X-S1 同一段人行道的共同參與式選址, decision 99). The h1 is 「X-S1」 and the name with its tag. The 議題 line, the summary, the space types and 新增日期 are at the top of 總覽. Page title: 「X-S1 <name> · 解法 · 市政提案小幫手」. |
-| Line under the h1 | 「跨議題解法・議題：#1、#2、#8」, each issue a link. The issues are the ones in `parts`. Then the summary, the space types, 新增日期 and 更新日期 (decision 131). |
+| Line under the h1 | 「跨議題解法・議題：#1、#2、#8」, each issue a link. The issues are the ones in `parts`. Then the summary, the tag rows, 新增日期 and 更新日期 (decision 131). The tag rows are 空間類型, 領域 and 解法類型 (decision 167). 領域 is the union of the 領域 of its parts (`domains` in `cross-issue.json`), in the normal style, never with 「（沿用議題）」 (decision 156). |
+| Tabs | The eleven tabs of 3.12. There is no 可能合併 tab (decision 155): `#/solutions/X-S1/candidates` shows 「找不到這個分頁。」. |
 | Covered needs | An issue need is covered when it is in `needs.must` or `needs.shouldCould`, or in an X-N group listed in `needs.crossIssue` (decision 60). This can be a need of an issue that is not in `parts`. For example X-S5 has parts in #2 and #8, but its group X-N3 has #1 N15, so #1 N15 is covered. |
 | Not covered needs | Every other need of the issues in `parts`. An issue that is not in `parts` has no not covered need. |
 | Covered stakeholders | A stakeholder with at least one covered need, in any of these issues (also an issue that is not in `parts`). Each stakeholder is listed once, in ID order. |
@@ -806,13 +835,17 @@ Every page and its tabs (decisions 45, 46, 56).
 | `#/stakeholders/<id>`, `#/stakeholders/<id>/<tab>` | Stakeholder (3.3) | 總覽 · 訴求 · 需求 · 衝突 · 解法 (`wants`, `needs`, `conflicts`, `solutions`; decision 142) |
 | `#/stakeholders/<id>/stories/<n>/<storyId>` | Story (3.15) | — |
 | `#/solutions` | Solution list (3.9) | — |
-| `#/solutions/<n>-<code>`, `…/<tab>` (for example `#/solutions/2-S1`) | Solution (3.12) | 總覽 · 利害關係人 · 訴求 · 需求 · 衝突 · 可能爭議 · 法規障礙 · 執行計畫 · 成效衡量 · 相關政策 (`stakeholders`, `wants`, `needs`, `conflicts`, `controversies`, `legal`, `plan`, `measures`, `policies`; decisions 103, 140 and 142) |
-| `#/solutions/X-S<number>`, `…/<tab>` (for example `#/solutions/X-S1`) | Cross-issue solution (3.12, 3.18) | The same ten tabs |
+| `#/solutions/<n>-<code>`, `…/<tab>` (for example `#/solutions/2-S1`) | Solution (3.12) | 總覽 · 利害關係人 · 訴求 · 需求 · 衝突 · 執行計畫 · 成效衡量 · 潛在風險 · 可能爭議 · 法規障礙 · 相關政策 · 可能合併 (`stakeholders`, `wants`, `needs`, `conflicts`, `plan`, `measures`, `risks`, `controversies`, `legal`, `policies`, `candidates`; decisions 103, 140, 142, 143 and 155) |
+| `#/solutions/X-S<number>`, `…/<tab>` (for example `#/solutions/X-S1`) | Cross-issue solution (3.12, 3.18) | The same tabs without 可能合併 (eleven tabs) |
 | `#/spaces` | Space list (3.9, decision 120) | — |
 | `#/spaces/<code>`, `#/spaces/<code>/<tab>` | Space (3.6) | 總覽 · 議題 · 解法 · 利害關係人 (`issues`, `solutions`, `stakeholders`; decision 129) |
+| `#/domains` | 領域 list (3.24, decision 152) | — |
+| `#/domains/<code>`, `#/domains/<code>/<tab>` | 領域 (3.24). Level 2 codes only (decision 153). | The same four tabs as a space |
+| `#/solution-types` | 解法類型 list (3.24, decision 152) | — |
+| `#/solution-types/<code>`, `#/solution-types/<code>/<tab>` | 解法類型 (3.24) | The same four tabs as a space |
 | `#/about` | About (3.13) | — |
 
-Query parameters: `evidence=1` (3.5; the issue 訴求, 需求, 衝突 and 解法 tabs, the stakeholder page and the solution page), `stakeholder=<id>` and `special=<特別關注 group>` (the side bar filters of the issue 訴求, 需求, 衝突 and 解法 tabs, 3.21; `special` also on the issue 利害關係人 tab, decision 121), `cross=1` (只看跨議題 on the issue 利害關係人 tab, 3.2, decision 121), `priority=<M|S|C|W>` (優先順序, once per pick) and `conflict=1` (只看有衝突的需求) on the issue 需求 tab (3.2, decision 127; unknown values are ignored, and a tab change drops both, `keptSearch`), `pick=<key>` (4), `focus=<value>` (3.2, 3.16), `from=<old id>` (3.3; set only by the link on the not-found page of a moved ID, decision 113). Phase L (3.23.5, 3.23.13): on the three list pages `sort=<updated|added|evidence|solutions>`, `issue=<n>` and `issue=X`, `space=<code>`, `who=<id>`, `specialonly=1`, `view=tree` and `q=<search text>`. On `#/spaces` (decision 122): `q=<search text>`, `issue=<n>` and `group=<group name>` (for example `group=道路`). There is no `sort=id` (Q24): it is handled like any unknown value, so the param is dropped with `replace`. The old params `cross`, `special` (on the list pages and the stakeholder page) and `evidence` (on the list pages) are not read and not changed any more (decision 110).
+Query parameters: `evidence=1` (3.5; the issue 訴求, 需求, 衝突 and 解法 tabs, the stakeholder page and the solution page), `stakeholder=<id>` and `special=<特別關注 group>` (the side bar filters of the issue 訴求, 需求, 衝突 and 解法 tabs, 3.21; `special` also on the issue 利害關係人 tab, decision 121), `cross=1` (只看跨議題 on the issue 利害關係人 tab, 3.2, decision 121), `priority=<M|S|C|W>` (優先順序, once per pick) and `conflict=1` (只看有衝突的需求) on the issue 需求 tab (3.2, decision 127; unknown values are ignored, and a tab change drops both, `keptSearch`), `pick=<key>` (4), `focus=<value>` (3.2, 3.16), `from=<old id>` (3.3; set only by the link on the not-found page of a moved ID, decision 113). Phase L (3.23.5, 3.23.13): on the three list pages `sort=<updated|added|evidence|solutions>`, `issue=<n>` and `issue=X`, `space=<code>`, `who=<id>`, `specialonly=1`, `view=tree` and `q=<search text>`. On `#/spaces` (decision 122): `q=<search text>`, `issue=<n>` and `group=<group name>` (for example `group=道路`). The same on `#/domains` (for example `group=一般政務`). On `#/solution-types`: `q` and `issue` only (a 解法類型 has one level, so there is no `group`). Since Task U5: `domain=<code>` on `#/issues` and `#/solutions`, and `solutiontype=<code>` on `#/solutions` (decision 172). There is no `sort=id` (Q24): it is handled like any unknown value, so the param is dropped with `replace`. The old params `cross`, `special` (on the list pages and the stakeholder page) and `evidence` (on the list pages) are not read and not changed any more (decision 110).
 
 Old URLs (decision 110: no app link was ever shared, so no old URL redirects; decision 113: no moved-ID redirect either):
 
@@ -1104,6 +1137,8 @@ Decision 85.
 | 搜尋 | Search box (3.23.13). Not counted as a filter on the phone 「篩選」 button. | Yes | Yes | Yes | `q=<text>` |
 | 議題 | Popover with checkboxes: first 「跨議題」, then the analyzed issues in number order | — | Yes | Yes | `issue=<n>`, once per picked issue; `issue=X` for 「跨議題」 |
 | 空間類型 | Popover with checkboxes, the used space types in the order of `space-types.csv` | Yes | — | Yes | `space=<code>`, once per picked space |
+| 領域 (Task U5) | Popover with checkboxes, the used level 2 領域 in the order of `domain-types.csv`, one flat list (decision 174) | Yes | — | Yes | `domain=<code>`, once per picked 領域 (decision 172) |
+| 解法類型 (Task U5) | Popover with checkboxes, the used 解法類型 in the order of `solution-types.csv` (decision 174) | — | — | Yes | `solutiontype=<code>`, once per picked type (decision 172) |
 | 利害關係人 | The stakeholder picker (3.23.7) | Yes | — | Yes | `who=<id>`, one ID |
 | 特別關注族群 | Toggle 「只看特別關注族群」 | — | Yes | — | `specialonly=1` |
 | Sort | `<select>` | Yes | Yes | Yes | `sort=<value>` (3.23.3) |
@@ -1117,7 +1152,7 @@ Decision 85.
 | 議題 | Popover with checkboxes, the analyzed issues that use at least one space, in number order (「#1 把三千棵樹種回來」). No 「跨議題」 choice. 「議題：全部」 when nothing is picked. | One of the picked issues uses the space (`spaces` in `index.json`). A space that no analyzed issue uses is hidden while this filter is on. | `issue=<n>`, the same param as on the other pages |
 | 搜尋 | Search box (3.23.13) | The whole code matches (`bike-lane`, `bikelane`) or the name contains the text | `q=<text>` |
 
-Unknown values are dropped with `replace`: a group that does not exist, `issue=X`, an issue with no analysis or with no space (#9), `sort`, and the params of the other pages. The logic is `filterSpaces` in `src/lib/listFilter.ts`, `spaceMatches` in `src/lib/listSearch.ts`, and `listParamsOf('spaces', …)` in `src/lib/listParams.ts`.
+Unknown values are dropped with `replace`: a group that does not exist, `issue=X`, an issue with no analysis or with no space (#9), `sort`, and the params of the other pages. The logic is `filterTypes` in `src/lib/listFilter.ts`, `typeMatches` in `src/lib/listSearch.ts`, and `listParamsOf('spaces', …)` in `src/lib/listParams.ts` (before Task U7 also through the wrappers `filterSpaces` and `spaceMatches`). `#/domains` and `#/solution-types` use the same functions (3.24).
 
 The new names do not reuse `stakeholder`, `evidence`, `cross`, `special`, `focus`, `pick` or `from`, because those mean other things on other pages (3.19). The old `cross=1` on `#/stakeholders` redirected to `issue=X` until decision 110.
 
@@ -1135,6 +1170,9 @@ The exact UI: the 「議題」 popover button opens a `<fieldset>` with the lege
 | 議題 on `#/solutions` | An issue solution: its issue is picked. A cross-issue solution: 「跨議題解法」 is picked, or a picked issue is one of the issues in its `parts`, or one of the issues of the needs it covers (`crossCoverageIssueNumbers`). For example X-S5 has parts in #2 and #8, but it covers #1 N15 through X-N3, so `issue=1` keeps X-S5. *(Proposal.)* Before, only the issues in `parts` counted (3.18). |
 | 空間類型 on `#/issues` | The issue uses one of the picked spaces (as today) |
 | 空間類型 on `#/solutions` | The solution (issue or cross-issue) lists one of the picked spaces (as today) |
+| 領域 on `#/issues` | The issue uses one of the picked 領域: its 「領域：」 line or the own 領域 of one of its solutions (`usedDomains`, decisions 159 and 175) |
+| 領域 on `#/solutions` | An issue solution: its `domains` (its own 領域, or else the issue's) has one of the picked 領域. A cross-issue solution: its `domains` (the union of its parts) has one |
+| 解法類型 on `#/solutions` | The solution (issue or cross-issue) has one of the picked 解法類型 (`solutionTypes`) |
 | 利害關係人 on `#/issues` | The stakeholder is in the issue (its `issues` list) |
 | 利害關係人 on `#/solutions` | The solution covers at least one need of the stakeholder: the same rule as the issue's 解法 tab (3.2) and the stakeholder's 解法 tab. For a cross-issue solution: one of the stakeholder's needs, in any issue, is covered (decision 60). |
 | 只看特別關注族群 | The stakeholder has at least one 特別關注 group |
@@ -1151,7 +1189,7 @@ The exact UI: the 「議題」 popover button opens a `<fieldset>` with the lege
 - The card links do not carry the list params. The solution card link keeps `?evidence=1` as before, but these pages never set it.
 - Links to the list pages from other pages (the breadcrumbs, 「看全部議題的解法」 on the solution page) do not carry `?evidence=1`, because the list pages do not read it. The links are built with `listPath` and `HOME_ALL_PATHS` in `src/lib/listParams.ts` where they have params.
 - The old params `evidence`, `cross` and `special` are not list params. The pages ignore them and leave them in the URL (decision 110 removed `legacyListRedirect`).
-- The logic is pure functions in `src/lib/listParams.ts`: `listParamsOf(page, params, index)` → `{ sort, issues, crossChoice, spaces, who, specialOnly, view, q }` (cleaned), `listUrlSearch(page, state)` → the URL search string, and `clearListFilters(params)`. Tests first. (The URL function was called `listSearch` in the first draft. It is renamed, so the name does not mix with the text search of 3.23.13, which is in `src/lib/listSearch.ts`.)
+- The logic is pure functions in `src/lib/listParams.ts`: `listParamsOf(page, params, index)` → `{ sort, issues, crossChoice, spaces, domains, solutionTypes, who, specialOnly, view, q }` (cleaned; `domains` and `solutionTypes` since Task U5), `listUrlSearch(page, state)` → the URL search string, and `clearListFilters(params)`. Tests first. (The URL function was called `listSearch` in the first draft. It is renamed, so the name does not mix with the text search of 3.23.13, which is in `src/lib/listSearch.ts`.)
 
 **Old links.** *Removed by decision 110.* Before, `#/stakeholders?cross=1`, `#/stakeholders?special=<group>`, `?evidence=1` on the three list pages and `#/?cross=1` redirected (decisions 91 and 100). No app link was ever shared, so these redirects are gone. The 跨議題共用的利害關係人 link on the issue cards (3.9, decision 72) is `#/stakeholders?issue=X`.
 
@@ -1432,6 +1470,53 @@ The strings (`src/i18n/zh-TW.ts`, block `listSearch`):
 - `issueMatches(issue, query)`, `stakeholderMatches(stakeholder, query)`, `solutionMatches(item, query)`. Each is true when the query is null, or the number matches, or the title contains `text`.
 - Tests: `8`, `#8`, `＃８`, `08` find #8; 「無菸」 finds #8; `1` does not find a #10 (a test item); `i6`, `I06`, `I 06` find I06; `I1` does not find I12; `S1` finds every solution S1 and X-S1; `X-S1` and `xs1` find only X-S1; `2-S1`, `2S1`, `#2 S1` find only #2 S1; 「建議地圖」 finds only #2 S1; an empty query and `#` alone find every item; the search with a filter keeps only the items that match both; the result order is the order of the sort (the search does not change it).
 
+### 3.24 領域 and 解法類型 pages (Tasks U3–U5)
+
+ETBlue's decisions of 2026-11-01 (decisions 152–157). The plan is `app/docs/plan-types-ui.md`. The data comes from `analysis/data/domain-types.csv` and `analysis/data/solution-types.csv` (5.9).
+
+The 領域 and 解法類型 pages are the space pages (3.6, 3.9) with another kind of type. They use the same code: `TypeList`, `TypePage`, `TypeCard` and `TypeTabMenu`, with the kind `domain` or `solutionType` (decision 152). The UI text of each kind is in `src/i18n/zh-TW.ts` (`domainsList`, `domainPage`, `solutionTypesList`, `solutionTypePage`), and `src/components/typeText.ts` maps a kind to it. This section lists only what is different from the space pages.
+
+| | Space | 領域 | 解法類型 |
+|---|---|---|---|
+| List page | `#/spaces` | `#/domains` | `#/solution-types` |
+| Type page | `#/spaces/<code>` | `#/domains/<code>` | `#/solution-types/<code>` |
+| Types | 19 (level 2) | 28 (level 2) | 13 (one level) |
+| Groups (level 1) | 4 (道路, 地下, 公共空間, 建築) | 8 (the 政事別 大分類, `domainGroups`) | none |
+| On an issue | `spaces` | `domains` (the 「領域：」 line) | none |
+| On a solution | `spaces` | `domains` (`ownDomains` when not empty, else the issue's) | `solutionTypes` |
+| An issue uses a type when | its `spaces` has it | its `usedDomains` has it: the 領域 line, or a solution's own 領域 (decisions 159 and 175) | one of its solutions has it |
+| Back button | 回到空間列表 | 回到領域列表 | 回到解法類型列表 |
+
+**List pages `#/domains` and `#/solution-types`.** As `#/spaces` (3.9):
+- The hidden h1 and the page title: 「領域」 or 「解法類型」.
+- The bar: `#/domains` has the filters 領域分類 (the 8 group names, file order, `group=`) and 議題. `#/solution-types` has only 議題, because it has no groups. Both have the search (code or name, `typeMatches`). No sort: the types keep the file order.
+- The 議題 filter offers the analyzed issues that can use a type of the kind (`issueMayUseType`). The kept types are the ones a picked issue uses (`filterTypes` with `typeIssues`).
+- The result line: 「顯示 28 個領域，共 28 個。」, 「顯示 13 個解法類型，共 13 個。」.
+- `#/domains` shows the cards under the 8 group h2 headings, in file order. A group with no card left is not shown. `#/solution-types` has no headings; its card titles are h2 (decision 164).
+- Every type has a card, also an unused one (decision 154): the badge 「尚無議題」, a dashed border and no count fields.
+- The cards wait for the issue files (decision 160). Until they are loaded, the page shows the load line. Then the card fields 議題, 利害關係人 and 解法 show, from the same helpers as the type page.
+
+**Type pages `#/domains/<code>` and `#/solution-types/<code>`.** The band with the back button and the h1 (the type name), then the four tabs of the space page: 總覽, 議題 N, 解法 N, 利害關係人 N (`TYPE_TABS`, the same as `SPACE_TABS`). The page title is the type name, and on another tab also the tab name.
+- Only a level 2 code has a page (decision 153). A level 1 code (`#/domains/economic-development`) or an unknown code shows 「找不到這個領域」 or 「找不到這個解法類型」 and a link to the home page.
+- 總覽 (decision 157): a 領域 shows 上層 (the level 1 name, plain text, decision 161), 說明, 政事別 and 陳情系統主類別. A 解法類型 shows 說明, 判斷方式 and 政策工具. An empty field is left out (decision 162). Then 新增日期, 更新日期 and the intro line.
+- 議題: the issues that use the type (`typeIssues`), as compact `IssueCard`s.
+- 解法: the solutions that have the type (`solutionsByType`), grouped by issue, with the same menu bar as the space page (decision 138). Each card also lists the other types of the same kind: 「也屬於：」 on a 領域 page, 「也使用：」 on a 解法類型 page (decision 163).
+- 利害關係人: the stakeholders of the stories of those solutions, as on the space page.
+- The page needs every analyzed issue file, because the issues that use a 解法類型 are known only from the files. While they load, the tab labels show the names only.
+- An unused type (decision 154) has the counts 0 and the empty texts, for example 「目前沒有已完成分析的議題屬於這個領域。」.
+
+**Tags on other pages (Task U4, decisions 156 and 167–171).** Wherever an issue or a solution shows its space types, it now also shows its 領域 and, for a solution, its 解法類型. The rows are in the order 空間類型, 領域, 解法類型. Each tag is a link to its type page and shows the level 2 name.
+
+| Place | 空間類型 | 領域 | 解法類型 |
+|---|---|---|---|
+| Issue page 總覽, issue cards (detailed and compact) | yes | yes | — |
+| Solution page 總覽, detailed `SolutionCard` on `#/solutions` | yes | yes, muted with 「（沿用議題）」 when taken from the issue | yes |
+| Issue 解法 tab | yes | only the own 領域 (decision 158) | yes |
+| X- solution page and detailed X- card | yes | yes (the union, normal style) | yes |
+| Compact solution cards | — | — | — (decision 169) |
+
+**Filters on `#/issues` and `#/solutions` (Task U5).** See 3.23.5 and decisions 172–175.
+
 ## 4. Opinion check
 
 The opinion check is part of the 訴求 tab of the issue page (decision 38, 3.2). The picked item is in the URL: `#/issues/<n>/wants?pick=W08`. (The old URL `#/issues/<n>/opinion?pick=W08` does not redirect any more, decision 110.) Each story ID in the result links to its story page (3.15). 相關解法 are the solutions that cover the need of a picked story.
@@ -1588,6 +1673,20 @@ Rules:
 - A 6.3 row lists one or more codes in its 解法 cell, separated by 「、」, for example `S1、S4`.
 - A row of the 6.1 構想 table belongs to a solution when its 本文件的處理 cell names it as 「解法 X」, for example 「併入解法 S2」.
 
+### 5.9 領域, 解法類型 and the candidate pairs
+
+The analysis rules are in `analysis/docs/method.md` and `app/docs/plan-types.md`. The full field list is in `analysis/docs/data-guide.md`. The app uses these fields (Task U1 of `plan-types-ui.md`, and `usedDomains` from Task U5):
+
+| File | Field | Content |
+|---|---|---|
+| `index.json` | `domainTypes` | The level 2 rows of `domain-types.csv`, file order: `code`, `name`, `parent`, `group` (the parent's 名稱), `description`, `budgetName` (政事別), `petitionCategory` (陳情系統主類別), `added`, `updated` |
+| `index.json` | `domainGroups` | The level 1 rows, file order: `code`, `name`, `description` |
+| `index.json` | `solutionTypes` | The rows of `solution-types.csv`, file order: `code`, `name`, `description`, `howToJudge` (判斷方式), `policyTool` (政策工具), `added`, `updated` |
+| `index.json`, each issue | `domains`, `usedDomains` | The 「領域：」 codes of the issue; and those codes, then the own 領域 of its solutions, each once (decision 175) |
+| issue file, each solution | `solutionTypes`, `ownDomains`, `domains` | Its 解法類型; its own 領域; `ownDomains` when not empty, else the issue's 領域 |
+| `cross-issue.json`, each X- solution | `solutionTypes`, `domains` | Its 解法類型; the union of its parts' `domains`, in part order, each once |
+| `cross-issue.json` | `candidates` | The rows of `analysis/cross-issue/candidates.csv`, file order: `a`, `b` (full IDs like `4-S2`), `solutionTypes`, `domains`, `spaces`, `needs` (X-N IDs and 1.2 rows), `crossSolutions` (X- codes) |
+
 ## 6. Build script
 
 `analysis/scripts/build_json.py`:
@@ -1617,6 +1716,21 @@ app/
     components/ui/      shadcn/ui parts, copied into the repo and editable
 ```
 
+The tab counts in the page list above are from the first draft. 3.19 has the current pages and tabs.
+
+**Type pages (Tasks U3–U7).** One set of files serves the three kinds of type (space, 領域, 解法類型; 3.24):
+
+| File | Content |
+|---|---|
+| `src/lib/typeKinds.ts` | `TypeKind`, `TYPE_KINDS`, `TYPE_LIST_PAGES` and the lookups: `typesOf`, `findType`, `issuesByType`, `typeIssues`, `issueUsedCodes`, `solutionsByType`, `stakeholdersByType`, `typeGroups`, `typeStakeholderCount`, `solutionTagCodes`, `takesIssueDomains` |
+| `src/lib/typeTabs.ts` | The 解法 and 利害關係人 tabs of a type page: params, filter, search and sort |
+| `src/lib/candidates.ts` | The 可能合併 tab: `solutionCandidates`, `candidateNeeds` |
+| `src/pages/TypeList.tsx`, `src/pages/TypePage.tsx` | The list page and the type page of every kind. `routes.tsx` uses them for `#/domains` and `#/solution-types`. |
+| `src/pages/Spaces.tsx`, `src/pages/Space.tsx` | Thin wrappers with the kind `space` |
+| `src/components/TypeCard.tsx`, `TypeTabMenu.tsx`, `TypeLinks.tsx`, `typeText.ts`, `typeFilters.ts` | The card, the tab menu bar, the tag links and rows (`TypeLinks`, `TypeFields`, `SolutionTagFields`), the UI text of each kind, and the type filters of `#/issues` and `#/solutions` |
+| `src/components/solution/CandidatesTab.tsx`, `CandidateCard.tsx` | The 可能合併 tab and its card |
+| `src/lib/spaces.ts` | Only `sameSpaceIssues` (「使用相同空間的議題」 on the issue 總覽). Task U7 removed the other space wrappers, `src/lib/spaceTabs.ts` and `src/components/SpaceCard.tsx`. |
+
 Accessibility: people with disabilities are stakeholders in the issues, so the app must work with a keyboard and a screen reader. Use the shadcn/ui parts for interactive controls, real headings and lists, and enough color contrast. Tag badges show the tag text, not only a color.
 
 The UI only shows the results of the functions in `src/lib/`.
@@ -1627,7 +1741,8 @@ The UI only shows the results of the functions in `src/lib/`.
 - Vitest for `src/lib/`, using the #2 JSON: for example, picking W08 shows C6, solution S1, and the 3 stakeholders in W08.
 - Vitest for the stakeholder lookups: priority counts per issue, stories with no solution, the tree totals, and the `?from=` link of a moved ID (decision 113 removed the redirect tests).
 - Python test: the 待補清單 of #2 includes the items in 6.3 and step 7.
-- Vitest for the space lookups: issues and solutions per space type, and 「使用相同空間的議題」.
+- Vitest for the space lookups: issues and solutions per space type, and 「使用相同空間的議題」. Since Task U7 the space cases call the generic helpers with the kind `space` (`src/lib/typeKinds.test.ts`, `src/lib/typeTabs.test.ts`). Only the `sameSpaceIssues` cases stay in `src/lib/spaces.test.ts`.
+- Vitest for the 領域 and 解法類型 UI (Tasks U2–U6), on the fixtures: the lookups of all three kinds and a level 1 code that finds nothing (`typeKinds.test.ts`, `typeTabs.test.ts`); the routes, the not-found page for a level 1 and an unknown code, the empty states of an unused 領域, the menu order, the page titles and an own 領域 (`src/pages/TypePages.test.tsx`, `src/routes.test.tsx`, `src/components/Header.test.tsx`, `src/lib/nav.test.ts`); the tag rows and both cases of 「（沿用議題）」 (`src/components/TypeTags.test.tsx`, `src/pages/Issue.test.tsx`, `src/pages/Solution.test.tsx`); the 領域 and 解法類型 filters and their URL params (`listFilter.test.ts`, `listParams.test.ts`, `src/pages/Issues.test.tsx`, `src/pages/Solutions.test.tsx`); the 可能合併 tab: each other solution once, the numeric order, the links, empty rows left out, no count (`src/lib/candidates.test.ts`, `src/components/solution/CandidateCard.test.tsx`, `src/pages/Solution.test.tsx`).
 - Vitest for the 分析摘要 links (`src/lib/summary.ts`): each kind of reference, references to another issue, and that every reference in the fixtures has a link.
 - Vitest for the 分析摘要 tabs (decision 102): the tab order, the URLs, the counts of each tab on the #1, #2, #8 and #9 fixtures (a 【待補】 row of 受影響較大的弱勢族群 is not counted), and the issue page rendered with mocked data (`src/pages/Issue.test.tsx`): the labels, the page title, no side bar on the new tabs, `?evidence=1` on the links, no 分析摘要 on 總覽, the unknown tab, and the scroll classes of the tab list.
 - Cross-issue tests start when a second issue exists.
@@ -1825,6 +1940,35 @@ Phase L, search and breadcrumb (2026-10-22). From ETBlue's notes in `human-input
 149. On the stakeholder 解法 tab, 「跨議題解法」 comes first, above the per-issue sections (ETBlue, 2026-10-24). It changes the order in decision 119. The part has no top border now, because each issue section below has one. The texts that point to it say 「上方」 and 「下面議題」.
 150. The space types `sidewalk` and `indoor` are split, and the space types have 2 levels (ETBlue, 2026-10-30 and 2026-10-31; decisions 5, 6 and 7 of `app/docs/plan-types.md`). (1) **Split.** `sidewalk` (人行道) is split into `sidewalk-walkway` (人行道通行帶) and `sidewalk-furniture` (人行道設施帶). `indoor` (建築物內（室內）) is split into `indoor-home` (住家), `indoor-common` (公寓共用空間), `indoor-business` (營業場所) and `indoor-public` (公共設施室內). Two new types are added: `crossing` (路口與行人穿越道) and `alley` (巷弄). The list is in `analysis/data/space-types.csv`. (2) **2 levels.** The file now has a column 上層 in place of 分組. The 4 level 1 rows are `road` (道路), `underground` (地下), `public-space` (公共空間) and `building` (建築), the 4 groups of before. The `sidewalk-…`, `crossing` and `alley` codes are under `road`. The `indoor-…` codes are under `building`. There is no group 「人行道」 or 「室內」. Only level 2 codes go on issues and solutions. (3) **JSON.** `spaceTypes` in `index.json` has only the level 2 rows. Each row keeps `group` (the 名稱 of its parent, for example 道路) and has a new `parent` (the parent's code, for example `road`). A new list `spaceGroups` has the 4 level 1 rows (`code`, `name`, `description`). The types in `src/types.ts` have these fields as optional (`SpaceType.parent`, `IndexFile.spaceGroups`, `SpaceGroup`). (4) **App.** No UI change. `#/spaces` still groups the cards by `group`, and the 空間分類 filter (`group=<group name>`) still uses the 4 group names, so the headings and the filter look the same as before. The app does not use `parent` or `spaceGroups` yet. (5) **Old links.** `#/spaces/sidewalk` and `#/spaces/indoor` (also with a tab, and `space=sidewalk` or `space=indoor` in a list URL) stop working. A space page shows the normal not-found page, and a list drops the unknown code, the same as any unknown code. There are no redirects, because one old code now has several new codes. (6) **Tests.** The test fixtures use `sidewalk-furniture` in place of `sidewalk` (the fixture issues are #1 trees, #2 trash cans and #8 smoking areas, which use the 設施帶) and `indoor-home` in place of `indoor`. The tests check the same things as before. The search test for 「建築物」 now uses 「站」, because no new `indoor-…` name has 「建築物」 in it. The JSON also has new optional fields for 領域 and 解法類型 (`domains` on an issue, `solutionTypes`, `ownDomains` and `domains` on a solution, `solutionTypes` on a cross-issue solution). They are in `src/types.ts` but not used by the UI yet; a later plan designs that UI. This changes 3.6 and 5.3.
 151. New ID format for solutions and cross-issue needs (ETBlue, 2026-10-31; decision 13 of `app/docs/plan-types.md`, Task 7). Solution, need and conflict IDs use one capital letter and a number with no zero padding. (1) **Rename.** Issue solutions: the old one-letter codes become `S1`, `S2` … in the same order (the first letter is S1, the second S2 …). The full ID is `1-S1`, and the analysis writes 「解法 S1」, 「解法 S1、S2」 and 「#1 解法 S1」. Cross-issue solutions: the 13 old codes become `X-S1` … `X-S13`, in the same order. Cross-issue need groups: `X-N1` … `X-N20` (the zero is dropped, the number stays). Cross-issue conflicts (`X-C1` …) and the IDs inside an issue (`N01`, `W01`, `O01`, `I01-US01`, `C1`) do not change. (2) **URLs.** `#/solutions/<n>-S<number>` and `#/solutions/X-S<number>`. `parseSolutionSlug` and `findSolution` accept only the new form, so an old link shows the not-found page. There is no redirect (the old links were not shared). (3) **Order.** Text order would put `S10` before `S2`. Every list of these IDs now compares the number inside the ID as a number: `compareCodes` in `src/lib/ids.ts` (also the fallback of `compareIds`), used by `compareSolutionItems`, the date tie rules in `src/lib/listSort.ts` and `src/lib/recent.ts`, and every solution list that used `compareIds`. The scripts use `analysis_common.id_key` (update_dates.py and cross_candidates.py). Tests use 10 or more items. (4) **Search.** `S1` finds every solution S1 and X-S1, `2-S1`, `2S1` and `#2 S1` find only #2 S1, and `X-S1` or `XS1` finds only X-S1. The number is compared as a number, so `S1` does not find S10, and `S01` finds S1. (5) **Checks.** `check_analysis.py`, `check_cross_issue.py` and `build_json.py` reject an old ID with a message that names the new ID. (6) **Dates.** `analysis/data/updated-dates.csv` keeps every date: each row moved to its new key, and its fingerprint is the one of the renamed content. The rename does not change any content, so no 更新日期 changed because of it. (7) **Not solution IDs.** The older search rule names 「S1–S6」 in this file and the task names 「Task S1–S7」 in `app/docs/plan.md` are not solution IDs. They keep their names.
+152. 領域 and 解法類型 each get a list page and a type page, built like `#/spaces` (ETBlue, 2026-11-01; decision 1 of `app/docs/plan-types-ui.md`). The pages are `#/domains`, `#/domains/<code>`, `#/solution-types` and `#/solution-types/<code>`. They do not copy the space pages. One list page (`src/pages/TypeList.tsx`), one type page (`src/pages/TypePage.tsx`), one card (`TypeCard`) and one tab menu (`TypeTabMenu`) serve all three kinds of type (`TypeKind`: `space`, `domain`, `solutionType`). `Spaces.tsx` and `Space.tsx` are thin wrappers with the kind `space`. The helpers are in `src/lib/typeKinds.ts` and `src/lib/typeTabs.ts`. This adds 3.24 and changes 3.7 and 3.19.
+153. Level 1 of a type is only a heading and a filter (ETBlue, 2026-11-01; decision 2 of `plan-types-ui.md`). The level 1 rows are the 4 space groups and the 8 政事別 大分類 of `domain-types.csv`. They are the h2 headings on the list page and the options of the 分類 filter, as on `#/spaces`. Only a level 2 code has a type page. A level 1 code, for example `#/domains/economic-development`, shows the not-found text of the type page, like an unknown code. There is no redirect. A tag shows only the level 2 name.
+154. `#/domains` shows all 28 領域, also the ones that no issue uses (ETBlue, 2026-11-01; decision 3 of `plan-types-ui.md`). An unused 領域 has a card with the badge 「尚無議題」 and a dashed border, like an unused space type (3.9). Its type page works. Its tabs show the empty texts and do not crash. On 2026-11-01, 9 領域 were used and 19 were not.
+155. A new tab 「可能合併」 on issue solution pages (ETBlue, 2026-11-01; decision 4 of `plan-types-ui.md`). It is the last tab, at `#/solutions/<n>-<code>/candidates` (`ISSUE_SOLUTION_TABS` in `src/lib/entityPaths.ts`). It shows the candidate pairs of `analysis/cross-issue/candidates.csv` (rule R3) that have this solution on one side. The app never runs rule R3 itself; it only shows the rows of `cross-issue.json` → `candidates`. A cross-issue solution page (`X-S…`) does not have this tab. `#/solutions/X-S1/candidates` shows 「找不到這個分頁。」. See 3.12.
+156. A solution's 領域 tags show where they come from (ETBlue, 2026-11-01; decision 5 of `plan-types-ui.md`). By decision 14 of `plan-types.md`, a solution's 領域 are either all its own or all from its issue, never mixed. When an issue solution has no own 領域 (`ownDomains` is empty), its 領域 links use the muted color, and the text 「（沿用議題）」 follows them. When it has its own 領域, the links use the normal style and there is no such text. An X- solution shows the union of the 領域 of its parts in the normal style, because it has no `ownDomains`. The rule is `takesIssueDomains` in `src/lib/typeKinds.ts`.
+157. The type pages show all fields of the type on 總覽 (ETBlue, 2026-11-01; decision 6 of `plan-types-ui.md`). A 領域 shows 上層, 說明, 政事別 and 陳情系統主類別. A 解法類型 shows 說明, 判斷方式 and 政策工具. Then both show 新增日期 and 更新日期 (decision 131) and the intro line.
+158. On the issue 解法 tab, a solution card shows a 領域 row only when the solution has its own 領域 (ETBlue, 2026-11-02; decision 7 of `plan-types-ui.md`). The row then uses the normal style. The issue's 領域 already show at the top of the issue page, so a row that repeats them is left out. Every other place keeps the muted 「（沿用議題）」 row of decision 156: the solution page, the detailed cards on `#/solutions` and the X- solution cards. The helper is `solutionTagCodes(sol, { issueDomains: false })`.
+159. Which issues "use" a 領域 (chosen during the build, not by ETBlue; Task U3). An issue uses a 領域 when its 「領域：」 line has it, or when one of its solutions has it as its own 領域. A solution's own 領域 is never on its issue (`method.md`), so the 領域 line alone would miss these issues. The rule is used by the 議題 count and tab of a 領域, the cards on `#/domains`, the 議題 filter of `#/domains` and the 領域 filter of `#/issues`. Since Task U5, `index.json` has the result for each issue as `usedDomains` (decision 175), and the helper is `typeIssues` with `issueUsedCodes`. An issue uses a 解法類型 when one of its solutions has it, because an issue has no 解法類型 of its own.
+160. On `#/domains` and `#/solution-types`, the cards wait for the issue files (chosen during the build, not by ETBlue; Task U3). A card shows 「尚無議題」 when no issue uses the type. For a 解法類型 the page can only know this from the issue files. So the page shows the load line until the files are ready, and then all the cards. This way no card shows a wrong 「尚無議題」 for a short time. `#/domains` still waits too, because it shares the page code. `#/spaces` does not wait: `index.json` is enough there (`issueListsSolutionCodes`).
+161. 上層 on the 領域 page is plain text, not a link (chosen during the build, not by ETBlue; Task U3). A level 1 code has no page (decision 153), so there is nothing to link to.
+162. On 總覽 of a type page, an empty field is left out (chosen during the build, not by ETBlue; Task U3). Some 領域 have no 陳情系統主類別, for example. 上層 always shows, because every level 2 row has one.
+163. On the 解法 tab of a type page, each solution card shows the other types of the same kind that the solution has (chosen during the build, not by ETBlue; Task U3). The space page already did this with 「也使用：」. The 領域 page says 「也屬於：」, because a solution belongs to a 領域. The 解法類型 page says 「也使用：」. The list is left out when there is no other type. On a 領域 page the list uses the solution's `domains`, so it can show 領域 that the solution takes from its issue.
+164. The card titles on `#/solution-types` are h2, not h3 (chosen during the build, not by ETBlue; Task U3). A 解法類型 has one level, so the page has no group headings. The cards are right under the hidden h1, and an h3 would skip a heading level. On `#/spaces` and `#/domains` the cards stay h3 under the group h2.
+165. The header counts of 領域 and 解法類型 count every type in the list, also the unused ones (chosen during the build, not by ETBlue; Task U3). This is the same rule as 空間 (3.7): 「領域 28」 and 「解法類型 13」. The helper is `typeCount` in `src/lib/counts.ts`.
+166. The header menu order is 議題 | 利害關係人 | 空間 | 領域 | 解法 | 解法類型 (chosen during the build, not by ETBlue; Task U3, from the plan). 領域 comes after 空間, because both describe where an issue is. 解法類型 comes after 解法, because it describes solutions. A type page belongs to its list's menu item (`activeNavItem` in `src/lib/nav.ts`). `NAV_ITEMS` holds the order.
+167. The tag rows of an issue or a solution are in the order 空間類型, 領域, 解法類型 (chosen during the build, not by ETBlue; Task U4). This is the menu order of the three kinds (`TYPE_KINDS`). The rows are built by `TypeFields` and `SolutionTagFields` in `src/components/TypeLinks.tsx`. Each tag is a link to its type page and shows the level 2 name. The codes keep the order of the data.
+168. A tag row with no code is left out (chosen during the build, not by ETBlue; Task U4). For example #9 has no 空間類型, so its cards have no 空間類型 row. There is no 「無」 text.
+169. The compact solution cards show no tag rows (chosen during the build, not by ETBlue; Task U4). Before Task U4 they had no 空間類型 row either. The compact `SolutionCard` is on the home page, the type pages, the stakeholder page and the opinion check. The compact X- solution card has no rows either. The compact `IssueCard` keeps its 空間類型 row and gets a 領域 row. The detailed cards (`#/issues`, `#/solutions`, the issue 解法 tab) and the page headers show the rows.
+170. A muted 領域 link (decision 156) keeps the underline and the 24 × 24 px target size (chosen during the build, not by ETBlue; Task U4). Only the color changes (`mutedTargetLinkClass` in `src/components/styles.ts`). So the link is not shown by color only, and it is as easy to tap as the other tag links.
+171. 「（沿用議題）」 is visible text, and screen readers read it (chosen during the build, not by ETBlue; Task U4). It is not `aria-hidden` and it is not only an `aria-label`. So a sighted reader and a screen reader user get the same information. The color alone never carries the meaning.
+172. The 領域 and 解法類型 filters use the URL params `domain=<code>` and `solutiontype=<code>` (chosen during the build, not by ETBlue; Task U5). They work like `space=<code>`: once per picked code. In the URL they come after `space` and before `who` (`LIST_PARAMS` in `src/lib/listParams.ts`). `#/issues` reads `domain`. `#/solutions` reads `domain` and `solutiontype`. The type page tabs drop both, like `space`.
+173. The new filters sit next to 空間類型 in the bar (chosen during the build, not by ETBlue; Task U5). `#/issues`: 空間類型, 領域, 利害關係人. `#/solutions`: 議題, 空間類型, 領域, 解法類型, 利害關係人. The result line names the picked types the same way, for example 「領域：環境保護」.
+174. The options of the 領域 and 解法類型 filters are the used codes only, in one flat list, in file order (chosen during the build, not by ETBlue; Task U5). The plan allowed "grouped or ordered as in the data file". There are only a few used codes (9 領域 on 2026-11-01), so groups would add headings with one or two items each. An unused code is not offered, the same as the 空間類型 filter. A level 1 code is never an option. The order is never by a count.
+175. `index.json` has `usedDomains` on each issue summary (chosen during the build, not by ETBlue; Task U5). It is the issue's 「領域：」 line, then the own 領域 of its solutions in solution order, each code once (decision 159). An issue with no analysis has `[]`. `build_json.py` writes it, and `analysis/docs/data-guide.md` explains it. With it, `#/issues` loads only `index.json` again, also with the 領域 filter. Without it, the page would need every issue file to filter by 領域.
+176. On the 可能合併 tab, an X-N group in 共同需求 is text, not a link (chosen during the build, not by ETBlue; Task U6). An X-N group has no page. The card shows the ID and the summary of the group, as on the 衝突 tab of an X- solution (3.18).
+177. On the 可能合併 tab, a 1.2 row in 共同需求 (for example 「1.2 O12」) is text, kept as written in `candidates.csv` (chosen during the build, not by ETBlue; Task U6). It has no page either.
+178. A solution with no pair keeps the 可能合併 tab (chosen during the build, not by ETBlue; Task U6). The label is 「可能合併 0」, and the tab shows only a short gray note: 「合併的候選清單上，沒有其他議題的解法和這個解法成對。」. This follows the other solution tabs with no content, for example 成效衡量 and 相關政策. The tab does not disappear, so the tab row is the same on every issue solution.
+179. While `cross-issue.json` loads, the tab label is 「可能合併」 with no number (chosen during the build, not by ETBlue; Task U6). This is the same rule as the other tab labels (3.12): never a wrong 0.
+180. The rule link on the 可能合併 tab goes to `analysis/docs/method.md#跨議題分析` (chosen during the build, not by ETBlue; Task U6). That section explains rule R3. The link text is 「產生這份清單的規則」 (`METHOD_CROSS_ISSUE_URL` in `src/components/links.ts`). It opens on GitHub, like the other method links.
 
 ## 14. Open questions
 

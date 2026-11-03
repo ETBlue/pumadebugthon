@@ -1972,7 +1972,20 @@ Phase L, search and breadcrumb (2026-10-22). From ETBlue's notes in `human-input
 
 ## 14. Open questions
 
-No open questions now. ETBlue answered Q21–Q24 on 2026-10-22 (below). The plan (Phase L) has no GATE left.
+Open notes from the Part 3 check of `app/docs/plan-types-ui.md` (2026-11-03). Part 3 is pushed. These are not answered yet:
+
+| Note | What is open |
+|---|---|
+| N1 Phone width | The header menu has 6 items since decision 152. At 360 px it should scroll sideways inside itself (decision 123). Nobody has checked it on a screen yet. |
+| N2 Build choices | Decisions 159–180 are 22 choices made during the build, not by ETBlue. ETBlue may want fewer, merged entries. |
+| N3 New wording | ETBlue has not reviewed these texts in `app/src/i18n/zh-TW.ts`: the 領域 intro 「領域來自臺北市的歲出政事別。…」, the empty-state lines, the 可能合併 note 「合併的候選清單上，沒有其他議題的解法和這個解法成對。」 and the link 「產生這份清單的規則」. |
+| N4 X- dates | The 更新日期 of a cross-issue solution does not change when the 領域 of one of its member solutions changes. The `domains` and `candidates` fields are added in `build_json.py` `main()`, so they are not part of the `update_dates.py` fingerprints. |
+| N5 Flat export | The flat data files (decision 141) do not have the 領域 list, the 解法類型 list or the candidate pairs yet. |
+| N6 Page wait | `#/domains` still waits for the issue files (decision 160). `usedDomains` in `index.json` (decision 175) would be enough. |
+
+Older open items in the analysis are in `analysis/docs/types-research.md` (the 【待查】 rows, for example 都市計畫).
+
+ETBlue answered Q21–Q24 on 2026-10-22 (below). The plan (Phase L) has no GATE left.
 
 Answered questions. ETBlue answered Q1–Q13 on 2026-10-20, Q14–Q19 on 2026-10-21, and Q20–Q24 on 2026-10-22:
 

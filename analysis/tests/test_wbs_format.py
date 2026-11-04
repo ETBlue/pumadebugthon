@@ -364,7 +364,7 @@ class BuildWbsTest(unittest.TestCase):
 
     def test_schedule_pending(self):
         s = self.issue["solutions"][3]
-        item = {"section": "7.4 解法 S4：參與式選址流程", "text": "【待補：人力估計】", "context": "1.2"}
+        item = {"section": "7.4 解法 S4：參與式選址流程", "text": "【待補：人力估計】", "context": "工作分解 1.2：選出試點的里"}
         self.assertIn(item, s["pending"])
         self.assertIn(item, self.issue["pending"])
         self.assertIn({"section": "7.4 解法 S4：參與式選址流程", "text": "【待補：專業人士確認】", "context": "成本"}, s["pending"])

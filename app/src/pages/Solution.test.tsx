@@ -10,11 +10,13 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
+import newFormatJson from '@/test/fixtures/new-format-2-S1.json'
+import { GanttView, ganttState } from '@/components/solution/Schedule'
 import { METHOD_URL } from '@/components/links'
 import { t } from '@/i18n/zh-TW'
 import { crossIssueNumbers } from '@/lib/crossIssue'
 import { stripMarkdown } from '@/lib/markdown'
-import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
+import type { CrossIssueFile, IndexFile, IssueFile, Solution as SolutionData } from '@/types'
 import Solution from './Solution'
 
 const index = indexJson as IndexFile
@@ -483,6 +485,107 @@ describe('the 執行計畫 tab (decision 140)', () => {
     } finally {
       files['2-trashcans'] = trashcans
     }
+  })
+})
+
+describe('the 執行計畫 tab in the new step 7 format (decisions 181 to 185)', () => {
+  const ts = t.solutionPage.schedule
+  const newFormat = newFormatJson as Pick<SolutionData, 'plan' | 'schedule'>
+  const rows = newFormat.schedule?.rows ?? []
+
+  /** Renders the path with #2 S1 in the new format (plan and schedule from the build of 2026-11-04). */
+  function renderNew(path: string): string {
+    const trashcans = files['2-trashcans']
+    files['2-trashcans'] = {
+      ...trashcans,
+      solutions: trashcans.solutions.map((s) => (s.id === 'S1' ? { ...s, plan: newFormat.plan, schedule: newFormat.schedule } : s)),
+    }
+    try {
+      return render(path)
+    } finally {
+      files['2-trashcans'] = trashcans
+    }
+  }
+  const table = (html: string) => /<table[^>]*>([\s\S]*?)<\/table>/.exec(html)?.[1] ?? ''
+  const text = (html: string) => html.replace(/<[^>]+>/g, '')
+
+  it('shows 工作分解與時程 in place of 執行步驟', () => {
+    const html = renderNew('/solutions/2-S1/plan')
+    expect(itemHeadings(html)).toEqual(['主責單位', '需要的資料／API／資源', '成本', '可行性', '工作分解與時程'])
+    expect(html).not.toContain('執行步驟')
+    expect(html).toContain('id="plan-schedule"')
+    expect(html).toContain(ts.intro)
+  })
+
+  it('shows the work breakdown table: the columns, every row in file order, phases in bold', () => {
+    const html = table(renderNew('/solutions/2-S1/plan'))
+    expect([...html.matchAll(/<th scope="col"[^>]*>([^<]+)<\/th>/g)].map((m) => m[1])).toEqual(['編號', '工作項目', '主責單位', '期間', '人天'])
+    const body = [...html.matchAll(/<tr( class="[^"]*")?><td[^>]*>([^<]+)<\/td>/g)]
+    expect(body.map((m) => m[2])).toEqual(rows.map((r) => r.id))
+    expect(body.filter((m) => m[1]?.includes('font-semibold')).map((m) => m[2])).toEqual(rows.filter((r) => r.level === 1).map((r) => r.id))
+    expect(rows.length).toBeGreaterThan(4)
+    // Every 工作項目, 期間 and 人天 is shown; a 【待補】 item stays in the row.
+    for (const r of rows) {
+      expect(text(html)).toContain(r.item.text)
+      expect(text(html)).toContain(r.period)
+      expect(text(html)).toContain(r.days)
+    }
+    expect(text(html)).toContain('【待補：新工處】')
+  })
+
+  it('shows the [AI模擬] tag once, above the table, when every row has it (decision 183)', () => {
+    const html = renderNew('/solutions/2-S1/plan')
+    expect(rows.every((r) => r.item.tag === 'AI模擬')).toBe(true)
+    expect(table(html)).not.toContain('>AI模擬<')
+    const section = html.slice(html.indexOf('id="plan-schedule"'))
+    expect(section.split('<table')[0]).toContain('>AI模擬<')
+  })
+
+  it('renders the chart only in the browser: the page HTML has the loading text, not the gantt source', () => {
+    const html = renderNew('/solutions/2-S1/plan')
+    expect(html).toContain(ts.chartLoading)
+    expect(newFormat.schedule?.gantt).toContain('dateFormat')
+    expect(html).not.toContain('dateFormat')
+    expect(html).not.toContain(`<figure aria-label="${ts.chartLabel}"`)
+  })
+
+  it('with 只看有資料根據, hides the [AI模擬] rows and the chart and says so once (decision 184)', () => {
+    const html = renderNew('/solutions/2-S1/plan?evidence=1')
+    expect(html).toContain(ts.filteredNone)
+    expect(html).not.toContain('<table')
+    expect(html).not.toContain(ts.chartLoading)
+  })
+
+  it('keeps the old format as before: 執行步驟 and no table (#2 S1 fixture, X-S1)', () => {
+    for (const path of ['/solutions/2-S1/plan', '/solutions/X-S1/plan']) {
+      const html = render(path)
+      expect(html, path).toContain('id="plan-steps"')
+      expect(html, path).not.toContain('<table')
+      expect(html, path).not.toContain(ts.chartLoading)
+    }
+  })
+})
+
+describe('the gantt chart when it does not render (decision 182)', () => {
+  const ts = t.solutionPage.schedule
+
+  it('shows the short error text, not a chart', () => {
+    const html = renderToStaticMarkup(<GanttView state={{ status: 'error' }} />)
+    expect(html).toContain(ts.chartError)
+    expect(html).not.toContain('<figure')
+  })
+
+  it('shows the SVG from mermaid in a labelled figure', () => {
+    const html = renderToStaticMarkup(<GanttView state={{ status: 'ready', svg: '<svg id="g1"></svg>' }} />)
+    expect(html).toContain(`<figure aria-label="${ts.chartLabel}"`)
+    expect(html).toContain('<svg id="g1"></svg>')
+  })
+
+  it('maps a failed render (null) to the error state, and an old result to loading', () => {
+    expect(ganttState({ key: 'light\ngantt', svg: null }, 'light\ngantt')).toEqual({ status: 'error' })
+    expect(ganttState({ key: 'light\ngantt', svg: '<svg></svg>' }, 'light\ngantt')).toEqual({ status: 'ready', svg: '<svg></svg>' })
+    expect(ganttState({ key: 'light\ngantt', svg: '<svg></svg>' }, 'dark\ngantt')).toEqual({ status: 'loading' })
+    expect(ganttState(null, 'light\ngantt')).toEqual({ status: 'loading' })
   })
 })
 

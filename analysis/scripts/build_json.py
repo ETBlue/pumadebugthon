@@ -104,8 +104,9 @@ Each solution also gets the fields for its own page in the app:
   source: the lines between the ```mermaid fences, joined with "\n",
   indentation kept, ready to pass to mermaid.render(). The chart has no
   【待補】 items. A 【待補】 item in a WBS row is in the solution's and the
-  issue's pending lists like any other step 7 item; its context is the 編號
-  cell (pending_context).
+  issue's pending lists like any other step 7 item; its context is
+  「工作分解 <編號>：<工作項目>」 (wbs_context; the 工作項目 text without its tag
+  and its 【待補】 items), for example 「工作分解 1.1：向工務局新工處取得人行道寬度的資料」.
 - controversies and legal: the 分析摘要 rows of 可能的爭議 and 法規上的障礙
   whose 相關編號 names the solution (「解法 S1」, not 「#8 解法 S2」), in file
   order. Each item is the same object as in summary.
@@ -404,6 +405,23 @@ def pending_context(line, item_start):
             continue
         return c
     return None
+
+
+def wbs_rows(lines):
+    """The indexes of the lines that are rows of a work breakdown table
+    (common.WBS_HEADER, the new step 7 format)."""
+    return {i for header, top, end in common.table_spans(lines) if header == common.WBS_HEADER
+            for i in range(top + 2, end)}
+
+
+def wbs_context(line):
+    """The context of a 【待補】 item in a work breakdown row: 「工作分解 1.2：
+    <工作項目>」. The 編號 alone (「1.2」) tells a reader of a pending list very
+    little, so the 工作項目 text is added, without its tag and without its
+    【待補】 items. Only 「工作分解 1.2」 when nothing is left."""
+    c = common.split_cells(line)
+    item = re.sub(r"\s+", " ", PENDING.sub("", TAG.sub("", c[1]).replace("`", ""))).strip()
+    return f"工作分解 {c[0]}：{item}" if item else f"工作分解 {c[0]}"
 
 
 # A step 7 heading for one solution, for example 「### 7.1 解法 S1：清潔箱佈建建議地圖」. Group 1 is the code.
@@ -1068,6 +1086,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
     step7_names = {code: head[4:].replace("`", "").strip() for code, head in step7_heads.items()}
     for s in solutions:
         s["pending"] = []
+    wbs = wbs_rows(lines)
     for n_line, (line, head) in enumerate(zip(lines, headings_before(lines))):
         # Blank out code spans (same length) so positions still match the line.
         plain = re.sub(r"`[^`]*`", lambda m: " " * len(m.group(0)), line)
@@ -1079,7 +1098,8 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
         for m in PENDING.finditer(plain):
             if s_start <= n_line < s_end and m.group(0) in outside:
                 continue
-            item = {"section": head, "text": m.group(0), "context": pending_context(line, m.start())}
+            context = wbs_context(line) if n_line in wbs else pending_context(line, m.start())
+            item = {"section": head, "text": m.group(0), "context": context}
             pending.append(item)
             for c in owners:
                 by_sol[c]["pending"].append(item)

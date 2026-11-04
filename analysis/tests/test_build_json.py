@@ -192,13 +192,14 @@ class BuildJsonOutputTest(unittest.TestCase):
 
     def test_steps_pending_in_solution_and_issue_lists(self):
         # A 【待補】 inside a work breakdown row is listed for the solution and
-        # for the issue. Its context is the row 編號.
+        # for the issue. Its context is 「工作分解 <編號>」 and the 工作項目 text.
         found = 0
         for s in self.issue["solutions"]:
             ids = {r["id"] for r in s["schedule"]["rows"]}
             for item in s["pending"]:
                 self.assertNotEqual(item["text"], "【待補：執行步驟】", s["id"])
-                if item["context"] in ids:
+                m = re.match(r"工作分解 ([0-9.]+)", item["context"] or "")
+                if m and m.group(1) in ids:
                     found += 1
                     self.assertIn(item, self.issue["pending"], s["id"])
         self.assertGreater(found, 0)
@@ -360,6 +361,10 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(ctx("【待補：法務確認】", "7.1 解法 S1：清潔箱佈建建議地圖"), "相關法規")
         self.assertEqual(ctx("【待補：政策組安排】"), "訪談清潔隊與環保局")
         self.assertIsNone(ctx("【待補：環保局確認目前實際數量與兩份表的關係】"))
+        # A work breakdown row (new format): 「工作分解 <編號>：<工作項目>」, not the 編號 alone.
+        s1 = [p["context"] for p in self.issue["pending"]
+              if p["text"] == "【待補：新工處】" and p["section"] == "7.1 解法 S1：清潔箱佈建建議地圖"]
+        self.assertIn("工作分解 1.1：向工務局新工處取得人行道寬度的資料", s1)
         for p in self.issue["pending"]:
             self.assertEqual(list(p), ["section", "text", "context"])
 
@@ -856,6 +861,13 @@ class BuildJsonTypesTest(unittest.TestCase):
         self.assertEqual(mod.used_domains(["environment"], sols), ["environment", "police", "health"])
         self.assertEqual(mod.used_domains(["environment"], []), ["environment"])
         self.assertEqual(mod.used_domains([], []), [])
+
+    def test_wbs_context(self):
+        mod = load_module()
+        self.assertEqual(mod.wbs_context("| 1.2 | `[AI模擬]` 選出試點的里 | 環保局 | 第 2 個月 | 【待補：人力估計】 |"),
+                         "工作分解 1.2：選出試點的里")
+        self.assertEqual(mod.wbs_context("| 2.1 | `[AI模擬]` 【待補：工作項目】 | 環保局 | 第 3 個月 | 約 5–10 |"),
+                         "工作分解 2.1")
 
     def test_own_domains(self):
         data = self.parse(self.set_row_a("`digital-tool`、`planning`", "`welfare-services`"))

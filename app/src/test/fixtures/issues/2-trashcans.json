@@ -2980,6 +2980,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低",
@@ -3310,6 +3311,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低（QR）／中（感測器）",
@@ -3660,6 +3662,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低",
@@ -3872,6 +3875,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "中",
@@ -4121,6 +4125,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "中到高",

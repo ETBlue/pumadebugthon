@@ -3,7 +3,7 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import crossJson from '@/test/fixtures/cross-issue.json'
-import type { Cell, CrossIssueFile, IssueFile, Solution, SummaryItem } from '@/types'
+import type { Cell, CrossIssueFile, IssueFile, ScheduleRow, Solution, SummaryItem } from '@/types'
 import {
   findSolution,
   solutionConflicts,
@@ -22,6 +22,7 @@ import {
   concernItems,
   concernItemsShown,
   planPhases,
+  scheduleTag,
 } from './solutionPage'
 
 const trees = treesJson as IssueFile
@@ -378,5 +379,20 @@ describe('planPhases', () => {
     expect(planPhases(one('甲（乙；丙）'))).toBeNull()
     // More than one part.
     expect(planPhases([...one('甲；乙'), ...one('丙', '實證')])).toBeNull()
+  })
+})
+
+describe('scheduleTag (decision 183)', () => {
+  const row = (id: string, tag: Cell['tag']): ScheduleRow => ({
+    id, level: id.includes('.') ? 2 : 1, item: { text: '準備', tag, pending: false }, owner: '環保局', period: '第 1 個月', days: '約 5–10',
+  })
+
+  it('gives the tag when every row has the same one', () => {
+    expect(scheduleTag([row('1', 'AI模擬'), row('1.1', 'AI模擬')])).toBe('AI模擬')
+  })
+
+  it('gives null when the tags differ or there are no rows', () => {
+    expect(scheduleTag([row('1', 'AI模擬'), row('1.1', '實證')])).toBeNull()
+    expect(scheduleTag([])).toBeNull()
   })
 })

@@ -31,6 +31,7 @@ function solution(id: string, updated: string, stories: string[] = []): Solution
     added: '2026-10-16', updated, stories, needs: null,
     measures: [], evaluation: { laws: [cell], privacy: [cell], risks: [cell], disasters: [cell], feasibility: [cell] },
     plan: { owner: [cell], resources: [cell], cost: [cell], steps: [cell] },
+    schedule: null,
     overview: { cost: cell, feasibility: cell, risk: cell, owner: cell }, ideas: [], controversies: [], legal: [], practices: [], pending: [],
   }
 }

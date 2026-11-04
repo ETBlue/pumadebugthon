@@ -2,7 +2,7 @@
 // The paths are in entityPaths.ts (solutionPath).
 // Order is always the order of the issue file, or ID order. Nothing here sorts by a count.
 import type {
-  Conflict, Group, IssueFile, Solution, SolutionEvaluation, SolutionPractice, Step7Cell, Story, SummaryItem,
+  Conflict, Group, IssueFile, ScheduleRow, Solution, SolutionEvaluation, SolutionPractice, Step7Cell, Story, SummaryItem, Tag,
 } from '@/types'
 import { DATA_BASED_TAGS } from './dataBasis'
 import { compareIds } from './ids'
@@ -328,4 +328,13 @@ export function planPhases(cell: Step7Cell): string[] | null {
   const pieces = cell[0].text.split('；').map((p) => p.trim())
   if (pieces.length < 2 || pieces.some((p) => p === '' || !balanced(p))) return null
   return pieces
+}
+
+/** The tag of the 工作項目 cells of the work breakdown rows (decision 183):
+ * the tag when every row has the same one, so the page shows it once above
+ * the table. null when the tags differ or there are no rows; then each row
+ * shows its own tag. */
+export function scheduleTag(rows: ScheduleRow[]): Tag {
+  const tag = rows[0]?.item.tag ?? null
+  return rows.every((r) => r.item.tag === tag) ? tag : null
 }

@@ -2459,6 +2459,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低到中",
@@ -2756,6 +2757,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "中",
@@ -2967,6 +2969,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低到中",
@@ -3264,6 +3267,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低到中",
@@ -3521,6 +3525,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "中",

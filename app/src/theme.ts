@@ -48,9 +48,11 @@ function subscribe(listener: () => void) {
   return () => listeners.delete(listener)
 }
 
-/** The current theme, and a function that sets and saves the reader's choice. */
+/** The current theme, and a function that sets and saves the reader's choice.
+ * On the server (the tests render pages with renderToStaticMarkup) there is
+ * no document, so the theme is 'light'. */
 export function useTheme(): [Theme, (theme: Theme) => void] {
-  const theme = useSyncExternalStore(subscribe, currentTheme)
+  const theme = useSyncExternalStore(subscribe, currentTheme, () => 'light' as const)
   return [
     theme,
     (next: Theme) => {

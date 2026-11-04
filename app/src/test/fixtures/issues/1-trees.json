@@ -3537,6 +3537,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低（地圖）／中到高（實際種樹）",
@@ -4077,6 +4078,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低到中",
@@ -4469,6 +4471,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "中",
@@ -4739,6 +4742,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低（規範）／高（施工）",
@@ -5025,6 +5029,7 @@
           }
         ]
       },
+      "schedule": null,
       "overview": {
         "cost": {
           "text": "低到中",

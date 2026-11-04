@@ -1,0 +1,179 @@
+{
+  "plan": {
+    "owner": [
+      {
+        "text": "環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    ],
+    "resources": [
+      {
+        "text": "清潔箱位置（data.gov.tw 121355）、捷運分時進出量、公車站牌位置（SHP）、1999 類別資料（目前無地點，需【待補：研考會提供有地點的去識別化資料】）、商圈範圍【待補：資料來源】、人行道寬度【待補：新工處】；民眾標記缺桶地點的表單（可以和解法 S2 的回報用同一個入口）",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    ],
+    "cost": [
+      {
+        "text": "成本低（主要是人力與現有資料）。",
+        "tag": "AI模擬",
+        "pending": false
+      },
+      {
+        "text": "時間：約 12–18 個月；經費：約 NT$ 30–100 萬；人力：約 150–280 人天【待補：專業人士確認】",
+        "tag": "AI模擬",
+        "pending": false
+      }
+    ]
+  },
+  "schedule": {
+    "rows": [
+      {
+        "id": "1",
+        "level": 1,
+        "item": {
+          "text": "準備：算出缺口指標",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 1–3 個月",
+        "days": "約 40–70"
+      },
+      {
+        "id": "1.1",
+        "level": 2,
+        "item": {
+          "text": "向工務局新工處取得人行道寬度的資料【待補：新工處】",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 1 個月",
+        "days": "約 5–10"
+      },
+      {
+        "id": "1.2",
+        "level": 2,
+        "item": {
+          "text": "用清潔箱、捷運出站量與公車站資料算出缺口指標，做出建議清單",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 2–3 個月",
+        "days": "約 35–60"
+      },
+      {
+        "id": "2",
+        "level": 1,
+        "item": {
+          "text": "試點：在一個行政區設置清潔箱",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 4–9 個月",
+        "days": "約 60–110"
+      },
+      {
+        "id": "2.1",
+        "level": 2,
+        "item": {
+          "text": "開放民眾標記缺桶地點的表單（可以和解法 S2 的回報用同一個入口）",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 4 個月",
+        "days": "約 5–10"
+      },
+      {
+        "id": "2.2",
+        "level": 2,
+        "item": {
+          "text": "在一個行政區依建議清單設置附回收分類的清潔箱",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 5–9 個月",
+        "days": "約 55–100"
+      },
+      {
+        "id": "3",
+        "level": 1,
+        "item": {
+          "text": "評估：比較試點前後",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 10–11 個月",
+        "days": "約 20–40"
+      },
+      {
+        "id": "3.1",
+        "level": 2,
+        "item": {
+          "text": "用 6.3 的清潔箱數與違規棄置件數評估【待補：環保局稽查資料】",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 10–11 個月",
+        "days": "約 15–30"
+      },
+      {
+        "id": "3.2",
+        "level": 2,
+        "item": {
+          "text": "記錄民眾標記的缺桶地點有幾處列入建議清單",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 10–11 個月",
+        "days": "約 5–10"
+      },
+      {
+        "id": "4",
+        "level": 1,
+        "item": {
+          "text": "擴大：各區用同一套標準",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 12–15 個月",
+        "days": "約 30–60"
+      },
+      {
+        "id": "4.1",
+        "level": 2,
+        "item": {
+          "text": "公開設置標準",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 12 個月",
+        "days": "約 10–20"
+      },
+      {
+        "id": "4.2",
+        "level": 2,
+        "item": {
+          "text": "各區依同一套標準檢視清潔箱的設置",
+          "tag": "AI模擬",
+          "pending": false
+        },
+        "owner": "環保局",
+        "period": "第 13–15 個月",
+        "days": "約 20–40"
+      }
+    ],
+    "gantt": "gantt\n  title 時程示意：每格約 1 個月，不是實際日期\n  dateFormat YYYY-MM-DD\n  axisFormat ·\n  tickInterval 1month\n  todayMarker off\n  section 1 準備\n  1.1 取得人行道寬度資料 :t1_1, 2000-01-01, 30d\n  1.2 算出缺口指標 :t1_2, after t1_1, 60d\n  section 2 試點\n  2.1 開放民眾標記表單 :t2_1, after t1_2, 30d\n  2.2 設置清潔箱 :t2_2, after t2_1, 150d\n  section 3 評估\n  3.1 清潔箱數與違規棄置件數 :t3_1, after t2_2, 60d\n  3.2 民眾標記列入建議的處數 :t3_2, after t2_2, 60d\n  section 4 擴大\n  4.1 公開設置標準 :t4_1, after t3_1 t3_2, 30d\n  4.2 各區依同一套標準檢視 :t4_2, after t4_1, 90d"
+  }
+}

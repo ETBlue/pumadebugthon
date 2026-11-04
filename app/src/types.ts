@@ -381,6 +381,9 @@ export interface Solution {
   evaluation: SolutionEvaluation
   /** The 執行計畫 table of its step 7 section. */
   plan: SolutionPlan
+  /** The 工作分解與時程 of its step 7 section in the new format; null in the
+   * old format (plan.steps is there instead). */
+  schedule: SolutionSchedule | null
   /** Its row of the step 7 總覽 table. Every field has the row's tag. */
   overview: SolutionOverview
   /** Rows of the 6.1 構想 table whose 本文件的處理 cell names this solution. */
@@ -438,11 +441,39 @@ export interface SolutionPlan {
   owner: Step7Cell
   /** 需要的資料／API／資源 */
   resources: Step7Cell
-  /** 成本 */
+  /** 成本. In the new format the parts also hold the 時間, 經費 and 人力
+   * ranges, as written. */
   cost: Step7Cell
   /** 執行步驟: a short plan (phases and the first step). 「【待補：執行步驟】」
-   * until it is written. */
-  steps: Step7Cell
+   * until it is written. Only in the old format. In the new format the
+   * solution has a schedule (工作分解與時程) and plan has no steps key. */
+  steps?: Step7Cell
+}
+
+/** The 工作分解與時程 of a step 7 section in the new format (pilot on #2,
+ * ETBlue 2026-11-04; method.md, 成本範圍與工作分解（新格式）). */
+export interface SolutionSchedule {
+  /** The rows of the work breakdown table, in file order (1, 1.1, 1.2, 2, …). */
+  rows: ScheduleRow[]
+  /** The Mermaid gantt source, as written in the file. The app renders it
+   * with the mermaid package. It has no 【待補】 items. */
+  gantt: string
+}
+
+/** A row of the work breakdown table (編號 | 工作項目 | 主責單位 | 期間 | 人天). */
+export interface ScheduleRow {
+  /** 編號, for example "1" (a phase) or "1.2" (a work item). */
+  id: string
+  /** 1 for a phase, 2 for a work item. */
+  level: 1 | 2
+  /** 工作項目: one tag. For a phase the text is 「準備：…」. */
+  item: Cell
+  /** 主責單位, plain text or a 【待補：…】 item. */
+  owner: string
+  /** 期間, for example 「第 1–2 個月」. */
+  period: string
+  /** 人天, for example 「約 20–40」, or a 【待補：…】 item. */
+  days: string
 }
 
 /** A row of the step 7 總覽 table. */

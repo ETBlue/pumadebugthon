@@ -658,7 +658,9 @@ export const t = {
     step7Source: '來源：議題分析步驟 7 這個解法的評估表。',
     crossStep7Source: '來源：跨議題分析 4.5 這個解法的評估表。',
     /** The 執行計畫 tab (decision 140). */
-    planIntro: '這個解法怎麼執行：由誰主責、需要什麼資源、要花多少、可不可行，以及執行步驟。這部分由 AI 整理，可以作為討論的起點。成本與可行性需由專業人士確認。',
+    /** The tab has 執行步驟 (old format) or 工作分解與時程 (new format,
+     * decision 181), so the text names neither. */
+    planIntro: '這個解法怎麼執行：由誰主責、需要什麼資源、要花多少、可不可行，以及分成哪些階段來做。這部分由 AI 整理，可以作為討論的起點。成本、時間、人力與可行性需由專業人士確認。',
     /** The rows of the step 7 evaluation table (ETBlue, 2026-10-23), in file order. */
     evaluationLabels: {
       laws: '相關法規',
@@ -673,6 +675,28 @@ export const t = {
       resources: '需要的資料／API／資源',
       cost: '成本',
       steps: '執行步驟',
+      /** The new step 7 format (decision 181): the work breakdown table and the gantt chart. */
+      schedule: '工作分解與時程',
+    },
+    /** The 工作分解與時程 of the new step 7 format (decisions 181 to 185). */
+    schedule: {
+      intro: '工作項目、期間與人天都是 AI 的估計，不是實際的計畫。期間寫的是第幾個月，不是日期。',
+      columns: {
+        id: '編號',
+        item: '工作項目',
+        owner: '主責單位',
+        period: '期間',
+        days: '人天',
+      },
+      /** The label of the chart for screen readers. */
+      chartLabel: '時程示意圖',
+      chartLoading: '時程示意圖載入中…',
+      /** The chart did not render (decision 182). The table above has the same items. */
+      chartError: '時程示意圖無法顯示。上面的工作分解表有同樣的工作與期間。',
+      /** 「只看有資料根據」 hides every row (decision 184). */
+      filteredNone: '工作分解與時程只有標記 [AI模擬] 的內容。',
+      /** 「只看有資料根據」 hides some rows, so the chart is not shown (decision 184). */
+      chartFiltered: '時程示意圖包含標記 [AI模擬] 的工作，所以不顯示。',
     },
     /** A step 7 cell whose parts are all hidden by 「只看有資料根據」 (decision 105). */
     detailFilteredNone: '這一格只有標記 [AI模擬] 的內容。',

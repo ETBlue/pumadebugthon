@@ -9,7 +9,8 @@ import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
-import type { Cell, CrossIssueFile, IndexFile, IssueFile } from '@/types'
+import newFormatJson from '@/test/fixtures/new-format-2-S1.json'
+import type { Cell, CrossIssueFile, IndexFile, IssueFile, Solution } from '@/types'
 
 const index = indexJson as IndexFile
 const trees = treesJson as IssueFile
@@ -17,6 +18,9 @@ const trashcans = trashcansJson as IssueFile
 const smokefree = smokefreeJson as IssueFile
 const policy = policyJson as IssueFile
 const issues = [trees, trashcans, smokefree, policy]
+// #2 解法 S1 in the new step 7 format (plan and schedule only), from the build
+// of 2026-11-04. The issue fixtures above are older copies in the old format.
+const newFormat = newFormatJson as Pick<Solution, 'plan' | 'schedule'>
 
 const TAGS = ['實證', 'AI整理', 'AI模擬', null]
 const PRIORITIES = ['M', 'S', 'C', 'W']
@@ -213,7 +217,10 @@ describe('issue files', () => {
           }
           // The step 7 tables (ETBlue, 2026-10-23): the evaluation rows and the 執行計畫 rows, by key.
           expect(Object.keys(sol.evaluation)).toEqual(['laws', 'privacy', 'risks', 'disasters', 'feasibility'])
-          expect(Object.keys(sol.plan)).toEqual(['owner', 'resources', 'cost', 'steps'])
+          // Old format: a 執行步驟 row and no schedule. New format: no steps key, and a schedule.
+          expect(Object.keys(sol.plan)).toEqual(
+            sol.schedule === null ? ['owner', 'resources', 'cost', 'steps'] : ['owner', 'resources', 'cost'],
+          )
           for (const [key, parts] of [...Object.entries(sol.evaluation), ...Object.entries(sol.plan)]) {
             expect(parts.length, `${sol.id} ${key}`).toBeGreaterThan(0)
             for (const part of parts) expectCell(part)
@@ -321,5 +328,44 @@ describe('cross-issue.json', () => {
       }
       for (const g of s.needs.crossIssue) expect(cross.needGroups.map((x) => x.id)).toContain(g)
     }
+  })
+})
+
+describe('a solution in the new step 7 format (#2 S1, decision 181)', () => {
+  it('has no 執行步驟 in plan, and the cost cell keeps its parts', () => {
+    expect(Object.keys(newFormat.plan)).toEqual(['owner', 'resources', 'cost'])
+    for (const parts of Object.values(newFormat.plan)) for (const part of parts) expectCell(part)
+    // Every range is [AI模擬] and the cell asks a professional to check it.
+    expect(newFormat.plan.cost.map((p) => p.tag)).toEqual(['AI模擬', 'AI模擬'])
+    expect(newFormat.plan.cost[1].text).toContain('【待補：專業人士確認】')
+  })
+
+  it('has the work breakdown rows in 編號 order, two levels, and the gantt source', () => {
+    const s = newFormat.schedule
+    expect(s).not.toBeNull()
+    if (s === null) return
+    expect(Object.keys(s)).toEqual(['rows', 'gantt'])
+    let phase = 0
+    let item = 0
+    for (const r of s.rows) {
+      expect(Object.keys(r)).toEqual(['id', 'level', 'item', 'owner', 'period', 'days'])
+      expectCell(r.item)
+      expect(r.item.tag).not.toBeNull()
+      for (const v of [r.owner, r.period, r.days]) expect(typeof v).toBe('string')
+      expect(r.period).toMatch(/^第 \d+(–\d+)? 個月$/)
+      if (r.level === 1) {
+        phase += 1
+        item = 0
+        expect(r.id).toBe(String(phase))
+      } else {
+        item += 1
+        expect(r.level).toBe(2)
+        expect(r.id).toBe(`${phase}.${item}`)
+        // Each work item is a task of the chart, with the id t<編號>.
+        expect(s.gantt).toContain(`:t${r.id.replace('.', '_')},`)
+      }
+    }
+    expect(s.gantt.split('\n')[0]).toBe('gantt')
+    expect(s.gantt).not.toContain('【待補')
   })
 })

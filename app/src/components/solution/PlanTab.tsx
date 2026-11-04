@@ -5,7 +5,8 @@ import { TagBadge } from '@/components/TagBadge'
 import { t } from '@/i18n/zh-TW'
 import { dataBasedParts } from '@/lib/dataBasis'
 import { planPhases } from '@/lib/solutionPage'
-import type { SolutionEvaluation, SolutionPlan, Step7Cell } from '@/types'
+import type { SolutionEvaluation, SolutionPlan, SolutionSchedule, Step7Cell } from '@/types'
+import { Schedule } from './Schedule'
 
 const tp = t.solutionPage
 
@@ -31,20 +32,25 @@ function Steps({ cell, dataBasedOnly }: { cell: Step7Cell; dataBasedOnly: boolea
 
 /** The 執行計畫 tab of a solution (decision 140), for an issue solution and
  * a cross-issue solution: 主責單位, 需要的資料／API／資源, 成本 (the 執行計畫
- * table of step 7), 可行性 (the evaluation table) and 執行步驟, in this
- * order. Article style (decision 137): an h3 and the cell for each row, no
- * card box. A row whose parts are all 【待補】 is in muted text. Each cell
- * follows the 「只看有資料根據」 filter as a step 7 cell does (decision 105):
- * the [AI模擬] parts are hidden, and a cell with nothing left says so. */
-export function PlanTab({ solution: sol }: { solution: { evaluation: SolutionEvaluation; plan: SolutionPlan } }) {
+ * table of step 7), 可行性 (the evaluation table), then 執行步驟 (old step 7
+ * format) or 工作分解與時程 (new format, decision 181), in this order.
+ * Article style (decision 137): an h3 and the cell for each row, no card box.
+ * A row whose parts are all 【待補】 is in muted text. Each cell follows the
+ * 「只看有資料根據」 filter as a step 7 cell does (decision 105): the
+ * [AI模擬] parts are hidden, and a cell with nothing left says so. */
+export function PlanTab({ solution: sol }: {
+  solution: { evaluation: SolutionEvaluation; plan: SolutionPlan; schedule?: SolutionSchedule | null }
+}) {
   const [dataBasedOnly] = useDataBasisFilter()
   const rows: { key: string; label: string; cell: Step7Cell }[] = [
     { key: 'owner', label: tp.planLabels.owner, cell: sol.plan.owner },
     { key: 'resources', label: tp.planLabels.resources, cell: sol.plan.resources },
     { key: 'cost', label: tp.planLabels.cost, cell: sol.plan.cost },
     { key: 'feasibility', label: tp.evaluationLabels.feasibility, cell: sol.evaluation.feasibility },
-    { key: 'steps', label: tp.planLabels.steps, cell: sol.plan.steps },
   ]
+  // The old format has a 執行步驟 cell. The new format has a schedule instead.
+  const schedule = sol.schedule ?? null
+  if (schedule === null && sol.plan.steps) rows.push({ key: 'steps', label: tp.planLabels.steps, cell: sol.plan.steps })
   return (
     <>
       <p className="text-sm text-muted-foreground">{tp.planIntro}</p>
@@ -60,6 +66,12 @@ export function PlanTab({ solution: sol }: { solution: { evaluation: SolutionEva
             )}
           </li>
         ))}
+        {schedule !== null && (
+          <li key="schedule" className="min-w-0">
+            <h3 id="plan-schedule" className="text-lg font-semibold text-foreground">{tp.planLabels.schedule}</h3>
+            <Schedule schedule={schedule} dataBasedOnly={dataBasedOnly} />
+          </li>
+        )}
       </ul>
     </>
   )

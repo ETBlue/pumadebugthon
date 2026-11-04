@@ -163,21 +163,23 @@ class BuildJsonOutputTest(unittest.TestCase):
         # 2026-10-23), with their rows by key.
         a = self.solution("S1")
         self.assertEqual(list(a["evaluation"]), ["laws", "privacy", "risks", "disasters", "feasibility"])
-        self.assertEqual(list(a["plan"]), ["owner", "resources", "cost", "steps"])
+        # #2 is in the new step 7 format (2026-11-04): no 執行步驟 row; a work
+        # breakdown table and a chart instead (test_wbs_format.py tests them).
+        self.assertEqual(list(a["plan"]), ["owner", "resources", "cost"])
         # A cell is a list of parts; a cell with one tag is a list of one Cell.
         cell = lambda t: [{"text": t, "tag": "AI模擬", "pending": False}]
         self.assertEqual(a["plan"]["owner"], cell("環保局（環境清潔管理科）；協作：資訊局、工務局新工處、交通局"))
         # The old 成本／可行性／風險 cell 「成本低（主要是人力與現有資料）；可行性高；
         # 風險：資料過舊…」 is split: cost, feasibility, and the risk at the end of 其他顧慮與風險.
-        self.assertEqual(a["plan"]["cost"], cell("成本低（主要是人力與現有資料）"))
+        self.assertEqual(a["plan"]["cost"][0], cell("成本低（主要是人力與現有資料）。")[0])
+        self.assertTrue(a["plan"]["cost"][1]["text"].startswith("時間：約 "))
         self.assertEqual(a["evaluation"]["feasibility"], cell("可行性高"))
         self.assertTrue(a["evaluation"]["risks"][0]["text"].startswith("模型只是建議，不能取代現場勘查與里民討論"))
         self.assertTrue(a["evaluation"]["risks"][0]["text"].endswith("；資料過舊（主表涵蓋到 2018）會讓建議失準"))
         self.assertTrue(a["plan"]["resources"][0]["text"].startswith("清潔箱位置（data.gov.tw 121355）"))
-        # 執行步驟 is a short plan by AI, one cell with phases.
-        self.assertEqual(len(a["plan"]["steps"]), 1)
-        self.assertEqual(a["plan"]["steps"][0]["tag"], "AI模擬")
-        self.assertTrue(a["plan"]["steps"][0]["text"].startswith("第一步："))
+        # The work breakdown starts with a phase row.
+        self.assertEqual(a["schedule"]["rows"][0]["id"], "1")
+        self.assertEqual(a["schedule"]["rows"][0]["item"]["tag"], "AI模擬")
         # A solution with no related disaster says so in its 災害風險 row.
         self.assertEqual(self.solution("S3")["evaluation"]["disasters"], cell("無明顯相關災害風險"))
 
@@ -189,12 +191,14 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertEqual(b["plan"]["cost"][0]["tag"], "AI模擬")
 
     def test_steps_pending_in_solution_and_issue_lists(self):
-        # A 【待補】 inside a plan is listed for the solution and for the issue.
+        # A 【待補】 inside a work breakdown row is listed for the solution and
+        # for the issue. Its context is the row 編號.
         found = 0
         for s in self.issue["solutions"]:
+            ids = {r["id"] for r in s["schedule"]["rows"]}
             for item in s["pending"]:
                 self.assertNotEqual(item["text"], "【待補：執行步驟】", s["id"])
-                if item["context"] == "執行步驟":
+                if item["context"] in ids:
                     found += 1
                     self.assertIn(item, self.issue["pending"], s["id"])
         self.assertGreater(found, 0)

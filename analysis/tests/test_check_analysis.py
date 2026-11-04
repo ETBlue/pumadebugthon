@@ -703,7 +703,7 @@ class CheckAnalysisTest(unittest.TestCase):
     SCHEDULE = re.compile(r"\n\n\| 編號 \| 工作項目 .*?\n```mermaid\n.*?\n```", re.S)
     RANGES = re.compile(r"`\[AI模擬\]` [^`|]*?時間：.*?【待補：專業人士確認】")
 
-    def use_old_format(self):
+    def use_steps_row(self):
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
         text, n = self.SCHEDULE.subn("\n| 執行步驟 | `[AI模擬]` 先試辦，再擴大 |", text)
@@ -726,7 +726,7 @@ class CheckAnalysisTest(unittest.TestCase):
             if name == "災害風險": continue  # tested above
             with self.subTest(row=name):
                 self.tearDown(); self.setUp()
-                if name == "執行步驟": self.use_old_format()
+                if name == "執行步驟": self.use_steps_row()
                 self.edit_in_section("S4", self.row_d(name), "")
                 self.assertFails(f"步驟 7 #2 解法 S4: no 「{name}」 row")
 
@@ -758,7 +758,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("步驟 7 #2 解法 S4: the rows of the evaluation table must be in this order: " + "、".join(self.STEP7_ROWS))
 
     def test_step_7_plan_wrong_order_fails(self):
-        self.use_old_format()
+        self.use_steps_row()
         a, b = self.row_d("成本"), self.row_d("執行步驟")
         self.edit_in_section("S4", a + b, b + a)
         self.assertFails("步驟 7 #2 解法 S4: the rows of the 執行計畫 table must be in this order: " + "、".join(self.PLAN_ROWS))
@@ -776,7 +776,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("步驟 7 #2 解法 S4: no table with the header 執行計畫 | 內容", "步驟 7 #2 解法 S4: two tables with the header 項目 | 內容")
 
     def test_step_7_unknown_table_fails(self):
-        self.use_old_format()
+        self.use_steps_row()
         self.edit_in_section("S4", self.row_d("執行步驟"),
                   self.row_d("執行步驟") + "\n| 備註 | 內容 |\n|---|---|\n| 其他 | `[AI模擬]` 說明 |\n")
         self.assertFails("步驟 7 #2 解法 S4: unknown table 「備註 | 內容」")
@@ -784,20 +784,20 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_step_7_steps_placeholder_passes(self):
         # A solution with no plan yet has 「【待補：執行步驟】」. A cell may also be
         # one other 【待補：…】 item, or tagged text.
-        self.use_old_format()
+        self.use_steps_row()
         self.edit_in_section("S4", self.row_d("執行步驟"), "| 執行步驟 | 【待補：執行步驟】 |\n")
         self.edit_in_section("S4", self.row_d("成本"), "| 成本 | 【待補：單價】 |\n")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
     def test_step_7_steps_with_text_passes(self):
-        self.use_old_format()
+        self.use_steps_row()
         self.edit_in_section("S4", self.row_d("執行步驟"), "| 執行步驟 | `[AI模擬]` 先在 2 個里試辦，再擴大 |\n")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
     def test_step_7_cell_with_text_beside_pending_needs_a_tag(self):
-        self.use_old_format()
+        self.use_steps_row()
         self.edit_in_section("S4", self.row_d("執行步驟"), "| 執行步驟 | 先試辦【待補：時程】 |\n")
         self.assertFails("步驟 7 #2 解法 S4: the 「執行步驟」 cell must start with a tag")
 

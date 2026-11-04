@@ -696,6 +696,22 @@ class CheckAnalysisTest(unittest.TestCase):
     STEP7_ROWS = ["相關法規", "隱私", "其他顧慮與風險", "災害風險", "可行性"]
     PLAN_ROWS = ["主責單位", "需要的資料／API／資源", "成本", "執行步驟"]
 
+    # #2 is in the new step 7 format (work breakdown table and chart, since
+    # 2026-11-04). The old format (執行步驟 row) is still valid for the other
+    # issues, so the tests of the 執行步驟 row first turn every #2 solution
+    # back to the old format.
+    SCHEDULE = re.compile(r"\n\n\| 編號 \| 工作項目 .*?\n```mermaid\n.*?\n```", re.S)
+    RANGES = re.compile(r"`\[AI模擬\]` [^`|]*?時間：.*?【待補：專業人士確認】")
+
+    def use_old_format(self):
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        text, n = self.SCHEDULE.subn("\n| 執行步驟 | `[AI模擬]` 先試辦，再擴大 |", text)
+        self.assertEqual(n, 5)
+        text = self.RANGES.sub("", text)
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(text)
+
     def row_d(self, name):
         """The full line (with the newline) of the row `name` in the step 7 table of #2 解法 S4."""
         with open(self.md, encoding="utf-8") as f:
@@ -710,6 +726,7 @@ class CheckAnalysisTest(unittest.TestCase):
             if name == "災害風險": continue  # tested above
             with self.subTest(row=name):
                 self.tearDown(); self.setUp()
+                if name == "執行步驟": self.use_old_format()
                 self.edit_in_section("S4", self.row_d(name), "")
                 self.assertFails(f"步驟 7 #2 解法 S4: no 「{name}」 row")
 
@@ -741,6 +758,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("步驟 7 #2 解法 S4: the rows of the evaluation table must be in this order: " + "、".join(self.STEP7_ROWS))
 
     def test_step_7_plan_wrong_order_fails(self):
+        self.use_old_format()
         a, b = self.row_d("成本"), self.row_d("執行步驟")
         self.edit_in_section("S4", a + b, b + a)
         self.assertFails("步驟 7 #2 解法 S4: the rows of the 執行計畫 table must be in this order: " + "、".join(self.PLAN_ROWS))
@@ -758,6 +776,7 @@ class CheckAnalysisTest(unittest.TestCase):
         self.assertFails("步驟 7 #2 解法 S4: no table with the header 執行計畫 | 內容", "步驟 7 #2 解法 S4: two tables with the header 項目 | 內容")
 
     def test_step_7_unknown_table_fails(self):
+        self.use_old_format()
         self.edit_in_section("S4", self.row_d("執行步驟"),
                   self.row_d("執行步驟") + "\n| 備註 | 內容 |\n|---|---|\n| 其他 | `[AI模擬]` 說明 |\n")
         self.assertFails("步驟 7 #2 解法 S4: unknown table 「備註 | 內容」")
@@ -765,17 +784,20 @@ class CheckAnalysisTest(unittest.TestCase):
     def test_step_7_steps_placeholder_passes(self):
         # A solution with no plan yet has 「【待補：執行步驟】」. A cell may also be
         # one other 【待補：…】 item, or tagged text.
+        self.use_old_format()
         self.edit_in_section("S4", self.row_d("執行步驟"), "| 執行步驟 | 【待補：執行步驟】 |\n")
         self.edit_in_section("S4", self.row_d("成本"), "| 成本 | 【待補：單價】 |\n")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
     def test_step_7_steps_with_text_passes(self):
+        self.use_old_format()
         self.edit_in_section("S4", self.row_d("執行步驟"), "| 執行步驟 | `[AI模擬]` 先在 2 個里試辦，再擴大 |\n")
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
 
     def test_step_7_cell_with_text_beside_pending_needs_a_tag(self):
+        self.use_old_format()
         self.edit_in_section("S4", self.row_d("執行步驟"), "| 執行步驟 | 先試辦【待補：時程】 |\n")
         self.assertFails("步驟 7 #2 解法 S4: the 「執行步驟」 cell must start with a tag")
 

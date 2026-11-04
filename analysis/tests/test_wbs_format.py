@@ -5,9 +5,11 @@ table and the gantt chart (pilot on #2, ETBlue, 2026-11-04; method.md,
 - AnalysisCommonWbsTest tests analysis_common.cost_problems and
   step7_schedule with small fixtures. The fixture has two phases, and phase
   1 has two items, so that order and matching are really tested.
-- CheckWbsTest and BuildWbsTest copy the issue folders into a temp dir,
-  turn every step 7 section of #2 into the new format (to_wbs), and run
-  check_analysis.py, check_cross_issue.py, update_dates.py and build_json.py there.
+- CheckWbsTest and BuildWbsTest copy the issue folders into a temp dir and
+  run check_analysis.py, check_cross_issue.py, update_dates.py and
+  build_json.py there. #2 is in the new format (since 2026-11-04). to_steps
+  turns one solution back into the old format; with_fixture puts the small
+  fixture into one solution, so the build test knows the exact values.
 Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
 import importlib.util, json, os, re, shutil, subprocess, sys, tempfile, unittest
@@ -57,12 +59,35 @@ gantt
 SECTION = PLAN + "\n" + WBS + "\n" + GANTT
 
 
-def to_wbs(text):
-    """The text with every step 7 solution section in the new format: the
-    執行步驟 row is replaced by the WBS table and the chart above, and the
-    成本 cell gets the ranges COST. Other rows stay as they are."""
-    text = re.sub(r"^(\| 成本 \| .*) \|$", lambda m: m.group(1) + "。" + COST + " |", text, flags=re.M)
-    return re.sub(r"^\| 執行步驟 \| .*\|\n", lambda m: "\n" + WBS + "\n" + GANTT, text, flags=re.M)
+def section_span(text, code):
+    """The start and end of the step 7 section of solution code (for example
+    "S4") in the issue text."""
+    start = text.index(f"解法 {code}：", text.index("## 步驟 7"))
+    return start, text.index("\n### ", start)
+
+
+SCHEDULE = re.compile(r"\n\n\| 編號 \| 工作項目 .*?\n```mermaid\n.*?\n```", re.S)
+
+
+def to_steps(text, code):
+    """The text with the step 7 section of solution code in the old format:
+    the WBS table and the chart are replaced by a 執行步驟 row, and the
+    ranges are taken out of the 成本 cell."""
+    start, end = section_span(text, code)
+    part, n = SCHEDULE.subn("\n| 執行步驟 | `[AI模擬]` 先試辦 |", text[start:end], count=1)
+    assert n == 1
+    part = re.sub(r"`\[AI模擬\]` [^`|]*?時間：.*?【待補：專業人士確認】", "", part)
+    return text[:start] + part + text[end:]
+
+
+def with_fixture(text, code):
+    """The text with the 成本 ranges, the WBS table and the chart of solution
+    code replaced by COST, WBS and GANTT above."""
+    start, end = section_span(text, code)
+    part = re.sub(r"`\[AI模擬\]` [^`|]*?時間：.*?【待補：專業人士確認】", lambda m: COST, text[start:end], count=1)
+    part, n = SCHEDULE.subn(lambda m: "\n\n" + WBS + "\n" + GANTT.rstrip("\n"), part, count=1)
+    assert n == 1
+    return text[:start] + part + text[end:]
 
 
 class AnalysisCommonWbsTest(unittest.TestCase):
@@ -225,7 +250,7 @@ def write_issue(analysis_dir, text):
 
 
 class CheckWbsTest(unittest.TestCase):
-    """check_analysis.py and check_cross_issue.py on a copy where #2 is in the new format."""
+    """check_analysis.py and check_cross_issue.py on a copy (#2 is in the new format)."""
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -248,23 +273,20 @@ class CheckWbsTest(unittest.TestCase):
         return self.run_script(os.path.join(SCRIPTS, "check_analysis.py"), self.md, os.path.join(self.dir, ISSUE, "user-stories.csv"))
 
     def test_new_format_passes(self):
-        self.write(to_wbs(self.text))
         code, out = self.check()
         self.assertEqual(code, 0, out)
         code, out = self.run_script(os.path.join(SCRIPTS, "check_cross_issue.py"), os.path.join(self.dir, "cross-issue", "cross-issue-analysis.md"))
         self.assertEqual(code, 0, out)
 
     def test_mixed_formats_fail(self):
-        # S1 keeps the 執行步驟 row; the others are in the new format.
-        start = self.text.index("### 7.1 解法 S1：")
-        end = self.text.index("\n### ", start)
-        self.write(self.text[:end] + to_wbs(self.text[end:]))
+        # S1 goes back to the 執行步驟 row; the others stay in the new format.
+        self.write(to_steps(self.text, "S1"))
         code, out = self.check()
         self.assertEqual(code, 1, out)
         self.assertIn("步驟 7 #2: one file must use one format; new format (work breakdown table and chart): 解法 S2、S3、S4、S5; old format (執行步驟 row): 解法 S1", out)
 
     def test_steps_row_in_new_format_fails(self):
-        text = to_wbs(self.text)
+        text = self.text
         start = text.index("### 7.4 解法 S4：")
         cost = text.index("| 成本 |", start)
         text = text[:cost] + "| 執行步驟 | `[AI模擬]` 先試辦 |\n" + text[cost:]
@@ -274,7 +296,7 @@ class CheckWbsTest(unittest.TestCase):
         self.assertIn("步驟 7 #2 解法 S4: unknown row 「執行步驟」 in the 執行計畫 table (the rows are: 主責單位、需要的資料／API／資源、成本)", out)
 
     def test_problems_are_reported_by_solution(self):
-        text = to_wbs(self.text)
+        text = with_fixture(self.text, "S4")
         start = text.index("### 7.4 解法 S4：")
         cost = text.index("時間：約 6–9 個月", start)
         text = text[:cost] + "時間：約 6 個月" + text[cost + len("時間：約 6–9 個月"):]
@@ -302,13 +324,13 @@ class CheckWbsTest(unittest.TestCase):
 
 
 class BuildWbsTest(unittest.TestCase):
-    """build_json.py on a copy where #2 is in the new format."""
+    """build_json.py on a copy where #2 解法 S4 has the small fixture."""
 
     @classmethod
     def setUpClass(cls):
         cls._tmp = tempfile.TemporaryDirectory()
         cls.dir = make_copy(cls._tmp.name)
-        write_issue(cls.dir, to_wbs(read_issue(cls.dir)))
+        write_issue(cls.dir, with_fixture(read_issue(cls.dir), "S4"))
         cls.out = os.path.join(cls._tmp.name, "out")
         p = subprocess.run([sys.executable, "-I", os.path.join(SCRIPTS, "build_json.py"), cls.dir, cls.out], capture_output=True, text=True)
         if p.returncode != 0:

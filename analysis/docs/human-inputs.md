@@ -73,7 +73,8 @@ I would like to patch hackathon issues with feature analysis skills I'm using in
   * execution plans
     * the owner department for each solution
     * required data/api/resources
-    * cost
+    * cost (time, money and man-day)
+    * work breakdown structure / Gantt chart
 * for risk evaluation, include disasters related to the issue. e.g.
   * natural disasters like earthquake, typhoon, landslide, flood, wildfire, drought, heat/cold wave... etc.
   * man-made disasters like fire, gas explosion, traffic accident, cyber attack, infiltration and subversion from China, military invasion from China... etc.

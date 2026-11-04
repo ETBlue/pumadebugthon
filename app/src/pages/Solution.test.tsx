@@ -546,7 +546,8 @@ describe('the 執行計畫 tab in the new step 7 format (decisions 181 to 185)',
     expect(html).toContain(ts.chartLoading)
     expect(newFormat.schedule?.gantt).toContain('dateFormat')
     expect(html).not.toContain('dateFormat')
-    expect(html).not.toContain(`<figure aria-label="${ts.chartLabel}"`)
+    expect(html).not.toContain('<figure')
+    expect(html).not.toContain(ts.chartAlt)
   })
 
   it('with 只看有資料根據, hides the [AI模擬] rows and the chart and says so once (decision 184)', () => {
@@ -575,10 +576,10 @@ describe('the gantt chart when it does not render (decision 182)', () => {
     expect(html).not.toContain('<figure')
   })
 
-  it('shows the SVG from mermaid in a labelled figure', () => {
+  it('shows the SVG from mermaid in a figure; screen readers get a short text, not the SVG', () => {
     const html = renderToStaticMarkup(<GanttView state={{ status: 'ready', svg: '<svg id="g1"></svg>' }} />)
-    expect(html).toContain(`<figure aria-label="${ts.chartLabel}"`)
-    expect(html).toContain('<svg id="g1"></svg>')
+    expect(html).toContain(`<figure class="mt-3 overflow-x-auto"><figcaption class="sr-only">${ts.chartAlt}</figcaption>`)
+    expect(html).toContain('<div aria-hidden="true"><svg id="g1"></svg></div>')
   })
 
   it('maps a failed render (null) to the error state, and an old result to loading', () => {

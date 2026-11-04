@@ -9,7 +9,7 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              SUMMARY_TOPICS, TAG_NAMES, TAG_RE, TAGS, WAY_OUT_NONE, conflict_heading, cross_refs,
                              focus_tables, issue_ids, needs_format, parse_ref, practice_place, practice_refs, section, split_cells as cells, split_focus,
                              split_refs, step1_tables, step7_sections, summary_lines, summary_topics, tables, without_cross_refs,
-                             DEPENDENCY_HEADER, DEPENDENCY_TOPIC, NO_DISASTER, PENDING_ONLY, PLAN_HEADER, PLAN_ROWS, STEP7_HEADER,
+                             DEPENDENCY_HEADER, DEPENDENCY_TOPIC, NO_DISASTER, PENDING_ONLY, PLAN_HEADER, STEP7_HEADER,
                              STEP7_ROWS, ref_solutions, step7_tables, WBS_HEADER, cost_problems, plan_rows, step7_format, step7_schedule,
                              OLD_SOLUTION_HEADER, SOLUTION_HEADER, ReadError, cell_codes, domain_line, domain_types,
                              solution_type_problems, solution_types, space_problem, space_types,
@@ -729,7 +729,7 @@ def main(md_path, csv_path):
     # step 7) has:
     # - one evaluation table (項目 | 內容) with the rows STEP7_ROWS, once each,
     #   in this order, and no other rows;
-    # - one plan table (執行計畫 | 內容) with the rows PLAN_ROWS, the same way;
+    # - one plan table (執行計畫 | 內容) with the rows of plan_rows() (PLAN_ROWS or PLAN_ROWS_WBS), the same way;
     # - at most one dependency table (DEPENDENCY_HEADER), checked in 21b;
     # - no other table.
     # A cell of the first two tables starts with a tag and has text after the

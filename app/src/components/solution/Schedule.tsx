@@ -22,13 +22,15 @@ export type GanttState = { status: 'loading' } | { status: 'ready'; svg: string 
 
 /** The chart box for a state. The SVG comes from mermaid.render() with
  * securityLevel 'strict' (src/lib/gantt.ts). The gantt source is never put
- * into the page as HTML. */
+ * into the page as HTML. Screen readers do not read the SVG (aria-hidden).
+ * They read the hidden caption, which says the table above has the same content. */
 export function GanttView({ state }: { state: GanttState }) {
   if (state.status === 'error') return <p className="mt-3 text-sm text-muted-foreground">{ts.chartError}</p>
   if (state.status === 'loading') return <p className="mt-3 text-sm text-muted-foreground">{ts.chartLoading}</p>
   return (
-    <figure aria-label={ts.chartLabel} className="mt-3 overflow-x-auto">
-      <div dangerouslySetInnerHTML={{ __html: state.svg }} />
+    <figure className="mt-3 overflow-x-auto">
+      <figcaption className="sr-only">{ts.chartAlt}</figcaption>
+      <div aria-hidden="true" dangerouslySetInnerHTML={{ __html: state.svg }} />
     </figure>
   )
 }

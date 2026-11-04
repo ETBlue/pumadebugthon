@@ -756,6 +756,25 @@ def plan_rows(fmt):
     return PLAN_ROWS_WBS if fmt == "wbs" else PLAN_ROWS
 
 
+def period_days(period):
+    """(start day, length in days) of a 期間 cell 「第 n 個月」 or 「第 n–m
+    個月」 (method.md: a month is 30 days, month n starts on day 30×(n−1)),
+    or None when the cell is not in that form or n >= m."""
+    m = WBS_PERIOD.fullmatch(period)
+    if not m:
+        return None
+    first, last = int(m.group(1)), int(m.group(2) or m.group(1))
+    if m.group(2) and first >= last:
+        return None
+    return 30 * (first - 1), 30 * (last - first + 1)
+
+
+def period_text(start, length):
+    """The 期間 text for a start day and a length in days (whole months)."""
+    first, last = start // 30 + 1, (start + length) // 30
+    return f"第 {first} 個月" if first == last else f"第 {first}–{last} 個月"
+
+
 def range_problem(m):
     """A problem text when the range a–b of a match (groups 1 and 2) has a >= b, else None."""
     a, b = float(m.group(1)), float(m.group(2))
@@ -889,6 +908,17 @@ def step7_schedule(lines):
         bad(f"work breakdown phase 「{phases[-1][0]}」 has no level 2 row (for example 「{phases[-1][0]}.1」)")
     if wbs and not rows:
         bad("the work breakdown table has no rows")
+    # The 期間 of a phase covers its level 2 rows: from the first start to the last end.
+    periods = {r["id"]: r["period"] for r in rows}
+    for pid, _, items in phases:
+        spans = [period_days(periods[i]) for i in items]
+        if not items or None in spans or period_days(periods[pid]) is None:
+            continue  # a 期間 that is not in the right form is reported above
+        start = min(a for a, _ in spans)
+        expected = period_text(start, max(a + n for a, n in spans) - start)
+        if periods[pid] != expected:
+            bad(f"work breakdown row 「{pid}」: 期間 must cover its level 2 rows ({'、'.join(items)}), "
+                f"so it is 「{expected}」; found 「{periods[pid]}」")
 
     gantt = None
     if blocks:
@@ -896,13 +926,16 @@ def step7_schedule(lines):
         gantt = body
         if end is None:
             bad("the ```mermaid block has no closing ``` line")
-        problems.extend(gantt_problems(body, phases))
+        problems.extend(gantt_problems(body, phases, periods))
     return rows, gantt, problems
 
 
-def gantt_problems(body, phases):
+def gantt_problems(body, phases, periods=None):
     """The problems of the lines inside a ```mermaid block, compared with the
-    WBS phases [(id, short name, [level 2 ids])] (see step7_schedule)."""
+    WBS phases [(id, short name, [level 2 ids])] (see step7_schedule) and the
+    期間 cells {編號: 期間}. Each task must start and last as its 期間 says
+    (period_days). Only the first task has a date; the others use 「after」."""
+    periods = periods or {}
     problems = []
     def bad(msg): problems.append(msg)
     text = [l.strip() for l in body if l.strip()]
@@ -915,6 +948,7 @@ def gantt_problems(body, phases):
         bad("after 「gantt」 the chart must have these lines, in this order: " + "; ".join(f"「{s}」" for s in GANTT_SETTINGS))
         return problems
     sections, seen, first = [], set(), True  # sections: [name, [task ids]]
+    ends = {}  # task id -> the day the task ends, when it is known
     for line in text[1 + len(GANTT_SETTINGS):]:
         if line.startswith("section "):
             sections.append([line[len("section "):].strip(), []])
@@ -922,7 +956,8 @@ def gantt_problems(body, phases):
         m = GANTT_TASK.fullmatch(line)
         if not m:
             bad(f"chart line 「{line}」: write 「section <編號> <name>」 or a task 「<編號> <name> :t<編號>, <start>, <days>d」"); continue
-        name, tid, start, _ = m.groups()
+        name, tid, start, length = m.groups()
+        length = int(length)
         wid = name.split(" ")[0]
         if not sections:
             bad(f"chart task 「{name}」 is not under a section"); continue
@@ -930,18 +965,34 @@ def gantt_problems(body, phases):
             bad(f"chart task 「{name}」: the name must start with its 編號 and a space, for example 「1.1 …」")
         elif tid != "t" + wid.replace(".", "_"):
             bad(f"chart task 「{name}」: the id must be 「t{wid.replace('.', '_')}」, found 「{tid}」")
+        day = None  # the start day of the task (day 0 is GANTT_START), when it is known
         if first:
             if start != GANTT_START:
                 bad(f"chart task 「{name}」: the first task starts on {GANTT_START}, found 「{start}」")
+            else:
+                day = 0
         elif GANTT_AFTER.fullmatch(start):
-            for ref in start.split()[1:]:
+            refs = start.split()[1:]
+            for ref in refs:
                 if ref not in seen: bad(f"chart task 「{name}」: 「after {ref}」 names no task above it")
+            if all(ref in ends for ref in refs):
+                day = max(ends[ref] for ref in refs)
         else:
+            bad(f"chart task 「{name}」: only the first task has a date; write 「after t…」, found 「{start}」")
             try:
-                ok = bool(re.fullmatch(r"\d{4}-\d\d-\d\d", start)) and datetime.date.fromisoformat(start) >= datetime.date.fromisoformat(GANTT_START)
+                if re.fullmatch(r"\d{4}-\d\d-\d\d", start):
+                    day = (datetime.date.fromisoformat(start) - datetime.date.fromisoformat(GANTT_START)).days
             except ValueError:
-                ok = False  # not a real date, for example 2000-02-31
-            if not ok: bad(f"chart task 「{name}」: the start must be 「after t…」 or a date from {GANTT_START} on, found 「{start}」")
+                pass  # not a real date, for example 2000-02-31
+        # The start and the length must match the 期間 of the WBS row.
+        want = period_days(periods.get(wid, ""))
+        if want and length != want[1]:
+            bad(f"chart task 「{name}」: 期間 「{periods[wid]}」 is {want[1]}d, found {length}d")
+        if want and day is not None and day != want[0]:
+            bad(f"chart task 「{name}」: 期間 「{periods[wid]}」 starts on day {want[0]} (after {GANTT_START}), "
+                f"found day {day}")
+        if day is not None:
+            ends[tid] = day + length
         first = False
         seen.add(tid)
         sections[-1][1].append(wid)

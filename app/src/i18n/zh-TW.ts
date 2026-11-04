@@ -688,8 +688,9 @@ export const t = {
         period: '期間',
         days: '人天',
       },
-      /** The label of the chart for screen readers. */
-      chartLabel: '時程示意圖',
+      /** The text of the chart for screen readers. The SVG itself is hidden
+       * from them (aria-hidden), because the table above has the same content. */
+      chartAlt: '時程示意圖：內容和上面的工作分解表相同。',
       chartLoading: '時程示意圖載入中…',
       /** The chart did not render (decision 182). The table above has the same items. */
       chartError: '時程示意圖無法顯示。上面的工作分解表有同樣的工作與期間。',

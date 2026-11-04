@@ -188,6 +188,7 @@
 | `added`、`updated` | 新增日期、更新日期 |
 
 步驟 7 的評估表與執行計畫表（相關法規、隱私、執行步驟等）一個格子可以有多個標記，所以不放在這個檔案。它們在網站的議題 JSON（`data/issues/<資料夾>.json` 的 `solutions[].evaluation` 和 `solutions[].plan`）。成效衡量也在那裡（`solutions[].measures`）。
+新格式（見 method.md 步驟 7 的「成本範圍與工作分解（新格式）」）的工作分解與時程也在那裡（`solutions[].schedule`）；新格式的 `plan` 沒有執行步驟（`steps`）。
 
 ### cross-need-groups：跨議題的共同需求（X-N）
 

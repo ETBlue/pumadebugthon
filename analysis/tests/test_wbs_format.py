@@ -218,9 +218,47 @@ class AnalysisCommonWbsTest(unittest.TestCase):
     def test_chart_task_start_fails(self):
         self.assertProblem(SECTION.replace("t1_1, 2000-01-01", "t1_1, 2026-01-01"), "the first task starts on 2000-01-01, found 「2026-01-01」")
         self.assertProblem(SECTION.replace("after t1_1, 30d", "after t2_1, 30d"), "「after t2_1」 names no task above it")
-        self.assertProblem(SECTION.replace("after t1_1, 30d", "1999-12-01, 30d"), "the start must be 「after t…」 or a date from 2000-01-01 on")
-        self.assertEqual(self.problems(SECTION.replace("after t1_1, 30d", "2000-01-31, 30d")), [])
+        self.assertProblem(SECTION.replace("after t1_1, 30d", "1999-12-01, 30d"), "only the first task has a date; write 「after t…」, found 「1999-12-01」")
         self.assertProblem(SECTION.replace("after t1_1, 30d", "after t1_1, 1M"), "chart line 「1.2 選出試點的里 :t1_2, after t1_1, 1M」")
+
+    # ---- the chart compared with 期間 ----
+
+    def test_chart_matches_periods(self):
+        # Two tasks after one task, and a task after two tasks: the start is
+        # the latest end of the named tasks.
+        wbs = WBS.replace("| 2.1 | `[AI模擬]` 辦里民工作坊 | 民政局 | 第 3–6 個月 | 約 40–60 |\n",
+                          "| 2.1 | `[AI模擬]` 辦里民工作坊 | 民政局 | 第 3–6 個月 | 約 40–60 |\n"
+                          "| 2.2 | `[AI模擬]` 整理意見 | 環保局 | 第 3–4 個月 | 約 5–10 |\n"
+                          "| 2.3 | `[AI模擬]` 寫出報告 | 環保局 | 第 7 個月 | 約 5–10 |\n").replace("第 3–6 個月 | 約 60–100", "第 3–7 個月 | 約 60–100")
+        gantt = GANTT.replace("120d\n", "120d\n  2.2 整理意見 :t2_2, after t1_2, 60d\n  2.3 寫出報告 :t2_3, after t2_1 t2_2, 30d\n")
+        self.assertEqual(self.problems(PLAN + "\n" + wbs + "\n" + gantt), [])
+
+    def test_chart_wrong_length_fails(self):
+        self.assertEqual(self.problems(SECTION.replace(":t2_1, after t1_2, 120d", ":t2_1, after t1_2, 90d")),
+                         ["chart task 「2.1 辦里民工作坊」: 期間 「第 3–6 個月」 is 120d, found 90d"])
+
+    def test_chart_wrong_start_fails(self):
+        # 1.2 starts after 1.1 (day 30), but its 期間 「第 3 個月」 starts on day 60.
+        wrong = SECTION.replace("選出試點的里 | 環保局 | 第 2 個月 |", "選出試點的里 | 環保局 | 第 3 個月 |")
+        self.assertIn("chart task 「1.2 選出試點的里」: 期間 「第 3 個月」 starts on day 60 (after 2000-01-01), found day 30",
+                      self.problems(wrong))
+        # A longer first task moves every task after it.
+        self.assertIn("chart task 「2.1 辦里民工作坊」: 期間 「第 3–6 個月」 starts on day 60 (after 2000-01-01), found day 90",
+                      self.problems(SECTION.replace(":t1_2, after t1_1, 30d", ":t1_2, after t1_1, 60d")))
+
+    def test_chart_later_fixed_date_fails(self):
+        # A later task with a date is an error even when the date is right.
+        self.assertEqual(self.problems(SECTION.replace("after t1_1, 30d", "2000-01-31, 30d")),
+                         ["chart task 「1.2 選出試點的里」: only the first task has a date; write 「after t…」, found 「2000-01-31」"])
+        # A wrong date is compared with 期間 too.
+        self.assertIn("chart task 「1.2 選出試點的里」: 期間 「第 2 個月」 starts on day 30 (after 2000-01-01), found day 60",
+                      self.problems(SECTION.replace("after t1_1, 30d", "2000-03-01, 30d")))
+
+    def test_phase_span_fails(self):
+        self.assertEqual(self.problems(SECTION.replace("| 第 1–2 個月 |", "| 第 1–3 個月 |")),
+                         ["work breakdown row 「1」: 期間 must cover its level 2 rows (1.1、1.2), so it is 「第 1–2 個月」; found 「第 1–3 個月」"])
+        self.assertEqual(self.problems(SECTION.replace("| 第 3–6 個月 | 約 60–100 |", "| 第 4–6 個月 | 約 60–100 |")),
+                         ["work breakdown row 「2」: 期間 must cover its level 2 rows (2.1), so it is 「第 3–6 個月」; found 「第 4–6 個月」"])
 
     def test_chart_pending_fails(self):
         self.assertProblem(SECTION.replace("2.1 辦里民工作坊 :", "2.1 辦工作坊【待補：場次】 :"), "the chart must not hold 【待補】 items")

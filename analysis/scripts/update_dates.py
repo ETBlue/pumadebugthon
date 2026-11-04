@@ -153,6 +153,10 @@ def items(analysis_dir):
             # new field alone does not change the date of a solution with none.
             if s["practices"]:
                 content["practices"] = s["practices"]
+            # schedule (2026-11-04): the work breakdown of the new step 7
+            # format. Only when it is there, so the old format keeps its dates.
+            if s.get("schedule") is not None:
+                content["schedule"] = s["schedule"]
             if s["needs"] is None:
                 content["stories"] = s["stories"]  # the old format maps solutions to stories
             out.append({"type": SOLUTION, "id": f"{d['number']}-{s['id']}", "added": s["added"],

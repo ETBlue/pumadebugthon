@@ -87,6 +87,25 @@ Each solution also gets the fields for its own page in the app:
   cells may hold more than one tag (ETBlue, 2026-10-22). A cell with one
   tag, or a 【待補】 cell such as 「【待補：執行步驟】」, is a list of one
   Cell. Every other cell in the JSON is one Cell with at most one tag.
+- schedule: the work breakdown and the gantt chart of the new step 7 format
+  (pilot on #2, ETBlue 2026-11-04; method.md, 成本範圍與工作分解（新格式）;
+  analysis_common.step7_schedule). null in the old format. In the new
+  format, plan is {owner, resources, cost} (no steps key; the cost parts
+  hold the 時間, 經費 and 人力 ranges as written) and schedule is:
+    {"rows": [{"id": "1", "level": 1, "item": Cell, "owner": "環保局",
+               "period": "第 1–2 個月", "days": "約 20–40"},
+              {"id": "1.1", "level": 2, ...}, ...],
+     "gantt": "gantt\n  title 時程示意：…\n  dateFormat YYYY-MM-DD\n  ..."}
+  rows are the WBS table rows in file order (1, 1.1, 1.2, 2, 2.1, …). id is
+  the 編號. level is 1 for a phase (「1」) and 2 for a work item (「1.1」).
+  item is the 工作項目 Cell (one tag; for a phase the text is 「準備：…」).
+  owner (主責單位), period (期間) and days (人天) are plain strings as
+  written; owner and days may be a 【待補：…】 item. gantt is the Mermaid
+  source: the lines between the ```mermaid fences, joined with "\n",
+  indentation kept, ready to pass to mermaid.render(). The chart has no
+  【待補】 items. A 【待補】 item in a WBS row is in the solution's and the
+  issue's pending lists like any other step 7 item; its context is the 編號
+  cell (pending_context).
 - controversies and legal: the 分析摘要 rows of 可能的爭議 and 法規上的障礙
   whose 相關編號 names the solution (「解法 S1」, not 「#8 解法 S2」), in file
   order. Each item is the same object as in summary.
@@ -576,13 +595,17 @@ def solution_tables(lines, name, code, prefix=""):
     common.EVALUATION_KEYS and common.PLAN_KEYS). A cell is a list of parts
     (parse_parts). dependencies: [{"name", "content", "refs"}]; each row's
     相關編號 must name the solution. Rows are found by name; a missing row
-    or an unknown table stops the script (check_analysis.py says more)."""
+    or an unknown table stops the script (check_analysis.py says more).
+    In the new format (common.step7_format), plan has no "steps" key and the
+    4th value is the schedule (see schedule()); in the old format it is None."""
     found = common.step7_tables(lines)
     if found["other"]:
         raise ReadError(name, f"unknown table 「{' | '.join(found['other'][0][0])}」")
+    fmt = common.step7_format(lines)
+    plan_keys = {row: common.PLAN_KEYS[row] for row in common.plan_rows(fmt)}
     out = []
     for kind, header, keys in (("evaluation", common.STEP7_HEADER, common.EVALUATION_KEYS),
-                               ("plan", common.PLAN_HEADER, common.PLAN_KEYS)):
+                               ("plan", common.PLAN_HEADER, plan_keys)):
         rows = table_rows(found[kind], name, header)
         got = {}
         for r in rows:
@@ -605,7 +628,22 @@ def solution_tables(lines, name, code, prefix=""):
         if code not in common.ref_solutions(refs, prefix):
             raise ReadError(name, f"{common.DEPENDENCY_TOPIC} 「{item}」: 相關編號 does not name 解法 {code}")
         deps.append({"name": item, "content": cell(r["說明"], name, item), "refs": refs})
-    return out[0], out[1], deps
+    return out[0], out[1], deps, schedule(lines, fmt, name)
+
+
+def schedule(lines, fmt, name):
+    """The work breakdown and the chart of a step 7 section in the new format
+    (analysis_common.step7_schedule) -> {"rows": [...], "gantt": "..."}, or
+    None in the old format. A format problem stops the script (check_analysis.py
+    lists all of them)."""
+    if fmt != "wbs":
+        return None
+    rows, gantt, problems = common.step7_schedule(lines)
+    if problems:
+        raise ReadError(name, problems[0])
+    return {"rows": [{"id": r["id"], "level": r["level"], "item": cell(r["item"], name, r["id"]),
+                      "owner": r["owner"], "period": r["period"], "days": r["days"]} for r in rows],
+            "gantt": "\n".join(gantt)}
 
 
 def summary_range(lines):
@@ -936,7 +974,7 @@ def parse_issue(text, space_rows, domain_rows, solution_type_rows):
         if head is None:
             raise ReadError("步驟 7", f"solution {s['id']} has no section 「### 7.n 解法 {s['id']}：…」")
         name = head[4:].replace("`", "").strip()
-        s["evaluation"], s["plan"], s["dependencies"] = solution_tables(common.section(text, head), name, s["id"])
+        s["evaluation"], s["plan"], s["dependencies"], s["schedule"] = solution_tables(common.section(text, head), name, s["id"])
 
     # 總覽 (### 7.n 總覽): one row per solution. The 代號 cell is the code only
     # (「S1」). The 解法 cell is the row tag and a short name (「`[AI模擬]` 佈建建議地圖」).

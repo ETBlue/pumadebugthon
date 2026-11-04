@@ -10,7 +10,7 @@ from analysis_common import (today, data_file, doc_file, CONFLICT_HEADER, CROSS_
                              focus_tables, issue_ids, needs_format, parse_ref, practice_place, practice_refs, section, split_cells as cells, split_focus,
                              split_refs, step1_tables, step7_sections, summary_lines, summary_topics, tables, without_cross_refs,
                              DEPENDENCY_HEADER, DEPENDENCY_TOPIC, NO_DISASTER, PENDING_ONLY, PLAN_HEADER, PLAN_ROWS, STEP7_HEADER,
-                             STEP7_ROWS, ref_solutions, step7_tables,
+                             STEP7_ROWS, ref_solutions, step7_tables, WBS_HEADER, cost_problems, plan_rows, step7_format, step7_schedule,
                              OLD_SOLUTION_HEADER, SOLUTION_HEADER, ReadError, cell_codes, domain_line, domain_types,
                              solution_type_problems, solution_types, space_problem, space_types,
                              SOLUTION_CODE, SOLUTION_CODES, solution_code_problem)
@@ -771,22 +771,42 @@ def main(md_path, csv_path):
         if sorted(names) == sorted(wanted) and names != list(wanted):
             err(f"{where}: the rows of the {label} table must be in this order: {'、'.join(wanted)}")
 
+    # 16b-3. the new format (pilot on #2, ETBlue, 2026-11-04; method.md,
+    # 成本範圍與工作分解（新格式）): a section with a work breakdown table
+    # (WBS_HEADER) or a ```mermaid block. Its plan table has no 執行步驟 row,
+    # its 成本 cell holds the three ranges (cost_problems), and the WBS table
+    # and the gantt chart come right after the plan table (step7_schedule).
+    # All solutions of one file use the same format.
+    formats = {}  # code -> "steps" (old) or "wbs" (new)
     for line in text.splitlines():
         m = STEP7_SOLUTION.match(line)
         if not m: continue
         code = m.group(1)
         where = f"步驟 7 {issue_label} 解法 {code}"
-        found7 = step7_tables(section(text, line) or [])
+        lines7 = section(text, line) or []
+        found7 = step7_tables(lines7)
+        fmt = formats[code] = step7_format(lines7)
+        tables_hint = f"{' | '.join(STEP7_HEADER)}; {' | '.join(PLAN_HEADER)}; " + (f"{' | '.join(WBS_HEADER)}; " if fmt == "wbs" else "")
         for h, _ in found7["other"]:
-            err(f"{where}: unknown table 「{' | '.join(h)}」 (the tables are: {' | '.join(STEP7_HEADER)}; {' | '.join(PLAN_HEADER)}; and, if needed, {' | '.join(DEPENDENCY_HEADER)})")
-        for kind, header, wanted, label in (("evaluation", STEP7_HEADER, STEP7_ROWS, "evaluation"), ("plan", PLAN_HEADER, PLAN_ROWS, "執行計畫")):
+            err(f"{where}: unknown table 「{' | '.join(h)}」 (the tables are: {tables_hint}and, if needed, {' | '.join(DEPENDENCY_HEADER)})")
+        for kind, header, wanted, label in (("evaluation", STEP7_HEADER, STEP7_ROWS, "evaluation"), ("plan", PLAN_HEADER, plan_rows(fmt), "執行計畫")):
             if not found7[kind]: err(f"{where}: no table with the header {' | '.join(header)}"); continue
             if len(found7[kind]) > 1: err(f"{where}: two tables with the header {' | '.join(header)}")
             check_step7_rows(where, label, found7[kind][0][1], wanted)
+        if fmt == "wbs":
+            for c in (found7["plan"][0][1] if found7["plan"] else []):
+                if c and c[0] == "成本" and len(c) > 1:
+                    for p in cost_problems(c[1]): err(f"{where}: 成本: {p}")
+            for p in step7_schedule(lines7)[2]: err(f"{where}: {p}")
         if len(found7["dependencies"]) > 1: err(f"{where}: two tables with the header {' | '.join(DEPENDENCY_HEADER)}")
         for _, rows in found7["dependencies"][:1]:
             if not rows: err(f"{where}: the {DEPENDENCY_TOPIC} table has no rows; remove the table")
             for c in rows: step7_dependencies.append((code, where, c))
+    old7 = [c for c, f in formats.items() if f == "steps"]
+    new7 = [c for c, f in formats.items() if f == "wbs"]
+    if old7 and new7:
+        err(f"步驟 7 {issue_label}: one file must use one format; new format (work breakdown table and chart): 解法 {'、'.join(new7)}; "
+            f"old format (執行步驟 row): 解法 {'、'.join(old7)} (method.md, 成本範圍與工作分解（新格式）)")
     for code in codes_61:
         if code not in step7_codes: err(f"步驟 7: solution {code} from 6.1 has no section 「### 7.n 解法 {code}：…」")
         if overview is not None and code not in overview_codes: err(f"總覽: solution {code} from 6.1 has no row")

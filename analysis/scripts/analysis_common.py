@@ -68,6 +68,11 @@ Rules:
   (DEPENDENCY_HEADER). step7_tables() finds them by header. A dependency
   row is a row of the 分析摘要 topic 相依事項與現行政策的關係 that names the
   solution; the 分析摘要 keeps only the rows that name no solution.
+  New format (pilot on #2, ETBlue, 2026-11-04): the plan table has no
+  執行步驟 row (PLAN_ROWS_WBS), the 成本 cell holds time, money and man-day
+  ranges (cost_problems), and a work breakdown table (WBS_HEADER) and a
+  ```mermaid gantt chart follow the plan table (step7_schedule).
+  step7_format() tells the two formats apart.
 - Type lists (ETBlue, 2026-10-31): data/domain-types.csv (領域, the 政事別
   list of Taipei) and data/solution-types.csv (解法類型). domain_types() and
   solution_types() read them. A code must not repeat. A list with 2 levels
@@ -473,6 +478,37 @@ NO_DISASTER = "無明顯相關災害風險"
 # A cell that is only one 【待補：…】 item, with no tag (for example the
 # 執行步驟 placeholder 「【待補：執行步驟】」).
 PENDING_ONLY = re.compile(r"【待補：[^】]+】")
+# Step 7, new format: cost ranges and a work breakdown (工作分解與時程).
+# Pilot on #2 (ETBlue, 2026-11-04; method.md, 成本範圍與工作分解（新格式）).
+# The old format (PLAN_ROWS with 執行步驟) stays valid until the rollout.
+# One issue file uses one format. A section is in the new format when it has
+# a WBS table or a ```mermaid block (step7_format). In the new format:
+# - the plan table has the rows PLAN_ROWS_WBS (no 執行步驟);
+# - the 成本 cell holds the three ranges of COST_RANGES (cost_problems);
+# - right after the plan table: the WBS table (WBS_HEADER), then one
+#   ```mermaid gantt block (step7_schedule).
+PLAN_ROWS_WBS = PLAN_ROWS[:3]
+WBS_HEADER = ["編號", "工作項目", "主責單位", "期間", "人天"]
+# 編號: 「1」 (level 1, a phase) or 「1.1」 (level 2, a work item).
+WBS_ID = re.compile(r"([1-9]\d*)(?:\.([1-9]\d*))?")
+NUMBER = r"(\d+(?:\.\d+)?)"
+WBS_PERIOD = re.compile(r"第 ([1-9]\d*)(?:–([1-9]\d*))? 個月")
+WBS_DAYS = re.compile(rf"約 {NUMBER}–{NUMBER}")
+# The three ranges of the 成本 cell, in this order: (label, pattern, example).
+COST_RANGES = (("時間", re.compile(rf"時間：約 {NUMBER}–{NUMBER} 個月"), "時間：約 6–9 個月"),
+               ("經費", re.compile(rf"經費：約 NT\$ {NUMBER}–{NUMBER} (?:萬|億)"), "經費：約 NT$ 50–100 萬"),
+               ("人力", re.compile(rf"人力：約 {NUMBER}–{NUMBER} 人天"), "人力：約 120–200 人天"))
+COST_CHECK = "【待補：專業人士確認】"
+# The fixed lines of the chart, right after 「gantt」 (method.md: the chart
+# must not look like a real calendar plan).
+GANTT_SETTINGS = ("title 時程示意：每格約 1 個月，不是實際日期", "dateFormat YYYY-MM-DD", "axisFormat ·",
+                  "tickInterval 1month", "todayMarker off")
+GANTT_START = "2000-01-01"
+# A task line: 「1.2 選出試點的里 :t1_2, after t1_1, 30d」. Groups: name, id, start, days.
+GANTT_TASK = re.compile(r"([^:#;]+?) *:(t\d+_\d+), ([^,]+), ([1-9]\d*)d")
+GANTT_AFTER = re.compile(r"after( t\d+_\d+)+")
+# Characters that break a Mermaid name.
+GANTT_BAD = re.compile(r"[:#;]")
 # The 4.5 heading of one combined solution in the cross-issue file.
 CROSS_STEP7_HEADING = re.compile(rf"^### 4\.5\.(\d+) 解法 ({X_SOLUTION_CODE})：")
 
@@ -684,15 +720,241 @@ def step7_sections(text):
 
 def step7_tables(lines):
     """The tables of one step 7 solution section, by kind: {"evaluation",
-    "plan", "dependencies", "other"} -> list of (header cells, rows of cells).
+    "plan", "dependencies", "wbs", "other"} -> list of (header cells, rows of cells).
     A table belongs to a kind by its exact header (STEP7_HEADER, PLAN_HEADER,
-    DEPENDENCY_HEADER); any other table is "other"."""
-    out = {"evaluation": [], "plan": [], "dependencies": [], "other": []}
+    DEPENDENCY_HEADER, WBS_HEADER for "wbs"); any other table is "other"."""
+    out = {"evaluation": [], "plan": [], "dependencies": [], "wbs": [], "other": []}
     for h, rows in tables(lines):
         kind = {tuple(STEP7_HEADER): "evaluation", tuple(PLAN_HEADER): "plan",
-                tuple(DEPENDENCY_HEADER): "dependencies"}.get(tuple(h), "other")
+                tuple(DEPENDENCY_HEADER): "dependencies", tuple(WBS_HEADER): "wbs"}.get(tuple(h), "other")
         out[kind].append((h, rows))
     return out
+
+
+def mermaid_blocks(lines):
+    """The ```mermaid blocks in the lines: a list of (index of the fence line,
+    body lines, index of the closing fence or None when the block is not closed)."""
+    out, i = [], 0
+    while i < len(lines):
+        if lines[i].strip() == "```mermaid":
+            end = next((j for j in range(i + 1, len(lines)) if lines[j].strip() == "```"), None)
+            out.append((i, lines[i + 1:end if end is not None else len(lines)], end))
+            i = end + 1 if end is not None else len(lines)
+        else:
+            i += 1
+    return out
+
+
+def step7_format(lines):
+    """The format of one step 7 solution section: "wbs" (new format) when it
+    has a WBS table or a ```mermaid block, else "steps" (old format)."""
+    return "wbs" if step7_tables(lines)["wbs"] or mermaid_blocks(lines) else "steps"
+
+
+def plan_rows(fmt):
+    """The rows of the plan table in a format from step7_format."""
+    return PLAN_ROWS_WBS if fmt == "wbs" else PLAN_ROWS
+
+
+def range_problem(m):
+    """A problem text when the range a–b of a match (groups 1 and 2) has a >= b, else None."""
+    a, b = float(m.group(1)), float(m.group(2))
+    return None if a < b else f"「{m.group(0)}」: the first number must be smaller than the second"
+
+
+def cost_problems(value):
+    """The problems of a 成本 cell in the new format (method.md): after the
+    低／中／高 part, the ranges 「時間：約 a–b 個月」, 「經費：約 NT$ a–b 萬」 (or 億)
+    and 「人力：約 a–b 人天」, in this order, each in an `[AI模擬]` part, and
+    「【待補：專業人士確認】」 once, after the last range."""
+    problems, last = [], -1
+    marks = list(re.finditer(rf"`{TAG_RE}`", value))
+    for label, pattern, example in COST_RANGES:
+        m = pattern.search(value)
+        if not m:
+            problems.append(f"no 「{label}」 range; write it like 「{example}」"); continue
+        if range_problem(m): problems.append(range_problem(m))
+        # The tag of the part that holds the range: the last tag before it.
+        tag = next((t.group(1) for t in reversed(marks) if t.start() < m.start()), None)
+        if tag != "AI模擬": problems.append(f"「{m.group(0)}」 must be in a part that starts with `[AI模擬]`")
+        if m.start() < last: problems.append(f"「{label}」 must come after the range before it (the order is 時間、經費、人力)")
+        last = m.start()
+    count = value.count(COST_CHECK)
+    if count != 1:
+        problems.append(f"write 「{COST_CHECK}」 once, after the ranges (found {count})")
+    elif value.index(COST_CHECK) < last:
+        problems.append(f"「{COST_CHECK}」 must come after the last range")
+    return problems
+
+
+def table_spans(lines):
+    """Every Markdown table in the lines: a list of (header cells, index of
+    the header line, index after the last row)."""
+    out = []
+    for i in range(1, len(lines)):
+        if SEPARATOR.match(lines[i]) and lines[i - 1].startswith("|"):
+            end = i + 1
+            while end < len(lines) and lines[end].startswith("|"):
+                end += 1
+            out.append((split_cells(lines[i - 1]), i - 1, end))
+    return out
+
+
+def next_text_line(lines, start):
+    """The index of the first line at or after start that is not blank, or None."""
+    return next((j for j in range(start, len(lines)) if lines[j].strip()), None)
+
+
+def step7_schedule(lines):
+    """The work breakdown (WBS) table and the chart of one step 7 solution
+    section in the new format (method.md, 成本範圍與工作分解（新格式）).
+    Returns (rows, gantt, problems):
+    - rows: the WBS rows in file order, [{"id", "level", "item", "owner",
+      "period", "days"}] with the cells as written (item still has its tag);
+    - gantt: the lines inside the ```mermaid block (without the fences), or None;
+    - problems: a list of problem texts. Empty when the format is right."""
+    problems = []
+    def bad(msg): problems.append(msg)
+    spans = table_spans(lines)
+    wbs = [s for s in spans if s[0] == WBS_HEADER]
+    plan = [s for s in spans if s[0] == PLAN_HEADER]
+    blocks = mermaid_blocks(lines)
+    header = f"| {' | '.join(WBS_HEADER)} |"
+    if len(wbs) != 1:
+        bad(f"expected one work breakdown table with the header {header}, found {len(wbs)}")
+    if len(blocks) != 1:
+        bad(f"expected one ```mermaid block (the gantt chart), found {len(blocks)}")
+    rows = []
+    if wbs:
+        _, top, end = wbs[0]
+        if plan and next_text_line(lines, plan[0][2]) != top:
+            bad(f"the work breakdown table ({header}) must come right after the 執行計畫 table")
+        if blocks and next_text_line(lines, end) != blocks[0][0]:
+            bad("the ```mermaid block must come right after the work breakdown table")
+        for line in lines[top + 2:end]:
+            c = split_cells(line)
+            if len(c) != len(WBS_HEADER):
+                bad(f"work breakdown row 「{c[0]}」 has {len(c)} cells, expected {len(WBS_HEADER)}"); continue
+            m = WBS_ID.fullmatch(c[0])
+            rows.append({"id": c[0], "level": 2 if m and m.group(2) else 1, "item": c[1], "owner": c[2],
+                         "period": c[3], "days": c[4], "ok": m is not None})
+    # 編號: 1, 1.1, 1.2, 2, 2.1 …, no gaps; each phase has a level 2 row.
+    phase, item, phases = 0, 0, []  # phases: (id, short name, [level 2 ids])
+    for r in rows:
+        where = f"work breakdown row 「{r['id']}」"
+        if not r.pop("ok"):
+            bad(f"{where}: 編號 must be 「1」, 「2」 … (a phase) or 「1.1」, 「1.2」 … (a work item)"); continue
+        if r["level"] == 1:
+            if phases and not phases[-1][2]:
+                bad(f"work breakdown phase 「{phases[-1][0]}」 has no level 2 row (for example 「{phases[-1][0]}.1」)")
+            phase, item = phase + 1, 0
+            expected = str(phase)
+        else:
+            item += 1
+            expected = f"{phase}.{item}"
+        if r["id"] != expected:
+            bad(f"{where}: expected 「{expected}」 here; rows sort by 編號 (1, 1.1, 1.2, 2, 2.1 …) with no gaps")
+        tags = re.findall(rf"`{TAG_RE}`", r["item"])
+        text = re.sub(rf"`{TAG_RE}`", "", r["item"]).strip()
+        if not re.match(rf"`{TAG_RE}` \S", r["item"]):
+            bad(f"{where}: the 工作項目 cell must start with one tag, for example 「`[AI模擬]` …」: {r['item'][:30]!r}")
+        elif len(tags) > 1:
+            bad(f"{where}: the 工作項目 cell has {len(tags)} tags; write one tag")
+        short = text.split("：")[0].strip()
+        if r["level"] == 1:
+            if not short:
+                bad(f"{where}: the 工作項目 cell must start with the phase name after the tag, for example 「`[AI模擬]` 準備：…」")
+            if GANTT_BAD.search(short):
+                bad(f"{where}: the phase name 「{short}」 must not hold 「:」, 「#」 or 「;」")
+            if r["id"] == expected:
+                phases.append((r["id"], short, []))
+        elif phases and r["id"] == expected:
+            phases[-1][2].append(r["id"])
+        for key, label in (("owner", "主責單位"), ("period", "期間"), ("days", "人天")):
+            if re.search(rf"`{TAG_RE}`", r[key]):
+                bad(f"{where}: the {label} cell has no tag; only 工作項目 starts with a tag")
+        if not r["owner"]:
+            bad(f"{where}: the 主責單位 cell is empty")
+        m = WBS_PERIOD.fullmatch(r["period"])
+        if not m:
+            bad(f"{where}: 期間 must be 「第 n 個月」 or 「第 n–m 個月」 (relative months, no dates): {r['period']!r}")
+        elif m.group(2) and int(m.group(1)) >= int(m.group(2)):
+            bad(f"{where}: 期間 「{r['period']}」: the first month must be smaller than the second")
+        m = WBS_DAYS.fullmatch(r["days"])
+        if m:
+            if range_problem(m): bad(f"{where}: 人天 {range_problem(m)}")
+        elif not PENDING_ONLY.fullmatch(r["days"]):
+            bad(f"{where}: 人天 must be 「約 a–b」 or one 【待補：…】 item: {r['days']!r}")
+    if phases and not phases[-1][2]:
+        bad(f"work breakdown phase 「{phases[-1][0]}」 has no level 2 row (for example 「{phases[-1][0]}.1」)")
+    if wbs and not rows:
+        bad("the work breakdown table has no rows")
+
+    gantt = None
+    if blocks:
+        _, body, end = blocks[0]
+        gantt = body
+        if end is None:
+            bad("the ```mermaid block has no closing ``` line")
+        problems.extend(gantt_problems(body, phases))
+    return rows, gantt, problems
+
+
+def gantt_problems(body, phases):
+    """The problems of the lines inside a ```mermaid block, compared with the
+    WBS phases [(id, short name, [level 2 ids])] (see step7_schedule)."""
+    problems = []
+    def bad(msg): problems.append(msg)
+    text = [l.strip() for l in body if l.strip()]
+    if not text or text[0] != "gantt":
+        bad("the ```mermaid block must start with the line 「gantt」")
+        return problems
+    if any("【待補" in l for l in text):
+        bad("the chart must not hold 【待補】 items; write them in the work breakdown table")
+    if text[1:1 + len(GANTT_SETTINGS)] != list(GANTT_SETTINGS):
+        bad("after 「gantt」 the chart must have these lines, in this order: " + "; ".join(f"「{s}」" for s in GANTT_SETTINGS))
+        return problems
+    sections, seen, first = [], set(), True  # sections: [name, [task ids]]
+    for line in text[1 + len(GANTT_SETTINGS):]:
+        if line.startswith("section "):
+            sections.append([line[len("section "):].strip(), []])
+            continue
+        m = GANTT_TASK.fullmatch(line)
+        if not m:
+            bad(f"chart line 「{line}」: write 「section <編號> <name>」 or a task 「<編號> <name> :t<編號>, <start>, <days>d」"); continue
+        name, tid, start, _ = m.groups()
+        wid = name.split(" ")[0]
+        if not sections:
+            bad(f"chart task 「{name}」 is not under a section"); continue
+        if not re.fullmatch(r"\d+\.\d+ \S.*", name):
+            bad(f"chart task 「{name}」: the name must start with its 編號 and a space, for example 「1.1 …」")
+        elif tid != "t" + wid.replace(".", "_"):
+            bad(f"chart task 「{name}」: the id must be 「t{wid.replace('.', '_')}」, found 「{tid}」")
+        if first:
+            if start != GANTT_START:
+                bad(f"chart task 「{name}」: the first task starts on {GANTT_START}, found 「{start}」")
+        elif GANTT_AFTER.fullmatch(start):
+            for ref in start.split()[1:]:
+                if ref not in seen: bad(f"chart task 「{name}」: 「after {ref}」 names no task above it")
+        else:
+            try:
+                ok = bool(re.fullmatch(r"\d{4}-\d\d-\d\d", start)) and datetime.date.fromisoformat(start) >= datetime.date.fromisoformat(GANTT_START)
+            except ValueError:
+                ok = False  # not a real date, for example 2000-02-31
+            if not ok: bad(f"chart task 「{name}」: the start must be 「after t…」 or a date from {GANTT_START} on, found 「{start}」")
+        first = False
+        seen.add(tid)
+        sections[-1][1].append(wid)
+    want = [f"{pid} {short}" for pid, short, _ in phases]
+    found = [s[0] for s in sections]
+    if found != want:
+        bad("the chart sections must be the level 1 rows of the work breakdown table, in order: "
+            + "、".join(f"「{w}」" for w in want) + "; found " + ("、".join(f"「{f}」" for f in found) or "none"))
+    else:
+        for (pid, _, items), (sname, tasks) in zip(phases, sections):
+            if tasks != items:
+                bad(f"chart section 「{sname}」: the tasks must be the level 2 rows {'、'.join(items)}, in order; found {'、'.join(tasks) or 'none'}")
+    return problems
 
 
 def ref_solutions(refs, prefix=""):

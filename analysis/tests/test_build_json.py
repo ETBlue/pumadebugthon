@@ -249,7 +249,7 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_solution_keys(self):
         self.assertEqual(list(self.solution("S1")),
                          ["id", "name", "summary", "spaces", "solutionTypes", "ownDomains", "domains", "added", "updated", "stories", "needs",
-                          "measures", "evaluation", "plan", "overview", "ideas", "controversies", "legal",
+                          "measures", "evaluation", "plan", "schedule", "overview", "ideas", "controversies", "legal",
                           "practices", "pending"])
 
     def test_solution_summary_rows(self):

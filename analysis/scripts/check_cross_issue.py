@@ -794,7 +794,9 @@ def read_cross_issue(text, ctx):
         if code in seen_r: err(f"{where}: has two sections"); continue
         seen_r.append(code)
         found = common.step7_tables(common.section(text, line) or [])
-        for h, _ in found["other"]:
+        # 4.5 keeps the old format until the rollout (ETBlue, 2026-11-04), so
+        # a work breakdown table is an unknown table here.
+        for h, _ in found["other"] + found["wbs"]:
             err(f"{where}: unknown table 「{' | '.join(h)}」")
         parsed = []
         for kind, header, keys in (("evaluation", common.STEP7_HEADER, common.EVALUATION_KEYS),

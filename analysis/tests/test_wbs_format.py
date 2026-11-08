@@ -347,8 +347,9 @@ class CheckWbsTest(unittest.TestCase):
         self.assertIn("步驟 7 #2 解法 S4: work breakdown row 「1」: 期間 must be 「第 n 個月」 or 「第 n–m 個月」", out)
         self.assertNotIn("解法 S3:", out)
 
-    def test_wbs_in_cross_issue_fails(self):
-        # 4.5 keeps the old format until the rollout.
+    def test_wbs_with_steps_row_in_cross_issue_fails(self):
+        # A work breakdown table makes the 4.5 section new format, so the
+        # plan table must not keep its 執行步驟 row and the chart must be there.
         path = os.path.join(self.dir, "cross-issue", "cross-issue-analysis.md")
         with open(path, encoding="utf-8") as f:
             text = f.read()
@@ -358,7 +359,8 @@ class CheckWbsTest(unittest.TestCase):
             f.write(text[:end] + "\n" + WBS + text[end:])
         code, out = self.run_script(os.path.join(SCRIPTS, "check_cross_issue.py"), path)
         self.assertEqual(code, 1, out)
-        self.assertIn("unknown table 「編號 | 工作項目 | 主責單位 | 期間 | 人天」", out)
+        self.assertIn("4.5 X-S1: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本, in this order", out)
+        self.assertIn("4.5 X-S1: expected one ```mermaid block", out)
 
 
 class BuildWbsTest(unittest.TestCase):

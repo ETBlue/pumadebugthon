@@ -51,7 +51,13 @@ Rules checked (see method.md, 跨議題分析):
   same tables as a step 7 solution section of an issue file (ETBlue,
   2026-10-23; analysis_common.step7_tables): the evaluation table, the plan
   table (執行計畫) and, if needed, the dependency table (相依事項與現行政策的
-  關係). A cell has one tag and text, or is one 【待補：…】 item. The
+  關係). A cell has one tag and text, or is one 【待補：…】 item. A section
+  may use the new format of step 7 (method.md, 成本範圍與工作分解（新格式）),
+  with the same checks as check_analysis.py: the plan table has no 執行步驟
+  row, the 成本 cell holds the three ranges (analysis_common.cost_problems)
+  and may hold more than one tag, and the work breakdown table and the gantt
+  chart come right after the plan table (analysis_common.step7_schedule).
+  During the rollout, the file may hold both formats. The
   災害風險 cell is not empty. Each dependency row names the solution of its
   section; a row that names several solutions is under each, with the same
   text. The 分析摘要 topic 相依事項與現行政策的關係 has no row that names a
@@ -257,6 +263,19 @@ def slug(h):
 
 # ---------- the whole file ----------
 
+def wbs_cost_lines(text):
+    """The line numbers (from 1) of the 成本 rows of the 4.5 sections in the
+    new format. Only these cells of this file may hold more than one tag."""
+    out, in_wbs = set(), False
+    for n, line in enumerate(text.splitlines(), 1):
+        if common.HEADING.match(line):
+            in_wbs = (common.CROSS_STEP7_HEADING.match(line) is not None
+                      and common.step7_format(common.section(text, line) or []) == "wbs")
+        elif in_wbs and line.startswith("| 成本 |"):
+            out.add(n)
+    return out
+
+
 def compared_issues(title):
     """The issue numbers in the title, sorted: 「跨議題分析：#1、#2、#8（試作）」 -> [1, 2, 8]."""
     return sorted({int(n) for n in re.findall(r"#(\d+)", title or "")})
@@ -310,6 +329,7 @@ def read_cross_issue(text, ctx):
     for t_ in sorted(set(re.findall(r"\[[^\[\]]{1,12}\]", text))):
         if t_.strip("[]") not in common.TAGS and re.sub(r"\s", "", t_.strip("[]")).upper() in near:
             err(f"tag variant {t_}; write one of {', '.join(f'[{t}]' for t in common.TAGS)}")
+    cost_lines = wbs_cost_lines(text)
     for n, line in enumerate(text.splitlines(), 1):
         plain = re.sub(r"`[^`]*`", "", line)
         for m in re.finditer(r"【待補[^】]*】", plain):
@@ -321,8 +341,9 @@ def read_cross_issue(text, ctx):
         if re.search(r"`\[AI整理\]`\s*新聞報導", line) and "【待補：查證" not in line:
             err(f"line {n}: an [AI整理] news cell needs a 【待補：查證…】 item in the same row")
         # A cell holds at most one tag. Only the step 7 solution tables of an
-        # issue file may hold more (ETBlue, 2026-10-22; method.md, 標記).
-        if line.startswith("|"):
+        # issue file (ETBlue, 2026-10-22; method.md, 標記) and the 成本 cell
+        # of a 4.5 section in the new format may hold more.
+        if line.startswith("|") and n not in cost_lines:
             for c in common.split_cells(line):
                 k = len(re.findall(rf"`{common.TAG_RE}`", c))
                 if k > 1:
@@ -699,7 +720,7 @@ def read_cross_issue(text, ctx):
                           "solutionTypes": types,
                           "added": r["新增日期"], "summary": r["一句話說明"],
                           "needs": {"must": [], "shouldCould": [], "crossIssue": []},
-                          "measures": [], "evaluation": None, "plan": None, "dependencies": []})
+                          "measures": [], "evaluation": None, "plan": None, "schedule": None, "dependencies": []})
     sol_by_code = {s["code"]: s for s in solutions}
 
     # ----- 4.2 needs -----
@@ -793,14 +814,16 @@ def read_cross_issue(text, ctx):
         if code not in sol_by_code: err(f"{where}: is not in 4.1"); continue
         if code in seen_r: err(f"{where}: has two sections"); continue
         seen_r.append(code)
-        found = common.step7_tables(common.section(text, line) or [])
-        # 4.5 keeps the old format until the rollout (ETBlue, 2026-11-04), so
-        # a work breakdown table is an unknown table here.
-        for h, _ in found["other"] + found["wbs"]:
+        lines7 = common.section(text, line) or []
+        found = common.step7_tables(lines7)
+        # During the rollout each section may use either format.
+        fmt = common.step7_format(lines7)
+        plan_keys = {row: common.PLAN_KEYS[row] for row in common.plan_rows(fmt)}
+        for h, _ in found["other"]:
             err(f"{where}: unknown table 「{' | '.join(h)}」")
         parsed = []
         for kind, header, keys in (("evaluation", common.STEP7_HEADER, common.EVALUATION_KEYS),
-                                   ("plan", common.PLAN_HEADER, common.PLAN_KEYS)):
+                                   ("plan", common.PLAN_HEADER, plan_keys)):
             if len(found[kind]) != 1:
                 err(f"{where}: expected one table with the header {' | '.join(header)}, found {len(found[kind])}")
                 parsed.append(None); continue
@@ -814,9 +837,21 @@ def read_cross_issue(text, ctx):
                 value = r[1]
                 if not TAGGED.match(value) and not PENDING_ITEM.match(value):
                     err(f"{where}: the 「{r[0]}」 cell must start with a tag and text, or be one 【待補：…】 item")
+                if kind == "plan" and fmt == "wbs" and r[0] == "成本":
+                    for p in common.cost_problems(value): err(f"{where}: 成本: {p}")
+                    try:
+                        got[keys[r[0]]] = common.parse_parts(value)
+                    except ValueError as e:
+                        err(f"{where}: 成本: {e}")
+                    continue
                 got[keys[r[0]]] = [parse_cell(value)]
             parsed.append(got if len(got) == len(keys) else None)
         sol_by_code[code]["evaluation"], sol_by_code[code]["plan"] = parsed
+        if fmt == "wbs":
+            wbs_rows, gantt, problems = common.step7_schedule(lines7)
+            for p in problems: err(f"{where}: {p}")
+            if not problems:
+                sol_by_code[code]["schedule"] = common.schedule_data(wbs_rows, gantt)
         if len(found["dependencies"]) > 1: err(f"{where}: two tables with the header {' | '.join(common.DEPENDENCY_HEADER)}")
         for _, rows in found["dependencies"][:1]:
             for c in rows:

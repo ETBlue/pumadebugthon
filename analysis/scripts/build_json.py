@@ -201,7 +201,10 @@ spaces, solutionTypes, added, summary, updated, needs {must, shouldCould, crossI
 [{indicator, baseline, source, from [{issue, code}], isNew}], evaluation
 {laws, privacy, risks, disasters, feasibility}, plan {owner, resources, cost,
 steps} (the tables of its 「### 4.5.n 解法 X-S1：…」 section, the same shape
-as for an issue solution), controversies, legal (as for an issue solution;
+as for an issue solution), schedule (null for a section in the old format;
+for a section in the new format, the same {rows, gantt} as for an issue
+solution, and plan has no steps key and its cost may have several parts),
+controversies, legal (as for an issue solution;
 summary items have solutions with X codes, for example "X-S1"), practices
 (dependency rows only, see above), domains}], solutionFocus [{tag, solutions, note}], pending
 [{text, section}], candidates.
@@ -242,39 +245,11 @@ read_csv = common.read_csv
 
 # ---------- small helpers ----------
 
-def parse_cell(s):
-    """A table cell with an optional tag -> {"text", "tag", "pending"}."""
-    s = s.strip()
-    tags = TAG.findall(s)
-    if len(tags) > 1:
-        raise ValueError(f"cell has {len(tags)} tags, expected at most 1: 「{s}」")
-    text = TAG.sub("", s).strip()
-    text = re.sub(r"  +", " ", text)
-    tag = tags[0] if tags else None
-    return {"text": text, "tag": tag, "pending": tag is None and text.startswith("【待補")}
-
-
-def parse_parts(s):
-    """A cell of a step 7 solution table -> a list of parts, one Cell per tag.
-    Only these cells may hold more than one tag (ETBlue, 2026-10-22; method.md,
-    標記). Each part starts with its own tag and has text after it:
-    「`[實證]` 官方資料… `[AI模擬]` 推想…」 -> [{"text": "官方資料…", "tag":
-    "實證", "pending": False}, {"text": "推想…", "tag": "AI模擬", "pending":
-    False}]. A cell with one tag, or none, is a list of one Cell (parse_cell).
-    A cell with several tags must start with a tag, and no tag may be empty."""
-    s = s.strip()
-    marks = list(TAG.finditer(s))
-    if len(marks) <= 1:
-        return [parse_cell(s)]
-    if s[:marks[0].start()].strip():
-        raise ValueError(f"a cell with {len(marks)} tags must start with a tag: 「{s}」")
-    parts = []
-    for m, nxt in zip(marks, marks[1:] + [None]):
-        text = re.sub(r"  +", " ", s[m.end():nxt.start() if nxt else len(s)].strip())
-        if not text:
-            raise ValueError(f"the tag [{m.group(1)}] has no text after it: 「{s}」")
-        parts.append({"text": text, "tag": m.group(1), "pending": False})
-    return parts
+# parse_cell and parse_parts are in analysis_common.py, so
+# check_cross_issue.py can use them too. The names stay here for this script
+# and its tests.
+parse_cell = common.parse_cell
+parse_parts = common.parse_parts
 
 
 # 資料根據: the keys of counts.cells, in the fixed order 實證, AI整理, AI模擬, 待補.
@@ -659,9 +634,7 @@ def schedule(lines, fmt, name):
     rows, gantt, problems = common.step7_schedule(lines)
     if problems:
         raise ReadError(name, problems[0])
-    return {"rows": [{"id": r["id"], "level": r["level"], "item": cell(r["item"], name, r["id"]),
-                      "owner": r["owner"], "period": r["period"], "days": r["days"]} for r in rows],
-            "gantt": "\n".join(gantt)}
+    return common.schedule_data(rows, gantt)
 
 
 def summary_range(lines):

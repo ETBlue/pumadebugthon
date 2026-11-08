@@ -7,6 +7,8 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
 import csv, datetime, importlib.util, json, os, shutil, subprocess, sys, tempfile, unittest
 
+from . import new_format as NEW_FORMAT
+
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPTS = os.path.join(ANALYSIS, "scripts")
 UPDATE = os.path.join(SCRIPTS, "update_dates.py")
@@ -205,6 +207,21 @@ class ItemsTest(unittest.TestCase):
              "| 主責單位 | `[AI模擬]` 環保局（環境清潔管理科）。 `[實證]` 協作單位；")
         after = self.prints()
         self.assertEqual({k for k in before if before[k] != after[k]}, {("解法", "2-S1")})
+
+    def test_cross_solution_schedule_change_changes_only_that_solution(self):
+        # A section in the old format has no schedule, so its fingerprint
+        # does not change when another section moves to the new format.
+        path = os.path.join(self.dir, "cross-issue", "cross-issue-analysis.md")
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        before = self.prints()
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(NEW_FORMAT.cross_to_new_format(text, "X-S5"))
+        middle = self.prints()
+        self.assertEqual({k for k in before if before[k] != middle[k]}, {("跨議題解法", "X-S5")})
+        edit(path, "| 2.1 | `[AI模擬]` 辦里民工作坊 |", "| 2.1 | `[AI模擬]` 辦區民工作坊 |")
+        after = self.prints()
+        self.assertEqual({k for k in middle if middle[k] != after[k]}, {("跨議題解法", "X-S5")})
 
     def test_solution_added_date_is_not_content(self):
         before = self.prints()

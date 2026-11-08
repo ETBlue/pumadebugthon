@@ -713,6 +713,45 @@ def practice_place(name):
     return (m.group(1), m.group(2).strip()) if m else None
 
 
+# A source tag, with or without backticks. Group 1 is the tag name.
+CELL_TAG = re.compile(rf"`?{TAG_RE}`?")
+
+
+def parse_cell(s):
+    """A table cell with an optional tag -> {"text", "tag", "pending"}."""
+    s = s.strip()
+    tags = CELL_TAG.findall(s)
+    if len(tags) > 1:
+        raise ValueError(f"cell has {len(tags)} tags, expected at most 1: 「{s}」")
+    text = CELL_TAG.sub("", s).strip()
+    text = re.sub(r"  +", " ", text)
+    tag = tags[0] if tags else None
+    return {"text": text, "tag": tag, "pending": tag is None and text.startswith("【待補")}
+
+
+def parse_parts(s):
+    """A cell of a step 7 solution table -> a list of parts, one Cell per tag.
+    Only these cells may hold more than one tag (ETBlue, 2026-10-22; method.md,
+    標記). Each part starts with its own tag and has text after it:
+    「`[實證]` 官方資料… `[AI模擬]` 推想…」 -> [{"text": "官方資料…", "tag":
+    "實證", "pending": False}, {"text": "推想…", "tag": "AI模擬", "pending":
+    False}]. A cell with one tag, or none, is a list of one Cell (parse_cell).
+    A cell with several tags must start with a tag, and no tag may be empty."""
+    s = s.strip()
+    marks = list(CELL_TAG.finditer(s))
+    if len(marks) <= 1:
+        return [parse_cell(s)]
+    if s[:marks[0].start()].strip():
+        raise ValueError(f"a cell with {len(marks)} tags must start with a tag: 「{s}」")
+    parts = []
+    for m, nxt in zip(marks, marks[1:] + [None]):
+        text = re.sub(r"  +", " ", s[m.end():nxt.start() if nxt else len(s)].strip())
+        if not text:
+            raise ValueError(f"the tag [{m.group(1)}] has no text after it: 「{s}」")
+        parts.append({"text": text, "tag": m.group(1), "pending": False})
+    return parts
+
+
 def step7_sections(text):
     """{section number "1": solution code "S1"} from the 「### 7.n 解法 Sn：」 headings."""
     return {m.group(1): m.group(2) for m in map(STEP7_HEADING.match, text.splitlines()) if m}
@@ -928,6 +967,15 @@ def step7_schedule(lines):
             bad("the ```mermaid block has no closing ``` line")
         problems.extend(gantt_problems(body, phases, periods))
     return rows, gantt, problems
+
+
+def schedule_data(rows, gantt):
+    """The JSON form of the result of step7_schedule, for an issue solution
+    and for a combined solution: {"rows": [...], "gantt": "..."}. Call it only
+    when step7_schedule found no problems."""
+    return {"rows": [{"id": r["id"], "level": r["level"], "item": parse_cell(r["item"]),
+                      "owner": r["owner"], "period": r["period"], "days": r["days"]} for r in rows],
+            "gantt": "\n".join(gantt)}
 
 
 def gantt_problems(body, phases, periods=None):

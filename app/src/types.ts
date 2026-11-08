@@ -709,9 +709,13 @@ export interface CrossSolution {
   }
   measures: CrossMeasure[]
   /** The tables of its 「### 4.5.n 解法 X-S1：…」 section: the same shape as
-   * for an issue solution. Each cell has one part. */
+   * for an issue solution. Each cell has one part, but the 成本 cell of the
+   * new format may have several. */
   evaluation: SolutionEvaluation
   plan: SolutionPlan
+  /** The 工作分解與時程 of its 4.5.n section in the new format (decision 188);
+   * null or missing in the old format (plan.steps is there instead). */
+  schedule?: SolutionSchedule | null
   /** The 分析摘要 rows of 可能的爭議 and 法規上的障礙 that name it. */
   controversies: SummaryItem[]
   legal: SummaryItem[]

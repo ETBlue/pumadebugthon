@@ -517,6 +517,24 @@ describe('the 執行計畫 tab in the new step 7 format (decisions 181 to 185)',
     expect(html).toContain(ts.intro)
   })
 
+  it('a cross-issue solution in the new format also shows 工作分解與時程 (decision 188)', () => {
+    const sol = cross.solutions.find((s) => s.code === 'X-S1')!
+    const oldPlan = sol.plan
+    sol.plan = newFormat.plan
+    sol.schedule = newFormat.schedule
+    try {
+      const html = render('/solutions/X-S1/plan')
+      expect(html).toContain('id="plan-schedule"')
+      expect(html).not.toContain('id="plan-steps"')
+      const body = [...table(html).matchAll(/<tr( class="[^"]*")?><td[^>]*>([^<]+)<\/td>/g)]
+      expect(body.map((m) => m[2])).toEqual(rows.map((r) => r.id))
+      expect(html).toContain(ts.chartLoading)
+    } finally {
+      sol.plan = oldPlan
+      delete sol.schedule
+    }
+  })
+
   it('shows the work breakdown table: the columns, every row in file order, phases in bold', () => {
     const html = table(renderNew('/solutions/2-S1/plan'))
     expect([...html.matchAll(/<th scope="col"[^>]*>([^<]+)<\/th>/g)].map((m) => m[1])).toEqual(['編號', '工作項目', '主責單位', '期間', '人天'])

@@ -7,6 +7,8 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
 import csv, json, os, shutil, subprocess, sys, tempfile, unittest
 
+from . import new_format as NEW_FORMAT
+
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "scripts", "build_json.py")
 SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/domain-types.csv", "data/solution-types.csv", "data/open-data.csv",
@@ -35,6 +37,64 @@ def make_copy(root):
 def run_build(analysis_dir, out_dir):
     p = subprocess.run([sys.executable, "-I", SCRIPT, analysis_dir, out_dir], capture_output=True, text=True)
     return p.returncode, p.stdout + p.stderr
+
+
+class CrossIssueNewFormatJsonTest(unittest.TestCase):
+    """A 4.5 section in the new step 7 format (plan-wbs-rollout.md, Task 1)."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls._tmp = tempfile.TemporaryDirectory()
+        d = make_copy(cls._tmp.name)
+        path = os.path.join(d, CROSS)
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(NEW_FORMAT.cross_to_new_format(text, "X-S5"))
+        out = os.path.join(cls._tmp.name, "out")
+        code, log = run_build(d, out)
+        if code != 0:
+            raise AssertionError(f"build failed ({code}): {log}")
+        with open(os.path.join(out, "cross-issue.json"), encoding="utf-8") as f:
+            cls.solutions = {s["code"]: s for s in json.load(f)["solutions"]}
+        with open(os.path.join(out, "issues", "2-trashcans.json"), encoding="utf-8") as f:
+            cls.issue_solution = json.load(f)["solutions"][0]
+
+    @classmethod
+    def tearDownClass(cls):
+        cls._tmp.cleanup()
+
+    def test_schedule_rows_in_file_order(self):
+        rows = self.solutions["X-S5"]["schedule"]["rows"]
+        self.assertEqual([(r["id"], r["level"]) for r in rows], [("1", 1), ("1.1", 2), ("1.2", 2), ("2", 1), ("2.1", 2)])
+        self.assertEqual(rows[1], {"id": "1.1", "level": 2, "item": {"text": "和各區公所訂好流程", "tag": "AI模擬", "pending": False},
+                                   "owner": "環保局", "period": "第 1 個月", "days": "約 10–20"})
+        self.assertEqual(rows[2]["days"], "【待補：人力估計】")
+
+    def test_schedule_has_the_shape_of_an_issue_solution(self):
+        schedule, model = self.solutions["X-S5"]["schedule"], self.issue_solution["schedule"]
+        self.assertEqual(set(schedule), set(model))
+        self.assertEqual(set(schedule["rows"][0]), set(model["rows"][0]))
+        self.assertEqual(set(schedule["rows"][0]["item"]), set(model["rows"][0]["item"]))
+
+    def test_gantt_is_the_chart_source(self):
+        gantt = self.solutions["X-S5"]["schedule"]["gantt"]
+        self.assertTrue(gantt.startswith("gantt\n  title 時程示意"))
+        self.assertLess(gantt.index("1.1 訂好流程"), gantt.index("1.2 選出試點的里"))
+        self.assertLess(gantt.index("section 1 準備"), gantt.index("section 2 試點"))
+        self.assertNotIn("```", gantt)
+
+    def test_plan_has_no_steps_and_the_cost_has_two_parts(self):
+        plan = self.solutions["X-S5"]["plan"]
+        self.assertEqual(list(plan), ["owner", "resources", "cost"])
+        self.assertEqual([p["tag"] for p in plan["cost"]], ["AI模擬", "AI模擬"])
+        self.assertEqual(plan["cost"][0]["text"], "成本中（人力與場地）。")
+        self.assertTrue(plan["cost"][1]["text"].startswith("時間：約 6–9 個月"))
+
+    def test_old_format_section_has_no_schedule(self):
+        old = self.solutions["X-S1"]
+        self.assertIsNone(old["schedule"])
+        self.assertIn("steps", old["plan"])
 
 
 class CrossIssueJsonTest(unittest.TestCase):

@@ -36,7 +36,7 @@ The content of each item (design 3.23.8):
   ETBlue 2026-10-22; only when the list is not empty).
 - 跨議題解法: its part of cross-issue-analysis.md (name, tag, summary,
   parts, spaces, needs, measures, evaluation, plan, and practices when not
-  empty). Not its controversies and legal rows: they are 分析摘要 rows.
+  empty, and schedule when it is there). Not its controversies and legal rows: they are 分析摘要 rows.
 - 使用者故事: its row in the step 4 table (我想要…, 以便…, their tags, 來源,
   優先順序 and its tag, 相同訴求編號, 相同需求編號). The same fields as in
   the stakeholder's content.
@@ -144,7 +144,9 @@ def items(analysis_dir):
         out.append({"type": STAKEHOLDER, "id": sid, "added": r["新增日期"].strip(),
                     "fingerprint": common.fingerprint(content)})
     for s in (cross or {}).get("solutions", []):
-        content = without_pending({k: v for k, v in s.items() if k not in CROSS_SKIP and (k != "practices" or v)})
+        # schedule (2026-11-09): only when it is there, so the old format keeps its dates.
+        content = without_pending({k: v for k, v in s.items() if k not in CROSS_SKIP and (k != "practices" or v)
+                                   and (k != "schedule" or v is not None)})
         out.append({"type": CROSS, "id": s["code"], "added": s["added"], "fingerprint": common.fingerprint(content)})
     for d in issues:
         for s in ordered_solutions(d["solutions"]):

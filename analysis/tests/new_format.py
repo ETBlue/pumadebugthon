@@ -58,3 +58,17 @@ def set_types(text, domains="`environment`", solution_type="`participation`"):
         lines[i] = join_cells(c)
         i += 1
     return "\n".join(lines)
+
+
+def cross_to_new_format(text, code):
+    """The cross-issue text with the plan table of the 4.5 section of this
+    combined solution in the new step 7 format. The fixture (test_wbs_format.SECTION)
+    has 2 phases, and phase 1 has 2 items, so a test sees order and matching."""
+    from .test_wbs_format import SECTION
+    start = re.search(rf"^### 4\.5\.\d+ 解法 {code}：", text, re.M).start()
+    first_line_end = text.index("\n", start)
+    end = first_line_end + re.search(r"^(### |## |---$)", text[first_line_end:], re.M).start()
+    body, count = re.subn(r"\| 執行計畫 \| 內容 \|\n.*?\| 執行步驟 \|[^\n]*\n", lambda _: SECTION, text[start:end], count=1, flags=re.S)
+    if count != 1:
+        raise ValueError(f"no old plan table in the section of {code}")
+    return text[:start] + body + text[end:]

@@ -7,6 +7,8 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
 import os, shutil, subprocess, sys, tempfile, unittest
 
+from . import new_format as NEW_FORMAT
+
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPT = os.path.join(ANALYSIS, "scripts", "check_cross_issue.py")
 SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "data/space-types.csv", "data/domain-types.csv", "data/solution-types.csv", "docs/method.md", "data/open-data.csv", "docs/human-inputs.md")
@@ -105,6 +107,65 @@ class CheckCrossIssueTest(unittest.TestCase):
         # Only the step 7 solution tables of an issue file may have cells with
         # more than one tag (ETBlue, 2026-10-22). This file keeps one tag per cell.
         self.edit("| 人行道設施帶的分配 | `[AI模擬]` 樹", "| 人行道設施帶的分配 | `[實證]` 官方資料 `[AI模擬]` 樹")
+        self.assertFails("a cell has 2 tags")
+
+    # ---------- 4.5 in the new step 7 format (plan-wbs-rollout.md, Task 1) ----------
+
+    def new_format(self, code="X-S5"):
+        """Put the 4.5 section of this solution in the new format, in the copy.
+        The other sections stay in the old format."""
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(NEW_FORMAT.cross_to_new_format(text, code))
+
+    def test_new_format_passes_next_to_the_old_format(self):
+        self.new_format()
+        code, out = self.run_check()
+        self.assertEqual(code, 0, out)
+
+    def test_new_format_chart_order_does_not_match_the_wbs(self):
+        self.new_format()
+        self.edit("  1.1 訂好流程 :t1_1, 2000-01-01, 30d\n  1.2 選出試點的里 :t1_2, after t1_1, 30d\n",
+                  "  1.2 選出試點的里 :t1_2, 2000-01-01, 30d\n  1.1 訂好流程 :t1_1, after t1_2, 30d\n")
+        self.assertFails("4.5 X-S5: chart section 「1 準備」: the tasks must be the level 2 rows 1.1、1.2, in order; found 1.2、1.1")
+
+    def test_new_format_chart_length_does_not_match_the_wbs(self):
+        # The WBS says 第 3–6 個月 (120 days). The chart says 90 days.
+        self.new_format()
+        self.edit(":t2_1, after t1_2, 120d", ":t2_1, after t1_2, 90d")
+        self.assertFails("4.5 X-S5: ", "2.1")
+
+    def test_new_format_cost_needs_the_ranges(self):
+        self.new_format()
+        self.edit("；人力：約 120–200 人天【待補：專業人士確認】", "【待補：專業人士確認】")
+        self.assertFails("4.5 X-S5: 成本: no 「人力」 range")
+
+    def test_new_format_has_no_steps_row(self):
+        self.new_format()
+        self.edit("【待補：專業人士確認】 |\n", "【待補：專業人士確認】 |\n| 執行步驟 | `[AI模擬]` 第一步 |\n")
+        self.assertFails("4.5 X-S5: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本, in this order; found")
+
+    def test_new_format_chart_without_wbs_fails(self):
+        self.new_format()
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        start = text.index("| 編號 | 工作項目 |")
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(text[:start] + text[text.index("```mermaid", start):])
+        self.assertFails("4.5 X-S5: expected one work breakdown table")
+
+    def test_only_the_cost_cell_of_the_new_format_has_two_tags(self):
+        # The 主責單位 cell of a section in the new format still has one tag.
+        self.new_format()
+        self.edit("| 主責單位 | `[AI模擬]` 環保局 |", "| 主責單位 | `[實證]` 環保局 `[AI模擬]` 協作 |")
+        self.assertFails("a cell has 2 tags")
+
+    def test_old_format_cost_cell_keeps_one_tag(self):
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        old = next(l for l in text[text.index("### 4.5.5 解法 X-S5："):].splitlines() if l.startswith("| 成本 | "))
+        self.edit(old, old[:-2] + " `[AI模擬]` 時間 |")
         self.assertFails("a cell has 2 tags")
 
     def test_empty_pending_item(self):

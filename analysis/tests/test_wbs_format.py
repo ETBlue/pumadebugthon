@@ -14,6 +14,8 @@ Run from the repo root: python3 -I -m unittest discover -s analysis/tests -t .
 """
 import importlib.util, json, os, re, shutil, subprocess, sys, tempfile, unittest
 
+from .test_build_json import use_old_format
+
 ANALYSIS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SCRIPTS = os.path.join(ANALYSIS, "scripts")
 ISSUE = "2-trashcans"
@@ -97,6 +99,11 @@ class AnalysisCommonWbsTest(unittest.TestCase):
 
     def problems(self, section=SECTION):
         return self.common.step7_schedule(section.split("\n"))[2]
+
+    def test_item_with_a_second_tag_without_backticks(self):
+        section = SECTION.replace("`[AI模擬]` 和各區公所訂好流程", "`[AI模擬]` 依 [實證] 和各區公所訂好流程")
+        self.assertNotEqual(section, SECTION)
+        self.assertProblem(section, "work breakdown row 「1.1」: the 工作項目 cell has 2 tags")
 
     def assertProblem(self, section, needle):
         found = self.problems(section)
@@ -323,6 +330,22 @@ class CheckWbsTest(unittest.TestCase):
         self.assertEqual(code, 1, out)
         self.assertIn("步驟 7 #2: one file must use one format; new format (work breakdown table and chart): 解法 S2、S3、S4、S5; old format (執行步驟 row): 解法 S1", out)
 
+    def test_second_tag_without_backticks_in_work_item_is_reported(self):
+        # This cell used to crash schedule_data with a ValueError, in
+        # check_analysis.py and in build_json.py.
+        old = "| 1.1 | `[AI模擬]` 和各區公所訂好流程 |"
+        text = with_fixture(self.text, "S4")
+        self.assertEqual(text.count(old), 1)
+        self.write(text.replace(old, "| 1.1 | `[AI模擬]` 依 [實證] 和各區公所訂好流程 |"))
+        code, out = self.check()
+        self.assertEqual(code, 1, out)
+        self.assertIn("步驟 7 #2 解法 S4: work breakdown row 「1.1」: the 工作項目 cell has 2 tags; write one tag", out)
+        self.assertNotIn("Traceback", out)
+        code, out = self.run_script(os.path.join(SCRIPTS, "build_json.py"), self.dir, os.path.join(self._tmp.name, "out"))
+        self.assertNotEqual(code, 0, out)
+        self.assertIn("the 工作項目 cell has 2 tags", out)
+        self.assertNotIn("Traceback", out)
+
     def test_steps_row_in_new_format_fails(self):
         text = self.text
         start = text.index("### 7.4 解法 S4：")
@@ -348,15 +371,18 @@ class CheckWbsTest(unittest.TestCase):
         self.assertNotIn("解法 S3:", out)
 
     def test_wbs_with_steps_row_in_cross_issue_fails(self):
-        # A work breakdown table makes the 4.5 section new format, so the
-        # plan table must not keep its 執行步驟 row and the chart must be there.
+        # A 4.5 section in the new format must not have a 執行步驟 row, and
+        # its chart must be there.
         path = os.path.join(self.dir, "cross-issue", "cross-issue-analysis.md")
         with open(path, encoding="utf-8") as f:
             text = f.read()
-        i = text.index("| 執行步驟 |", text.index("### 4.5.1 "))
+        i = text.index("| 成本 |", text.index("### 4.5.1 "))
         end = text.index("\n", i) + 1
+        text = text[:end] + "| 執行步驟 | `[AI模擬]` 第一步 |\n" + text[end:]
+        start = text.index("```mermaid", end)
+        stop = text.index("\n```\n", start) + len("\n```\n")
         with open(path, "w", encoding="utf-8") as f:
-            f.write(text[:end] + "\n" + WBS + text[end:])
+            f.write(text[:start] + text[stop:])
         code, out = self.run_script(os.path.join(SCRIPTS, "check_cross_issue.py"), path)
         self.assertEqual(code, 1, out)
         self.assertIn("4.5 X-S1: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本, in this order", out)
@@ -377,8 +403,6 @@ class BuildWbsTest(unittest.TestCase):
             raise AssertionError(p.stdout + p.stderr)
         with open(os.path.join(cls.out, "issues", f"{ISSUE}.json"), encoding="utf-8") as f:
             cls.issue = json.load(f)
-        with open(os.path.join(cls.out, "issues", "1-trees.json"), encoding="utf-8") as f:
-            cls.old = json.load(f)
 
     @classmethod
     def tearDownClass(cls):
@@ -410,7 +434,21 @@ class BuildWbsTest(unittest.TestCase):
         self.assertIn({"section": "7.4 解法 S4：參與式選址流程", "text": "【待補：專業人士確認】", "context": "成本"}, s["pending"])
 
     def test_old_format_unchanged(self):
-        for s in self.old["solutions"]:
+        # No issue uses the old format now, so this build uses the old-format
+        # fixture in place of #8 (test_build_json.use_old_format).
+        with tempfile.TemporaryDirectory() as tmp:
+            copy = make_copy(tmp)
+            use_old_format(copy)
+            # The cross-issue file names IDs that the old #8 fixture does not
+            # have, so this build leaves that file out.
+            shutil.rmtree(os.path.join(copy, "cross-issue"))
+            out = os.path.join(tmp, "out")
+            p = subprocess.run([sys.executable, "-I", os.path.join(SCRIPTS, "build_json.py"), copy, out], capture_output=True, text=True)
+            self.assertEqual(p.returncode, 0, p.stdout + p.stderr)
+            with open(os.path.join(out, "issues", "8-smokefree.json"), encoding="utf-8") as f:
+                old = json.load(f)
+        self.assertTrue(old["solutions"])
+        for s in old["solutions"]:
             self.assertEqual(list(s["plan"]), ["owner", "resources", "cost", "steps"], s["id"])
             self.assertIsNone(s["schedule"], s["id"])
 

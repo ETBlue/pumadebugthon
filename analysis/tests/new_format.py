@@ -60,15 +60,36 @@ def set_types(text, domains="`environment`", solution_type="`participation`"):
     return "\n".join(lines)
 
 
-def cross_to_new_format(text, code):
-    """The cross-issue text with the plan table of the 4.5 section of this
-    combined solution in the new step 7 format. The fixture (test_wbs_format.SECTION)
-    has 2 phases, and phase 1 has 2 items, so a test sees order and matching."""
-    from .test_wbs_format import SECTION
+def cross_section_span(text, code):
+    """The start and end of the 4.5 section of this combined solution."""
     start = re.search(rf"^### 4\.5\.\d+ 解法 {code}：", text, re.M).start()
     first_line_end = text.index("\n", start)
-    end = first_line_end + re.search(r"^(### |## |---$)", text[first_line_end:], re.M).start()
-    body, count = re.subn(r"\| 執行計畫 \| 內容 \|\n.*?\| 執行步驟 \|[^\n]*\n", lambda _: SECTION, text[start:end], count=1, flags=re.S)
+    return start, first_line_end + re.search(r"^(### |## |---$)", text[first_line_end:], re.M).start()
+
+
+def cross_to_new_format(text, code):
+    """The cross-issue text with the plan table, the work breakdown and the
+    chart of the 4.5 section of this combined solution replaced by a small
+    fixture in the new format. The fixture (test_wbs_format.SECTION) has 2
+    phases, and phase 1 has 2 items, so a test sees order and matching."""
+    from .test_wbs_format import SECTION
+    start, end = cross_section_span(text, code)
+    body, count = re.subn(r"\| 執行計畫 \| 內容 \|\n.*?\n```mermaid\n.*?\n```\n", lambda _: SECTION, text[start:end], count=1, flags=re.S)
     if count != 1:
-        raise ValueError(f"no old plan table in the section of {code}")
+        raise ValueError(f"no plan table and chart in the section of {code}")
+    return text[:start] + body + text[end:]
+
+
+def cross_to_old_format(text, code):
+    """The cross-issue text with the 4.5 section of this combined solution
+    back in the old format: a 執行步驟 row, no work breakdown table, no chart
+    and no ranges in the 成本 cell. No real section uses the old format now
+    (2026-11-09). The tests use this to show that it is rejected."""
+    start, end = cross_section_span(text, code)
+    body, count = re.subn(r"\n\n\| 編號 \| 工作項目 .*?\n```mermaid\n.*?\n```", "\n| 執行步驟 | `[AI模擬]` 第一步：先試辦 |", text[start:end], count=1, flags=re.S)
+    if count != 1:
+        raise ValueError(f"no work breakdown table in the section of {code}")
+    body, count = re.subn(r"。`\[AI模擬\]` [^`|]*?時間：.*?【待補：專業人士確認】", "", body, count=1)
+    if count != 1:
+        raise ValueError(f"no ranges in the 成本 cell of {code}")
     return text[:start] + body + text[end:]

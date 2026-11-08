@@ -209,8 +209,8 @@ class ItemsTest(unittest.TestCase):
         self.assertEqual({k for k in before if before[k] != after[k]}, {("解法", "2-S1")})
 
     def test_cross_solution_schedule_change_changes_only_that_solution(self):
-        # A section in the old format has no schedule, so its fingerprint
-        # does not change when another section moves to the new format.
+        # The fingerprint of a combined solution holds its work breakdown. A
+        # change in the section of X-S5 changes only the fingerprint of X-S5.
         path = os.path.join(self.dir, "cross-issue", "cross-issue-analysis.md")
         with open(path, encoding="utf-8") as f:
             text = f.read()

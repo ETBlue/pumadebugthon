@@ -91,10 +91,25 @@ class CrossIssueNewFormatJsonTest(unittest.TestCase):
         self.assertEqual(plan["cost"][0]["text"], "成本中（人力與場地）。")
         self.assertTrue(plan["cost"][1]["text"].startswith("時間：約 6–9 個月"))
 
-    def test_old_format_section_has_no_schedule(self):
-        old = self.solutions["X-S1"]
-        self.assertIsNone(old["schedule"])
-        self.assertIn("steps", old["plan"])
+    def test_other_sections_have_a_schedule(self):
+        # Since 2026-11-09 every 4.5 section is in the new format. The build
+        # stops on a section in the old format, because it runs the checks of
+        # check_cross_issue.py (test_old_format_section_stops_the_build).
+        other = self.solutions["X-S1"]
+        self.assertIsNotNone(other["schedule"])
+        self.assertNotIn("steps", other["plan"])
+
+    def test_old_format_section_stops_the_build(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d = make_copy(tmp)
+            path = os.path.join(d, CROSS)
+            with open(path, encoding="utf-8") as f:
+                text = f.read()
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(NEW_FORMAT.cross_to_old_format(text, "X-S1"))
+            code, log = run_build(d, os.path.join(tmp, "out"))
+        self.assertEqual(code, 1, log)
+        self.assertIn("4.5 X-S1: the rows of the table 執行計畫 | 內容 must be", log)
 
 
 class CrossIssueJsonTest(unittest.TestCase):
@@ -227,7 +242,7 @@ class CrossIssueJsonTest(unittest.TestCase):
         # for an issue solution (ETBlue, 2026-10-23). Each cell is a list of one Cell.
         e = self.solution("X-S5")
         self.assertEqual(list(e["evaluation"]), ["laws", "privacy", "risks", "disasters", "feasibility"])
-        self.assertEqual(list(e["plan"]), ["owner", "resources", "cost", "steps"])
+        self.assertEqual(list(e["plan"]), ["owner", "resources", "cost"])
         # The old 主要風險 cell is split at 「；災害風險：」.
         self.assertEqual(e["evaluation"]["risks"],
                          [{"text": "分開設置後，清潔箱或吸菸區可能離人多的地方遠一些；菸蒂收集設備需要維護（#8）",
@@ -237,8 +252,15 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertEqual(e["evaluation"]["feasibility"],
                          [{"text": "#2 解法 S1：可行性高；#2 解法 S2：QR 回報可行性高，感測器試點可行性中；#8 解法 S2：可行性中",
                            "tag": "AI模擬", "pending": False}])
-        self.assertEqual(e["plan"]["steps"][0]["tag"], "AI模擬")
-        self.assertTrue(e["plan"]["steps"][0]["text"].startswith("第一步："))
+        # The work breakdown starts with a phase row, and the chart is there.
+        self.assertEqual(e["schedule"]["rows"][0]["id"], "1")
+        self.assertEqual(e["schedule"]["rows"][0]["item"]["tag"], "AI模擬")
+        self.assertTrue(e["schedule"]["rows"][0]["item"]["text"].startswith("準備："))
+        self.assertTrue(e["schedule"]["gantt"].startswith("gantt\n"))
+        # The 成本 cell keeps the text per part and adds the combined ranges.
+        self.assertEqual([p["tag"] for p in e["plan"]["cost"]], ["AI模擬", "AI模擬"])
+        self.assertTrue(e["plan"]["cost"][0]["text"].startswith("#2 解法 S1：成本低"))
+        self.assertIn("時間：約 ", e["plan"]["cost"][1]["text"])
 
     def test_summary_rows_of_a_solution(self):
         # The 可能的爭議 and 法規上的障礙 rows whose 相關編號 names 「解法 X-S1」.

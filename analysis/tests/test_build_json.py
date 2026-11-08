@@ -328,7 +328,10 @@ class BuildJsonOutputTest(unittest.TestCase):
         self.assertTrue(a1["ideas"][0]["idea"]["text"].startswith("可參考新加坡"))
         self.assertEqual(self.solution("S5", trees)["overview"]["owner"]["text"], "公園處")
         for s in trees["solutions"] + smoke["solutions"]:
-            self.assertEqual(len(s["evaluation"]) + len(s["plan"]), 9, s["id"])
+            # 5 evaluation rows and 3 plan rows; the work breakdown replaced
+            # the 執行步驟 row in all issues (2026-11-09).
+            self.assertEqual(len(s["evaluation"]) + len(s["plan"]), 8, s["id"])
+            self.assertIsNotNone(s["schedule"], s["id"])
             self.assertTrue(s["measures"], s["id"])
         self.assertEqual([s["ideas"] for s in smoke["solutions"]], [[]] * 5)
         b8 = self.solution("S2", smoke)

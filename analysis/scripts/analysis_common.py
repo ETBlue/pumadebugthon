@@ -912,8 +912,10 @@ def step7_schedule(lines):
             expected = f"{phase}.{item}"
         if r["id"] != expected:
             bad(f"{where}: expected 「{expected}」 here; rows sort by 編號 (1, 1.1, 1.2, 2, 2.1 …) with no gaps")
-        tags = re.findall(rf"`{TAG_RE}`", r["item"])
-        text = re.sub(rf"`{TAG_RE}`", "", r["item"]).strip()
+        # CELL_TAG also finds a tag without backticks, so that parse_cell in
+        # schedule_data never gets a cell with two tags.
+        tags = CELL_TAG.findall(r["item"])
+        text = CELL_TAG.sub("", r["item"]).strip()
         if not re.match(rf"`{TAG_RE}` \S", r["item"]):
             bad(f"{where}: the 工作項目 cell must start with one tag, for example 「`[AI模擬]` …」: {r['item'][:30]!r}")
         elif len(tags) > 1:

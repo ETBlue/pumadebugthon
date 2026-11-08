@@ -112,17 +112,55 @@ class CheckCrossIssueTest(unittest.TestCase):
     # ---------- 4.5 in the new step 7 format (plan-wbs-rollout.md, Task 1) ----------
 
     def new_format(self, code="X-S5"):
-        """Put the 4.5 section of this solution in the new format, in the copy.
-        The other sections stay in the old format."""
+        """Put the small new-format fixture into the 4.5 section of this
+        solution, in the copy. The other sections keep their real content."""
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
         with open(self.md, "w", encoding="utf-8") as f:
             f.write(NEW_FORMAT.cross_to_new_format(text, code))
 
-    def test_new_format_passes_next_to_the_old_format(self):
+    def old_format(self, code="X-S5"):
+        """Put the 4.5 section of this solution back in the old format, in the copy."""
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(NEW_FORMAT.cross_to_old_format(text, code))
+
+    def edit_section(self, code, old, new):
+        """Replace one exact piece of text inside the 4.5 section of this solution."""
+        with open(self.md, encoding="utf-8") as f:
+            text = f.read()
+        start, end = NEW_FORMAT.cross_section_span(text, code)
+        part = text[start:end]
+        self.assertEqual(part.count(old), 1, f"{old!r} must occur once in {code}")
+        with open(self.md, "w", encoding="utf-8") as f:
+            f.write(text[:start] + part.replace(old, new) + text[end:])
+
+    def test_new_format_passes(self):
         self.new_format()
         code, out = self.run_check()
         self.assertEqual(code, 0, out)
+
+    def test_old_format_section_fails(self):
+        # Since 2026-11-09 every 4.5 section must be in the new format.
+        self.old_format()
+        self.assertFails("4.5 X-S5: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本, in this order; found",
+                         "4.5 X-S5: 成本: no 「時間」 range",
+                         "4.5 X-S5: expected one work breakdown table",
+                         "4.5 X-S5: expected one ```mermaid block")
+
+    def test_unknown_table_fails(self):
+        self.edit_section("X-S5", "| 項目 | 內容 |\n", "| 備註 | 內容 |\n|---|---|\n| 其他 | `[AI模擬]` 說明 |\n\n| 項目 | 內容 |\n")
+        self.assertFails("4.5 X-S5: unknown table 「備註 | 內容」")
+
+    def test_second_tag_without_backticks_in_work_item_is_reported(self):
+        # This cell used to crash schedule_data with a ValueError.
+        self.new_format()
+        self.edit_section("X-S5", "| 1.1 | `[AI模擬]` 和各區公所訂好流程 |", "| 1.1 | `[AI模擬]` 依 [實證] 和各區公所訂好流程 |")
+        code, out = self.run_check()
+        self.assertEqual(code, 1, out)
+        self.assertIn("4.5 X-S5: work breakdown row 「1.1」: the 工作項目 cell has 2 tags; write one tag", out)
+        self.assertNotIn("Traceback", out)
 
     def test_new_format_chart_order_does_not_match_the_wbs(self):
         self.new_format()
@@ -133,7 +171,7 @@ class CheckCrossIssueTest(unittest.TestCase):
     def test_new_format_chart_length_does_not_match_the_wbs(self):
         # The WBS says 第 3–6 個月 (120 days). The chart says 90 days.
         self.new_format()
-        self.edit(":t2_1, after t1_2, 120d", ":t2_1, after t1_2, 90d")
+        self.edit("2.1 辦里民工作坊 :t2_1, after t1_2, 120d", "2.1 辦里民工作坊 :t2_1, after t1_2, 90d")
         self.assertFails("4.5 X-S5: ", "2.1")
 
     def test_new_format_cost_needs_the_ranges(self):
@@ -143,14 +181,14 @@ class CheckCrossIssueTest(unittest.TestCase):
 
     def test_new_format_has_no_steps_row(self):
         self.new_format()
-        self.edit("【待補：專業人士確認】 |\n", "【待補：專業人士確認】 |\n| 執行步驟 | `[AI模擬]` 第一步 |\n")
+        self.edit_section("X-S5", "【待補：專業人士確認】 |\n", "【待補：專業人士確認】 |\n| 執行步驟 | `[AI模擬]` 第一步 |\n")
         self.assertFails("4.5 X-S5: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本, in this order; found")
 
     def test_new_format_chart_without_wbs_fails(self):
         self.new_format()
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
-        start = text.index("| 編號 | 工作項目 |")
+        start = text.index("| 編號 | 工作項目 |", text.index("### 4.5.5 解法 X-S5："))
         with open(self.md, "w", encoding="utf-8") as f:
             f.write(text[:start] + text[text.index("```mermaid", start):])
         self.assertFails("4.5 X-S5: expected one work breakdown table")
@@ -162,6 +200,7 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("a cell has 2 tags")
 
     def test_old_format_cost_cell_keeps_one_tag(self):
+        self.old_format()
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
         old = next(l for l in text[text.index("### 4.5.5 解法 X-S5："):].splitlines() if l.startswith("| 成本 | "))
@@ -366,16 +405,16 @@ class CheckCrossIssueTest(unittest.TestCase):
         self.assertFails("4.5 X-S5: the 「災害風險」 cell must start with a tag and text")
 
     def test_plan_row_order(self):
-        # Swap the 成本 and 執行步驟 rows of X-S5.
+        # Swap the 需要的資料 and 成本 rows of X-S5.
         with open(self.md, encoding="utf-8") as f:
             text = f.read()
         start = text.index("### 4.5.5 解法 X-S5：")
         end = text.index("### 4.5.6", start)
         lines = text[start:end].split("\n")
+        data = next(l for l in lines if l.startswith("| 需要的資料／API／資源 | "))
         cost = next(l for l in lines if l.startswith("| 成本 | "))
-        steps = next(l for l in lines if l.startswith("| 執行步驟 | "))
-        self.edit(cost + "\n" + steps + "\n", steps + "\n" + cost + "\n")
-        self.assertFails("4.5 X-S5: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本、執行步驟")
+        self.edit(data + "\n" + cost + "\n", cost + "\n" + data + "\n")
+        self.assertFails("4.5 X-S5: the rows of the table 執行計畫 | 內容 must be 主責單位、需要的資料／API／資源、成本, in this order")
 
     def test_dependency_copy_missing(self):
         # 「以各議題的解法為基礎」 names all 11 combined solutions, so it is under each.

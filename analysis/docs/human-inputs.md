@@ -15,7 +15,7 @@ I would like to patch hackathon issues with feature analysis skills I'm using in
   * stakeholder's need: the benefit human gets, aka the real user need. should be prioritized for solution brainstorming
   * conflicting stakeholder's want: a group of user wants that conflict with each other
   * shared stakeholder's want: a group of user wants that shared across different stakeholders
-  * shared stakeholder's need: a group of user needs that shared across different stakeholders. note that user needs will not conflict, as they are about personal benefits, not about real world solutions. a user need should never go beyond the boundery of the stakeholder herself
+  * shared stakeholder's need: a group of user needs that shared across different stakeholders. note that user needs will not conflict, as they are about personal benefits, not about real world solutions. a user need should never go beyond the boundary of the stakeholder herself
 * relations
   * issue -- many to many -- space
   * issue -- many to many -- stakeholder
@@ -87,7 +87,7 @@ I would like to patch hackathon issues with feature analysis skills I'm using in
 * write all artifacts in zh-TW
 * take issue #2 as pilot and then expand all other 5 issues. use the #2 pilot as the format model for the other issues, including the CSV file
 * place template files (.md and .csv) in `0-template` folder, and a README file in the analysis folder as a quick intro for other hackathon participants
-* for each issue, when the analysis is done, check if any stakeholder shared with other issues. if yes, run an extra analysis against multiple issues with shared stakeholders and put results in the `analysis/cross-issue` folder. when running cross issue analysis, combine sulutions from individual issues if possible. for example, the 參與式選址 events for trees, trash cans and smoke areas could be planned together
+* for each solution, when the analysis is done, check if it's related with solutions from other issues. if yes, run an extra cross-issue analysis and put results in the `analysis/cross-issue` folder. combine cross-issue solutions if possible. for example, the 參與式選址 events for trees, trash cans and smoke areas could be planned together
 
 ## data sources
 ### citizens' needs

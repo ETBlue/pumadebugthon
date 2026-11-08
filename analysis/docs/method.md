@@ -364,7 +364,7 @@ gantt
 
 ## 跨議題分析
 
-每個議題分析完成後，檢查它有沒有和其他議題共用的利害關係人（[stakeholders.csv](../data/stakeholders.csv) 的「議題」欄有 2 個以上議題）。有的話，對這些議題做跨議題分析，結果放在 [cross-issue/cross-issue-analysis.md](../cross-issue/cross-issue-analysis.md)。（ETBlue，[human-inputs.md](human-inputs.md)）
+每個解法分析完成後，檢查它和其他議題的解法有沒有關聯（判斷的規則見下面的「合併的候選清單」）。有的話，做跨議題分析，結果放在 [cross-issue/cross-issue-analysis.md](../cross-issue/cross-issue-analysis.md)。（ETBlue，[human-inputs.md](human-inputs.md)）
 
 - **比較的議題**：跨議題分析的標題寫出它比較的議題，例如「# 跨議題分析：#1、#2、#8」。`check_cross_issue.py` 只檢查這些議題。其他議題和它們有共用的利害關係人時，檢查會列出提醒（NOTE），不算錯誤；要不要把這個議題加進跨議題分析，由真人決定。
 - **編號**：利害關係人的編號由各議題共用，所以不加議題編號（例如 I06）。故事、需求、衝突與解法的編號只在各議題內使用，所以前面一定加議題編號，例如「#1 N05」「#2 I01-US09」「#8 解法 S1」。跨議題分析自己的編號是：跨議題的相同需求群組 X-N1、跨議題的衝突 X-C1、合併的解法 解法 X-S1。這三種編號的數字都不補零（X-N1、X-N2…X-N10）。

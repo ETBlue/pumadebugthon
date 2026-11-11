@@ -439,6 +439,17 @@ class BuildWbsTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             copy = make_copy(tmp)
             use_old_format(copy)
+            # Every 執行步驟 cell of the fixture is 「【待補：執行步驟】」. Put a
+            # tagged cell in the first one, so the test proves that a tagged
+            # 執行步驟 cell is read into plan.steps (decision D2).
+            path = os.path.join(copy, "8-smokefree", "issue-analysis.md")
+            with open(path, encoding="utf-8") as f:
+                text = f.read()
+            pending = "| 執行步驟 | 【待補：執行步驟】 |"
+            self.assertIn(pending, text)
+            text = text.replace(pending, "| 執行步驟 | `[AI模擬]` 第一步：試辦 |", 1)
+            with open(path, "w", encoding="utf-8") as f:
+                f.write(text)
             # The cross-issue file names IDs that the old #8 fixture does not
             # have, so this build leaves that file out.
             shutil.rmtree(os.path.join(copy, "cross-issue"))
@@ -451,6 +462,10 @@ class BuildWbsTest(unittest.TestCase):
         for s in old["solutions"]:
             self.assertEqual(list(s["plan"]), ["owner", "resources", "cost", "steps"], s["id"])
             self.assertIsNone(s["schedule"], s["id"])
+        self.assertEqual(old["solutions"][0]["plan"]["steps"],
+                         [{"text": "第一步：試辦", "tag": "AI模擬", "pending": False}])
+        for s in old["solutions"][1:]:
+            self.assertTrue(s["plan"]["steps"][0]["pending"], s["id"])
 
     def test_update_dates_reads_the_new_format(self):
         p = subprocess.run([sys.executable, "-I", os.path.join(SCRIPTS, "update_dates.py"), self.dir], capture_output=True, text=True)

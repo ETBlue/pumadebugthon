@@ -480,7 +480,8 @@ NO_DISASTER = "無明顯相關災害風險"
 PENDING_ONLY = re.compile(r"【待補：[^】]+】")
 # Step 7, new format: cost ranges and a work breakdown (工作分解與時程).
 # Pilot on #2 (ETBlue, 2026-11-04; method.md, 成本範圍與工作分解（新格式）).
-# The old format (PLAN_ROWS with 執行步驟) stays valid until the rollout.
+# The old format (PLAN_ROWS with 執行步驟) is still read for issue files
+# (decision D2), but no analysis file uses it now.
 # One issue file uses one format. A section is in the new format when it has
 # a WBS table or a ```mermaid block (step7_format). In the new format:
 # - the plan table has the rows PLAN_ROWS_WBS (no 執行步驟);

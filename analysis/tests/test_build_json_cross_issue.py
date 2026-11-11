@@ -250,7 +250,7 @@ class CrossIssueJsonTest(unittest.TestCase):
         self.assertTrue(e["evaluation"]["disasters"][0]["text"].startswith("負壓式吸菸區停電時無法排氣"))
         # 可行性 lists the 可行性 of each part (#2 解法 S1, #2 解法 S2, #8 解法 S2).
         self.assertEqual(e["evaluation"]["feasibility"],
-                         [{"text": "#2 解法 S1：可行性高；#2 解法 S2：QR 回報可行性高，感測器試點可行性中；#8 解法 S2：可行性中",
+                         [{"text": "#2 解法 S1：可行性高；#2 解法 S2：QR 回報可行性高，感測器試點（候選人構想）可行性中；#8 解法 S2：可行性中",
                            "tag": "AI模擬", "pending": False}])
         # The work breakdown starts with a phase row, and the chart is there.
         self.assertEqual(e["schedule"]["rows"][0]["id"], "1")

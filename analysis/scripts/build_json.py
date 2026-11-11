@@ -199,11 +199,11 @@ issueConflicts, sideA, sideB, needsA, needsB, wayOut, wayOutSolutions,
 method, result}], solutions [{code, name, tag, parts [{issue, code}],
 spaces, solutionTypes, added, summary, updated, needs {must, shouldCould, crossIssue}, measures
 [{indicator, baseline, source, from [{issue, code}], isNew}], evaluation
-{laws, privacy, risks, disasters, feasibility}, plan {owner, resources, cost,
-steps} (the tables of its 「### 4.5.n 解法 X-S1：…」 section, the same shape
-as for an issue solution), schedule (null for a section in the old format;
-for a section in the new format, the same {rows, gantt} as for an issue
-solution, and plan has no steps key and its cost may have several parts),
+{laws, privacy, risks, disasters, feasibility}, plan {owner, resources,
+cost} (the tables of its 「### 4.5.n 解法 X-S1：…」 section), schedule
+{rows, gantt} (every 4.5 section is in the new format (ETBlue, 2026-11-09),
+so plan has no steps key, its cost may have several parts and schedule is
+never null; the shapes are as for an issue solution in the new format),
 controversies, legal (as for an issue solution;
 summary items have solutions with X codes, for example "X-S1"), practices
 (dependency rows only, see above), domains}], solutionFocus [{tag, solutions, note}], pending

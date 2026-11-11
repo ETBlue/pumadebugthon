@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task by task. Steps use checkbox (`- [ ]`) syntax for tracking. Every subagent brief must repeat ETBlue's plain-English rule (short sentences, common words, main point first, no idioms, lists and tables).
 
+**Status (2026-11-11):** done. ETBlue approved the pilot on 2026-11-09. The rollout to all issues is in `analysis/docs/plan-wbs-rollout.md`. The checkboxes below were not ticked during the work.
+
 **Goal:** in step 7 of issue #2 (`analysis/2-trashcans/issue-analysis.md`), each solution gets (a) a cost with time, money and man-day ranges, and (b) a work breakdown structure (WBS) with a Mermaid Gantt chart that replaces the 執行步驟 row. The checker, the JSON build and the app support the new format. Other issues keep the old format until ETBlue approves the pilot.
 
 **Spec:** `analysis/docs/human-inputs.md`, step 7 (commit 23f15b8), and ETBlue's answers on 2026-11-04 (below).

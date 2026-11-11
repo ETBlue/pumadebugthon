@@ -2,6 +2,22 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development to implement this plan task by task. Steps use checkbox (`- [ ]`) syntax for tracking. Every subagent brief must repeat ETBlue's plain-English rule (short sentences, common words, main point first, no idioms, lists and tables).
 
+## Status (2026-11-11): done and pushed
+
+All tasks are done. The checkboxes below were not ticked during the work. The last commit is 57c5b4a. All checks passed before the push. ETBlue's decisions during the rollout are in `analysis/docs/ai-inputs.md` (2026-11-09 and 2026-11-11 rows) and `analysis/docs/method.md`.
+
+Open follow-ups:
+
+| # | What is open |
+|---|---|
+| F1 | No second reviewer read the last 4.5 fixes (commit 27d1125): the member texts copied from the issue files, and the 「同上」 owner rows. |
+| F2 | Three WBS rows said 環保局 and now say 「同上」, because the old text names no agency: X-S3 2.2, X-S7 2.3, X-S7 3.3. ETBlue has not confirmed this. |
+| F3 | In 4.5, only the 可行性, 需要的資料／API／資源 and 成本 rows were brought up to date from the issue files. The 隱私, 其他顧慮與風險 and 災害風險 rows were not compared. |
+| F4 | The cross-issue file has 280 【待補】 items (180 before the rollout). Most come from the copied member texts. |
+| F5 | #11 S4 需要的資料 starts with 「`[AI模擬]` 需要：」. Other issue files do not use this prefix. |
+| F6 | All ranges are `[AI模擬]` estimates without sources. The reviews checked only that they are consistent, not that they are realistic. |
+| F7 | Some finished agent worktrees under `.claude/worktrees/` were locked and not removed. Their commits are all on main. |
+
 **Goal:** every solution in step 7 of every issue, every combined solution in cross-issue 4.5, and the template use the new execution plan format that was tested on #2.
 
 **Scope:**

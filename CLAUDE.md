@@ -26,6 +26,7 @@ This file holds the rules for Claude Code and other AI agents that work on this 
 ## Neutral tone
 
 - Strictly neutral. Never mention campaigns, candidates or parties. Do not use campaign websites as sources.
+- Ideas that the issue page quotes from a candidate are cited as 「候選人」 or 「候選人構想」, never with the name (ETBlue, 2026-11-11). The news links stay as sources.
 - Threat wording never names China. Use 「境外敵對勢力」, 「敵對國家」 or 「戰爭或武力威脅」. Naming China is fine only in the source rule in `analysis/docs/method.md` that excludes examples from totalitarian countries.
 - No examples from China, Iran or North Korea in practices from other places.
 - No scores, weights, ranks or formulas. Counts never change MoSCoW. Never sort by counts. Lists sort by date, then ID.

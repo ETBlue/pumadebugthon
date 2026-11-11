@@ -186,8 +186,8 @@ class BuildJsonOutputTest(unittest.TestCase):
     def test_split_cost_feasibility_cell_with_several_parts(self):
         # #2 解法 S2 had 「QR 回報：成本低、可行性高。感測器試點…：成本中等…，可行性中；…」.
         b = self.solution("S2")
-        self.assertEqual(b["evaluation"]["feasibility"][0]["text"], "QR 回報：可行性高。感測器試點（沈伯洋構想）：可行性中")
-        self.assertTrue(b["plan"]["cost"][0]["text"].startswith("QR 回報：成本低。感測器試點（沈伯洋構想）：成本中等【待補：市場詢價】"))
+        self.assertEqual(b["evaluation"]["feasibility"][0]["text"], "QR 回報：可行性高。感測器試點（候選人構想）：可行性中")
+        self.assertTrue(b["plan"]["cost"][0]["text"].startswith("QR 回報：成本低。感測器試點（候選人構想）：成本中等【待補：市場詢價】"))
         self.assertEqual(b["plan"]["cost"][0]["tag"], "AI模擬")
 
     def test_steps_pending_in_solution_and_issue_lists(self):

@@ -117,10 +117,10 @@
     --hero-pattern: #b58900;
     --hero-pattern-opacity: 0.2;
     --hero-foreground: #073642;
-    /* The watermark (design 3.11): base01 at 8%. On base3 it is 1.11:1, so it
+    /* The watermark (design 3.11): base01 at 4.5%. On base3 it is 1.06:1, so it
        shows in a screenshot but does not get in the way of reading. */
     --watermark: #586e75;
-    --watermark-opacity: 0.08;
+    --watermark-opacity: 0.045;
     --chart-1: #268bd2;
     --chart-2: #2aa198;
     --chart-3: #859900;
@@ -185,9 +185,9 @@
     --hero-pattern: #2aa198;
     --hero-pattern-opacity: 0.15;
     --hero-foreground: #eee8d5;
-    /* The watermark: base1 at 8%. On base03 it is 1.13:1. */
+    /* The watermark: base1 at 4.5%. On base03 it is 1.07:1. */
     --watermark: #93a1a1;
-    --watermark-opacity: 0.08;
+    --watermark-opacity: 0.045;
     --chart-1: #268bd2;
     --chart-2: #2aa198;
     --chart-3: #859900;

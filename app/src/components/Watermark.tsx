@@ -4,9 +4,9 @@ import { t } from '@/i18n/zh-TW'
 // a tile to the right, so the rows do not line up. The tile is wider than
 // the text, and the second copy is drawn twice (x and x - TILE_W), so a copy
 // cut at the right edge goes on at the left edge of the next tile.
-const TILE_W = 400
-const TILE_H = 130
-const FONT_SIZE = 16
+const TILE_W = 900
+const TILE_H = 300
+const FONT_SIZE = 72
 
 /** The watermark (design 3.11): the same text, light and at an angle, over
  * the whole window on every page. Hidden from screen readers, because the
@@ -27,9 +27,9 @@ export function Watermark() {
           patternUnits="userSpaceOnUse"
           patternTransform="rotate(-30)"
         >
-          {copy(0, 40)}
-          {copy(TILE_W / 2, 40 + TILE_H / 2)}
-          {copy(TILE_W / 2 - TILE_W, 40 + TILE_H / 2)}
+          {copy(0, 80)}
+          {copy(TILE_W / 2, 80 + TILE_H / 2)}
+          {copy(TILE_W / 2 - TILE_W, 80 + TILE_H / 2)}
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#app-watermark)" />

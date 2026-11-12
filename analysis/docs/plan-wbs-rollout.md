@@ -16,7 +16,7 @@ Open follow-ups:
 | F4 | The cross-issue file has 280 【待補】 items (180 before the rollout). Most come from the copied member texts. |
 | F5 | #11 S4 需要的資料 starts with 「`[AI模擬]` 需要：」. Other issue files do not use this prefix. |
 | F6 | All ranges are `[AI模擬]` estimates without sources. The reviews checked only that they are consistent, not that they are realistic. |
-| F7 | Some finished agent worktrees under `.claude/worktrees/` were locked and not removed. Their commits are all on main. |
+| F7 | Done (2026-11-13). The 5 locked agent worktrees under `.claude/worktrees/` and their branches were removed. Their commits were all on main. |
 
 **Goal:** every solution in step 7 of every issue, every combined solution in cross-issue 4.5, and the template use the new execution plan format that was tested on #2.
 

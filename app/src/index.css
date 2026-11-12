@@ -109,13 +109,10 @@
     --tag-evidence: #2e7000;
     --tag-summary: #765900;
     --tag-simulated: #a93f12;
-    /* The home page hero (design 3.1): a diagonal gradient from base2 to base3,
-       with a dot pattern of yellow at 20%. The hero text is base02: 8.89 on the
-       darkest hero color (a dot on base2, #e3d5aa); wm 7.72. */
+    /* The home page hero (design 3.1): a diagonal gradient from base2 to base3.
+       The hero text is base02: 10.61 on the darkest hero color (base2); wm 9.69. */
     --hero-from: #eee8d5;
     --hero-to: #fdf6e3;
-    --hero-pattern: #b58900;
-    --hero-pattern-opacity: 0.2;
     --hero-foreground: #073642;
     /* The watermark (design 3.11): base01 at 4.5%. On base3 it is 1.06:1, so it
        shows in a screenshot but does not get in the way of reading. */
@@ -177,13 +174,11 @@
     --tag-evidence: #98af00;
     --tag-summary: #d4a300;
     --tag-simulated: #ee8b60;
-    /* The hero: a diagonal gradient from base02 to base03, with a dot pattern
-       of cyan at 15%. The hero text is base2, for more contrast than the body
-       text: 8.55 on the lightest hero color (a dot on base02, #0c464f); wm 7.26. */
+    /* The hero: a diagonal gradient from base02 to base03. The hero text is
+       base2, for more contrast than the body text: 10.61 on the lightest hero
+       color (base02); wm 9.62. */
     --hero-from: #073642;
     --hero-to: #002b36;
-    --hero-pattern: #2aa198;
-    --hero-pattern-opacity: 0.15;
     --hero-foreground: #eee8d5;
     /* The watermark: base1 at 4.5%. On base03 it is 1.07:1. */
     --watermark: #93a1a1;
@@ -228,19 +223,12 @@
   outline-offset: 2px;
 }
 
-/* The home page hero (design 3.1): a diagonal gradient and a dot pattern,
-   only from tokens, so it follows the theme. No image files. */
+/* The home page hero (design 3.1): a diagonal gradient, only from tokens,
+   so it follows the theme. No image files. */
 .hero-bg {
   color: var(--hero-foreground);
   background-color: var(--hero-to);
-  background-image:
-    radial-gradient(
-      circle,
-      color-mix(in srgb, var(--hero-pattern) calc(var(--hero-pattern-opacity) * 100%), transparent) 1.5px,
-      transparent 2px
-    ),
-    linear-gradient(135deg, var(--hero-from), var(--hero-to));
-  background-size: 18px 18px, auto;
+  background-image: linear-gradient(135deg, var(--hero-from), var(--hero-to));
 }
 
 /* The watermark over every page (design 3.11). A fixed layer the size of the

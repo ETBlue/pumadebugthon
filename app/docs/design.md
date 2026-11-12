@@ -46,14 +46,13 @@ URL: `#/`. The home page is short. It has a hero and three blocks. The full list
 
 **Hero.** A full-width band at the top of the page, under the header. Its text is centered, and the description block is centered too (`mx-auto`). It has, in this order: the app name (h1), the slogan 「看見各方利害關係人，打造更體貼周到的市政規劃」 (`t.slogan`), and one description: 「本站整理台北市政策的前期分析，從利害關係人盤點出發，找出市民的需求、訴求、衝突以及可能解法。」 (`t.home.description`). No disclaimer in the hero: it is in the footer (3.8). (Decision 128. Before, the hero had the subtitle 「在提案之前，先看見各方利害關係人的關注」 and two paragraphs: what the app does, and who it is for.)
 
-The hero background is made only from colors and a simple pattern, with no photos or image files: a diagonal gradient and a dot pattern (CSS `linear-gradient` and `radial-gradient`, class `.hero-bg` in `index.css`). All colors are tokens, so the hero follows the theme:
+The hero background is made only from colors, with no pattern, photos or image files: a diagonal gradient (CSS `linear-gradient`, class `.hero-bg` in `index.css`; no dots since decision 190). All colors are tokens, so the hero follows the theme:
 
 | Token | Light | Dark |
 |---|---|---|
 | `--hero-from` → `--hero-to` (gradient) | base2 `#eee8d5` → base3 `#fdf6e3` | base02 `#073642` → base03 `#002b36` |
-| `--hero-pattern` and `--hero-pattern-opacity` (dots) | yellow `#b58900` at 20% | cyan `#2aa198` at 15% |
 | `--hero-foreground` (all hero text) | base02 `#073642` | base2 `#eee8d5` |
-| Lowest text contrast (on a dot over the gradient end) | 8.89:1, 7.72:1 under the watermark | 8.55:1, 7.26:1 under the watermark |
+| Lowest text contrast (on base2 / base02, the darker or lighter gradient end) | 10.61:1, 9.69:1 under the watermark | 10.61:1, 9.62:1 under the watermark |
 
 The page frame is full width only on the home page (the route has `handle: { fullWidth: true }`, read by `isFullWidth` in `src/lib/layout.ts`). The hero text and the blocks use the same centered column as the other pages.
 
@@ -1978,6 +1977,7 @@ Phase L, search and breadcrumb (2026-10-22). From ETBlue's notes in `human-input
 187. Screen readers do not read the gantt chart (chosen during the build, not by ETBlue; final review of the WBS pilot). The SVG from mermaid has many small text parts, and the table above has the same tasks and 期間. So the box with the SVG has `aria-hidden="true"`. The figure has a visually hidden caption (`sr-only`, `t.solutionPage.schedule.chartAlt`): 「時程示意圖：內容和上面的工作分解表相同。」. It replaces the old `aria-label` 「時程示意圖」 (`chartLabel`, removed). This changes decision 182.
 188. A cross-issue X- solution in the new format shows 工作分解與時程 on the 執行計畫 tab, the same as an issue solution (ETBlue, 2026-11-09: the new format is the standard for cross-issue 4.5 too; Task 1 of the rollout). `PlanTab` already draws `schedule` for both kinds of solution, so the page code did not change. Only the type changed: `CrossSolution` has an optional `schedule`. This changes decision 181, which said that X- solutions stay in the old format.
 189. The watermark is bigger and lighter (ETBlue, 2026-11-13). The text is now 「市政 debug 松展示用 MVP」. The text is 72 px, not 16 px, and the pattern tile is 900 × 300 px, not 400 × 130 px. The opacity is 4.5%, not 8%, in both themes. ETBlue first tried 3%, but then the light theme watermark is only 1.037:1 on base3, and the test asks for more than 1.05:1 so the watermark still shows in a screenshot. 4.5% is the lowest step that passes. Text under the watermark now has a little more contrast than the numbers in 3.11, which were measured at 8%. This changes 3.11 and decision 17.
+190. The home page hero has no dot pattern (ETBlue, 2026-11-13). Only the diagonal gradient is left. The tokens `--hero-pattern` and `--hero-pattern-opacity` are removed, and `src/lib/designTokens.test.ts` checks that they stay removed. The lowest hero text contrast is now 10.61:1 (9.69:1 light, 9.62:1 dark under the watermark at 4.5%), up from 8.89:1 and 8.55:1. This changes 3.1.
 
 ## 14. Open questions
 

@@ -36,10 +36,8 @@ for (const [name, selector] of [['light', ':root'], ['dark', '.dark']] as const)
     const pageBgs = [tk.background, tk.muted, tk.secondary]
     const wm = tk.watermark
     const wmOpacity = Number(tk['watermark-opacity'])
-    // Every color a pixel of the hero can have: both ends of the gradient,
-    // and the pattern over each end.
-    const patternOpacity = Number(tk['hero-pattern-opacity'])
-    const heroBgs = [tk['hero-from'], tk['hero-to']].flatMap((c) => [c, blend(tk['hero-pattern'], c, patternOpacity)])
+    // The two ends of the hero gradient. Every pixel of the hero lies between them.
+    const heroBgs = [tk['hero-from'], tk['hero-to']]
 
     it('has a visible but light watermark', () => {
       expect(wmOpacity).toBeGreaterThan(0)
@@ -75,6 +73,11 @@ for (const [name, selector] of [['light', ':root'], ['dark', '.dark']] as const)
       for (const bg of heroBgs) {
         expect(worstContrast(tk['hero-foreground'], bg, wm, wmOpacity)).toBeGreaterThanOrEqual(TEXT)
       }
+    })
+
+    it('has no tokens of the removed hero dot pattern', () => {
+      expect(tk['hero-pattern']).toBeUndefined()
+      expect(tk['hero-pattern-opacity']).toBeUndefined()
     })
 
     it('has no tokens of the removed notice box', () => {

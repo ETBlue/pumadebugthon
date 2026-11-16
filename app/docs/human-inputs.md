@@ -16,7 +16,7 @@ directions:
 * license for source code: MIT. license for content I produced: CC-BY 4.0. license for content from the hackathon host: depends on the host
 
 information architecture:
-* the app header should include: app name (link to home), "議題" with count, "利害關係人" with count, spaces with count, "解法" with count, and theme toggle on the right
+* the app header should include: app name (link to home), "議題" with count, "利害關係人" with count, spaces with count, domains with count, solution types with count, "解法" with count, and theme toggle on the right
 * home page should include: a full-width hero section with background images or colors, providing a brief intro of the app (disclaimers are in footer, not here), followed by 3 call-to-action blocks (3 columns on desktop, 1 column on mobile) -- 
   * "最近更新的議題", showing latest updated issues, with a link guiding users to the issue list page
   * "最近加入分析的族群", showing latest added stakeholders, with a link guiding users to the stakeholder list page

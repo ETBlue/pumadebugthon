@@ -228,7 +228,7 @@ class CrossIssueJsonTest(unittest.TestCase):
                      "domains": split(r["共同領域"]), "spaces": split(r["共同空間類型"]),
                      "needs": split(r["共同需求"]), "crossSolutions": split(r["已在跨議題解法"])} for r in rows]
         self.assertEqual(self.data["candidates"], expected)
-        self.assertEqual(len(self.data["candidates"]), 133)
+        self.assertEqual(len(self.data["candidates"]), 116)
         first = self.data["candidates"][0]
         self.assertEqual(first, {"a": "1-S1", "b": "2-S1", "solutionTypes": ["digital-tool", "planning"],
                                  "domains": ["environment"], "spaces": ["sidewalk-furniture"],

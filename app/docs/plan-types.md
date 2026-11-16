@@ -21,6 +21,7 @@
 7. The old links `#/spaces/sidewalk` and `#/spaces/indoor` will stop working. No redirects.
 8. The 5 special retags in the spec (6-B, 6-F, 12-D, 1-B, 10-F) are accepted.
 9. Candidate rule R3: two solutions from different issues are a candidate when (a) they share a solution type, and (b) they share a domain, or a solution-level space type, or the shared type is `open-data` or `intake`, and (c) both are in the same X-N group or the same cross-issue 1.2 row.
+   - Note (2026-11-17): ETBlue removed the `open-data` / `intake` part of rule (b). Now a pair needs a shared domain or a shared space type. Solution-type groups can be browsed on the website, so shared-platform links are found there. `analysis/docs/method.md` (「合併的候選清單」) has the current rule. After the change, rule R3 gives 116 candidates.
 10. A shared stakeholder with different needs (the X-L case) does not make a candidate. People can still add such an X- solution by hand.
 11. Both lists have exactly 2 levels. Only level 2 codes go on issues and solutions. The level 1 code comes from the parent.
 12. Matching (rule R3) uses level 2 codes only.
@@ -190,6 +191,7 @@
 - `domains = s.domains ∩ t.domains`, `spaces = s.spaces ∩ t.spaces` (level 2 codes only, decision 12)
 - `platform = types ∩ {"open-data", "intake"}`
 - no pair unless `domains` or `spaces` or `platform` is not empty
+- Note (2026-11-17): ETBlue removed the `platform` part. Now there is no pair unless `domains` or `spaces` is not empty. See decision 9 and `analysis/docs/method.md`.
 - `needs` = the X-N IDs and 1.2 rows that contain both s and t (a solution is in an X-N group when one of its 6.2 needs or stories is listed in that group for its issue; the same for a 1.2 row); no pair if empty
 
 **Output columns:** `解法甲,解法乙,共同解法類型,共同領域,共同空間類型,共同需求,已在跨議題解法`. IDs like `1-A`. 解法甲 is the one with the lower issue number (then lower letter). Cells join codes with 「、」. 已在跨議題解法 lists the X- IDs that contain both, or is empty. Rows sorted by 解法甲 then 解法乙 (issue number as a number, then letter).

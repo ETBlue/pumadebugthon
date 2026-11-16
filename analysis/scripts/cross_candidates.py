@@ -8,9 +8,10 @@ solution (解法 X-…) in cross-issue-analysis.md. See method.md, 跨議題分�
 Rule R3. Two solutions s and t from different issues are a candidate when
 all of these are true:
 1. They share a solution type (解法類型).
-2. They share a domain (領域), or a solution-level space type (空間類型),
-   or the shared type is `open-data` or `intake`. Only level 2 codes are
-   on solutions, so only level 2 codes are matched.
+2. They share a domain (領域), or a solution-level space type (空間類型).
+   Only level 2 codes are on solutions, so only level 2 codes are matched.
+   No solution type is a special case: `open-data` and `intake` also need
+   a shared domain or space (ETBlue, 2026-11-17).
 3. They share a need: both are in the same X-N group (cross-issue 2.1) or
    the same 1.2 row. A solution is in a group or row when one of its 6.2
    needs or stories is listed there for its issue.
@@ -42,7 +43,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import build_json
 from analysis_common import CANDIDATE_COLS, ReadError, id_key
 
-PLATFORM_TYPES = ("open-data", "intake")
 HEADER = list(CANDIDATE_COLS)
 JOIN = "、"
 
@@ -96,8 +96,7 @@ def candidates(issues, cross):
                 continue
             domains = shared(s["domains"], t["domains"])
             spaces = shared(s["spaces"], t["spaces"])
-            platform = [c for c in types if c in PLATFORM_TYPES]
-            if not (domains or spaces or platform):
+            if not (domains or spaces):
                 continue
             needs = shared(in_groups[(n1, c1)], in_groups[(n2, c2)])
             if not needs:

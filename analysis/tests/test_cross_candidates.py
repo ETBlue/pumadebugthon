@@ -71,20 +71,15 @@ class CandidateTest(unittest.TestCase):
         c = cross([group("X-N1", (1, "N01"), (4, "N03"))])
         self.assertEqual(cc.candidates(issues, c), [])
 
-    def test_platform_type_needs_no_domain_or_space(self):
+    def test_open_data_or_intake_still_needs_domain_or_space(self):
+        # Since 2026-11-17 no solution type is a special case. A shared
+        # open-data or intake type with a shared need, but no shared domain
+        # and no shared space, is not a pair.
         for platform in ("open-data", "intake"):
             issues = [issue(1, sol("S1", [platform], ["environment"], ["park"], needs=["N01"])),
                       issue(4, sol("S3", [platform], ["transport"], ["car-lane"], needs=["N03"]))]
             c = cross([group("X-N1", (1, "N01"), (4, "N03"))])
-            self.assertEqual(pairs(cc.candidates(issues, c)), ["1-S1~4-S3"], platform)
-
-    def test_platform_type_only_counts_when_shared(self):
-        # s has open-data, t does not. The shared type is facility, so a
-        # shared domain or space is needed, and there is none.
-        issues = [issue(1, sol("S1", ["open-data", "facility"], ["environment"], ["park"], needs=["N01"])),
-                  issue(4, sol("S3", ["facility"], ["transport"], ["car-lane"], needs=["N03"]))]
-        c = cross([group("X-N1", (1, "N01"), (4, "N03"))])
-        self.assertEqual(cc.candidates(issues, c), [])
+            self.assertEqual(cc.candidates(issues, c), [], platform)
 
     def test_shared_space_without_shared_domain_is_a_pair(self):
         issues = [issue(4, sol("S5", ["facility"], ["transport"], ["car-lane", "alley"], needs=["N02"])),

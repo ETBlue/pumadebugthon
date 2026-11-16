@@ -36,7 +36,7 @@ describe('the header nav', () => {
     const html = render('/')
     const nav = html.slice(html.indexOf('<nav'), html.indexOf('</nav>'))
     const hrefs = [...nav.matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toEqual(['/issues', '/stakeholders', '/spaces', '/domains', '/solutions', '/solution-types'])
+    expect(hrefs).toEqual(['/issues', '/stakeholders', '/spaces', '/domains', '/solution-types', '/solutions'])
     expect(link(html, '/spaces')).toContain('<span>空間</span><span class="font-semibold tabular-nums">13</span>')
   })
 
@@ -108,12 +108,12 @@ describe('the header layout', () => {
   it('keeps the keyboard order: app name, then the six links', () => {
     const html = render('/')
     const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toEqual(['/', '/issues', '/stakeholders', '/spaces', '/domains', '/solutions', '/solution-types'])
+    expect(hrefs).toEqual(['/', '/issues', '/stakeholders', '/spaces', '/domains', '/solution-types', '/solutions'])
   })
 
   it('keeps each link on one line', () => {
     const html = render('/')
-    for (const href of ['/issues', '/stakeholders', '/spaces', '/domains', '/solutions', '/solution-types']) {
+    for (const href of ['/issues', '/stakeholders', '/spaces', '/domains', '/solution-types', '/solutions']) {
       expect(link(html, href)).toContain('whitespace-nowrap')
     }
     expect(html.match(/<li class="flex-none">/g)).toHaveLength(6)

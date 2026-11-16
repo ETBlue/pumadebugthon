@@ -1,7 +1,7 @@
 /** The six header nav items, in header order (design 3.7, decision 120,
- * Task U3): 議題 | 利害關係人 | 空間 | 領域 | 解法 | 解法類型. Each item is also
+ * Task U3, decision 191): 議題 | 利害關係人 | 空間 | 領域 | 解法類型 | 解法. Each item is also
  * the first URL segment of its list page. */
-export const NAV_ITEMS = ['issues', 'stakeholders', 'spaces', 'domains', 'solutions', 'solution-types'] as const
+export const NAV_ITEMS = ['issues', 'stakeholders', 'spaces', 'domains', 'solution-types', 'solutions'] as const
 
 export type NavItem = (typeof NAV_ITEMS)[number]
 

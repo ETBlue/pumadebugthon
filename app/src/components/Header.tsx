@@ -65,10 +65,10 @@ function Links({ index, cross }: { index: IndexFile | null; cross: CrossIssueFil
       <li className="flex-none"><CountLink item="stakeholders" label={th.stakeholders} count={index && stakeholderCount(index)} /></li>
       <li className="flex-none"><CountLink item="spaces" label={th.spaces} count={index && spaceCount(index)} /></li>
       <li className="flex-none"><CountLink item="domains" label={th.domains} count={index && typeCount('domain', index)} /></li>
-      <li className="flex-none"><CountLink item="solutions" label={th.solutions} count={index && solutionCount(index, cross)} /></li>
       <li className="flex-none">
         <CountLink item="solution-types" label={th.solutionTypes} count={index && typeCount('solutionType', index)} />
       </li>
+      <li className="flex-none"><CountLink item="solutions" label={th.solutions} count={index && solutionCount(index, cross)} /></li>
     </ul>
   )
 }

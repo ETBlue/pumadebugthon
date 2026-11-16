@@ -64,8 +64,8 @@ describe('isNavListPage', () => {
 })
 
 describe('the nav items (Task U3)', () => {
-  it('are in the menu order 議題 | 利害關係人 | 空間 | 領域 | 解法 | 解法類型', () => {
-    expect(NAV_ITEMS).toEqual(['issues', 'stakeholders', 'spaces', 'domains', 'solutions', 'solution-types'])
+  it('are in the menu order 議題 | 利害關係人 | 空間 | 領域 | 解法類型 | 解法 (decision 191)', () => {
+    expect(NAV_ITEMS).toEqual(['issues', 'stakeholders', 'spaces', 'domains', 'solution-types', 'solutions'])
   })
 
   it.each([

@@ -107,7 +107,7 @@ export interface RefTarget {
 /** The link of a reference in the summary of issue `issueNumber` (design 3.2).
  * - story: the story page.
  * - group (W08): the 訴求 tab with the group picked in the opinion check.
- * - need (N01): the 需求 tab with ?focus= on the N group.
+ * - need (N01): the need page (/needs/1-N01, decision 221).
  * - stakeholder: the stakeholder page.
  * - conflict: the 衝突 tab with ?focus= on the conflict (decision 142).
  * - solution: the solution page (/solutions/2-S5).

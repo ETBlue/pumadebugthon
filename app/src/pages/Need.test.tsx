@@ -92,7 +92,7 @@ describe('the need page', () => {
       '/needs/2-N07/stakeholders?evidence=1',
       '/needs/2-N07/solutions?evidence=1',
       '/needs/2-N07/conflicts?evidence=1',
-      '/needs/2-N07/sameNeeds?evidence=1',
+      '/needs/2-N07/same-needs?evidence=1',
     ])
     expect(links.filter((a) => a.includes('aria-current="page"'))).toEqual([links[4]])
   })
@@ -199,7 +199,7 @@ describe('the need page tabs', () => {
   })
 
   it('其他議題的相同需求: the other needs of its X-N group, each linking to its page', () => {
-    const html = render('/needs/2-N07/sameNeeds')
+    const html = render('/needs/2-N07/same-needs')
     expect(html).toContain('X-N2')
     expect(html).toContain('href="/needs/1-N08"')
     expect(html).toContain('href="/needs/8-I06-US01"')
@@ -254,7 +254,7 @@ describe('只看有資料根據 on the need page', () => {
 
   it('其他議題的相同需求 keeps only the needs with a data basis; its links keep ?evidence=1', () => {
     const others = ['1-N08', '8-I06-US01'].map((k) => items.find((i) => i.key === k)!)
-    const html = render('/needs/2-N07/sameNeeds?evidence=1')
+    const html = render('/needs/2-N07/same-needs?evidence=1')
     for (const o of others) {
       if (needHasDataBasis(o)) expect(html).toContain(`href="/needs/${o.key}?evidence=1"`)
       else expect(html).not.toContain(`href="/needs/${o.key}`)

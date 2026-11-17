@@ -131,7 +131,7 @@ function NeedContent({ index, issues, cross, needKey }: {
               case 'stakeholders': return <StakeholdersTab {...props} />
               case 'solutions': return <SolutionsTab {...props} />
               case 'conflicts': return <ConflictsTab {...props} issues={issues} cross={cross} />
-              case 'sameNeeds': return <SameNeedsTab {...props} />
+              case 'same-needs': return <SameNeedsTab {...props} />
             }
           }}
         </PageTabs>

@@ -21,14 +21,14 @@ const codes = (v: NeedPageView) =>
 
 describe('need page paths', () => {
   it('has the tabs in the order of the plan', () => {
-    expect(NEED_TABS).toEqual(['overview', 'stories', 'stakeholders', 'solutions', 'conflicts', 'sameNeeds'])
+    expect(NEED_TABS).toEqual(['overview', 'stories', 'stakeholders', 'solutions', 'conflicts', 'same-needs'])
   })
 
   it('builds the tab paths; the overview has no tab segment', () => {
     expect(needPath('1-N01')).toBe('/needs/1-N01')
     expect(needPath('1-N01', 'overview')).toBe('/needs/1-N01')
     expect(needPath('2-O04-US02', 'stories')).toBe('/needs/2-O04-US02/stories')
-    expect(needPath('2-N07', 'sameNeeds')).toBe('/needs/2-N07/sameNeeds')
+    expect(needPath('2-N07', 'same-needs')).toBe('/needs/2-N07/same-needs')
   })
 
   it('reads the tab of the URL; an unknown name is null', () => {
@@ -116,8 +116,8 @@ describe('the tabs of a need', () => {
 
   it('a need with an X-N group has 其他議題的相同需求', () => {
     const counts = needTabCounts(view('2-N07'))
-    expect(counts.sameNeeds).toBe(2)
-    expect(needPageTabs(counts)).toContain('sameNeeds')
+    expect(counts['same-needs']).toBe(2)
+    expect(needPageTabs(counts)).toContain('same-needs')
   })
 
   it('counts the issue and the cross-issue conflicts', () => {

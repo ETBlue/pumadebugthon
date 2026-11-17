@@ -1290,7 +1290,7 @@ export const t = {
       stakeholders: '利害關係人',
       solutions: '解法',
       conflicts: '衝突',
-      sameNeeds: '其他議題的相同需求',
+      'same-needs': '其他議題的相同需求',
     },
     /** The tab labels with the counts (needTabCounts). Plain numbers. */
     tabLabels: {
@@ -1298,7 +1298,7 @@ export const t = {
       stakeholders: (n: number): TabLabel => ({ main: `利害關係人 ${n}` }),
       solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
       conflicts: (n: number): TabLabel => ({ main: `衝突 ${n}` }),
-      sameNeeds: (n: number): TabLabel => ({ main: `其他議題的相同需求 ${n}` }),
+      'same-needs': (n: number): TabLabel => ({ main: `其他議題的相同需求 ${n}` }),
     },
     tabNotFound: '找不到這個分頁。',
     goToOverview: '回到總覽',

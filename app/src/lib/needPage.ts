@@ -135,7 +135,7 @@ export function needTabCounts(view: NeedPageView): NeedTabCounts {
     stakeholders: view.item.stakeholders.length,
     solutions: view.solutionGroups.reduce((n, g) => n + g.issue.length + g.cross.length, 0),
     conflicts: view.issueConflicts.length + view.crossConflicts.length,
-    sameNeeds: view.sameNeeds.reduce((n, g) => n + g.needs.length, 0),
+    'same-needs': view.sameNeeds.reduce((n, g) => n + g.needs.length, 0),
   }
 }
 

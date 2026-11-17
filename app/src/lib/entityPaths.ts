@@ -140,8 +140,8 @@ export function solutionPath(issueNumber: number, code: string, tab?: IssueSolut
 
 /** The tabs of the need page (plan-needs.md, Task N4), in display order.
  * The first one is the default. The page leaves out a tab with no content
- * (needPageTabs in src/lib/needPage.ts). sameNeeds is 其他議題的相同需求. */
-export const NEED_TABS = ['overview', 'stories', 'stakeholders', 'solutions', 'conflicts', 'sameNeeds'] as const
+ * (needPageTabs in src/lib/needPage.ts). same-needs is 其他議題的相同需求. */
+export const NEED_TABS = ['overview', 'stories', 'stakeholders', 'solutions', 'conflicts', 'same-needs'] as const
 
 export type NeedTab = (typeof NEED_TABS)[number]
 

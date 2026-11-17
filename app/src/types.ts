@@ -31,6 +31,9 @@ export interface IssueCounts {
   stories: number
   conflicts: number
   solutions: number
+  /** 需求: the rows of step 5.2 (`needs` in the issue JSON), for the header
+   * count (plan-needs.md, Task N3). */
+  needs: number
   /** 資料根據: the story cells by tag. */
   cells: CellCounts
 }

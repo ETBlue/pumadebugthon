@@ -4,6 +4,7 @@ import About from '@/pages/About'
 import Home from '@/pages/Home'
 import Issue from '@/pages/Issue'
 import Issues from '@/pages/Issues'
+import Needs from '@/pages/Needs'
 import Placeholder from '@/pages/Placeholder'
 import RouteError from '@/pages/RouteError'
 import Solution from '@/pages/Solution'
@@ -40,12 +41,15 @@ export const routes: RouteObject[] = [
       // column (decision 111).
       { path: 'issues/:number/:tab?', element: <Issue />, handle: { fullWidth: true } },
       // A moved stakeholder ID shows the not-found page (decision 113).
-      // There is no want or need page (decision 45). #/stakeholders and the
+      // There is no want page (decision 45). #/stakeholders and the
       // stakeholder page have no side bar, so they are plain routes
       // (decisions 87 and 94).
       { path: 'stakeholders', element: <Stakeholders />, handle: { fullWidth: true } },
       { path: 'stakeholders/:id/stories/:number/:storyId', element: <StakeholderStory />, handle: { fullWidth: true } },
       { path: 'stakeholders/:id/:tab?', element: <Stakeholder />, handle: { fullWidth: true } },
+      // The need list (plan-needs.md, Task N3). The need page
+      // #/needs/<key> comes in Task N4; until then it shows the not-found page.
+      { path: 'needs', element: <Needs />, handle: { fullWidth: true } },
       { path: 'solutions', element: <Solutions />, handle: { fullWidth: true } },
       // 2-S1: a solution of an issue. X-S1: a cross-issue solution (Task N11).
       { path: 'solutions/:slug/:tab?', element: <Solution />, handle: { fullWidth: true } },
@@ -63,7 +67,7 @@ export const routes: RouteObject[] = [
         handle: { fullWidth: true },
       },
       { path: 'about', element: <About /> },
-      // Unknown pages, also the removed #/wants and #/needs (design 3.7).
+      // Unknown pages, also the removed #/wants (design 3.7).
       { path: '*', element: <Placeholder /> },
     ],
   },

@@ -3,9 +3,10 @@
 // match ALL of them. Nothing picked in a filter means no limit. The text
 // search is not here (src/lib/listSearch.ts): the pages apply both.
 // Every function keeps the order of the list it gets. Nothing here sorts.
-import type { IssueSummary, Stakeholder } from '@/types'
+import type { IssueSummary, Priority, Stakeholder } from '@/types'
 import { crossCoverageIssueNumbers, crossNeedCoverage } from './crossIssue'
 import type { ListContext } from './listSort'
+import { needHasDataBasis, type NeedRecord } from './needRecords'
 import { needsForStakeholder } from './needs'
 import type { RecentSolution } from './recent'
 import { solutionNeedCoverage } from './solutionPage'
@@ -17,7 +18,8 @@ import { issueUsedCodes, solutionCodes, TYPE_KINDS, type TypeKind } from './type
 export interface ListFilters {
   /** 議題: picked issue numbers (issue=<n>). */
   issues: number[]
-  /** 「跨議題」 in the 議題 filter (issue=X). */
+  /** 「跨議題」 in the 議題 filter (issue=X). On #/needs: the needs in an
+   * X-N group. */
   crossChoice: boolean
   /** 空間類型: picked space codes (space=<code>). */
   spaces: string[]
@@ -31,11 +33,29 @@ export interface ListFilters {
   specialOnly: boolean
   /** 空間分類 on #/spaces: picked space groups (group=<name>), decision 122. */
   groups: string[]
+  /** 解法 on #/needs: picked solution keys (solution=<key>), for example
+   * "2-S1" or "X-S4" (plan-needs.md, Task N3). */
+  solutions: string[]
+  /** 優先順序 (MoSCoW) on #/needs: picked priorities (priority=<M|S|C|W>),
+   * in the order M, S, C, W. */
+  priorities: Priority[]
+  /** 解法涵蓋 on #/needs: 'yes' (有) and 'no' (尚無), picked (covered=yes,
+   * covered=no), in this order. */
+  coverage: NeedCoverage[]
+  /** 只看有資料根據 on #/needs (basis=1). */
+  dataBased: boolean
 }
+
+/** A choice of the 解法涵蓋 filter of #/needs: 有 (yes) or 尚無 (no). */
+export type NeedCoverage = 'yes' | 'no'
+
+/** The choices of the 解法涵蓋 filter, in the bar order. */
+export const NEED_COVERAGES: readonly NeedCoverage[] = ['yes', 'no']
 
 /** No filter on. */
 export const NO_FILTERS: ListFilters = {
   issues: [], crossChoice: false, spaces: [], domains: [], solutionTypes: [], who: null, specialOnly: false, groups: [],
+  solutions: [], priorities: [], coverage: [], dataBased: false,
 }
 
 /** The filter field of each kind of type: 空間類型, 領域 and 解法類型. */
@@ -163,5 +183,36 @@ export function filterTypes<T extends { code: string; group?: string }>(
     (t) =>
       (filter.groups.length === 0 || (t.group !== undefined && filter.groups.includes(t.group))) &&
       (filter.issues.length === 0 || issuesOf(t.code).some((n) => filter.issues.includes(n))),
+  )
+}
+
+/** #/needs (plan-needs.md, Task N3): 議題 (with 「跨議題」), 利害關係人,
+ * 空間類型, 領域, 解法, 優先順序, 解法涵蓋 and 只看有資料根據. Each filter
+ * uses the fields of the need record (needRecords.ts), so the rules are the
+ * same as on the need page:
+ * - 議題: a need of a picked issue, or with 「跨議題」 picked, a need in an
+ *   X-N group (ANY of the picks, as on #/stakeholders).
+ * - 利害關係人: one of its stories is by the stakeholder.
+ * - 空間類型 and 領域: its issue's codes or the codes of a covering
+ *   solution (record.spaces, record.domains). So a need with no covering
+ *   solution still matches its issue's codes.
+ * - 解法: a picked solution covers it (record.solutions).
+ * - 解法涵蓋: 有 is record.covered; 尚無 is the rest, also the W needs.
+ * - 只看有資料根據: needHasDataBasis (the rule of the issue's 需求 tab). */
+export function filterNeeds<T extends NeedRecord>(
+  records: T[],
+  filter: Pick<ListFilters, 'issues' | 'crossChoice' | 'who' | 'spaces' | 'domains' | 'solutions' | 'priorities' | 'coverage' | 'dataBased'>,
+): T[] {
+  const types = { spaces: filter.spaces, domains: filter.domains }
+  const issueFilterOn = filter.issues.length > 0 || filter.crossChoice
+  return records.filter(
+    (r) =>
+      (!issueFilterOn || filter.issues.includes(r.issue) || (filter.crossChoice && r.crossGroups.length > 0)) &&
+      (filter.who === null || r.stakeholders.includes(filter.who)) &&
+      matchesTypeFilters(types, (kind) => (kind === 'space' ? r.spaces : kind === 'domain' ? r.domains : [])) &&
+      (filter.solutions.length === 0 || r.solutions.some((k) => filter.solutions.includes(k))) &&
+      (filter.priorities.length === 0 || filter.priorities.includes(r.need.priority)) &&
+      (filter.coverage.length === 0 || filter.coverage.includes(r.covered ? 'yes' : 'no')) &&
+      (!filter.dataBased || needHasDataBasis(r)),
   )
 }

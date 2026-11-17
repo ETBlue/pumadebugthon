@@ -107,12 +107,22 @@ class BuildJsonOutputTest(unittest.TestCase):
         item = next(i for i in self.index["issues"] if i["number"] == 2)
         # cells: want + soThat. 實證 8+1, AI整理 11+13, AI模擬 34+38, 待補 0+1.
         self.assertEqual(item["counts"], {"stakeholdersO": 12, "stakeholdersI": 15, "stories": 53,
-                                          "conflicts": 10, "solutions": 5,
+                                          "conflicts": 10, "solutions": 5, "needs": len(self.issue["needs"]),
                                           "cells": {"evidence": 9, "aiSummary": 24, "aiSimulated": 72,
                                                     "pending": 1}})
         self.assertEqual(item["spaces"], ["sidewalk-furniture", "arcade", "park", "mrt-exit"])
         self.assertEqual(item["title"], "找回消失的垃圾桶")
         self.assertEqual(item["folder"], ISSUE)
+
+    def test_index_need_counts(self):
+        # counts.needs: the rows of step 5.2 (the issue's needs), for the
+        # 需求 count in the header of the app (plan-needs.md, Task N3).
+        for item in self.index["issues"]:
+            if item["available"]:
+                with open(os.path.join(self.out, "issues", f"{item['folder']}.json"), encoding="utf-8") as f:
+                    data = json.load(f)
+                self.assertEqual(item["counts"]["needs"], len(data["needs"]), item["folder"])
+                self.assertGreater(item["counts"]["needs"], 0, item["folder"])
 
     def test_cells_are_two_per_story(self):
         # Every analyzed issue: each story has a 我想要… and a 以便… cell.

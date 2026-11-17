@@ -1,18 +1,33 @@
-// The header nav (design 3.7, decisions 120 and 123): 議題, 利害關係人, 空間, 領域, 解法, 解法類型
+// The header nav (design 3.7, decisions 120 and 123, plan-needs.md): 議題, 利害關係人, 需求, 空間, 領域, 解法類型, 解法
 // each with a count. The data hooks are mocked, so the header renders on the
 // server with the fixtures.
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import indexJson from '@/test/fixtures/index.json'
-import type { IndexFile } from '@/types'
+import treesJson from '@/test/fixtures/issues/1-trees.json'
+import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
+import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
+import type { IndexFile, IssueFile } from '@/types'
 import { Header, NAV_LIST_CLASS } from './Header'
 import { PHONE_SCROLL_CLASS } from './PageTabs'
 
+const issueFiles = [treesJson, trashcansJson, smokefreeJson, policyJson] as IssueFile[]
+
+/** index.json the header gets: null while it loads. */
+const state: { index: IndexFile | null } = { index: indexJson as IndexFile }
+
+// No useIssues: the header reads only index.json and cross-issue.json, so
+// it never loads the issue files.
 vi.mock('@/data', () => ({
-  useIndex: () => ({ status: 'ready', data: indexJson as IndexFile }),
+  useIndex: () => (state.index === null ? { status: 'loading', message: '' } : { status: 'ready', data: state.index }),
   useCrossIssueOrNull: () => null,
 }))
+
+beforeEach(() => {
+  state.index = indexJson as IndexFile
+})
 
 vi.mock('./ThemeToggle', () => ({ ThemeToggle: () => null }))
 
@@ -36,7 +51,7 @@ describe('the header nav', () => {
     const html = render('/')
     const nav = html.slice(html.indexOf('<nav'), html.indexOf('</nav>'))
     const hrefs = [...nav.matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toEqual(['/issues', '/stakeholders', '/spaces', '/domains', '/solution-types', '/solutions'])
+    expect(hrefs).toEqual(['/issues', '/stakeholders', '/needs', '/spaces', '/domains', '/solution-types', '/solutions'])
     expect(link(html, '/spaces')).toContain('<span>空間</span><span class="font-semibold tabular-nums">13</span>')
   })
 
@@ -53,6 +68,26 @@ describe('the header nav', () => {
     const detail = render('/solution-types/open-data')
     expect(link(detail, '/solution-types')).toContain('aria-current="true"')
     expect(link(detail, '/solutions')).not.toContain('aria-current')
+  })
+
+  it('has 需求 between 利害關係人 and 空間, with the number of needs of the analyzed issues (Task N3)', () => {
+    const html = render('/')
+    // counts.needs in index.json is the length of each issue file's needs.
+    const needs = issueFiles.reduce((n, f) => n + f.needs.length, 0)
+    expect(needs).toBe(99)
+    expect(link(html, '/needs')).toContain(`<span>需求</span><span class="font-semibold tabular-nums">${needs}</span>`)
+  })
+
+  it('shows 需求 with no number while index.json loads', () => {
+    state.index = null
+    const a = link(render('/'), '/needs')
+    expect(a).toContain('<span>需求</span>')
+    expect(a).not.toContain('tabular-nums')
+  })
+
+  it('makes 需求 active on #/needs, as the current page, and on a need page', () => {
+    expect(link(render('/needs'), '/needs')).toContain('aria-current="page"')
+    expect(link(render('/needs/1-N01'), '/needs')).toContain('aria-current="true"')
   })
 
   it('makes 空間 active on #/spaces, as the current page', () => {
@@ -105,17 +140,17 @@ describe('the header layout', () => {
     }
   })
 
-  it('keeps the keyboard order: app name, then the six links', () => {
+  it('keeps the keyboard order: app name, then the seven links', () => {
     const html = render('/')
     const hrefs = [...html.matchAll(/href="([^"]+)"/g)].map((m) => m[1])
-    expect(hrefs).toEqual(['/', '/issues', '/stakeholders', '/spaces', '/domains', '/solution-types', '/solutions'])
+    expect(hrefs).toEqual(['/', '/issues', '/stakeholders', '/needs', '/spaces', '/domains', '/solution-types', '/solutions'])
   })
 
   it('keeps each link on one line', () => {
     const html = render('/')
-    for (const href of ['/issues', '/stakeholders', '/spaces', '/domains', '/solution-types', '/solutions']) {
+    for (const href of ['/issues', '/stakeholders', '/needs', '/spaces', '/domains', '/solution-types', '/solutions']) {
       expect(link(html, href)).toContain('whitespace-nowrap')
     }
-    expect(html.match(/<li class="flex-none">/g)).toHaveLength(6)
+    expect(html.match(/<li class="flex-none">/g)).toHaveLength(7)
   })
 })

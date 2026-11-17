@@ -30,7 +30,7 @@ describe('activeNavItem', () => {
     expect(activeNavItem(path)).toBe(item)
   })
 
-  it.each(['/', '', '/spacesx', '/nope', '/issuesx', '/issuesx/2', '/stakeholdersx', '/solutionsx', '/about', '/wants', '/needs'])(
+  it.each(['/', '', '/spacesx', '/nope', '/issuesx', '/issuesx/2', '/stakeholdersx', '/solutionsx', '/about', '/wants', '/needsx'])(
     '%s has no active item',
     (path) => {
       expect(activeNavItem(path)).toBeNull()
@@ -64,8 +64,22 @@ describe('isNavListPage', () => {
 })
 
 describe('the nav items (Task U3)', () => {
-  it('are in the menu order 議題 | 利害關係人 | 空間 | 領域 | 解法類型 | 解法 (decision 191)', () => {
-    expect(NAV_ITEMS).toEqual(['issues', 'stakeholders', 'spaces', 'domains', 'solution-types', 'solutions'])
+  it('are in the menu order 議題 | 利害關係人 | 需求 | 空間 | 領域 | 解法類型 | 解法 (plan-needs.md decision 2)', () => {
+    expect(NAV_ITEMS).toEqual(['issues', 'stakeholders', 'needs', 'spaces', 'domains', 'solution-types', 'solutions'])
+  })
+
+  it.each([
+    ['/needs', 'needs'],
+    ['/needs/', 'needs'],
+    ['/needs/1-N01', 'needs'],
+    ['/needs/2-O04-US02/stories', 'needs'],
+  ] as const)('%s is %s (Task N3)', (path, item) => {
+    expect(activeNavItem(path)).toBe(item)
+  })
+
+  it('#/needs is a list page, a need page is not', () => {
+    expect(isNavListPage('/needs')).toBe(true)
+    expect(isNavListPage('/needs/1-N01')).toBe(false)
   })
 
   it.each([

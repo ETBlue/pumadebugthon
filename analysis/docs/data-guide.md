@@ -259,6 +259,7 @@
   - `data/index.json` 的 `domainGroups`：第 1 層（大分類）。欄位：`code`、`name`、`description`。
   - `data/index.json` 的 `solutionTypes`：欄位：`code`、`name`、`description`（說明）、`howToJudge`（判斷方式）、`policyTool`（政策工具）、`added`、`updated`。
 - 議題用到的所有領域：`data/index.json` 的 `issues[].usedDomains`。先是議題「領域：」那一行的代碼，再加上各解法自己的領域（6.1 的「領域」欄），依解法順序，每個代碼只出現一次。還沒有分析的議題是 `[]`。網站的領域篩選與領域頁面用它判斷議題是否用到某個領域。
+- 每個議題的需求數：`data/index.json` 的 `issues[].counts.needs`。它是步驟 5.2 的列數（相同需求群組，加上不在群組裡的單則故事需求），和 `needs` 檔案中這個議題的列數相同。網站頁首的「需求」數字是各議題的這個數字加總。還沒有分析的議題沒有 `counts`。
 - 合併的解法的領域：`data/cross-issue.json` 的 `solutions[].domains`。它是各組成解法的領域合在一起，依組成解法的順序，每個代碼只出現一次。
 - 可能合併的解法（跨議題的候選配對）：`data/cross-issue.json` 的 `candidates`，內容和 `analysis/cross-issue/candidates.csv` 相同，順序也相同。欄位：`a`、`b`（兩個解法，例如 `1-S1`、`2-S1`）、`solutionTypes`（共同解法類型）、`domains`（共同領域）、`spaces`（共同空間類型）、`needs`（共同需求：`X-N` 編號或 `1.2 O12` 這樣的 1.2 列）、`crossSolutions`（已經包含這兩個解法的合併解法，例如 `X-S2`）。空的格子是 `[]`。它只是建議，由人決定要不要合併；沒有分數或排名。
 - 分類路徑的名稱：`data/index.json` 的 `pathLabels`，或 `analysis/data/path-labels.csv`。

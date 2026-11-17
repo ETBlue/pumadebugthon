@@ -57,7 +57,7 @@ describe('index.json', () => {
   it('has the counts of #2', () => {
     const i = index.issues.find((i) => i.number === 2)
     expect(i?.counts).toEqual({
-      stakeholdersO: 12, stakeholdersI: 15, stories: 53, conflicts: 10, solutions: 5,
+      stakeholdersO: 12, stakeholdersI: 15, stories: 53, conflicts: 10, solutions: 5, needs: 22,
       cells: { evidence: 9, aiSummary: 24, aiSimulated: 72, pending: 1 },
     })
   })

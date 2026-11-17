@@ -21,6 +21,7 @@ export const t = {
     nav: '主要導覽',
     issues: '議題',
     stakeholders: '利害關係人',
+    needs: '需求',
     spaces: '空間',
     domains: '領域',
     solutions: '解法',
@@ -93,6 +94,7 @@ export const t = {
     issuesTitle: '議題',
     stakeholdersTitle: '利害關係人',
     solutionsTitle: '解法',
+    needsTitle: '需求',
     /** The number of needs a solution covers, as plain text (decision 54). */
     solutionNeeds: (n: number) => `涵蓋 ${n} 個需求`,
   },
@@ -1031,6 +1033,7 @@ export const t = {
       issues: (n: number, total: number) => `顯示 ${n} 個議題，共 ${total} 個。`,
       stakeholders: (n: number, total: number) => `顯示 ${n} 位利害關係人，共 ${total} 位。`,
       solutions: (n: number, total: number) => `顯示 ${n} 個解法，共 ${total} 個。`,
+      needs: (n: number, total: number) => `顯示 ${n} 個需求，共 ${total} 個。`,
       spaces: (n: number, total: number) => `顯示 ${n} 個空間，共 ${total} 個。`,
       domains: (n: number, total: number) => `顯示 ${n} 個領域，共 ${total} 個。`,
       'solution-types': (n: number, total: number) => `顯示 ${n} 個解法類型，共 ${total} 個。`,
@@ -1045,12 +1048,13 @@ export const t = {
     label: '搜尋',
     /** Hidden after the label, so the full label is 「搜尋議題」. */
     labelHidden: {
-      issues: '議題', stakeholders: '利害關係人', solutions: '解法', spaces: '空間', domains: '領域', 'solution-types': '解法類型',
+      issues: '議題', stakeholders: '利害關係人', solutions: '解法', needs: '需求', spaces: '空間', domains: '領域', 'solution-types': '解法類型',
     },
     placeholder: {
       issues: '輸入編號或標題',
       stakeholders: '輸入編號或名稱',
       solutions: '輸入代號或名稱',
+      needs: '輸入需求或故事的文字',
       spaces: '輸入代號或名稱',
       domains: '輸入代號或名稱',
       'solution-types': '輸入代號或名稱',
@@ -1229,6 +1233,49 @@ export const t = {
     basis: '涵蓋需求的資料根據',
     basisNone: '沒有涵蓋的需求',
     /** Next to the counts while 資料根據比例 is on. */
+    sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
+  },
+  /** #/needs: the needs of every analyzed issue, with the search, sort and
+   * filter bar (plan-needs.md, Task N3). The page never says 市民意見 and
+   * never names the city's complaint line: the needs come from the
+   * analysis. */
+  needsList: {
+    /** The noun of the search empty states: 「找不到符合「火箭」的需求。」 */
+    noun: '需求',
+    /** The empty state with filters and no search (design 3.23.6). */
+    none: '沒有符合目前篩選的需求。',
+    /** The intro line under the result line, with the link to method.md. */
+    intro: '這裡列出各議題分析整理出的需求。每個需求來自一或多則使用者故事。',
+    methodLink: '分析方法',
+    /** The filter labels in the bar and in the result line, in the bar order. */
+    issueFilter: '議題',
+    /** The first choice of the 議題 filter (issue=X), and its text in the
+     * result line. */
+    crossChoice: '跨議題（有跨議題的共同需求）',
+    crossShort: '跨議題',
+    issueOption: (n: number, title: string) => `#${n} ${title}`,
+    /** 議題 in the result line: 「#1」. */
+    issueShort: (n: number) => `#${n}`,
+    whoFilter: '利害關係人',
+    spaceFilter: '空間類型',
+    domainFilter: '領域',
+    solutionFilter: '解法',
+    /** One choice of the 解法 filter: 「#2 S1 名稱」 or 「X-S4 名稱」. */
+    solutionOption: (code: string, name: string) => `${code} ${name}`,
+    priorityFilter: '優先順序',
+    coverageFilter: '解法涵蓋',
+    coverage: { yes: '有', no: '尚無' },
+    /** The fields of the cards. The code before the summary: 「#1 N01」. */
+    code: (n: number, id: string) => `#${n} ${id}`,
+    priority: '優先順序',
+    issue: '議題',
+    issueValue: (n: number, title: string) => `#${n} ${title}`,
+    /** Plain facts, not a score: 「使用者故事 3 則 · 解法 2 個」. */
+    facts: (stories: number, solutions: number) => `使用者故事 ${stories} 則 · 解法 ${solutions} 個`,
+    /** The X-N group of the need: 「跨議題的共同需求：X-N3」. */
+    crossGroup: '跨議題的共同需求',
+    /** 資料根據 while the 資料根據比例 sort is on. */
+    basis: '資料根據',
     sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
   },
   /** #/stakeholders with the search, sort and filter bar, card view and

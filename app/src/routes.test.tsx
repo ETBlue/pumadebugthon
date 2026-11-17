@@ -3,6 +3,7 @@
 import { isValidElement, type ReactElement } from 'react'
 import type { RouteObject } from 'react-router'
 import { describe, expect, it } from 'vitest'
+import Needs from '@/pages/Needs'
 import Space from '@/pages/Space'
 import Spaces from '@/pages/Spaces'
 import TypeList from '@/pages/TypeList'
@@ -43,6 +44,11 @@ describe('the routes', () => {
     for (const path of ['domains', 'domains/:code/:tab?', 'solution-types', 'solution-types/:code/:tab?']) {
       expect(children.find((r) => r.path === path)?.handle).toEqual({ fullWidth: true })
     }
+  })
+
+  it('add #/needs, full width like the other list pages (plan-needs.md, Task N3)', () => {
+    expect(elementOf('needs').type).toBe(Needs)
+    expect(children.find((r) => r.path === 'needs')?.handle).toEqual({ fullWidth: true })
   })
 
   it('keep the catch-all not-found route last, with no redirect', () => {

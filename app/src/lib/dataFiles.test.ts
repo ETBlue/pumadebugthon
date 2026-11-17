@@ -69,7 +69,7 @@ describe('dataFileLinks', () => {
       issues: [
         ...index.issues,
         { number: 10, folder: '10-new', title: 'x', source: '主辦單位', available: true, spaces: [], domains: [], usedDomains: [], updated: null,
-          counts: { stakeholdersO: 0, stakeholdersI: 0, stories: 0, conflicts: 0, solutions: 0,
+          counts: { stakeholdersO: 0, stakeholdersI: 0, stories: 0, conflicts: 0, solutions: 0, needs: 0,
             cells: { evidence: 0, aiSummary: 0, aiSimulated: 0, pending: 0 } }, focusGaps: [] },
       ],
     }

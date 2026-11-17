@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useCrossIssueOrNull, useIndex } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { issueCount, solutionCount, spaceCount, stakeholderCount, typeCount } from '@/lib/counts'
+import { issueCount, needListCount, solutionCount, spaceCount, stakeholderCount, typeCount } from '@/lib/counts'
 import { activeNavItem, isNavListPage, type NavItem } from '@/lib/nav'
 import type { CrossIssueFile, IndexFile } from '@/types'
 import { PHONE_SCROLL_CLASS } from './PageTabs'
@@ -63,6 +63,7 @@ function Links({ index, cross }: { index: IndexFile | null; cross: CrossIssueFil
     <ul ref={listRef} className={NAV_LIST_CLASS}>
       <li className="flex-none"><CountLink item="issues" label={th.issues} count={index && issueCount(index)} /></li>
       <li className="flex-none"><CountLink item="stakeholders" label={th.stakeholders} count={index && stakeholderCount(index)} /></li>
+      <li className="flex-none"><CountLink item="needs" label={th.needs} count={index && needListCount(index)} /></li>
       <li className="flex-none"><CountLink item="spaces" label={th.spaces} count={index && spaceCount(index)} /></li>
       <li className="flex-none"><CountLink item="domains" label={th.domains} count={index && typeCount('domain', index)} /></li>
       <li className="flex-none">
@@ -73,7 +74,7 @@ function Links({ index, cross }: { index: IndexFile | null; cross: CrossIssueFil
   )
 }
 
-/** The page header (design 3.7): app name, the six count links, and the
+/** The page header (design 3.7): app name, the seven count links, and the
  * theme toggle. From md: one row, in this order. Below md (decision 123):
  * row 1 has the app name and the toggle, row 2 has the links in one row
  * that scrolls sideways. The links come before the toggle in the HTML, so

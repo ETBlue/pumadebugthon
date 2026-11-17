@@ -89,3 +89,13 @@ export function typeMatches(type: { code: string; name: string }, query: ListQue
   if (query.key === type.code.toLowerCase().replace(/-/g, '')) return true
   return titleHas(type.name, query)
 }
+
+/** #/needs (plan-needs.md, Task N3): a part of the need summary, or a part
+ * of the 我想要… or 以便… text of one of its stories. */
+export function needMatches(
+  item: { summary: string; stories: readonly { want: { text: string }; soThat: { text: string } }[] },
+  query: ListQuery | null,
+): boolean {
+  if (!query) return true
+  return titleHas(item.summary, query) || item.stories.some((s) => titleHas(s.want.text, query) || titleHas(s.soThat.text, query))
+}

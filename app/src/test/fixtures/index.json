@@ -26,6 +26,7 @@
         "stories": 68,
         "conflicts": 9,
         "solutions": 5,
+        "needs": 31,
         "cells": {
           "evidence": 12,
           "aiSummary": 29,
@@ -64,6 +65,7 @@
         "stories": 53,
         "conflicts": 10,
         "solutions": 5,
+        "needs": 22,
         "cells": {
           "evidence": 9,
           "aiSummary": 24,
@@ -161,6 +163,7 @@
         "stories": 46,
         "conflicts": 6,
         "solutions": 5,
+        "needs": 24,
         "cells": {
           "evidence": 5,
           "aiSummary": 39,
@@ -193,6 +196,7 @@
         "stories": 41,
         "conflicts": 5,
         "solutions": 5,
+        "needs": 22,
         "cells": {
           "evidence": 6,
           "aiSummary": 0,

@@ -4,8 +4,9 @@ import indexJson from '@/test/fixtures/index.json'
 import treesJson from '@/test/fixtures/issues/1-trees.json'
 import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
+import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IndexFile, IssueFile, Need, Story } from '@/types'
-import { issueCount, needCount, solutionCount, spaceCount, stakeholderCount, typeCount, wantCount } from './counts'
+import { issueCount, needCount, needListCount, solutionCount, spaceCount, stakeholderCount, typeCount, wantCount } from './counts'
 import { pickList } from './opinion'
 
 const index = indexJson as IndexFile
@@ -49,6 +50,17 @@ describe('solutionCount', () => {
 
   it('adds the cross-issue solutions when the file exists (decision 51)', () => {
     expect(solutionCount(index, crossJson as CrossIssueFile)).toBe(20 + 5)
+  })
+})
+
+describe('needListCount (plan-needs.md, Task N3)', () => {
+  it('sums counts.needs of the analyzed issues in index.json', () => {
+    expect(needListCount(index)).toBe(31 + 22 + 24 + 22)
+  })
+
+  it('is the same number as needCount of the issue files', () => {
+    const all = [...issues, policyJson] as IssueFile[]
+    expect(needListCount(index)).toBe(needCount(all))
   })
 })
 

@@ -138,6 +138,13 @@ export function solutionPath(issueNumber: number, code: string, tab?: IssueSolut
   return withTab(`/solutions/${issueNumber}-${code}`, tab)
 }
 
+/** The URL path of a need page (plan-needs.md): "/needs/<key>", for example
+ * "/needs/1-N01" or "/needs/2-O04-US02". key is needRecordKey(issue, id).
+ * The page itself comes in Task N4. */
+export function needPath(key: string): string {
+  return `/needs/${key}`
+}
+
 /** The URL path of a cross-issue solution page. code is the code as
  * cross-issue.json writes it, for example "X-S1": "/solutions/X-S1",
  * "/solutions/X-S1/stakeholders". */

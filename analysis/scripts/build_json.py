@@ -1149,6 +1149,9 @@ def build(analysis_dir):
             "stories": len(data["stories"]),
             "conflicts": len(data["conflicts"]),
             "solutions": len(data["solutions"]),
+            # The rows of step 5.2 (N groups and single-story needs), for the
+            # 需求 count in the app header.
+            "needs": len(data["needs"]),
             "cells": cell_basis(data["stories"]),
         }
         index_issues.append({"number": num, "folder": folder, "title": title, "source": source, "available": True,

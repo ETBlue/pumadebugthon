@@ -8,11 +8,13 @@ import {
   type Share,
 } from './coverage'
 import { compareCodes, compareIds } from './ids'
+import { needShare, type NeedRecord } from './needRecords'
 import type { RecentSolution } from './recent'
 
 /** The sort values in the URL (sort=). 'solutions' is on #/stakeholders only. */
 export type ListSort = 'updated' | 'added' | 'evidence' | 'solutions'
 export type IssueSort = Exclude<ListSort, 'solutions'>
+export type NeedSort = Exclude<ListSort, 'solutions'>
 export type SolutionSort = Exclude<ListSort, 'solutions'>
 
 /** The data the stakeholder and solution sorts need: the issue files of the
@@ -145,5 +147,36 @@ export function sortSolutions(items: RecentSolution[], sort: SolutionSort, ctx: 
       return byDate(items, (x) => x.solution.added, solutionDateTie, compareSolutionItems)
     case 'evidence':
       return byShare(items, (x) => solutionShare(x, ctx), compareSolutionItems)
+  }
+}
+
+// ---------- #/needs ----------
+
+/** The fixed ID order of needs (plan-needs.md): by issue number, then by
+ * need ID (compareIds, so N2 comes before N10). */
+export function compareNeedRecords(a: Pick<NeedRecord, 'issue' | 'need'>, b: Pick<NeedRecord, 'issue' | 'need'>): number {
+  return a.issue - b.issue || compareIds(a.need.id, b.need.id)
+}
+
+/** The tie rule of the date sorts, as on the other list pages (decision
+ * 82): the issue number, highest first, then the need ID, highest first. */
+function needDateTie(a: Pick<NeedRecord, 'issue' | 'need'>, b: Pick<NeedRecord, 'issue' | 'need'>): number {
+  return compareNeedRecords(b, a)
+}
+
+/** #/needs (plan-needs.md, Task N3), with the rules of the other list pages
+ * (design 3.23.3, decision 82). Dates: newest first (the need's own
+ * 新增日期 or 更新日期, Task N1), the same date with the highest ID first
+ * (needDateTie); a need with no date last, in the fixed ID order.
+ * 資料根據比例: the cells of its stories (needShare), ties and needs with
+ * no share in the fixed ID order (compareNeedRecords). */
+export function sortNeeds<T extends NeedRecord>(records: T[], sort: NeedSort): T[] {
+  switch (sort) {
+    case 'updated':
+      return byDate(records, (r) => r.need.updated, needDateTie, compareNeedRecords)
+    case 'added':
+      return byDate(records, (r) => r.need.added, needDateTie, compareNeedRecords)
+    case 'evidence':
+      return byShare(records, needShare, compareNeedRecords)
   }
 }

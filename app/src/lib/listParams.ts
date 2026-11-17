@@ -1,15 +1,17 @@
 // The URL params of the list pages (design 3.23.5 and 3.23.13,
 // decisions 85, 91, 97 and 122). Every sort, filter and search is in the URL.
 // The names do not reuse stakeholder, evidence, cross, special, focus, pick
-// or from, because those mean other things on other pages (3.19).
+// or from, because those mean other things on other pages (3.19). #/needs
+// (plan-needs.md, Task N3) has its own params too (NEED_PARAMS).
 import type { IndexFile } from '@/types'
-import { NO_FILTERS, TYPE_FILTER_FIELDS, type ListFilters } from './listFilter'
+import { NEED_COVERAGES, NO_FILTERS, TYPE_FILTER_FIELDS, type ListFilters } from './listFilter'
+import { PRIORITIES } from './priority'
 import type { ListSort } from './listSort'
 import { availableIssues } from './issues'
 import { isListed } from './stakeholders'
 import { issueMayUseType, issueUsedCodes, TYPE_KINDS, typeGroupNames, typesOf, type TypeKind, type TypeListPage } from './typeKinds'
 
-export type ListPage = 'issues' | 'stakeholders' | 'solutions' | TypeListPage
+export type ListPage = 'issues' | 'stakeholders' | 'solutions' | 'needs' | TypeListPage
 
 /** The kind of type of each type list page (#/spaces, #/domains,
  * #/solution-types). The other list pages are not here. */
@@ -33,6 +35,33 @@ export const LIST_PARAMS = {
   view: 'view',
   group: 'group',
 } as const
+
+/** The params that only #/needs has (plan-needs.md, Task N3), in the order
+ * listUrlSearch writes them, after LIST_PARAMS. They are not in LIST_PARAMS,
+ * so the other list pages keep ignoring them, as before (decision 110).
+ * 「跨議題」 is not here: it is issue=X, as on #/stakeholders and
+ * #/solutions.
+ * - solution=<key>: 解法, once per pick ("2-S1", "X-S4").
+ * - priority=<M|S|C|W>: 優先順序, once per pick, the same values as on the
+ *   issue's 需求 tab.
+ * - covered=yes|no: 解法涵蓋 有 / 尚無, once per pick.
+ * - basis=1: 只看有資料根據. Not evidence=1, because the list params do not
+ *   reuse evidence (3.23.5). The links to the need pages still carry
+ *   ?evidence=1, because the entity pages read that. */
+export const NEED_PARAMS = {
+  solution: 'solution',
+  priority: 'priority',
+  covered: 'covered',
+  basis: 'basis',
+} as const
+
+/** The list param names a page knows: LIST_PARAMS, plus NEED_PARAMS on
+ * #/needs. A param with one of these names that the page does not read is
+ * dropped with replace. */
+function knownParams(page: ListPage | null): readonly string[] {
+  const names: string[] = Object.values(LIST_PARAMS)
+  return page === 'needs' ? [...names, ...Object.values(NEED_PARAMS)] : names
+}
 
 /** The param of each type filter (空間類型, 領域, 解法類型), in the order
  * listUrlSearch writes them. */
@@ -62,6 +91,7 @@ export const PAGE_SORTS: Record<ListPage, readonly ListSort[]> = {
   issues: ['updated', 'added', 'evidence'],
   stakeholders: ['updated', 'added', 'evidence', 'solutions'],
   solutions: ['updated', 'added', 'evidence'],
+  needs: ['updated', 'added', 'evidence'],
   spaces: [],
   domains: [],
   'solution-types': [],
@@ -74,6 +104,10 @@ const PAGE_PARAMS: Record<ListPage, readonly string[]> = {
   stakeholders: [LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.specialOnly, LIST_PARAMS.view],
   solutions: [
     LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.domain, LIST_PARAMS.solutionType, LIST_PARAMS.who,
+  ],
+  needs: [
+    LIST_PARAMS.q, LIST_PARAMS.sort, LIST_PARAMS.issue, LIST_PARAMS.space, LIST_PARAMS.domain, LIST_PARAMS.who,
+    ...Object.values(NEED_PARAMS),
   ],
   spaces: [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.group],
   domains: [LIST_PARAMS.q, LIST_PARAMS.issue, LIST_PARAMS.group],
@@ -107,9 +141,10 @@ function cleanQuery(value: string | null): string | null {
 }
 
 /** Only the list params of params, in their order. To compare with the
- * cleaned search. */
-export function listOnlySearch(params: URLSearchParams): string {
-  const names: readonly string[] = Object.values(LIST_PARAMS)
+ * cleaned search. page: the NEED_PARAMS count as list params only on
+ * #/needs. */
+export function listOnlySearch(params: URLSearchParams, page: ListPage | null = null): string {
+  const names = knownParams(page)
   const out = new URLSearchParams()
   for (const [key, value] of params) if (names.includes(key)) out.append(key, value)
   const s = out.toString()
@@ -128,6 +163,7 @@ export function listParamsOf(
   params: URLSearchParams,
   index: IndexFile,
   offered: OfferedCodes = {},
+  needOffered: NeedOffered = NO_NEED_OFFERED,
 ): ListParams {
   const has = (name: string) => PAGE_PARAMS[page].includes(name)
   const kind = pageKind(page)
@@ -171,12 +207,35 @@ export function listParamsOf(
     state.groups = typeGroupNames(kind, index).filter((g) => values.includes(g))
   }
 
+  if (has(NEED_PARAMS.solution)) {
+    const values = params.getAll(NEED_PARAMS.solution)
+    state.solutions = needOffered.solutions.filter((k) => values.includes(k))
+  }
+  if (has(NEED_PARAMS.priority)) {
+    const values = params.getAll(NEED_PARAMS.priority)
+    state.priorities = PRIORITIES.filter((p) => values.includes(p))
+  }
+  if (has(NEED_PARAMS.covered)) {
+    const values = params.getAll(NEED_PARAMS.covered)
+    state.coverage = NEED_COVERAGES.filter((c) => values.includes(c))
+  }
+  if (has(NEED_PARAMS.basis)) state.dataBased = params.get(NEED_PARAMS.basis) === '1'
+
   if (has(LIST_PARAMS.specialOnly)) state.specialOnly = params.get(LIST_PARAMS.specialOnly) === '1'
   if (has(LIST_PARAMS.view)) state.view = params.get(LIST_PARAMS.view) === 'tree' ? 'tree' : 'cards'
   state.q = cleanQuery(params.get(LIST_PARAMS.q))
 
-  return { ...state, replace: listUrlSearch(page, state) !== listOnlySearch(params) }
+  return { ...state, replace: listUrlSearch(page, state) !== listOnlySearch(params, page) }
 }
+
+/** What the filters of #/needs offer, for listParamsOf: the solution keys
+ * of the 解法 filter. A key that is not offered is dropped. */
+export interface NeedOffered {
+  solutions: readonly string[]
+}
+
+/** Nothing offered: the default for the pages that are not #/needs. */
+const NO_NEED_OFFERED: NeedOffered = { solutions: [] }
 
 /** The URL search string for a list page state ("?q=…&sort=…", or "" for
  * the default state). Only the params the page has, in a fixed order. No
@@ -200,6 +259,10 @@ export function listUrlSearch(page: ListPage, state: ListState): string {
   if (has(LIST_PARAMS.specialOnly) && state.specialOnly) out.set(LIST_PARAMS.specialOnly, '1')
   if (has(LIST_PARAMS.view) && state.view === 'tree') out.set(LIST_PARAMS.view, 'tree')
   if (has(LIST_PARAMS.group)) for (const g of state.groups) out.append(LIST_PARAMS.group, g)
+  if (has(NEED_PARAMS.solution)) for (const k of state.solutions) out.append(NEED_PARAMS.solution, k)
+  if (has(NEED_PARAMS.priority)) for (const p of PRIORITIES) if (state.priorities.includes(p)) out.append(NEED_PARAMS.priority, p)
+  if (has(NEED_PARAMS.covered)) for (const c of NEED_COVERAGES) if (state.coverage.includes(c)) out.append(NEED_PARAMS.covered, c)
+  if (has(NEED_PARAMS.basis) && state.dataBased) out.set(NEED_PARAMS.basis, '1')
   const s = out.toString()
   return s ? `?${s}` : ''
 }
@@ -215,7 +278,7 @@ export function listPath(page: ListPage, state: Partial<ListState> = {}): string
  * of the block. 最近更新 is the default sort. Since decision 131 all three
  * blocks use it, so no link has a param (before: ?sort=added for the
  * stakeholders and the solutions). */
-export const HOME_ALL_PATHS: Record<Exclude<ListPage, TypeListPage>, string> = {
+export const HOME_ALL_PATHS: Record<'issues' | 'stakeholders' | 'solutions', string> = {
   issues: listPath('issues'),
   stakeholders: listPath('stakeholders'),
   solutions: listPath('solutions'),
@@ -225,10 +288,12 @@ export const HOME_ALL_PATHS: Record<Exclude<ListPage, TypeListPage>, string> = {
 export const CROSS_STAKEHOLDERS_PATH = listPath('stakeholders', { crossChoice: true })
 
 /** The search string of 「清除篩選」: every filter and q are removed. sort,
- * view and any other param are kept. "" when nothing is left. */
-export function clearListFilters(params: URLSearchParams): string {
+ * view and any other param are kept. "" when nothing is left. page: on
+ * #/needs the NEED_PARAMS are filters too, so they are removed as well. */
+export function clearListFilters(params: URLSearchParams, page: ListPage | null = null): string {
   const next = new URLSearchParams(params)
-  for (const name of [LIST_PARAMS.q, LIST_PARAMS.issue, ...TYPE_KINDS.map((k) => TYPE_PARAMS[k]), LIST_PARAMS.who, LIST_PARAMS.specialOnly, LIST_PARAMS.group]) {
+  const needNames: string[] = page === 'needs' ? Object.values(NEED_PARAMS) : []
+  for (const name of [LIST_PARAMS.q, LIST_PARAMS.issue, ...TYPE_KINDS.map((k) => TYPE_PARAMS[k]), LIST_PARAMS.who, LIST_PARAMS.specialOnly, LIST_PARAMS.group, ...needNames]) {
     next.delete(name)
   }
   const s = next.toString()

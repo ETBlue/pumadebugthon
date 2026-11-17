@@ -40,7 +40,7 @@ export function ResultLine({ page, shown, total, q, parts, clearLink = true, cla
         <>
           {' '}
           <Link
-            to={{ pathname, search: clearListFilters(new URLSearchParams(search)) }}
+            to={{ pathname, search: clearListFilters(new URLSearchParams(search), page) }}
             preventScrollReset
             className={linkClass}
           >

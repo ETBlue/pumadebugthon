@@ -39,6 +39,13 @@ export function solutionCount(index: IndexFile, cross: CrossIssueFile | null = n
   return own + (cross?.solutions.length ?? 0)
 }
 
+/** 需求 in the header (plan-needs.md, Task N3): the needs of the analyzed
+ * issues, summed (counts.needs in index.json). It is the length of the
+ * list #/needs shows, and the same number as needCount of the issue files. */
+export function needListCount(index: IndexFile): number {
+  return availableIssues(index).reduce((n, i) => n + i.counts.needs, 0)
+}
+
 /** 訴求: each W group once, plus each story with no W group. These are the
  * items of the opinion check pick list (design 4.1), summed over the issues.
  * Pass the files of the analyzed issues. */

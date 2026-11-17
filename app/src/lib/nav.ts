@@ -1,7 +1,8 @@
-/** The six header nav items, in header order (design 3.7, decision 120,
- * Task U3, decision 191): 議題 | 利害關係人 | 空間 | 領域 | 解法類型 | 解法. Each item is also
- * the first URL segment of its list page. */
-export const NAV_ITEMS = ['issues', 'stakeholders', 'spaces', 'domains', 'solution-types', 'solutions'] as const
+/** The seven header nav items, in header order (design 3.7, decision 120,
+ * Task U3, decision 191, plan-needs.md decision 2): 議題 | 利害關係人 | 需求 |
+ * 空間 | 領域 | 解法類型 | 解法. Each item is also the first URL segment of
+ * its list page. */
+export const NAV_ITEMS = ['issues', 'stakeholders', 'needs', 'spaces', 'domains', 'solution-types', 'solutions'] as const
 
 export type NavItem = (typeof NAV_ITEMS)[number]
 
@@ -29,7 +30,7 @@ export function activeNavItem(pathname: string): NavItem | null {
   return NAV_ITEMS.find((item) => item === first) ?? null
 }
 
-/** True only on one of the six list pages itself, for example "/issues". */
+/** True only on one of the seven list pages itself, for example "/issues". */
 export function isNavListPage(pathname: string): boolean {
   const parts = segments(pathname)
   return parts.length === 1 && activeNavItem(pathname) !== null

@@ -14,13 +14,13 @@ Dates (design 3.23.8):
   the date of the last git commit of the issue folder.
 - updated: the 更新日期 in data/updated-dates.csv (kept by update_dates.py),
   on each stakeholder in index.json, each solution in the issue JSON, each
-  cross-issue solution in cross-issue.json, each story in the issue JSON and
-  each space type in index.json. null when the item has no row (a moved
+  cross-issue solution in cross-issue.json, each story and each need in the
+  issue JSON and each space type in index.json. null when the item has no row (a moved
   stakeholder, or the file is missing). check_analysis.py checks that the
   file is complete and up to date.
-- added on a story (stories[]) and on a space type (spaceTypes[]): the
-  新增日期 in data/updated-dates.csv. These two have no other place for a
-  新增日期. null when the item has no row.
+- added on a story (stories[]), on a need (needs[]) and on a space type
+  (spaceTypes[]): the 新增日期 in data/updated-dates.csv. These have no
+  other place for a 新增日期. null when the item has no row.
 
 A section that cannot be read stops the script with exit code 1 and the line
 "<folder>: <section>: <reason>". Nothing is written in that case.
@@ -169,7 +169,8 @@ works with both:
   [] in the old format.
 - needs: the 5.2 rows, one per need: {id (N01, or the story ID of a need in
   no group), kind ("group" or "story"), summary, stories, priority,
-  priorityTag, reason (a Cell)}. [] in the old format.
+  priorityTag, reason (a Cell), added, updated (type 需求 in
+  updated-dates.csv)}. [] in the old format.
 - conflicts: the 「### 6.4」 table (needs format) or the 「### 5.4」 table.
   sideA / sideB are the stories of 相關故事, as before. New: needsA / needsB
   (the 雙方的需求 cell, split on 「 vs 」), wayOut (the 以需求為本的解方
@@ -298,7 +299,7 @@ DATES_FILE = "updated-dates.csv"
 
 def read_updated_dates(analysis_dir):
     """(類型, 編號) -> {"added", "updated"} from data/updated-dates.csv.
-    added is the 新增日期 column (only filled for a story and a space type),
+    added is the 新增日期 column (only filled for the types that keep it there),
     or None when it is empty. {} when the file does not exist."""
     if not os.path.exists(common.data_file(analysis_dir, DATES_FILE)):
         return {}
@@ -1136,6 +1137,9 @@ def build(analysis_dir):
         for s in data["stories"]:
             d = dates_of(dates, "使用者故事", f"{num}-{s['id']}")
             s["added"], s["updated"] = d["added"], d["updated"]
+        for n in data["needs"]:
+            d = dates_of(dates, "需求", f"{num}-{n['id']}")
+            n["added"], n["updated"] = d["added"], d["updated"]
         ids_by_num[num] = common.issue_ids(text)
         cross_by_folder[folder] = (num, data.pop("summaryCross"))
         updated = git_updated(os.path.join(analysis_dir, folder))

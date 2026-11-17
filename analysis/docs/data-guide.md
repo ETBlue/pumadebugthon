@@ -147,6 +147,7 @@
 | `stories` | 故事 → `stories` |
 | `priority`、`priority_tag` | 優先順序（MoSCoW）和它的標記 |
 | `reason`、`reason_tag` | 理由 |
+| `added`、`updated` | 新增日期、更新日期 |
 
 ### conflicts：衝突（C）
 

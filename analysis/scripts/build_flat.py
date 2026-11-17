@@ -152,6 +152,8 @@ def issue_file_rows(issue):
             "priority": need["priority"], "priority_tag": need["priorityTag"],
         }
         with_cell(row, "reason", need["reason"])
+        row["added"] = need.get("added")
+        row["updated"] = need.get("updated")
         rows["needs"].append(row)
 
     for c in issue["conflicts"]:

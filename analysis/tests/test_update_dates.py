@@ -18,7 +18,9 @@ SHARED = ("data/issues.csv", "data/stakeholders.csv", "data/path-labels.csv", "d
           "data/open-data.csv", "data/updated-dates.csv", "docs/method.md", "docs/human-inputs.md")
 ISSUE = "2-trashcans"
 # The types whose 新增日期 is kept in updated-dates.csv.
-OWN_ADDED = ("使用者故事", "空間類型", "領域類型", "解法類型")
+OWN_ADDED = ("使用者故事", "需求", "空間類型", "領域類型", "解法類型")
+# The need N02 of #2 and its reason cell (step 5.2).
+N02_REASON = "`[AI模擬]` 店家、捷運公司、活動主辦單位與便利商店店員都提出。重要，但他們目前仍能用自己的人力清理，可以第二階段再做 |"
 
 
 def load(name):
@@ -106,13 +108,16 @@ class ItemsTest(unittest.TestCase):
         self.assertEqual(len(keys), len(set(keys)))
         types = [i["type"] for i in items]
         # 利害關係人 first, then 跨議題解法, then 解法 (the fixed ID order of the
-        # solutions), then 使用者故事, then 空間類型, then 領域類型, then 解法類型.
-        self.assertEqual(types, sorted(types, key=["利害關係人", "跨議題解法", "解法", "使用者故事", "空間類型",
+        # solutions), then 使用者故事, then 需求, then 空間類型, then 領域類型,
+        # then 解法類型.
+        self.assertEqual(types, sorted(types, key=["利害關係人", "跨議題解法", "解法", "使用者故事", "需求", "空間類型",
                                                    "領域類型", "解法類型"].index))
         self.assertIn(("利害關係人", "O01"), keys)
         self.assertIn(("解法", "2-S1"), keys)
         self.assertIn(("跨議題解法", "X-S1"), keys)
         self.assertIn(("使用者故事", "2-O01-US01"), keys)
+        self.assertIn(("需求", "1-N01"), keys)
+        self.assertIn(("需求", "2-N01"), keys)
         self.assertIn(("空間類型", "sidewalk-walkway"), keys)
         self.assertIn(("空間類型", "road"), keys)  # a level 1 row has a row too
         # Stories: by issue number, then in the order of the step 4 table.
@@ -173,6 +178,37 @@ class ItemsTest(unittest.TestCase):
         after = self.prints()
         self.assertNotEqual(before[("利害關係人", "O01")], after[("利害關係人", "O01")])
         self.assertNotEqual(before[("使用者故事", "2-O01-US01")], after[("使用者故事", "2-O01-US01")])
+
+    def test_need_items_one_per_need_in_5_2_order(self):
+        # One 需求 item per need of each issue (an N group or a story of its
+        # own), by issue number, then in the order of the 5.2 table. Each
+        # item lists the IDs of its stories, for the back-fill rule.
+        build_json = load("build_json")
+        _, issue_files = build_json.build(self.dir)
+        want = [(f"{d['number']}-{n['id']}", [f"{d['number']}-{s}" for s in n["stories"]])
+                for d in sorted(issue_files.values(), key=lambda d: d["number"]) for n in d["needs"]]
+        got = [(i["id"], i["stories"]) for i in self.mod.items(self.dir) if i["type"] == "需求"]
+        self.assertEqual(got, want)
+        self.assertEqual(len(got), 179)
+        self.assertTrue(any(iid == "2-O04-US02" for iid, _ in got))  # a story that is a need of its own
+
+    def test_need_reason_change_changes_only_that_need(self):
+        before = self.prints()
+        edit(self.md, N02_REASON, N02_REASON.replace("第二階段", "下一個階段"))
+        after = self.prints()
+        self.assertEqual({k for k in before if before[k] != after[k]}, {("需求", "2-N02")})
+
+    def test_need_reason_tag_and_priority_change_change_the_need(self):
+        before = self.prints()
+        edit(self.md, N02_REASON, N02_REASON.replace("`[AI模擬]`", "`[實證]`"))
+        self.assertNotEqual(before[("需求", "2-N02")], self.prints()[("需求", "2-N02")])
+
+    def test_story_text_change_does_not_change_its_need(self):
+        # O01-US01 of #2 is in N02. The story has its own row, so a change of
+        # its text does not change the need.
+        before = self.prints()
+        edit(self.md, "`[AI模擬]` 商圈有足夠的清潔箱 |", "`[AI模擬]` 商圈有更多的清潔箱 |")
+        self.assertEqual(before[("需求", "2-N02")], self.prints()[("需求", "2-N02")])
 
     def test_space_type_change_changes_only_that_space_type(self):
         before = self.prints()
@@ -281,6 +317,46 @@ class UpdatedRowsTest(unittest.TestCase):
         self.assertEqual(rows, [self.row("sidewalk-walkway", "2026-10-18", "aaa", type_="空間類型", added=self.today),
                                 self.row("O01", "2026-10-20", "aaa")])
 
+    def need(self, iid, fp, stories):
+        return {"type": "需求", "id": iid, "fingerprint": fp, "added": None, "stories": stories}
+
+    def stories(self):
+        return [self.item("2-O01-US01", "s1", added=None, type_="使用者故事"),
+                self.item("2-O01-US02", "s2", added=None, type_="使用者故事")]
+
+    def story_rows(self):
+        return [self.row("2-O01-US01", "2026-10-25", "s1", type_="使用者故事", added="2026-10-16"),
+                self.row("2-O01-US02", "2026-10-20", "s2", type_="使用者故事", added="2026-10-18")]
+
+    def test_need_back_fill_on_the_first_run(self):
+        # No 需求 row in the file yet: 新增日期 is the earliest 新增日期 of
+        # its stories, and 更新日期 the latest 更新日期 of its stories.
+        current = self.stories() + [self.need("2-N01", "n1", ["2-O01-US01", "2-O01-US02"])]
+        rows = self.mod.updated_rows(current, self.story_rows(), self.today)
+        self.assertEqual(rows[2], self.row("2-N01", "2026-10-25", "n1", type_="需求", added="2026-10-16"))
+
+    def test_need_back_fill_uses_the_new_story_dates_of_the_same_run(self):
+        # A story that changes in the same run counts with its new 更新日期.
+        current = [self.item("2-O01-US01", "changed", added=None, type_="使用者故事"),
+                   self.item("2-O01-US02", "s2", added=None, type_="使用者故事"),
+                   self.need("2-N01", "n1", ["2-O01-US01", "2-O01-US02"])]
+        rows = self.mod.updated_rows(current, self.story_rows(), self.today)
+        self.assertEqual(rows[2], self.row("2-N01", self.today, "n1", type_="需求", added="2026-10-16"))
+
+    def test_need_after_the_first_run_uses_the_normal_rule(self):
+        old = self.story_rows() + [self.row("2-N01", "2026-10-26", "n1", type_="需求", added="2026-10-16")]
+        same = self.mod.updated_rows(self.stories() + [self.need("2-N01", "n1", ["2-O01-US01", "2-O01-US02"])],
+                                     old, self.today)
+        self.assertEqual(same, old)
+        changed = self.mod.updated_rows(self.stories() + [self.need("2-N01", "n2", ["2-O01-US01", "2-O01-US02"])],
+                                        old, self.today)
+        self.assertEqual(changed[2], self.row("2-N01", self.today, "n2", type_="需求", added="2026-10-16"))
+        # A new need after the first run gets today for both dates, like any
+        # other new item whose 新增日期 is kept in this file.
+        new = self.mod.updated_rows(self.stories() + [self.need("2-N01", "n1", ["2-O01-US01", "2-O01-US02"]),
+                                                      self.need("2-N02", "n3", ["2-O01-US01"])], old, self.today)
+        self.assertEqual(new[3], self.row("2-N02", self.today, "n3", type_="需求", added=self.today))
+
     def test_same_id_of_another_type_is_another_item(self):
         old = [self.row("X-S1", "2026-10-20", "aaa", type_="跨議題解法")]
         rows = self.mod.updated_rows([self.item("X-S1", "aaa", type_="解法")], old, self.today)
@@ -346,6 +422,39 @@ class ScriptTest(unittest.TestCase):
                          {k: v for k, v in before.items() if k not in (("利害關係人", "O01"), story)})
         code, out = self.run_script("--check")
         self.assertEqual(code, 0, out)
+
+    def test_need_rows_follow_the_back_fill_rule(self):
+        # The committed file was made by the back-fill rule on 2026-11-18.
+        # Without any 需求 row, the script makes the same rows again.
+        rows = self.rows()
+        needs = {k: r for k, r in rows.items() if k[0] == "需求"}
+        self.assertEqual(len(needs), 179)
+        with open(self.file, encoding="utf-8-sig", newline="") as f:
+            lines = f.read().split("\n")
+        with open(self.file, "w", encoding="utf-8-sig", newline="") as f:
+            f.write("\n".join(l for l in lines if not l.startswith("需求,")))
+        code, out = self.run_script()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.rows(), rows)
+
+    def test_need_reason_change_gives_today_only_to_the_need(self):
+        before = self.rows()
+        edit(self.md, N02_REASON, N02_REASON.replace("第二階段", "下一個階段"))
+        code, out = self.run_script()
+        self.assertEqual(code, 0, out)
+        after = self.rows()
+        today = load("analysis_common").today().isoformat()
+        key = ("需求", "2-N02")
+        self.assertEqual(after[key]["更新日期"], today)
+        self.assertEqual(after[key]["新增日期"], before[key]["新增日期"])
+        self.assertEqual({k: v for k, v in after.items() if k != key}, {k: v for k, v in before.items() if k != key})
+
+    def test_story_text_change_keeps_the_need_date(self):
+        before = self.rows()
+        edit(self.md, "`[AI模擬]` 商圈有足夠的清潔箱 |", "`[AI模擬]` 商圈有更多的清潔箱 |")
+        code, out = self.run_script()
+        self.assertEqual(code, 0, out)
+        self.assertEqual(self.rows()[("需求", "2-N02")], before[("需求", "2-N02")])
 
     def test_new_domain_type_gets_today(self):
         # A new row in domain-types.csv gets today as its 新增日期 and 更新日期,
@@ -414,6 +523,9 @@ class ScriptTest(unittest.TestCase):
         for s in issue["stories"]:
             r = rows[("使用者故事", f"2-{s['id']}")]
             self.assertEqual((s["added"], s["updated"]), (r["新增日期"], r["更新日期"]), s["id"])
+        for n in issue["needs"]:
+            r = rows[("需求", f"2-{n['id']}")]
+            self.assertEqual((n["added"], n["updated"]), (r["新增日期"], r["更新日期"]), n["id"])
         for s in index["spaceTypes"]:
             r = rows[("空間類型", s["code"])]
             self.assertEqual((s["added"], s["updated"]), (r["新增日期"], r["更新日期"]), s["code"])

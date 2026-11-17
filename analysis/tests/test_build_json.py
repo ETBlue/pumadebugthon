@@ -606,7 +606,7 @@ class BuildJsonOutputTest(unittest.TestCase):
         solo = next(n for n in needs if n["id"] == "O09-US01")
         self.assertEqual((solo["kind"], solo["stories"], solo["priority"]), ("story", ["O09-US01"], "W"))
         self.assertEqual(solo["reason"]["tag"], "AI模擬")
-        self.assertEqual(list(n01), ["id", "kind", "summary", "stories", "priority", "priorityTag", "reason"])
+        self.assertEqual(list(n01), ["id", "kind", "summary", "stories", "priority", "priorityTag", "reason", "added", "updated"])
 
     def test_story_priority_is_the_need_priority(self):
         by_need = {n["id"]: n for n in self.issue["needs"]}

@@ -187,6 +187,15 @@ class FlatFilesTest(unittest.TestCase):
         self.assertEqual(story["added"], src["added"])
         self.assertEqual(story["updated"], src["updated"])
 
+    def test_a_need_keeps_its_dates(self):
+        # Each need row has the 新增日期 and 更新日期 of the need (type 需求
+        # in updated-dates.csv), as in the issue JSON.
+        for n, issue in self.issues.items():
+            for src in issue["needs"]:
+                row = next(r for r in self.json["needs"] if r["id"] == f"{n}-{src['id']}")
+                self.assertEqual((row["added"], row["updated"]), (src["added"], src["updated"]), row["id"])
+                self.assertRegex(row["added"] or "", r"^\d{4}-\d\d-\d\d$", row["id"])
+
     def test_the_app_lists_the_same_types_in_the_same_order(self):
         # FLAT_TYPES in app/src/lib/dataFiles.ts makes the links on #/about.
         path = os.path.join(os.path.dirname(ANALYSIS), "app", "src", "lib", "dataFiles.ts")

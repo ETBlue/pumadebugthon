@@ -45,7 +45,7 @@
 | Covering solutions | the issue solutions that list the need ID in `needs.must` or `needs.shouldCould`, plus the cross-issue solutions that cover it through an X-N group (decision 60, as in 3.12 and 3.18). Same rule as `src/lib/coverage.ts`. |
 | 解法涵蓋 有 / 尚無 | 有: at least one covering solution. 尚無: none. A need with MoSCoW W (這次不做) is in 尚無 but its card and page also say 這次不做, as on the solution page (decision 50). |
 | Its X-N group | the X-N group in `cross-issue.json` `needGroups` whose `needs` list has `{issue, id}`. At most one. If the data ever has two, show both. |
-| 只看有資料根據 | show the need when at least one cell (`want` or `soThat`) of its stories is tagged `[實證]` or `[AI整理]`. The need summary is always `[AI模擬]`, so the usual rule (hide `[AI模擬]` cells) would hide every need. |
+| 只看有資料根據 | show the need when at least one of its stories has a 以便… (`soThat`) cell tagged `[實證]` or `[AI整理]`. This is the rule of the existing `dataBasedNeeds` (the issue's 需求 tab), so a need is shown or hidden the same way on every page. The 我想要… cell is not checked. (Fixed 2026-11-18 during Task N2.) The need summary is always `[AI模擬]`, so the usual rule (hide `[AI模擬]` cells) would hide every need. |
 | 資料根據比例 | the share of its stories' cells tagged `[實證]` or `[AI整理]`, the same unit as 3.23.4. Each story counted once. |
 
 ## Review focus
@@ -89,11 +89,11 @@
 
 **Files:**
 - Modify: `app/src/types.ts` (`added`, `updated` on a need)
-- Modify: `app/src/test/fixtures/*` (run `npm run fixtures`, then check the diff)
-- Create: `app/src/lib/needs.ts`, `app/src/lib/needs.test.ts`
+- Modify: `app/src/test/fixtures/issues/*.json`: add only `added` and `updated` to each need. A full `npm run fixtures` run changes all fixtures to today's data and breaks 149 tests.
+- Create: `app/src/lib/needRecords.ts`, `app/src/lib/needRecords.test.ts` (`needs.ts` already exists and `coverage.ts` imports it, so a new file avoids an import loop)
 - Modify: `app/src/lib/coverage.ts` only if a helper must be shared; do not copy its logic.
 
-**`needs.ts`** gives one record per need, with: `key`, `issue`, `need`, `stories`, `stakeholders`, `spaces`, `domains`, `solutions` (issue solutions and X- solutions, as keys), `crossGroups` (X-N IDs), `covered`, `cells` (for the share and the toggle). Also `needByKey(key)` and `parseNeedKey(text)`. Keys use the issue number, so `parseNeedKey('2-O04-US02')` gives issue 2, ID `O04-US02`.
+**`needRecords.ts`** gives one record per need, with: `key`, `issue`, `need`, `stories`, `stakeholders`, `spaces`, `domains`, `solutions` (issue solutions and X- solutions, as keys), `crossGroups` (X-N IDs), `covered`, `cells` (for the share and the toggle). Also `needRecordKey(issue, id)` (`needKey` already exists for stories), `needByKey(...)` and `parseNeedKey(text)`. Keys use the issue number, so `parseNeedKey('2-O04-US02')` gives issue 2, ID `O04-US02`.
 
 - [ ] Write failing tests for every row of the Definitions table, with a fixture that has the same need ID in two issues, a need with no solution, a need covered only through an X-N group, and a W need.
 - [ ] Implement.

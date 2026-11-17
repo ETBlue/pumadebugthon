@@ -89,7 +89,7 @@ function SideNeeds({ label, needs }: { label: string; needs: CrossSideNeed[] }) 
 /** One cross-issue conflict (design 3.18): the text, the two sides with
  * story links, 雙方的需求, 以需求為本的解方, the method, the result and the
  * issue conflicts as links. */
-function CrossConflictCard({ view, data, index, issues, dataBasedOnly }: {
+export function CrossConflictCard({ view, data, index, issues, dataBasedOnly }: {
   view: CrossConflictView
   data: CrossIssueFile
   index: IndexFile

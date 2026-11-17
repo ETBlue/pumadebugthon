@@ -4,6 +4,7 @@ import About from '@/pages/About'
 import Home from '@/pages/Home'
 import Issue from '@/pages/Issue'
 import Issues from '@/pages/Issues'
+import Need from '@/pages/Need'
 import Needs from '@/pages/Needs'
 import Placeholder from '@/pages/Placeholder'
 import RouteError from '@/pages/RouteError'
@@ -47,9 +48,10 @@ export const routes: RouteObject[] = [
       { path: 'stakeholders', element: <Stakeholders />, handle: { fullWidth: true } },
       { path: 'stakeholders/:id/stories/:number/:storyId', element: <StakeholderStory />, handle: { fullWidth: true } },
       { path: 'stakeholders/:id/:tab?', element: <Stakeholder />, handle: { fullWidth: true } },
-      // The need list (plan-needs.md, Task N3). The need page
-      // #/needs/<key> comes in Task N4; until then it shows the not-found page.
+      // The need list (plan-needs.md, Task N3) and the need page (Task N4),
+      // for example #/needs/1-N01 or #/needs/2-O04-US02/stories.
       { path: 'needs', element: <Needs />, handle: { fullWidth: true } },
+      { path: 'needs/:key/:tab?', element: <Need />, handle: { fullWidth: true } },
       { path: 'solutions', element: <Solutions />, handle: { fullWidth: true } },
       // 2-S1: a solution of an issue. X-S1: a cross-issue solution (Task N11).
       { path: 'solutions/:slug/:tab?', element: <Solution />, handle: { fullWidth: true } },

@@ -1,7 +1,7 @@
 // URL paths of the entity pages: stakeholder, story, solution, and the type
 // pages of space, 領域 and 解法類型 (design 3.3, 3.6, 3.12, 3.15, 3.16,
-// 3.19). Wants and needs have no page of their own (decision 45). A link to
-// one goes to the issue tab with ?focus=.
+// 3.19), and the need page (plan-needs.md, Task N4). Wants have no page of
+// their own (decision 45). A link to one goes to the issue tab with ?focus=.
 import { withDataBasisFilter } from './dataBasis'
 import { FOCUS_PARAM } from './focus'
 import { tabPath, type IssueTab } from './issuePage'
@@ -138,11 +138,25 @@ export function solutionPath(issueNumber: number, code: string, tab?: IssueSolut
   return withTab(`/solutions/${issueNumber}-${code}`, tab)
 }
 
+/** The tabs of the need page (plan-needs.md, Task N4), in display order.
+ * The first one is the default. The page leaves out a tab with no content
+ * (needPageTabs in src/lib/needPage.ts). sameNeeds is 其他議題的相同需求. */
+export const NEED_TABS = ['overview', 'stories', 'stakeholders', 'solutions', 'conflicts', 'sameNeeds'] as const
+
+export type NeedTab = (typeof NEED_TABS)[number]
+
+/** The need tab of the URL segment. No segment is the overview. An unknown
+ * name returns null. */
+export function parseNeedTab(segment: string | undefined): NeedTab | null {
+  if (segment === undefined) return 'overview'
+  return (NEED_TABS as readonly string[]).includes(segment) ? (segment as NeedTab) : null
+}
+
 /** The URL path of a need page (plan-needs.md): "/needs/<key>", for example
- * "/needs/1-N01" or "/needs/2-O04-US02". key is needRecordKey(issue, id).
- * The page itself comes in Task N4. */
-export function needPath(key: string): string {
-  return `/needs/${key}`
+ * "/needs/1-N01" or "/needs/2-O04-US02/stories". key is
+ * needRecordKey(issue, id). The overview has no tab segment. */
+export function needPath(key: string, tab?: NeedTab): string {
+  return withTab(`/needs/${key}`, tab)
 }
 
 /** The URL path of a cross-issue solution page. code is the code as

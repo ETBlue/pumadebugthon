@@ -493,6 +493,7 @@ export const t = {
     spaces: '回到空間列表',
     domains: '回到領域列表',
     solutionTypes: '回到解法類型列表',
+    needs: '回到需求列表',
     /** The story page: the visible text 「回到 I06」. */
     stakeholderShort: (id: string) => `回到 ${id}`,
     /** The story page: the accessible name, which starts with the visible text. */
@@ -1277,6 +1278,68 @@ export const t = {
     /** 資料根據 while the 資料根據比例 sort is on. */
     basis: '資料根據',
     sharePercent: (p: number) => `實證＋AI整理 ${p}%`,
+  },
+  /** The need page #/needs/<key> (plan-needs.md, Task N4). The page says
+   * the needs are found by the analysis. */
+  needPage: {
+    /** The tabs, in display order. The names are also for the page title. */
+    tabsLabel: '需求內容',
+    tabs: {
+      overview: '總覽',
+      stories: '使用者故事',
+      stakeholders: '利害關係人',
+      solutions: '解法',
+      conflicts: '衝突',
+      sameNeeds: '其他議題的相同需求',
+    },
+    /** The tab labels with the counts (needTabCounts). Plain numbers. */
+    tabLabels: {
+      stories: (n: number): TabLabel => ({ main: `使用者故事 ${n}` }),
+      stakeholders: (n: number): TabLabel => ({ main: `利害關係人 ${n}` }),
+      solutions: (n: number): TabLabel => ({ main: `解法 ${n}` }),
+      conflicts: (n: number): TabLabel => ({ main: `衝突 ${n}` }),
+      sameNeeds: (n: number): TabLabel => ({ main: `其他議題的相同需求 ${n}` }),
+    },
+    tabNotFound: '找不到這個分頁。',
+    goToOverview: '回到總覽',
+    /** The last part of the page title: 「#1 N01 摘要 · 需求 · 市政提案小幫手」. */
+    titlePart: '需求',
+    notFoundTitle: '找不到這個需求',
+    notFoundBody: (key: string) => `沒有代號為 ${key} 的需求。網址可能打錯了，或這個議題的分析還在製作中。`,
+    allNeedsLink: '看全部需求',
+    backHome: '回到首頁',
+    /** The 總覽 fields. */
+    intro: '這是分析整理出的需求。它來自「使用者故事」分頁裡的故事。',
+    issue: '議題',
+    issueValue: (n: number, title: string) => `#${n} ${title}`,
+    priority: '優先順序',
+    reason: '理由',
+    coverage: '解法涵蓋',
+    coverageNone: '尚未有解法涵蓋',
+    coverageWontDo: '這次不做，所以沒有解法涵蓋',
+    crossGroup: '跨議題的共同需求',
+    /** The 解法 tab: one part per way the solution covers the need. */
+    solutionParts: {
+      must: '列為「必須有」的解法',
+      shouldCould: '列為「應該有、可以有」的解法',
+      crossIssue: '透過跨議題的共同需求涵蓋的解法',
+    },
+    solutionPartIntros: {
+      must: '這些解法把這個需求列在涵蓋的「必須有」需求裡。',
+      shouldCould: '這些解法把這個需求列在涵蓋的「應該有、可以有」需求裡。',
+      crossIssue: '這些跨議題解法涵蓋這個需求所在的跨議題共同需求群組，所以這個需求也算被涵蓋。',
+    },
+    /** 解法 with 只看有資料根據 on, for a need whose stories have no
+     * 以便… cell tagged [實證] or [AI整理]. */
+    solutionsFilteredNone: '這個需求的故事，以便…都沒有標記 [實證] 或 [AI整理]。',
+    /** The 衝突 tab. */
+    issueConflictsHeading: '本議題的衝突',
+    issueConflictsIntro: '這些衝突的一方或另一方，列出了這個需求。',
+    conflictLink: (n: number, id: string) => `到 #${n} 的衝突分頁看 ${id}`,
+    crossConflictsHeading: '跨議題的衝突',
+    crossConflictsIntro: '這些跨議題衝突的一方或另一方，列出了這個需求，或它所在的跨議題共同需求群組。',
+    /** 其他議題的相同需求: one part per X-N group. */
+    sameNeedsIntro: '分析認為下面這些其他議題的需求，和這個需求是同一個需求。',
   },
   /** #/stakeholders with the search, sort and filter bar, card view and
    * tree view (design 3.23, Task L6). */

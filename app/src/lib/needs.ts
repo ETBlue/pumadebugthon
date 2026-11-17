@@ -146,11 +146,17 @@ export function needsOfStakeholder(issue: IssueFile, id: string): StakeholderNee
   return out
 }
 
-/** The 「只看有資料根據」 filter on the 需求 tab: keep a need when at least one
- * of its stories has a [實證] or [AI整理] 以便… cell. The 我想要… cell is not
- * checked. Keeps the order of the list. */
+/** The 「只看有資料根據」 rule for one need: true when at least one of its
+ * stories has a [實證] or [AI整理] 以便… cell. The 我想要… cell is not
+ * checked. The issue's 需求 tab and the need list #/needs both use it. */
+export function needIsDataBased(item: Pick<NeedItem, 'stories'>): boolean {
+  return item.stories.some((s) => DATA_BASED_TAGS.includes(s.soThat.tag))
+}
+
+/** The 「只看有資料根據」 filter on the 需求 tab: keep a need when
+ * needIsDataBased is true. Keeps the order of the list. */
 export function dataBasedNeeds<T extends NeedItem>(items: T[]): T[] {
-  return items.filter((i) => i.stories.some((s) => DATA_BASED_TAGS.includes(s.soThat.tag)))
+  return items.filter(needIsDataBased)
 }
 
 /** The stories in the story list of one need (NeedItem). With the

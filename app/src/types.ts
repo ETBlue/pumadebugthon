@@ -322,6 +322,14 @@ export interface Need {
   priorityTag: PriorityTag
   /** 理由 */
   reason: Cell
+  /** 新增日期 from analysis/data/updated-dates.csv (type 需求, YYYY-MM-DD).
+   * null when the file has no row for it. Optional so older test data still
+   * fits (plan-needs.md, Task N1). */
+  added?: string | null
+  /** 更新日期 from analysis/data/updated-dates.csv (type 需求, YYYY-MM-DD):
+   * the last day the need's own content changed. null when the file has no
+   * row for it. */
+  updated?: string | null
 }
 
 /** A row of 6.4 (needs format) or 5.4 (old format). 相關故事 is split on

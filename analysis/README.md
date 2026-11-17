@@ -102,7 +102,7 @@ analysis/scripts/build_all.sh
 |---|---|---|
 | 1 | `sync_stakeholders.py` | 更新 `data/stakeholders.csv` 的「議題」欄 |
 | 2 | `build_csv.py` | 從每個議題的步驟 4 表格重建 `user-stories.csv` |
-| 3 | `update_dates.py` | 更新 `data/updated-dates.csv`（利害關係人、解法、故事與空間類型的更新日期） |
+| 3 | `update_dates.py` | 更新 `data/updated-dates.csv`（利害關係人、解法、跨議題解法、故事、需求、空間類型、領域類型與解法類型的日期） |
 | 4 | `check_analysis.py` | 檢查每個議題的 `issue-analysis.md` 與 `user-stories.csv` |
 | 5 | `check_cross_issue.py` | 檢查跨議題分析 |
 | 6 | `cross_candidates.py` | 重建 `cross-issue/candidates.csv`（可以合併的解法的候選清單） |

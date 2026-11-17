@@ -162,8 +162,9 @@ export const t = {
     soThat: '以便…',
     source: '來源',
     priority: '優先順序',
-    /** The links of a StoryCard to its want and its need on the issue tabs
-     * (decision 57), for example 「訴求 W08」 and 「需求 N07」. */
+    /** The links of a StoryCard to its want on the issue's 訴求 tab
+     * (decision 57) and to its need page (Task N5), for example 「訴求 W08」
+     * and 「需求 N07」. */
     wantLink: (key: string) => `訴求 ${key}`,
     needLink: (key: string) => `需求 ${key}`,
   },
@@ -526,7 +527,8 @@ export const t = {
     wantOthersNone: '沒有其他利害關係人有這個訴求。',
     wantNoGroup: '這則故事不在任何相同訴求群組裡。',
     needHeading: '需求',
-    needLink: (n: number, key: string) => `在 #${n} 的需求分頁看 ${key}`,
+    /** A link to the need page (Task N5). */
+    needLink: (n: number, key: string) => `看需求 #${n} ${key} 的頁面`,
     needGroup: (id: string) => `相同需求群組 ${id}：`,
     needOthers: '同樣需要的人',
     needOthersNone: '沒有其他利害關係人有這個需求。',

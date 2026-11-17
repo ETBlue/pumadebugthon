@@ -73,3 +73,11 @@ describe('the dates of the story (decision 131)', () => {
     expect(html).not.toContain(t.dates.added)
   })
 })
+
+describe('the 需求 link of the story page (Task N5)', () => {
+  it('goes to the need page of the story', () => {
+    const html = render('/stakeholders/O04/stories/2/O04-US02')
+    expect(html).toContain('href="/needs/2-O04-US02"')
+    expect(html).not.toContain('needs?focus=')
+  })
+})

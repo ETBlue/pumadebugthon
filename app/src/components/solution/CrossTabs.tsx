@@ -19,8 +19,8 @@ const tp = t.solutionPage
 const tx = t.crossIssue
 
 /** One X-N group (design 3.18): the summary with its tag, the priority (or
- * 「各議題的優先順序不同」), the reason, and its issue needs as links to the
- * issue's 需求 tab. An X-N group has no page and no link. The need list
+ * 「各議題的優先順序不同」), the reason, and its issue needs as links to
+ * their need pages (Task N5). An X-N group has no page and no link. The need list
  * follows the 「只看有資料根據」 setting. */
 function CrossNeedGroupCard({ group: g, issues }: { group: CrossNeedGroup; issues: IssueFile[] }) {
   const [dataBasedOnly] = useDataBasisFilter()

@@ -5,6 +5,7 @@
 import { withDataBasisFilter } from './dataBasis'
 import { FOCUS_PARAM } from './focus'
 import { tabPath, type IssueTab } from './issuePage'
+import { needRecordKey } from './needRecords'
 import { keptSearch } from './stakeholderFilter'
 import { TYPE_LIST_PAGES, type TypeKind } from './typeKinds'
 
@@ -109,12 +110,6 @@ export function wantFocusPath(issueNumber: number, key: string, dataBasedOnly = 
   return issueFocusPath(issueNumber, 'wants', key, dataBasedOnly)
 }
 
-/** A link to one need on the issue's 需求 tab, for example
- * { pathname: "/issues/2/needs", search: "?focus=N07" } (decision 57).
- * The last argument works as in issueFocusPath. */
-export function needFocusPath(issueNumber: number, key: string, filters: boolean | URLSearchParams = false): PathTarget {
-  return issueFocusPath(issueNumber, 'needs', key, filters)
-}
 
 /** The solution tab of the URL segment. No segment is the overview. An
  * unknown name returns null. */
@@ -157,6 +152,17 @@ export function parseNeedTab(segment: string | undefined): NeedTab | null {
  * needRecordKey(issue, id). The overview has no tab segment. */
 export function needPath(key: string, tab?: NeedTab): string {
   return withTab(`/needs/${key}`, tab)
+}
+
+/** A link to the need page of one need of one issue (Task N5), for
+ * example { pathname: "/needs/2-N07", search: "?evidence=1" }. The key
+ * always has the issue number (needRecordKey). With dataBasedOnly, the
+ * search is ?evidence=1. The need page has no other filter to keep. */
+export function needPageTarget(issueNumber: number, id: string, dataBasedOnly = false): PathTarget {
+  return {
+    pathname: needPath(needRecordKey(issueNumber, id)),
+    search: dataBasedOnly ? `?${withDataBasisFilter(new URLSearchParams(), true).toString()}` : '',
+  }
 }
 
 /** The URL path of a cross-issue solution page. code is the code as

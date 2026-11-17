@@ -246,10 +246,10 @@ describe('「尚未有解法涵蓋的需求」 of the 解法 tab (decision 124)'
     const html = render('O12')
     const { solutions, uncovered } = partsOf2(html)
     expect(uncovered).toContain(t.stakeholderPage.uncoveredNeedsNone)
-    expect(uncovered).not.toContain('focus=O12-US01')
+    expect(uncovered).not.toContain('href="/needs/2-O12-US01"')
     expect(solutions).toContain(t.stakeholderPage.solutionsNoneCrossOnly)
     // It is listed under 「跨議題解法」.
-    expect(html.split('id="stakeholder-solutions-cross"')[1]).toContain('focus=O12-US01')
+    expect(html.split('id="stakeholder-solutions-cross"')[1]).toContain('href="/needs/2-O12-US01"')
   })
 
   it('lists the need when the cross-issue file fails to load', () => {
@@ -257,7 +257,7 @@ describe('「尚未有解法涵蓋的需求」 of the 解法 tab (decision 124)'
     const html = render('O12')
     const { solutions, uncovered } = partsOf2(html)
     expect(uncovered).not.toContain(t.stakeholderPage.uncoveredNeedsNone)
-    expect(uncovered).toContain('focus=O12-US01')
+    expect(uncovered).toContain('href="/needs/2-O12-US01"')
     expect(solutions).toContain(t.stakeholderPage.solutionsNone)
     expect(html).not.toContain('跨議題解法</h2>')
   })
@@ -286,14 +286,14 @@ describe('the cross-issue solutions on the 需求 tab (decision 126)', () => {
 
   /** The <article> of one need of #2. */
   function needOf2(html: string, key: string): string {
-    const link = html.indexOf(`href="/issues/2/needs?focus=${key}`)
+    const link = html.indexOf(`href="/needs/2-${key}`)
     expect(link).toBeGreaterThan(-1)
     return html.slice(html.lastIndexOf('<article', link), html.indexOf('</article>', link))
   }
 
   /** The need keys of #2 on the tab. */
   function needKeysOf2(html: string): string[] {
-    return [...html.matchAll(/href="\/issues\/2\/needs\?focus=([^"&]+)/g)].map((m) => m[1])
+    return [...html.matchAll(/href="\/needs\/2-([^"?]+)/g)].map((m) => m[1])
   }
 
   it('shows the cross-issue solution under the need as a link, not 「尚未有解法涵蓋」', () => {
@@ -526,5 +526,40 @@ describe('the issue parts moved from 總覽 to 議題 (decision 147)', () => {
     expect(all).toContain(t.dataBasisFilter.label)
     expect(storyCards(all)).toBeGreaterThan(0)
     expect(storyCards(based)).toBeLessThan(storyCards(all))
+  })
+})
+
+describe('need links go to the need page (Task N5)', () => {
+  beforeEach(() => {
+    state.loading = false
+    state.cross = 'ready'
+    state.override = {}
+    state.crossFile = null
+  })
+
+  it('需求 tab: each need links to its need page, with ?evidence=1 when on', () => {
+    const html = renderPage('/stakeholders/O12/needs')
+    expect(html).toContain('href="/needs/2-O12-US01"')
+    expect(html).not.toContain('needs?focus=')
+    expect(renderPage('/stakeholders/O12/needs?evidence=1')).not.toMatch(/href="\/needs\/\d+-[^"?]+"/)
+  })
+
+  it('解法 tab: the covered and uncovered needs link to their need pages', () => {
+    const html = renderPage('/stakeholders/O12/solutions')
+    expect(html).toContain('href="/needs/2-O12-US01"')
+    expect(html).not.toContain('needs?focus=')
+    expect(renderPage('/stakeholders/O12/solutions?evidence=1')).not.toMatch(/href="\/needs\/\d+-[^"?]+"/)
+  })
+
+  it('衝突 tab: 雙方的需求 link to their need pages', () => {
+    const html = renderPage('/stakeholders/O04/conflicts')
+    expect(html).toContain('href="/needs/2-O04-US02"')
+    expect(html).not.toContain('needs?focus=')
+  })
+
+  it('議題 tab: the 需求 link of a story card goes to the need page', () => {
+    const html = renderPage('/stakeholders/O04/issues')
+    expect(html).toContain('href="/needs/2-O04-US02"')
+    expect(html).not.toContain('needs?focus=')
   })
 })

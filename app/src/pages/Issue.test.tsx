@@ -943,3 +943,36 @@ describe('領域 tags (Task U4 of plan-types-ui.md)', () => {
     expect(field(solutionHead(html, 'S2'), tt.domain)).toBeNull()
   })
 })
+
+describe('need links go to the need page (Task N5)', () => {
+  it('需求 tab: each need summary links to its need page', () => {
+    const html = render('/issues/2/needs')
+    expect(html).toContain('href="/needs/2-N01"')
+    expect(html).toContain('href="/needs/2-O04-US02"')
+    expect(html).not.toContain('needs?focus=')
+  })
+
+  it('需求 tab: the link keeps ?evidence=1', () => {
+    const html = render('/issues/2/needs?evidence=1')
+    expect(html).toMatch(/href="\/needs\/2-[^"?]+\?evidence=1"/)
+    expect(html).not.toMatch(/href="\/needs\/2-[^"?]+"/)
+  })
+
+  it('解法 tab with a stakeholder picked: the needs link to their need pages', () => {
+    const html = render('/issues/2/solutions?stakeholder=O04')
+    expect(html).toContain('href="/needs/2-O04-US02"')
+    expect(html).not.toContain('needs?focus=')
+    expect(render('/issues/2/solutions?stakeholder=O04&evidence=1')).not.toMatch(/href="\/needs\/2-[^"?]+"/)
+  })
+
+  it('衝突 tab: 雙方的需求 link to their need pages', () => {
+    const html = render('/issues/2/conflicts')
+    expect(html).toContain('href="/needs/2-N01"')
+    expect(html).toContain('href="/needs/2-N06"')
+    expect(render('/issues/2/conflicts?evidence=1')).toContain('href="/needs/2-N06?evidence=1"')
+  })
+
+  it('總覽: no need link goes to the 需求 tab any more', () => {
+    expect(render('/issues/2')).not.toContain('needs?focus=')
+  })
+})

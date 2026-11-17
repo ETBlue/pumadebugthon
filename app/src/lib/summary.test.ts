@@ -65,10 +65,10 @@ describe('summaryRefTo', () => {
     }
   })
 
-  it('links an N group to the 需求 tab with ?focus=, keeping the filter', () => {
-    expect(summaryRefTo('N01', 2, trashcans, false)).toEqual({ pathname: '/issues/2/needs', search: '?focus=N01' })
-    expect(summaryRefTo('N01', 2, trashcans, true)).toEqual({ pathname: '/issues/2/needs', search: '?focus=N01&evidence=1' })
-    expect(summaryRefTo('N09', 8, smokefree, false)).toEqual({ pathname: '/issues/8/needs', search: '?focus=N09' })
+  it('links an N group to its need page, keeping the filter (Task N5)', () => {
+    expect(summaryRefTo('N01', 2, trashcans, false)).toEqual({ pathname: '/needs/2-N01', search: '' })
+    expect(summaryRefTo('N01', 2, trashcans, true)).toEqual({ pathname: '/needs/2-N01', search: '?evidence=1' })
+    expect(summaryRefTo('N09', 8, smokefree, false)).toEqual({ pathname: '/needs/8-N09', search: '' })
   })
 
   it('returns null for an N group that is not in the issue', () => {
@@ -101,8 +101,8 @@ describe('summaryRefTo', () => {
     })
     expect(summaryRefTo('#1 W08', 2, trashcans, true)).toEqual({ pathname: '/issues/1/wants', search: '?pick=W08&evidence=1' })
     expect(summaryRefTo('#8 I25', 2, trashcans, false)).toEqual({ pathname: '/stakeholders/I25', search: '' })
-    expect(summaryRefTo('#1 N03', 2, trashcans, false)).toEqual({ pathname: '/issues/1/needs', search: '?focus=N03' })
-    expect(summaryRefTo('#1 N03', 2, trashcans, true)).toEqual({ pathname: '/issues/1/needs', search: '?focus=N03&evidence=1' })
+    expect(summaryRefTo('#1 N03', 2, trashcans, false)).toEqual({ pathname: '/needs/1-N03', search: '' })
+    expect(summaryRefTo('#1 N03', 2, trashcans, true)).toEqual({ pathname: '/needs/1-N03', search: '?evidence=1' })
   })
 
   it('returns null for an unknown ID or text that is not a reference', () => {

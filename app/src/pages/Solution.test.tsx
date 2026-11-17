@@ -747,3 +747,39 @@ describe('the 可能合併 tab (Task U6 of plan-types-ui.md, decision 4)', () =>
     expect(activeTab(html)).toBeUndefined()
   })
 })
+
+describe('need links go to the need page (Task N5)', () => {
+  it('需求 tab of an issue solution: each need links to its need page', () => {
+    const html = render('/solutions/2-S1/needs')
+    expect(html).toContain('href="/needs/2-N01"')
+    expect(html).toContain('href="/needs/2-N03"')
+    expect(html).not.toContain('needs?focus=')
+    expect(render('/solutions/2-S1/needs?evidence=1')).not.toMatch(/href="\/needs\/\d+-[^"?]+"/)
+  })
+
+  it('利害關係人 tab: the needs link to their need pages', () => {
+    const html = render('/solutions/2-S1/stakeholders')
+    expect(html).toContain('href="/needs/2-N01"')
+    expect(html).not.toContain('needs?focus=')
+  })
+
+  it('衝突 tab: 雙方的需求 link to their need pages', () => {
+    const html = render('/solutions/2-S1/conflicts')
+    expect(html).toMatch(/href="\/needs\/2-[^"?]+"/)
+    expect(html).not.toContain('needs?focus=')
+  })
+
+  it('cross-issue 需求 tab: the needs of an X-N group link with their own issue number', () => {
+    const html = render('/solutions/X-S1/needs')
+    expect(html).toContain('href="/needs/1-N05"')
+    expect(html).toContain('href="/needs/8-N09"')
+    expect(html).not.toContain('needs?focus=')
+    expect(render('/solutions/X-S1/needs?evidence=1')).not.toMatch(/href="\/needs\/\d+-[^"?]+"/)
+  })
+
+  it('cross-issue 衝突 tab: the needs of each side link with their own issue number', () => {
+    const html = render('/solutions/X-S1/conflicts')
+    expect(html).toContain('href="/needs/1-O14-US06"')
+    expect(html).not.toContain('needs?focus=')
+  })
+})

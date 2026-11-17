@@ -5,7 +5,7 @@ import trashcansJson from '@/test/fixtures/issues/2-trashcans.json'
 import smokefreeJson from '@/test/fixtures/issues/8-smokefree.json'
 import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IssueFile } from '@/types'
-import { NEED_TABS, needPath, parseNeedTab } from './entityPaths'
+import { NEED_TABS, needPageTarget, needPath, parseNeedTab } from './entityPaths'
 import { needPageTabs, needPageView, needTabCounts, type NeedPageView } from './needPage'
 
 const cross = crossJson as CrossIssueFile
@@ -29,6 +29,12 @@ describe('need page paths', () => {
     expect(needPath('1-N01', 'overview')).toBe('/needs/1-N01')
     expect(needPath('2-O04-US02', 'stories')).toBe('/needs/2-O04-US02/stories')
     expect(needPath('2-N07', 'same-needs')).toBe('/needs/2-N07/same-needs')
+  })
+
+  it('needPageTarget: the need page of one need of one issue, with ?evidence=1 when on (Task N5)', () => {
+    expect(needPageTarget(2, 'N07')).toEqual({ pathname: '/needs/2-N07', search: '' })
+    expect(needPageTarget(2, 'N07', true)).toEqual({ pathname: '/needs/2-N07', search: '?evidence=1' })
+    expect(needPageTarget(8, 'I06-US01', false)).toEqual({ pathname: '/needs/8-I06-US01', search: '' })
   })
 
   it('reads the tab of the URL; an unknown name is null', () => {

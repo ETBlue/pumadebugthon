@@ -13,7 +13,7 @@ import { linkClass } from '@/components/styles'
 import { TagBadge } from '@/components/TagBadge'
 import { useIndex, useIssue } from '@/data'
 import { t } from '@/i18n/zh-TW'
-import { needFocusPath, stakeholderTabPath, wantFocusPath, type StakeholderTab } from '@/lib/entityPaths'
+import { needPageTarget, stakeholderTabPath, wantFocusPath, type StakeholderTab } from '@/lib/entityPaths'
 import { solutionCells } from '@/lib/coverage'
 import { findIssue, tabPath } from '@/lib/issuePage'
 import { opinionPickTo } from '@/lib/opinion'
@@ -183,7 +183,7 @@ function StoryContent({ index, issue, summary, stakeholder: s, view }: {
 
         <Section heading={ts.needHeading}>
           <p className="mt-2">
-            <Link to={needFocusPath(n, view.needKey)} className={linkClass}>{ts.needLink(n, view.needKey)}</Link>
+            <Link to={needPageTarget(n, view.needKey)} className={linkClass}>{ts.needLink(n, view.needKey)}</Link>
           </p>
           <GroupPart
             group={view.needGroup}

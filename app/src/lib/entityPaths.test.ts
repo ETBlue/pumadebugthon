@@ -4,7 +4,6 @@ import {
   keyStoryPath,
   crossSolutionPath,
   issueFocusPath,
-  needFocusPath,
   ISSUE_SOLUTION_TABS,
   parseIssueSolutionTab,
   parseSolutionSlug,
@@ -59,25 +58,22 @@ describe('storyPath', () => {
   })
 })
 
-describe('wantFocusPath and needFocusPath', () => {
-  it('link to the item on the issue tab with ?focus=', () => {
+describe('wantFocusPath', () => {
+  it('links to the want on the issue tab with ?focus=', () => {
     expect(wantFocusPath(2, 'W08')).toEqual({ pathname: '/issues/2/wants', search: '?focus=W08' })
-    expect(needFocusPath(2, 'N07')).toEqual({ pathname: '/issues/2/needs', search: '?focus=N07' })
   })
 
-  it('a want or need with no group uses the story ID as its key', () => {
+  it('a want with no group uses the story ID as its key', () => {
     expect(wantFocusPath(8, 'I24-US01')).toEqual({ pathname: '/issues/8/wants', search: '?focus=I24-US01' })
-    expect(needFocusPath(8, 'I06-US01')).toEqual({ pathname: '/issues/8/needs', search: '?focus=I06-US01' })
   })
 
   it('keeps the data filter when it is on', () => {
     expect(wantFocusPath(2, 'W08', true).search).toBe('?focus=W08&evidence=1')
-    expect(needFocusPath(2, 'N07', true).search).toBe('?focus=N07&evidence=1')
   })
 
-  it('needFocusPath with the URL params keeps evidence and stakeholder, like a tab change', () => {
+  it('issueFocusPath with the URL params keeps evidence and stakeholder, like a tab change', () => {
     const params = new URLSearchParams('stakeholder=I06&evidence=1&focus=C6')
-    expect(needFocusPath(2, 'N06', params)).toEqual({
+    expect(issueFocusPath(2, 'needs', 'N06', params)).toEqual({
       pathname: '/issues/2/needs',
       search: '?evidence=1&stakeholder=I06&focus=N06',
     })

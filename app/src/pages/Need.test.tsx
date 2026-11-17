@@ -261,3 +261,14 @@ describe('只看有資料根據 on the need page', () => {
     }
   })
 })
+
+describe('need links on the need page (Task N5)', () => {
+  it('衝突: the other needs link to their pages, the need itself does not', () => {
+    const html = render('/needs/2-N01/conflicts')
+    const panel = html.slice(html.indexOf('role="tabpanel"'))
+    expect(panel).toContain('href="/needs/2-N06"')
+    expect(panel).toContain('href="/needs/1-O14-US06"')
+    expect(panel).not.toMatch(/href="\/needs\/2-N01[?"]/)
+    expect(render('/needs/2-N01/conflicts?evidence=1')).toContain('href="/needs/2-N06?evidence=1"')
+  })
+})

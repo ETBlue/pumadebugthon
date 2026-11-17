@@ -99,7 +99,6 @@ export function SolutionsTab({ index, issues, id }: StakeholderTabProps) {
                             issueNumber={issue.number}
                             stakeholders={index.stakeholders}
                             parts={['priority', 'reason']}
-                            summaryLink
                             focusTarget={false}
                             className="h-full"
                           />

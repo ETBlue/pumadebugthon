@@ -2,7 +2,7 @@
 // Topics keep the fixed order of the issue file. Nothing here sorts by a count.
 import type { IssueFile, SummaryItem } from '@/types'
 import { DATA_BASED_TAGS, withDataBasisFilter } from './dataBasis'
-import { conflictFocusPath, crossSolutionPath, needFocusPath, solutionPath, storyPath } from './entityPaths'
+import { conflictFocusPath, crossSolutionPath, needPageTarget, solutionPath, storyPath } from './entityPaths'
 import { opinionPickTo } from './opinion'
 
 /** The topics of the 分析摘要, in the fixed order. The same list as
@@ -140,7 +140,7 @@ function issueRefTarget(r: SummaryRef, n: number, dataBasedOnly: boolean): RefTa
   switch (r.kind) {
     case 'story': return { pathname: storyPath(n, r.id), search: '' }
     case 'group': return opinionPickTo(n, r.id, dataBasedOnly)
-    case 'need': return needFocusPath(n, r.id, dataBasedOnly)
+    case 'need': return needPageTarget(n, r.id, dataBasedOnly)
     case 'conflict': return conflictFocusPath(n, r.id, dataBasedOnly)
     case 'solution': return { pathname: solutionPath(n, r.id), search: filterSearch(dataBasedOnly) }
     case 'stakeholder': return null

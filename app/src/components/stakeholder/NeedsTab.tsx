@@ -49,7 +49,6 @@ export function NeedsTab({ index, issues, id }: StakeholderTabProps) {
                           issueNumber={issue.number}
                           stakeholders={index.stakeholders}
                           parts={NEED_PARTS}
-                          summaryLink
                           others={id}
                           ownStories={ownStoriesOf(item.need.id)}
                           crossSolutions={crossOf.get(item.need.id) ?? []}

@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { cn } from '@/lib/utils'
 import { t } from '@/i18n/zh-TW'
 import { isDataBasisFilterOn } from '@/lib/dataBasis'
-import { needFocusPath, storyPath, wantFocusPath } from '@/lib/entityPaths'
+import { needPageTarget, storyPath, wantFocusPath } from '@/lib/entityPaths'
 import { priorityLabel } from '@/lib/priority'
 import { storyPriority } from '@/lib/needs'
 import type { IssueFile, Story } from '@/types'
@@ -26,7 +26,7 @@ export interface StoryCardProps {
    * want on the issue's 訴求 tab (?focus=, decision 57). */
   wantKey?: string
   /** The need key of the story (needKey). When given, the card links to the
-   * need on the issue's 需求 tab (?focus=, decision 57). */
+   * need page (Task N5; before, the issue's 需求 tab, decision 57). */
   needKey?: string
   /** Extra classes for the card, for example `h-full` in a grid. */
   className?: string
@@ -91,7 +91,7 @@ export function StoryCard({
             </Link>
           )}
           {needKey !== undefined && (
-            <Link to={needFocusPath(issueNumber, needKey, dataBasedOnly)} className={targetLinkClass}>
+            <Link to={needPageTarget(issueNumber, needKey, dataBasedOnly)} className={targetLinkClass}>
               {t.story.needLink(needKey)}
             </Link>
           )}

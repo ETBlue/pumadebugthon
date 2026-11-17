@@ -60,9 +60,7 @@ function NeedPart({ id, title, needs, issueNumber }: { id: string; title: string
       <ul className="mt-1 space-y-2 text-sm">
         {needs.map((n) => (
           <li key={n.need.id} className="min-w-0 border-l-2 pl-3">
-            {/* The tab shows only the needs of the picked stakeholder, and the
-                需求 tab with the same filter shows them too, so the link keeps it. */}
-            <p><NeedSummaryLink summary={n.summary} issueNumber={issueNumber} needKey={n.need.id} keepStakeholder /></p>
+            <p><NeedSummaryLink summary={n.summary} issueNumber={issueNumber} needKey={n.need.id} /></p>
             <p className="mt-0.5 text-muted-foreground">
               {ts.needStakeholders}
               <span className="font-mono">{n.stakeholders.join(t.listSeparator)}</span>

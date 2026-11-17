@@ -1,10 +1,10 @@
 import { useId, type ReactNode } from 'react'
 import { ChevronRight } from 'lucide-react'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useLocation, useSearchParams } from 'react-router'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { t } from '@/i18n/zh-TW'
 import { dataBasisFilterSearch, isDataBasisFilterOn } from '@/lib/dataBasis'
-import { conflictFocusPath, needFocusPath, stakeholderTabPath, storyPath } from '@/lib/entityPaths'
+import { conflictFocusPath, needPageTarget, stakeholderTabPath, storyPath, type PathTarget } from '@/lib/entityPaths'
 import { stripMarkdown } from '@/lib/markdown'
 import { shownNeedStories, type NeedItem as NeedData } from '@/lib/needs'
 import { priorityLabel } from '@/lib/priority'
@@ -23,25 +23,32 @@ import { ItemKey } from './ItemKey'
 
 const tn = t.need
 
-/** A summary cell as a link to the need on the issue's 需求 tab (?focus=,
- * decision 57). The tag badge stays outside the link, next to the text. A
- * 【待補】 summary is gray, with no tag. The link keeps ?evidence=1. With
- * keepStakeholder, it also keeps ?stakeholder= (design 3.14). Use it only
- * in a list where the 需求 tab with that filter shows the need. */
-export function NeedSummaryLink({ summary, issueNumber, needKey, keepStakeholder = false }: {
+/** The link to the need page of one need of one issue (Task N5), or null
+ * on that need page itself, so a need never links to itself. The link
+ * keeps ?evidence=1. */
+function useNeedPageTarget(issueNumber: number, needKey: string): PathTarget | null {
+  const [params] = useSearchParams()
+  const { pathname } = useLocation()
+  const to = needPageTarget(issueNumber, needKey, isDataBasisFilterOn(params))
+  return pathname === to.pathname || pathname.startsWith(`${to.pathname}/`) ? null : to
+}
+
+/** A summary cell as a link to the need page (Task N5; before, it went to
+ * the need on the issue's 需求 tab, decision 57). The tag badge stays
+ * outside the link, next to the text. A 【待補】 summary is gray, with no
+ * tag. The link keeps ?evidence=1. On the page of the same need, the
+ * summary is plain text (CellText). */
+export function NeedSummaryLink({ summary, issueNumber, needKey }: {
   summary: Cell
   issueNumber: number
   needKey: string
-  keepStakeholder?: boolean
 }) {
-  const [params] = useSearchParams()
+  const to = useNeedPageTarget(issueNumber, needKey)
+  if (to === null) return <CellText cell={summary} />
   return (
     <>
       {!summary.pending && summary.tag && <TagBadge kind={summary.tag} className="mr-1.5" />}
-      <Link
-        to={needFocusPath(issueNumber, needKey, keepStakeholder ? params : isDataBasisFilterOn(params))}
-        className={cn(linkClass, summary.pending && 'text-muted-foreground')}
-      >
+      <Link to={to} className={cn(linkClass, summary.pending && 'text-muted-foreground')}>
         {stripMarkdown(summary.text)}
       </Link>
     </>
@@ -76,9 +83,6 @@ export interface NeedItemProps {
   parts?: readonly NeedPart[]
   /** The level of the summary heading. Default 4 (under the h3 of a priority group). */
   headingLevel?: HeadingLevel
-  /** The summary links to the need on the issue's 需求 tab. Use it outside
-   * that tab (stakeholder page, solution tab). */
-  summaryLink?: boolean
   /** stakeholders part: false shows plain IDs instead of links (the issue's 解法 tab). */
   stakeholderLinks?: boolean
   /** stakeholders part: leave out this stakeholder, and use the label
@@ -110,7 +114,7 @@ export interface NeedItemProps {
  * tag, then the parts the page asks for. Stakeholders are in ID order and
  * solutions in code order (S2 before S10), as NeedItem in src/lib/needs.ts gives them. */
 export function NeedItem({
-  item, issueNumber, stakeholders, parts = ISSUE_NEED_PARTS, headingLevel = 4, summaryLink = false,
+  item, issueNumber, stakeholders, parts = ISSUE_NEED_PARTS, headingLevel = 4,
   stakeholderLinks = true, others, ownStories, otherSolutionsThan, crossSolutions = [], focusTarget = true, children, className,
 }: NeedItemProps) {
   const [params] = useSearchParams()
@@ -131,11 +135,7 @@ export function NeedItem({
       className={cn('rounded-lg border p-3 md:p-4', focusTarget && focusTargetClass, className)}
     >
       <Heading level={headingLevel} id={headingId} className="font-semibold">
-        {summaryLink ? (
-          <NeedSummaryLink summary={summary} issueNumber={issueNumber} needKey={need.id} />
-        ) : (
-          <CellText cell={summary} />
-        )}
+        <NeedSummaryLink summary={summary} issueNumber={issueNumber} needKey={need.id} />
       </Heading>
       {has('id') && (
         <p className="mt-0.5 text-xs text-muted-foreground"><ItemKey issueNumber={issueNumber} value={need.id} className={targetSizeClass} /></p>

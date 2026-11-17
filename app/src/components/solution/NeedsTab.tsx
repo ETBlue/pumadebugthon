@@ -48,7 +48,6 @@ function PriorityGroups<T extends NeedData>({
                   stakeholders={stakeholders}
                   parts={parts}
                   headingLevel={subLevel(level)}
-                  summaryLink
                   otherSolutionsThan={solutionId}
                   focusTarget={focusTarget}
                 />

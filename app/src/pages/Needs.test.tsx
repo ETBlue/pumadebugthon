@@ -65,14 +65,14 @@ describe('#/needs', () => {
     expect(resultLine(html)).toBe(`顯示 ${total} 個需求，共 ${total} 個。`)
   })
 
-  it('has the filters in the order of the plan: 議題, 利害關係人, 空間類型, 領域, 優先順序, 解法涵蓋, then the toggle (no 解法, decision 223)', () => {
+  it('has the filters in the order of the plan: 議題, 利害關係人, 空間類型, 領域, 優先順序, then the toggles (no 解法, decision 223; no 解法涵蓋, decision 224)', () => {
     const html = render('')
-    expect(buttons(html)).toEqual(['議題：全部', '空間類型', '領域', '優先順序', '解法涵蓋'])
+    expect(buttons(html)).toEqual(['議題：全部', '空間類型', '領域', '優先順序'])
     // The stakeholder picker sits between 議題 and 空間類型.
     const picker = html.indexOf('瀏覽')
     expect(picker).toBeGreaterThan(html.indexOf('議題：全部'))
     expect(picker).toBeLessThan(html.indexOf('>空間類型<'))
-    expect(toggles(html)).toEqual(['只看有資料根據'])
+    expect(toggles(html)).toEqual(['只看尚無解法的需求', '只看有資料根據'])
     // 「跨議題」 is a pick of the 議題 filter (issue=X), not a toggle.
     expect(buttons(render('?issue=X'))).toContain('議題：1')
     expect(resultLine(render('?issue=X'))).toContain('篩選：議題：跨議題。')
@@ -129,17 +129,34 @@ describe('#/needs', () => {
     expect(buttons(html)).toContain('優先順序：1')
   })
 
-  it('a W need says 這次不做 and is in 尚無', () => {
-    const html = render('?priority=W&covered=no')
+  it('a W need says 這次不做 and is kept by 只看尚無解法的需求', () => {
+    const html = render('?priority=W&uncovered=1')
     expect(cards(html)).toEqual(['2-O09-US01'])
     expect(html).toContain('這次不做')
-    expect(cards(render('?priority=W&covered=yes'))).toEqual([])
   })
 
-  it('covered=, issue=X, issue=, who=, space=, domain= and basis=1 filter the cards', () => {
+  it('uncovered=1 shows only the needs with no covering solution, with the toggle on (decision 224)', () => {
+    const html = render('?uncovered=1')
+    const uncovered = items.filter((r) => !r.covered)
+    expect(uncovered.length).toBeGreaterThan(0)
+    expect(new Set(cards(html))).toEqual(new Set(uncovered.map((r) => r.key)))
+    expect(resultLine(html)).toBe(`顯示 ${uncovered.length} 個需求，共 ${total} 個。篩選：只看尚無解法的需求。 清除篩選`)
+    expect(html).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>)[\s\S])*只看尚無解法的需求<\/button>/)
+    expect(render('')).toMatch(/aria-pressed="false"[^>]*>(?:(?!<\/button>)[\s\S])*只看尚無解法的需求<\/button>/)
+  })
+
+  it('ignores an old covered= URL and shows the whole list (decision 224)', () => {
+    for (const old of ['?covered=no', '?covered=yes']) {
+      const html = render(old)
+      expect(cards(html)).toHaveLength(total)
+      expect(resultLine(html)).toBe(`顯示 ${total} 個需求，共 ${total} 個。`)
+    }
+  })
+
+  it('uncovered=1, issue=X, issue=, who=, space=, domain= and basis=1 filter the cards', () => {
     const check = (search: string, filter: Partial<typeof NO_FILTERS>) =>
       expect(new Set(cards(render(search)))).toEqual(new Set(filterNeeds(items, { ...NO_FILTERS, ...filter }).map((r) => r.key)))
-    check('?covered=no', { coverage: ['no'] })
+    check('?uncovered=1', { uncoveredOnly: true })
     check('?issue=X', { crossChoice: true })
     check('?issue=8', { issues: [8] })
     check('?who=I06', { who: 'I06' })
@@ -156,9 +173,9 @@ describe('#/needs', () => {
   })
 
   it('names every filter that is on in the result line, in the bar order', () => {
-    const html = render('?issue=X&issue=2&space=park&priority=M&covered=yes&basis=1')
+    const html = render('?issue=X&issue=2&space=park&priority=M&uncovered=1&basis=1')
     expect(resultLine(html)).toMatch(
-      /篩選：議題：跨議題、#2；空間類型：[^；]+；優先順序：必須有；解法涵蓋：有；只看有資料根據。 清除篩選$/,
+      /篩選：議題：跨議題、#2；空間類型：[^；]+；優先順序：必須有；只看尚無解法的需求；只看有資料根據。 清除篩選$/,
     )
   })
 
@@ -179,7 +196,7 @@ describe('#/needs', () => {
   })
 
   it('shows the empty state with 清除篩選, which removes the need params and keeps the sort', () => {
-    const html = render('?sort=added&priority=W&covered=yes')
+    const html = render('?sort=added&priority=M&uncovered=1')
     expect(cards(html)).toEqual([])
     expect(html).toContain('沒有符合目前篩選的需求。')
     expect(html).toContain('href="/needs?sort=added"')

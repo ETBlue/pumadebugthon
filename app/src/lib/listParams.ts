@@ -4,7 +4,7 @@
 // or from, because those mean other things on other pages (3.19). #/needs
 // (plan-needs.md, Task N3) has its own params too (NEED_PARAMS).
 import type { IndexFile } from '@/types'
-import { NEED_COVERAGES, NO_FILTERS, TYPE_FILTER_FIELDS, type ListFilters } from './listFilter'
+import { NO_FILTERS, TYPE_FILTER_FIELDS, type ListFilters } from './listFilter'
 import { PRIORITIES } from './priority'
 import type { ListSort } from './listSort'
 import { availableIssues } from './issues'
@@ -46,13 +46,14 @@ export const LIST_PARAMS = {
  * param.
  * - priority=<M|S|C|W>: 優先順序, once per pick, the same values as on the
  *   issue's 需求 tab.
- * - covered=yes|no: 解法涵蓋 有 / 尚無, once per pick.
+ * - uncovered=1: 只看尚無解法的需求 (decision 224). There is no covered=
+ *   param any more: an old covered= is ignored like any unknown param.
  * - basis=1: 只看有資料根據. Not evidence=1, because the list params do not
  *   reuse evidence (3.23.5). The links to the need pages still carry
  *   ?evidence=1, because the entity pages read that. */
 export const NEED_PARAMS = {
   priority: 'priority',
-  covered: 'covered',
+  uncovered: 'uncovered',
   basis: 'basis',
 } as const
 
@@ -211,10 +212,7 @@ export function listParamsOf(
     const values = params.getAll(NEED_PARAMS.priority)
     state.priorities = PRIORITIES.filter((p) => values.includes(p))
   }
-  if (has(NEED_PARAMS.covered)) {
-    const values = params.getAll(NEED_PARAMS.covered)
-    state.coverage = NEED_COVERAGES.filter((c) => values.includes(c))
-  }
+  if (has(NEED_PARAMS.uncovered)) state.uncoveredOnly = params.get(NEED_PARAMS.uncovered) === '1'
   if (has(NEED_PARAMS.basis)) state.dataBased = params.get(NEED_PARAMS.basis) === '1'
 
   if (has(LIST_PARAMS.specialOnly)) state.specialOnly = params.get(LIST_PARAMS.specialOnly) === '1'
@@ -247,7 +245,7 @@ export function listUrlSearch(page: ListPage, state: ListState): string {
   if (has(LIST_PARAMS.view) && state.view === 'tree') out.set(LIST_PARAMS.view, 'tree')
   if (has(LIST_PARAMS.group)) for (const g of state.groups) out.append(LIST_PARAMS.group, g)
   if (has(NEED_PARAMS.priority)) for (const p of PRIORITIES) if (state.priorities.includes(p)) out.append(NEED_PARAMS.priority, p)
-  if (has(NEED_PARAMS.covered)) for (const c of NEED_COVERAGES) if (state.coverage.includes(c)) out.append(NEED_PARAMS.covered, c)
+  if (has(NEED_PARAMS.uncovered) && state.uncoveredOnly) out.set(NEED_PARAMS.uncovered, '1')
   if (has(NEED_PARAMS.basis) && state.dataBased) out.set(NEED_PARAMS.basis, '1')
   const s = out.toString()
   return s ? `?${s}` : ''

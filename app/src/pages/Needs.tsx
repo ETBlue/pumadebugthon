@@ -15,7 +15,7 @@ import { t } from '@/i18n/zh-TW'
 import { rememberListSearch } from '@/lib/backLink'
 import { compareIds } from '@/lib/ids'
 import { availableIssues } from '@/lib/issues'
-import { NEED_COVERAGES, typeFiltersOn } from '@/lib/listFilter'
+import { typeFiltersOn } from '@/lib/listFilter'
 import {
   clearListFilters, CROSS_ISSUE_VALUE, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
 } from '@/lib/listParams'
@@ -160,7 +160,7 @@ function issueTitle(issues: IssueFile[], item: NeedListItem): string {
 /** The filters of #/needs, in the order of plan-needs.md decision 8: 議題
  * (with 「跨議題」 first, as on #/stakeholders and #/solutions, only when
  * cross-issue.json exists), 利害關係人, 空間類型, 領域, 優先順序,
- * 解法涵蓋, then the 只看有資料根據 toggle. The type filters offer only the
+ * 只看尚無解法的需求 (decision 224), then the 只看有資料根據 toggle. The type filters offer only the
  * values a need has, in the fixed order, and wait for the data. There is no
  * 解法 filter (decision 223). */
 function barFilters(
@@ -216,12 +216,11 @@ function barFilters(
       next: (v) => ({ ...state, priorities: v as Priority[] }),
     },
     {
-      kind: 'choices',
-      key: 'covered',
-      label: tn.coverageFilter,
-      options: NEED_COVERAGES.map((c) => ({ value: c, label: tn.coverage[c] })),
-      value: state.coverage,
-      next: (v) => ({ ...state, coverage: NEED_COVERAGES.filter((c) => v.includes(c)) }),
+      kind: 'toggle',
+      key: 'uncovered',
+      label: tn.uncoveredFilter,
+      pressed: state.uncoveredOnly,
+      next: (on) => ({ ...state, uncoveredOnly: on }),
     },
   )
   filters.push({
@@ -255,7 +254,7 @@ function resultParts(index: IndexFile, state: ListState): string[] {
     if (part !== null) parts.push(part)
   }
   if (state.priorities.length > 0) parts.push(tb.filterPart(tn.priorityFilter, state.priorities.map(priorityLabel)))
-  if (state.coverage.length > 0) parts.push(tb.filterPart(tn.coverageFilter, state.coverage.map((c) => tn.coverage[c])))
+  if (state.uncoveredOnly) parts.push(tn.uncoveredFilter)
   if (state.dataBased) parts.push(t.dataBasisFilter.label)
   return parts
 }
@@ -264,7 +263,7 @@ function resultParts(index: IndexFile, state: ListState): string[] {
 function EmptyState({ state, params, pathname }: { state: ListState; params: URLSearchParams; pathname: string }) {
   const filtersOn =
     state.issues.length > 0 || state.crossChoice || state.who !== null || typeFiltersOn(state) ||
-    state.priorities.length > 0 || state.coverage.length > 0 || state.dataBased
+    state.priorities.length > 0 || state.uncoveredOnly || state.dataBased
   const noQ = new URLSearchParams(params)
   noQ.delete(LIST_PARAMS.q)
   const noQSearch = noQ.toString() ? `?${noQ.toString()}` : ''

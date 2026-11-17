@@ -75,12 +75,13 @@ describe('filterNeeds', () => {
     expect(mc.every((r) => r.need.priority === 'M' || r.need.priority === 'C')).toBe(true)
   })
 
-  it('解法涵蓋: 有 / 尚無; a W need is 尚無', () => {
-    const yes = filtered({ coverage: ['yes'] })
-    const no = filtered({ coverage: ['no'] })
-    expect(yes.length + no.length).toBe(items.length)
-    expect(no).toContain('2-O09-US01')
-    expect(filtered({ coverage: ['yes', 'no'] })).toEqual(keys(items))
+  it('只看尚無解法的需求: only the needs with no covering solution; a W need is kept (decision 224)', () => {
+    const kept = filtered({ uncoveredOnly: true })
+    expect(kept.length).toBeGreaterThan(0)
+    expect(kept.length).toBeLessThan(items.length)
+    expect(kept).toEqual(keys(items.filter((r) => !r.covered)))
+    expect(kept).toContain('2-O09-US01')
+    expect(filtered({ uncoveredOnly: false })).toEqual(keys(items))
   })
 
   it('議題 「跨議題」 (issue=X): the needs in an X-N group', () => {
@@ -103,9 +104,9 @@ describe('filterNeeds', () => {
   })
 
   it('combines filters: ALL must match', () => {
-    const kept = filterNeeds(items, { ...NO_FILTERS, issues: [8], priorities: ['M'], coverage: ['yes'] })
+    const kept = filterNeeds(items, { ...NO_FILTERS, issues: [8], priorities: ['M'], dataBased: true })
     expect(kept.length).toBeGreaterThan(0)
-    expect(kept.every((r) => r.issue === 8 && r.need.priority === 'M' && r.covered)).toBe(true)
+    expect(kept.every((r) => r.issue === 8 && r.need.priority === 'M' && needHasDataBasis(r))).toBe(true)
   })
 })
 
@@ -208,7 +209,7 @@ describe('needsParams', () => {
   })
 
   it('round-trips the whole state', () => {
-    const search = '?q=x&sort=evidence&issue=X&issue=2&space=park&who=I06&priority=M&covered=yes&basis=1'
+    const search = '?q=x&sort=evidence&issue=X&issue=2&space=park&who=I06&priority=M&uncovered=1&basis=1'
     const p = params(search.slice(1))
     expect(p.replace).toBe(false)
     expect(listUrlSearch('needs', p)).toBe(search)

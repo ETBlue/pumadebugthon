@@ -143,7 +143,7 @@ describe('listUrlSearch', () => {
   const state: ListState = {
     sort: 'evidence', issues: [2], crossChoice: true, spaces: ['sidewalk-furniture'], who: 'I06', specialOnly: true, view: 'tree', q: '無菸',
     groups: ['道路'], domains: ['health'], solutionTypes: [],
-    priorities: ['M', 'W'], coverage: ['no'], dataBased: true,
+    priorities: ['M', 'W'], uncoveredOnly: true, dataBased: true,
   }
 
   it('writes only the params of the page, in a fixed order', () => {
@@ -180,13 +180,22 @@ describe('#/needs params (plan-needs.md, Task N3)', () => {
     expect(readNeeds('sort=solutions')).toMatchObject({ sort: 'updated', replace: true })
   })
 
-  it('reads issue=X (跨議題), priority, covered and basis, in their fixed order', () => {
-    const p = readNeeds('issue=1&issue=X&priority=W&priority=M&covered=no&covered=yes&basis=1')
+  it('reads issue=X (跨議題), priority, uncovered and basis, in their fixed order', () => {
+    const p = readNeeds('basis=1&uncovered=1&issue=1&issue=X&priority=W&priority=M')
     expect(p).toMatchObject({
-      crossChoice: true, issues: [1], priorities: ['M', 'W'], coverage: ['yes', 'no'], dataBased: true,
+      crossChoice: true, issues: [1], priorities: ['M', 'W'], uncoveredOnly: true, dataBased: true,
       replace: true,
     })
-    expect(listUrlSearch('needs', p)).toBe('?issue=X&issue=1&priority=M&priority=W&covered=yes&covered=no&basis=1')
+    expect(listUrlSearch('needs', p)).toBe('?issue=X&issue=1&priority=M&priority=W&uncovered=1&basis=1')
+  })
+
+  it('ignores an old covered= like an unknown param, with no replace (decision 224)', () => {
+    for (const old of ['covered=no', 'covered=yes', 'covered=yes&covered=no']) {
+      const p = readNeeds(`priority=M&${old}`)
+      expect(p).toMatchObject({ priorities: ['M'], uncoveredOnly: false, replace: false })
+      expect(p).not.toHaveProperty('coverage')
+      expect(listUrlSearch('needs', p)).toBe('?priority=M')
+    }
   })
 
   it('ignores an old solution= like an unknown param, with no replace (decision 223)', () => {
@@ -198,7 +207,7 @@ describe('#/needs params (plan-needs.md, Task N3)', () => {
 
   it('drops unknown values with a replace', () => {
     expect(readNeeds('priority=X')).toMatchObject({ priorities: [], replace: true })
-    expect(readNeeds('covered=maybe')).toMatchObject({ coverage: [], replace: true })
+    expect(readNeeds('uncovered=yes')).toMatchObject({ uncoveredOnly: false, replace: true })
     expect(readNeeds('basis=yes')).toMatchObject({ dataBased: false, replace: true })
     // Params of the other pages.
     expect(readNeeds('solutiontype=service&specialonly=1&view=tree&group=x')).toMatchObject({ replace: true })
@@ -211,12 +220,12 @@ describe('#/needs params (plan-needs.md, Task N3)', () => {
   it('round-trips through listParamsOf', () => {
     const state: ListState = {
       ...DEFAULT_LIST_STATE, sort: 'evidence', issues: [2], crossChoice: true, spaces: ['sidewalk-furniture'], domains: ['health'],
-      who: 'I06', q: '無菸', priorities: ['M', 'W'], coverage: ['no'], dataBased: true,
+      who: 'I06', q: '無菸', priorities: ['M', 'W'], uncoveredOnly: true, dataBased: true,
     }
     const search = listUrlSearch('needs', state)
     expect(search).toBe(
       '?q=%E7%84%A1%E8%8F%B8&sort=evidence&issue=X&issue=2&space=sidewalk-furniture&domain=health&who=I06'
-        + '&priority=M&priority=W&covered=no&basis=1',
+        + '&priority=M&priority=W&uncovered=1&basis=1',
     )
     const back = listParamsOf('needs', new URLSearchParams(search), index, { space: ['sidewalk-furniture'], domain: ['health'] })
     expect(back.replace).toBe(false)
@@ -224,13 +233,13 @@ describe('#/needs params (plan-needs.md, Task N3)', () => {
   })
 
   it('the other pages still ignore the need params (decision 110)', () => {
-    expect(read('solutions', 'basis=1&priority=M&covered=no').replace).toBe(false)
+    expect(read('solutions', 'basis=1&priority=M&uncovered=1').replace).toBe(false)
   })
 
   it('clearListFilters removes the need params only on #/needs', () => {
-    const params = new URLSearchParams('sort=added&priority=M&covered=no&basis=1&q=x')
+    const params = new URLSearchParams('sort=added&priority=M&uncovered=1&basis=1&q=x')
     expect(clearListFilters(params, 'needs')).toBe('?sort=added')
-    expect(clearListFilters(params)).toBe('?sort=added&priority=M&covered=no&basis=1')
+    expect(clearListFilters(params)).toBe('?sort=added&priority=M&uncovered=1&basis=1')
   })
 })
 

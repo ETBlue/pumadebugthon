@@ -1263,8 +1263,8 @@ export const t = {
     spaceFilter: '空間類型',
     domainFilter: '領域',
     priorityFilter: '優先順序',
-    coverageFilter: '解法涵蓋',
-    coverage: { yes: '有', no: '尚無' },
+    /** The toggle of the needs with no covering solution (decision 224). */
+    uncoveredFilter: '只看尚無解法的需求',
     /** The fields of the cards. The code before the summary: 「#1 N01」. */
     code: (n: number, id: string) => `#${n} ${id}`,
     priority: '優先順序',

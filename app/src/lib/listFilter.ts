@@ -36,23 +36,16 @@ export interface ListFilters {
   /** 優先順序 (MoSCoW) on #/needs: picked priorities (priority=<M|S|C|W>),
    * in the order M, S, C, W. */
   priorities: Priority[]
-  /** 解法涵蓋 on #/needs: 'yes' (有) and 'no' (尚無), picked (covered=yes,
-   * covered=no), in this order. */
-  coverage: NeedCoverage[]
+  /** 只看尚無解法的需求 on #/needs (uncovered=1, decision 224). */
+  uncoveredOnly: boolean
   /** 只看有資料根據 on #/needs (basis=1). */
   dataBased: boolean
 }
 
-/** A choice of the 解法涵蓋 filter of #/needs: 有 (yes) or 尚無 (no). */
-export type NeedCoverage = 'yes' | 'no'
-
-/** The choices of the 解法涵蓋 filter, in the bar order. */
-export const NEED_COVERAGES: readonly NeedCoverage[] = ['yes', 'no']
-
 /** No filter on. */
 export const NO_FILTERS: ListFilters = {
   issues: [], crossChoice: false, spaces: [], domains: [], solutionTypes: [], who: null, specialOnly: false, groups: [],
-  priorities: [], coverage: [], dataBased: false,
+  priorities: [], uncoveredOnly: false, dataBased: false,
 }
 
 /** The filter field of each kind of type: 空間類型, 領域 and 解法類型. */
@@ -184,7 +177,7 @@ export function filterTypes<T extends { code: string; group?: string }>(
 }
 
 /** #/needs (plan-needs.md, Task N3): 議題 (with 「跨議題」), 利害關係人,
- * 空間類型, 領域, 優先順序, 解法涵蓋 and 只看有資料根據. Each filter
+ * 空間類型, 領域, 優先順序, 只看尚無解法的需求 and 只看有資料根據. Each filter
  * uses the fields of the need record (needRecords.ts), so the rules are the
  * same as on the need page:
  * - 議題: a need of a picked issue, or with 「跨議題」 picked, a need in an
@@ -193,11 +186,12 @@ export function filterTypes<T extends { code: string; group?: string }>(
  * - 空間類型 and 領域: its issue's codes or the codes of a covering
  *   solution (record.spaces, record.domains). So a need with no covering
  *   solution still matches its issue's codes.
- * - 解法涵蓋: 有 is record.covered; 尚無 is the rest, also the W needs.
+ * - 只看尚無解法的需求: record.covered is false. The W needs are kept too
+ *   (decision 224).
  * - 只看有資料根據: needHasDataBasis (the rule of the issue's 需求 tab). */
 export function filterNeeds<T extends NeedRecord>(
   records: T[],
-  filter: Pick<ListFilters, 'issues' | 'crossChoice' | 'who' | 'spaces' | 'domains' | 'priorities' | 'coverage' | 'dataBased'>,
+  filter: Pick<ListFilters, 'issues' | 'crossChoice' | 'who' | 'spaces' | 'domains' | 'priorities' | 'uncoveredOnly' | 'dataBased'>,
 ): T[] {
   const types = { spaces: filter.spaces, domains: filter.domains }
   const issueFilterOn = filter.issues.length > 0 || filter.crossChoice
@@ -207,7 +201,7 @@ export function filterNeeds<T extends NeedRecord>(
       (filter.who === null || r.stakeholders.includes(filter.who)) &&
       matchesTypeFilters(types, (kind) => (kind === 'space' ? r.spaces : kind === 'domain' ? r.domains : [])) &&
       (filter.priorities.length === 0 || filter.priorities.includes(r.need.priority)) &&
-      (filter.coverage.length === 0 || filter.coverage.includes(r.covered ? 'yes' : 'no')) &&
+      (!filter.uncoveredOnly || !r.covered) &&
       (!filter.dataBased || needHasDataBasis(r)),
   )
 }

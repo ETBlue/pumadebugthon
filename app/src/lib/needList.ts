@@ -6,11 +6,9 @@ import type { Cell, CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import { filterNeeds } from './listFilter'
 import { listParamsOf, type ListParams, type ListState, type OfferedCodes } from './listParams'
 import { needMatches, parseListQuery } from './listSearch'
-import { solutionItemKey, sortNeeds } from './listSort'
+import { sortNeeds } from './listSort'
 import { needRecords, type NeedRecord } from './needRecords'
 import { needSummaryOf } from './needs'
-import type { RecentSolution } from './recent'
-import { solutionListItems } from './solutionList'
 import { typesOf, type TypeOfKind } from './typeKinds'
 
 /** One item of #/needs: the need record and its summary with its tag (the
@@ -41,27 +39,13 @@ export function needTypeOptions<K extends 'space' | 'domain'>(
   return typesOf(kind, index).filter((t) => used.has(t.code))
 }
 
-/** The solutions of the 解法 filter: the issue solutions and the
- * cross-issue solutions that cover at least one need, in the fixed order of
- * #/solutions (the cross-issue solutions first, then by issue number, then
- * by code). */
-export function needSolutionOptions(
-  issues: IssueFile[],
-  cross: CrossIssueFile | null,
-  items: readonly Pick<NeedRecord, 'solutions'>[],
-): RecentSolution[] {
-  const used = new Set(items.flatMap((r) => r.solutions))
-  return solutionListItems(issues, cross).filter((s) => used.has(solutionItemKey(s)))
-}
-
 /** The state of #/needs from its URL params (listParamsOf). The space and
- * 領域 codes and the solution keys are the ones the needs use. Without
+ * 領域 codes are the ones the needs use. Without
  * cross-issue.json, 「跨議題」 (issue=X) is dropped, as on #/solutions.
  * replace is true when the URL must be replaced with the cleaned state. */
 export function needsParams(
   params: URLSearchParams,
   index: IndexFile,
-  issues: IssueFile[],
   cross: CrossIssueFile | null,
   items: NeedListItem[],
 ): ListParams {
@@ -69,8 +53,7 @@ export function needsParams(
     space: needTypeOptions('space', index, items).map((t) => t.code),
     domain: needTypeOptions('domain', index, items).map((t) => t.code),
   }
-  const solutions = needSolutionOptions(issues, cross, items).map(solutionItemKey)
-  const read = listParamsOf('needs', params, index, offered, { solutions })
+  const read = listParamsOf('needs', params, index, offered)
   if (cross !== null || !read.crossChoice) return read
   return { ...read, crossChoice: false, replace: true }
 }

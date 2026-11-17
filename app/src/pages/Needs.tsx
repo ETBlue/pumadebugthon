@@ -19,11 +19,8 @@ import { NEED_COVERAGES, typeFiltersOn } from '@/lib/listFilter'
 import {
   clearListFilters, CROSS_ISSUE_VALUE, LIST_PARAMS, listParamsOf, listUrlSearch, PAGE_SORTS, type ListParams, type ListState,
 } from '@/lib/listParams'
-import { solutionItemKey } from '@/lib/listSort'
-import { stripMarkdown } from '@/lib/markdown'
-import { needListItems, needListView, needSolutionOptions, needsParams, needTypeOptions, type NeedListItem } from '@/lib/needList'
+import { needListItems, needListView, needsParams, needTypeOptions, type NeedListItem } from '@/lib/needList'
 import { PRIORITIES, priorityLabel } from '@/lib/priority'
-import type { RecentSolution } from '@/lib/recent'
 import { findStakeholder } from '@/lib/stakeholders'
 import type { CrossIssueFile, IndexFile, IssueFile, Priority } from '@/types'
 
@@ -73,16 +70,15 @@ function NeedsBody({ index }: { index: IndexFile }) {
   const ready = issuesState.status === 'ready' && crossState.status !== 'loading'
 
   const items = useMemo(() => needListItems(issueFiles, cross), [issueFiles, cross])
-  const solutionOptions = useMemo(() => needSolutionOptions(issueFiles, cross, items), [issueFiles, cross, items])
 
   const search = params.toString()
   const p: ListParams = useMemo(() => {
     const read = new URLSearchParams(search)
-    if (ready) return needsParams(read, index, issueFiles, cross, items)
+    if (ready) return needsParams(read, index, cross, items)
     // While the data loads, the offered values are not known yet. No
     // replace, so nothing in the URL is lost before the needs are known.
     return { ...listParamsOf('needs', read, index), replace: false }
-  }, [search, ready, index, issueFiles, cross, items])
+  }, [search, ready, index, cross, items])
   const replace = p.replace
   const state: ListState = useMemo(() => {
     const { replace: _drop, ...rest } = p
@@ -106,8 +102,8 @@ function NeedsBody({ index }: { index: IndexFile }) {
 
   const shown = useMemo(() => needListView(items, state), [items, state])
 
-  const filters = barFilters(index, state, items, solutionOptions, cross !== null, ready)
-  const parts = resultParts(index, state, solutionOptions)
+  const filters = barFilters(index, state, items, cross !== null, ready)
+  const parts = resultParts(index, state)
   const resultProps = { page: 'needs' as const, shown: shown.length, total: items.length, q: state.q, parts }
   const shareOn = state.sort === 'evidence'
 
@@ -161,27 +157,16 @@ function issueTitle(issues: IssueFile[], item: NeedListItem): string {
   return issues.find((i) => i.number === item.issue)?.title ?? ''
 }
 
-/** The code of a solution in the 解法 filter and in the result line:
- * 「#2 S1」 or 「X-S4」. */
-function solutionCode(s: RecentSolution): string {
-  return s.kind === 'cross' ? s.solution.code : t.solutionId(s.issueNumber, s.solution.id)
-}
-
-function solutionName(s: RecentSolution): string {
-  return s.kind === 'cross' ? s.solution.name : stripMarkdown(s.solution.name.text)
-}
-
 /** The filters of #/needs, in the order of plan-needs.md decision 8: 議題
  * (with 「跨議題」 first, as on #/stakeholders and #/solutions, only when
- * cross-issue.json exists), 利害關係人, 空間類型, 領域, 解法, 優先順序,
- * 解法涵蓋, then the 只看有資料根據 toggle. The type filters and the 解法
- * filter offer only the values a need has, in the fixed order, and wait for
- * the data. */
+ * cross-issue.json exists), 利害關係人, 空間類型, 領域, 優先順序,
+ * 解法涵蓋, then the 只看有資料根據 toggle. The type filters offer only the
+ * values a need has, in the fixed order, and wait for the data. There is no
+ * 解法 filter (decision 223). */
 function barFilters(
   index: IndexFile,
   state: ListState,
   items: NeedListItem[],
-  solutionOptions: RecentSolution[],
   hasCross: boolean,
   ready: boolean,
 ): ListBarFilter[] {
@@ -221,16 +206,6 @@ function barFilters(
     const filter = typeChoiceFilter(kind, label, ready ? needTypeOptions(kind, index, items) : [], state)
     if (filter) filters.push(filter)
   }
-  if (solutionOptions.length > 0) {
-    filters.push({
-      kind: 'choices',
-      key: 'solution',
-      label: tn.solutionFilter,
-      options: solutionOptions.map((s) => ({ value: solutionItemKey(s), label: tn.solutionOption(solutionCode(s), solutionName(s)) })),
-      value: state.solutions,
-      next: (v) => ({ ...state, solutions: v }),
-    })
-  }
   filters.push(
     {
       kind: 'choices',
@@ -267,7 +242,7 @@ function needStakeholders(items: NeedListItem[]): string[] {
 
 /** The filters that are on, as text for the result line, in the order of
  * the bar. The search is added by ResultLine. */
-function resultParts(index: IndexFile, state: ListState, solutionOptions: RecentSolution[]): string[] {
+function resultParts(index: IndexFile, state: ListState): string[] {
   const parts: string[] = []
   const issues = [...(state.crossChoice ? [tn.crossShort] : []), ...state.issues.map(tn.issueShort)]
   if (issues.length > 0) parts.push(tb.filterPart(tn.issueFilter, issues))
@@ -279,13 +254,6 @@ function resultParts(index: IndexFile, state: ListState, solutionOptions: Recent
     const part = typeFilterPart(kind, label, index, state)
     if (part !== null) parts.push(part)
   }
-  if (state.solutions.length > 0) {
-    const codes = state.solutions.map((k) => {
-      const s = solutionOptions.find((o) => solutionItemKey(o) === k)
-      return s ? solutionCode(s) : k
-    })
-    parts.push(tb.filterPart(tn.solutionFilter, codes))
-  }
   if (state.priorities.length > 0) parts.push(tb.filterPart(tn.priorityFilter, state.priorities.map(priorityLabel)))
   if (state.coverage.length > 0) parts.push(tb.filterPart(tn.coverageFilter, state.coverage.map((c) => tn.coverage[c])))
   if (state.dataBased) parts.push(t.dataBasisFilter.label)
@@ -296,7 +264,7 @@ function resultParts(index: IndexFile, state: ListState, solutionOptions: Recent
 function EmptyState({ state, params, pathname }: { state: ListState; params: URLSearchParams; pathname: string }) {
   const filtersOn =
     state.issues.length > 0 || state.crossChoice || state.who !== null || typeFiltersOn(state) ||
-    state.solutions.length > 0 || state.priorities.length > 0 || state.coverage.length > 0 || state.dataBased
+    state.priorities.length > 0 || state.coverage.length > 0 || state.dataBased
   const noQ = new URLSearchParams(params)
   noQ.delete(LIST_PARAMS.q)
   const noQSearch = noQ.toString() ? `?${noQ.toString()}` : ''

@@ -11,8 +11,8 @@ import policyJson from '@/test/fixtures/issues/9-policydiscovery.json'
 import type { CrossIssueFile, IndexFile, IssueFile } from '@/types'
 import { filterNeeds, NO_FILTERS, type ListFilters } from './listFilter'
 import { DEFAULT_LIST_STATE, listUrlSearch, type ListState } from './listParams'
-import { compareNeedRecords, solutionItemKey, sortNeeds } from './listSort'
-import { needListItems, needListView, needSolutionOptions, needsParams, needTypeOptions, type NeedListItem } from './needList'
+import { compareNeedRecords, sortNeeds } from './listSort'
+import { needListItems, needListView, needsParams, needTypeOptions, type NeedListItem } from './needList'
 import { needHasDataBasis, needShare } from './needRecords'
 import { compareShares } from './coverage'
 
@@ -67,15 +67,6 @@ describe('filterNeeds', () => {
     const kept = filterNeeds(items, { ...NO_FILTERS, spaces: ['park', 'sidewalk-furniture'] })
     expect(kept.length).toBeGreaterThan(0)
     for (const r of kept) expect(r.spaces.some((c) => c === 'park' || c === 'sidewalk-furniture')).toBe(true)
-  })
-
-  it('解法: a need that a picked solution covers, also through an X-N group', () => {
-    const x = items.find((r) => r.solutions.some((k) => k.startsWith('X-')))!
-    const xKey = x.solutions.find((k) => k.startsWith('X-'))!
-    const kept = filterNeeds(items, { ...NO_FILTERS, solutions: [xKey] })
-    expect(keys(kept)).toContain(x.key)
-    for (const r of kept) expect(r.solutions).toContain(xKey)
-    expect(filtered({ solutions: ['2-S1', '1-S1'] })).toEqual(keys(items.filter((r) => r.solutions.includes('2-S1') || r.solutions.includes('1-S1'))))
   })
 
   it('優先順序: the picked MoSCoW', () => {
@@ -193,21 +184,22 @@ describe('the filter options', () => {
     expect(new Set(spaces)).toEqual(new Set(items.flatMap((r) => r.spaces)))
     expect(needTypeOptions('domain', index, items).length).toBeGreaterThan(0)
   })
-
-  it('offer the covering solutions, the cross-issue ones first', () => {
-    const options = needSolutionOptions(issues, cross, items).map(solutionItemKey)
-    expect(new Set(options)).toEqual(new Set(items.flatMap((r) => r.solutions)))
-    expect(options[0].startsWith('X-')).toBe(true)
-  })
 })
 
 describe('needsParams', () => {
   const params = (search: string, c: CrossIssueFile | null = cross) =>
-    needsParams(new URLSearchParams(search), index, issues, c, needListItems(issues, c))
+    needsParams(new URLSearchParams(search), index, c, needListItems(issues, c))
 
-  it('keeps a solution and a space that a need has, and drops the others with a replace', () => {
-    expect(params('space=park&solution=2-S1')).toMatchObject({ solutions: ['2-S1'], spaces: ['park'], replace: false })
-    expect(params('solution=2-S99')).toMatchObject({ solutions: [], replace: true })
+  it('keeps a space that a need has, and drops the others with a replace', () => {
+    expect(params('space=park')).toMatchObject({ spaces: ['park'], replace: false })
+    expect(params('space=no-such-space')).toMatchObject({ spaces: [], replace: true })
+  })
+
+  it('ignores an old solution= like an unknown param: no filter and no replace (decision 223)', () => {
+    const p = params('space=park&solution=2-S1')
+    expect(p).toMatchObject({ spaces: ['park'], replace: false })
+    expect(p).not.toHaveProperty('solutions')
+    expect(listUrlSearch('needs', p)).toBe('?space=park')
   })
 
   it('drops issue=X (跨議題) when cross-issue.json does not exist', () => {
@@ -216,7 +208,7 @@ describe('needsParams', () => {
   })
 
   it('round-trips the whole state', () => {
-    const search = '?q=x&sort=evidence&issue=X&issue=2&space=park&who=I06&solution=2-S1&priority=M&covered=yes&basis=1'
+    const search = '?q=x&sort=evidence&issue=X&issue=2&space=park&who=I06&priority=M&covered=yes&basis=1'
     const p = params(search.slice(1))
     expect(p.replace).toBe(false)
     expect(listUrlSearch('needs', p)).toBe(search)

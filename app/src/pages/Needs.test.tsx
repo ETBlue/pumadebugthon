@@ -65,9 +65,9 @@ describe('#/needs', () => {
     expect(resultLine(html)).toBe(`顯示 ${total} 個需求，共 ${total} 個。`)
   })
 
-  it('has the filters in the order of the plan: 議題, 利害關係人, 空間類型, 領域, 解法, 優先順序, 解法涵蓋, then the toggle', () => {
+  it('has the filters in the order of the plan: 議題, 利害關係人, 空間類型, 領域, 優先順序, 解法涵蓋, then the toggle (no 解法, decision 223)', () => {
     const html = render('')
-    expect(buttons(html)).toEqual(['議題：全部', '空間類型', '領域', '解法', '優先順序', '解法涵蓋'])
+    expect(buttons(html)).toEqual(['議題：全部', '空間類型', '領域', '優先順序', '解法涵蓋'])
     // The stakeholder picker sits between 議題 and 空間類型.
     const picker = html.indexOf('瀏覽')
     expect(picker).toBeGreaterThan(html.indexOf('議題：全部'))
@@ -136,12 +136,11 @@ describe('#/needs', () => {
     expect(cards(render('?priority=W&covered=yes'))).toEqual([])
   })
 
-  it('covered=, issue=X, solution=, issue=, who=, space=, domain= and basis=1 filter the cards', () => {
+  it('covered=, issue=X, issue=, who=, space=, domain= and basis=1 filter the cards', () => {
     const check = (search: string, filter: Partial<typeof NO_FILTERS>) =>
       expect(new Set(cards(render(search)))).toEqual(new Set(filterNeeds(items, { ...NO_FILTERS, ...filter }).map((r) => r.key)))
     check('?covered=no', { coverage: ['no'] })
     check('?issue=X', { crossChoice: true })
-    check('?solution=2-S1', { solutions: ['2-S1'] })
     check('?issue=8', { issues: [8] })
     check('?who=I06', { who: 'I06' })
     check('?space=park', { spaces: ['park'] })
@@ -150,10 +149,16 @@ describe('#/needs', () => {
     expect(cards(render('?basis=1')).length).toBeGreaterThan(0)
   })
 
+  it('ignores an old solution= URL and shows the whole list (decision 223)', () => {
+    const html = render('?solution=2-S1')
+    expect(cards(html)).toHaveLength(total)
+    expect(resultLine(html)).toBe(`顯示 ${total} 個需求，共 ${total} 個。`)
+  })
+
   it('names every filter that is on in the result line, in the bar order', () => {
-    const html = render('?issue=X&issue=2&space=park&solution=2-S1&priority=M&covered=yes&basis=1')
+    const html = render('?issue=X&issue=2&space=park&priority=M&covered=yes&basis=1')
     expect(resultLine(html)).toMatch(
-      /篩選：議題：跨議題、#2；空間類型：[^；]+；解法：#2 S1；優先順序：必須有；解法涵蓋：有；只看有資料根據。 清除篩選$/,
+      /篩選：議題：跨議題、#2；空間類型：[^；]+；優先順序：必須有；解法涵蓋：有；只看有資料根據。 清除篩選$/,
     )
   })
 

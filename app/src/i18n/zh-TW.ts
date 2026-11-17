@@ -1262,9 +1262,6 @@ export const t = {
     whoFilter: '利害關係人',
     spaceFilter: '空間類型',
     domainFilter: '領域',
-    solutionFilter: '解法',
-    /** One choice of the 解法 filter: 「#2 S1 名稱」 or 「X-S4 名稱」. */
-    solutionOption: (code: string, name: string) => `${code} ${name}`,
     priorityFilter: '優先順序',
     coverageFilter: '解法涵蓋',
     coverage: { yes: '有', no: '尚無' },

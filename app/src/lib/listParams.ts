@@ -41,7 +41,9 @@ export const LIST_PARAMS = {
  * so the other list pages keep ignoring them, as before (decision 110).
  * 「跨議題」 is not here: it is issue=X, as on #/stakeholders and
  * #/solutions.
- * - solution=<key>: 解法, once per pick ("2-S1", "X-S4").
+ * There is no solution= param: the 解法 filter was removed (decision 223).
+ * An old solution= is not a list param, so it is ignored like any unknown
+ * param.
  * - priority=<M|S|C|W>: 優先順序, once per pick, the same values as on the
  *   issue's 需求 tab.
  * - covered=yes|no: 解法涵蓋 有 / 尚無, once per pick.
@@ -49,7 +51,6 @@ export const LIST_PARAMS = {
  *   reuse evidence (3.23.5). The links to the need pages still carry
  *   ?evidence=1, because the entity pages read that. */
 export const NEED_PARAMS = {
-  solution: 'solution',
   priority: 'priority',
   covered: 'covered',
   basis: 'basis',
@@ -163,7 +164,6 @@ export function listParamsOf(
   params: URLSearchParams,
   index: IndexFile,
   offered: OfferedCodes = {},
-  needOffered: NeedOffered = NO_NEED_OFFERED,
 ): ListParams {
   const has = (name: string) => PAGE_PARAMS[page].includes(name)
   const kind = pageKind(page)
@@ -207,10 +207,6 @@ export function listParamsOf(
     state.groups = typeGroupNames(kind, index).filter((g) => values.includes(g))
   }
 
-  if (has(NEED_PARAMS.solution)) {
-    const values = params.getAll(NEED_PARAMS.solution)
-    state.solutions = needOffered.solutions.filter((k) => values.includes(k))
-  }
   if (has(NEED_PARAMS.priority)) {
     const values = params.getAll(NEED_PARAMS.priority)
     state.priorities = PRIORITIES.filter((p) => values.includes(p))
@@ -227,15 +223,6 @@ export function listParamsOf(
 
   return { ...state, replace: listUrlSearch(page, state) !== listOnlySearch(params, page) }
 }
-
-/** What the filters of #/needs offer, for listParamsOf: the solution keys
- * of the 解法 filter. A key that is not offered is dropped. */
-export interface NeedOffered {
-  solutions: readonly string[]
-}
-
-/** Nothing offered: the default for the pages that are not #/needs. */
-const NO_NEED_OFFERED: NeedOffered = { solutions: [] }
 
 /** The URL search string for a list page state ("?q=…&sort=…", or "" for
  * the default state). Only the params the page has, in a fixed order. No
@@ -259,7 +246,6 @@ export function listUrlSearch(page: ListPage, state: ListState): string {
   if (has(LIST_PARAMS.specialOnly) && state.specialOnly) out.set(LIST_PARAMS.specialOnly, '1')
   if (has(LIST_PARAMS.view) && state.view === 'tree') out.set(LIST_PARAMS.view, 'tree')
   if (has(LIST_PARAMS.group)) for (const g of state.groups) out.append(LIST_PARAMS.group, g)
-  if (has(NEED_PARAMS.solution)) for (const k of state.solutions) out.append(NEED_PARAMS.solution, k)
   if (has(NEED_PARAMS.priority)) for (const p of PRIORITIES) if (state.priorities.includes(p)) out.append(NEED_PARAMS.priority, p)
   if (has(NEED_PARAMS.covered)) for (const c of NEED_COVERAGES) if (state.coverage.includes(c)) out.append(NEED_PARAMS.covered, c)
   if (has(NEED_PARAMS.basis) && state.dataBased) out.set(NEED_PARAMS.basis, '1')

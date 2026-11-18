@@ -113,7 +113,7 @@ function SolutionsBody({ index }: { index: IndexFile }) {
   const shown = useMemo(() => solutionListView(items, state, ctx), [items, ctx, state])
 
   const filters = barFilters(index, state, issueFiles, cross, ready)
-  const parts = resultParts(index, state)
+  const parts = resultParts(index, state, issueFiles, cross, ready)
   const resultProps = { page: 'solutions' as const, shown: shown.length, total: items.length, q: state.q, parts }
   const shareOn = state.sort === 'evidence'
 
@@ -199,7 +199,7 @@ function barFilters(
   ]
   for (const kind of TYPE_KINDS) {
     const options = ready ? solutionTypeOptions(kind, index, issueFiles, cross) : []
-    const filter = typeChoiceFilter(kind, TYPE_FILTER_LABELS[kind], options, state)
+    const filter = typeChoiceFilter(kind, TYPE_FILTER_LABELS[kind], options, state, index)
     if (filter) filters.push(filter)
   }
   filters.push({
@@ -215,12 +215,19 @@ function barFilters(
 
 /** The filters that are on, as text for the result line, in the order of
  * the bar. The search is added by ResultLine. */
-function resultParts(index: IndexFile, state: ListState): string[] {
+function resultParts(
+  index: IndexFile,
+  state: ListState,
+  issueFiles: IssueFile[],
+  cross: CrossIssueFile | null,
+  ready: boolean,
+): string[] {
   const parts: string[] = []
   const issues = [...(state.crossChoice ? [ts.crossChoice] : []), ...state.issues.map(ts.issueShort)]
   if (issues.length > 0) parts.push(tb.filterPart(ts.issueFilter, issues))
   for (const kind of TYPE_KINDS) {
-    const part = typeFilterPart(kind, TYPE_FILTER_LABELS[kind], index, state)
+    const options = ready ? solutionTypeOptions(kind, index, issueFiles, cross) : []
+    const part = typeFilterPart(kind, TYPE_FILTER_LABELS[kind], index, state, options)
     if (part !== null) parts.push(part)
   }
   if (state.who !== null) {

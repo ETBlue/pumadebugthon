@@ -19,6 +19,18 @@ const tb = t.listBar
 export interface ListBarChoice {
   value: string
   label: string
+  /** The value of its group (ListBarChoiceGroup), when the filter has
+   * groups. A choice with no group, or with a group that is not in the
+   * filter's groups, shows after the groups, without a heading. */
+  group?: string
+}
+
+/** One group of a choices filter (decision 225), for example 道路 in
+ * 空間類型. Its heading is a checkbox that picks or unpicks every choice of
+ * the group. value is not in the URL. */
+export interface ListBarChoiceGroup {
+  value: string
+  label: string
 }
 
 /** One filter of the bar (design 3.23.5). The bar does not know what a
@@ -29,6 +41,9 @@ export interface ListBarChoice {
  * - choices: a filter with many choices (議題, 空間類型). From md a popover
  *   button with checkboxes; in the phone sheet the checkboxes directly.
  *   none: the text for no pick, for example t.listBar.all (「議題：全部」).
+ *   groups: optional, in order. The choices then show under the group
+ *   headings, and each heading is a checkbox for the whole group
+ *   (decision 225: 空間類型 and 領域). Without groups the list is flat.
  * - toggle: a filter with one on/off state (只看特別關注族群).
  * - slot: a control the page builds itself, for example the stakeholder
  *   picker (L4). render gets where it is shown: 'bar' (from md) or 'sheet'
@@ -40,6 +55,7 @@ export type ListBarFilter =
       key: string
       label: string
       options: ListBarChoice[]
+      groups?: ListBarChoiceGroup[]
       value: string[]
       none?: string
       next: (value: string[]) => ListState
@@ -77,38 +93,105 @@ function cleanQuery(text: string): string | null {
   return cleaned === '' ? null : cleaned
 }
 
-/** The checkboxes of a choices filter, in a fieldset with a legend. */
-function ChoiceList({ filter, onPick }: {
-  filter: Extract<ListBarFilter, { kind: 'choices' }>
+type ChoicesFilter = Extract<ListBarFilter, { kind: 'choices' }>
+
+/** The new value of a choices filter after a click: the values added
+ * (checked) or removed, in the order of the options, so the URL does not
+ * depend on the order of the clicks. A group heading passes all the values
+ * of its group. */
+export function pickChoices(filter: ChoicesFilter, values: string[], checked: boolean): string[] {
+  const picked = new Set(filter.value)
+  for (const v of values) {
+    if (checked) picked.add(v)
+    else picked.delete(v)
+  }
+  return filter.options.map((o) => o.value).filter((v) => picked.has(v))
+}
+
+/** The state of a group heading: all, some or none of its values picked. */
+export function groupPickState(filter: ChoicesFilter, values: string[]): 'all' | 'some' | 'none' {
+  const count = values.filter((v) => filter.value.includes(v)).length
+  return count === 0 ? 'none' : count === values.length ? 'all' : 'some'
+}
+
+/** The groups of a choices filter that have a choice, in the order of
+ * filter.groups, each with its choices in option order. loose: the choices
+ * with no shown group, in option order. Without groups, every choice is
+ * loose. */
+export function choiceGroups(filter: ChoicesFilter): {
+  groups: { group: ListBarChoiceGroup; options: ListBarChoice[] }[]
+  loose: ListBarChoice[]
+} {
+  const groups = (filter.groups ?? [])
+    .map((g) => ({ group: g, options: filter.options.filter((o) => o.group === g.value) }))
+    .filter((g) => g.options.length > 0)
+  const grouped = new Set(groups.flatMap((g) => g.options.map((o) => o.value)))
+  return { groups, loose: filter.options.filter((o) => !grouped.has(o.value)) }
+}
+
+const choiceLabelClass = 'flex min-h-8 cursor-pointer items-center gap-2 rounded-sm px-1 text-sm hover:bg-muted'
+const checkboxClass = 'size-4 shrink-0 accent-foreground'
+
+/** The checkboxes of a choices filter, in a fieldset with a legend.
+ *
+ * With groups (decision 225): each group that has a choice shows as a
+ * heading checkbox with its choices indented under it, in the order of the
+ * groups. The heading is checked when all its choices are picked, and
+ * indeterminate (the native state, which screen readers read as "mixed")
+ * when only some are. Choices with no shown group come last, flat.
+ * Exported for the tests. */
+export function ChoiceList({ filter, onPick }: {
+  filter: ChoicesFilter
   onPick: (value: string[]) => void
 }) {
   const id = useId()
-  function toggle(value: string, checked: boolean) {
-    // Keep the order of the options, so the URL does not depend on the
-    // order of the clicks.
-    const picked = new Set(filter.value)
-    if (checked) picked.add(value)
-    else picked.delete(value)
-    onPick(filter.options.map((o) => o.value).filter((v) => picked.has(v)))
+  const pick = (values: string[], checked: boolean) => onPick(pickChoices(filter, values, checked))
+  const indexOf = new Map(filter.options.map((o, i) => [o.value, i]))
+  const choice = (o: ListBarChoice) => {
+    const i = indexOf.get(o.value)
+    return (
+      <li key={o.value}>
+        <label htmlFor={`${id}-${i}`} className={choiceLabelClass}>
+          <input
+            id={`${id}-${i}`}
+            type="checkbox"
+            checked={filter.value.includes(o.value)}
+            onChange={(e) => pick([o.value], e.target.checked)}
+            className={checkboxClass}
+          />
+          {o.label}
+        </label>
+      </li>
+    )
   }
+  const { groups, loose } = choiceGroups(filter)
   return (
     <fieldset>
       <legend className="mb-1 text-sm font-medium">{filter.label}</legend>
-      <ul className="space-y-0.5">
-        {filter.options.map((o, i) => (
-          <li key={o.value}>
-            <label htmlFor={`${id}-${i}`} className="flex min-h-8 cursor-pointer items-center gap-2 rounded-sm px-1 text-sm hover:bg-muted">
-              <input
-                id={`${id}-${i}`}
-                type="checkbox"
-                checked={filter.value.includes(o.value)}
-                onChange={(e) => toggle(o.value, e.target.checked)}
-                className="size-4 shrink-0 accent-foreground"
-              />
-              {o.label}
-            </label>
-          </li>
-        ))}
+      <ul className={groups.length > 0 ? 'space-y-1' : 'space-y-0.5'}>
+        {groups.map(({ group, options }, gi) => {
+          const values = options.map((o) => o.value)
+          const state = groupPickState(filter, values)
+          return (
+            <li key={`group-${group.value}`}>
+              <label htmlFor={`${id}-g${gi}`} className={cn(choiceLabelClass, 'font-medium')}>
+                <input
+                  id={`${id}-g${gi}`}
+                  type="checkbox"
+                  checked={state === 'all'}
+                  ref={(el) => {
+                    if (el) el.indeterminate = state === 'some'
+                  }}
+                  onChange={(e) => pick(values, e.target.checked)}
+                  className={checkboxClass}
+                />
+                {group.label}
+              </label>
+              <ul className="space-y-0.5 pl-6">{options.map(choice)}</ul>
+            </li>
+          )
+        })}
+        {loose.map(choice)}
       </ul>
     </fieldset>
   )

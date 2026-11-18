@@ -99,6 +99,14 @@ describe('#/issues 領域 filter (Task U5)', () => {
     expect(resultLine(html)).toBe(`顯示 1 個議題，共 ${total} 個。篩選：空間類型：${spaceName('bike-lane')}；領域：環境保護。 清除篩選`)
   })
 
+  it('names a whole group in the result line, and keeps the type codes in the URL (decision 225)', () => {
+    const road = ['sidewalk-furniture', 'arcade', 'bike-lane', 'bus-stop']
+    const html = render(`?${[...road, 'park'].map((c) => `space=${c}`).join('&')}&sort=added`)
+    expect(resultLine(html)).toMatch(/篩選：空間類型：道路、公園綠地。/)
+    // No link on the page uses a group code.
+    expect(html).not.toContain('space=road')
+  })
+
   it('keeps an issue whose solution has the 領域 as its own (usedDomains, the rule of the type pages)', () => {
     state.index = ownIndex
     const html = render('?domain=police')

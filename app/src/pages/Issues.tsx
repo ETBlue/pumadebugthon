@@ -143,8 +143,8 @@ function issueView(index: IndexFile, state: ListState) {
   const shown = sortIssues(filtered, state.sort as IssueSort)
   const parts: string[] = []
   for (const part of [
-    typeFilterPart('space', tp.spaceFilter, index, state),
-    typeFilterPart('domain', tp.domainFilter, index, state),
+    typeFilterPart('space', tp.spaceFilter, index, state, issueTypeOptions('space', index, [])),
+    typeFilterPart('domain', tp.domainFilter, index, state, issueTypeOptions('domain', index, [])),
   ]) {
     if (part !== null) parts.push(part)
   }
@@ -162,8 +162,8 @@ function issueView(index: IndexFile, state: ListState) {
 function barFilters(index: IndexFile, state: ListState): ListBarFilter[] {
   const filters: ListBarFilter[] = []
   for (const filter of [
-    typeChoiceFilter('space', tp.spaceFilter, issueTypeOptions('space', index, []), state),
-    typeChoiceFilter('domain', tp.domainFilter, issueTypeOptions('domain', index, []), state),
+    typeChoiceFilter('space', tp.spaceFilter, issueTypeOptions('space', index, []), state, index),
+    typeChoiceFilter('domain', tp.domainFilter, issueTypeOptions('domain', index, []), state, index),
   ]) {
     if (filter) filters.push(filter)
   }

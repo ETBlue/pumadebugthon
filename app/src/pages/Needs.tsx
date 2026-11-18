@@ -103,7 +103,7 @@ function NeedsBody({ index }: { index: IndexFile }) {
   const shown = useMemo(() => needListView(items, state), [items, state])
 
   const filters = barFilters(index, state, items, cross !== null, ready)
-  const parts = resultParts(index, state)
+  const parts = resultParts(index, state, items, ready)
   const resultProps = { page: 'needs' as const, shown: shown.length, total: items.length, q: state.q, parts }
   const shareOn = state.sort === 'evidence'
 
@@ -203,7 +203,7 @@ function barFilters(
     },
   ]
   for (const [kind, label] of [['space', tn.spaceFilter], ['domain', tn.domainFilter]] as const) {
-    const filter = typeChoiceFilter(kind, label, ready ? needTypeOptions(kind, index, items) : [], state)
+    const filter = typeChoiceFilter(kind, label, ready ? needTypeOptions(kind, index, items) : [], state, index)
     if (filter) filters.push(filter)
   }
   filters.push(
@@ -241,7 +241,7 @@ function needStakeholders(items: NeedListItem[]): string[] {
 
 /** The filters that are on, as text for the result line, in the order of
  * the bar. The search is added by ResultLine. */
-function resultParts(index: IndexFile, state: ListState): string[] {
+function resultParts(index: IndexFile, state: ListState, items: NeedListItem[], ready: boolean): string[] {
   const parts: string[] = []
   const issues = [...(state.crossChoice ? [tn.crossShort] : []), ...state.issues.map(tn.issueShort)]
   if (issues.length > 0) parts.push(tb.filterPart(tn.issueFilter, issues))
@@ -250,7 +250,7 @@ function resultParts(index: IndexFile, state: ListState): string[] {
     parts.push(tb.filterPart(tn.whoFilter, [t.sideMenu.item(s.id, s.name)]))
   }
   for (const [kind, label] of [['space', tn.spaceFilter], ['domain', tn.domainFilter]] as const) {
-    const part = typeFilterPart(kind, label, index, state)
+    const part = typeFilterPart(kind, label, index, state, ready ? needTypeOptions(kind, index, items) : [])
     if (part !== null) parts.push(part)
   }
   if (state.priorities.length > 0) parts.push(tb.filterPart(tn.priorityFilter, state.priorities.map(priorityLabel)))

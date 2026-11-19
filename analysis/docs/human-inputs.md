@@ -5,30 +5,37 @@ I would like to patch hackathon issues with feature analysis skills I'm using in
 
 ## ontology
 * physical entities
-  * space
-  * stakeholder
+  * space: a group of facilities or locations in the city
+* social entities
+  * stakeholder: a group of people or an organization that affects or is affected by the issue
 * conceptual entities
-  * issue
-  * solution
+  * domain: a policy area from the city budget categories
+  * issue: a topic that citizens care about
+  * solution: a proposal that covers stakeholders' needs
+  * solution type: a kind of solution
   * stakeholder story (user story): a sentence with fixed format that encourages humans to clarify their wants and needs
   * stakeholder's want: a raw idea of the possible solution of the issue
   * stakeholder's need: the benefit human gets, aka the real user need. should be prioritized for solution brainstorming
   * conflicting stakeholder's want: a group of user wants that conflict with each other
-  * shared stakeholder's want: a group of user wants that shared across different stakeholders
-  * shared stakeholder's need: a group of user needs that shared across different stakeholders. note that user needs will not conflict, as they are about personal benefits, not about real world solutions. a user need should never go beyond the boundary of the stakeholder herself
+  * shared stakeholder's want: a group of user wants that are shared across different stakeholders
+  * shared stakeholder's need: a group of user needs that are shared across different stakeholders. note that user needs will not conflict, as they are about personal benefits, not about real world solutions. a user need should never go beyond the boundary of the stakeholder herself
 * relations
-  * issue -- many to many -- space
-  * issue -- many to many -- stakeholder
-  * issue -- many to many -- solution
-  * stakeholder -- one to many -- story
-  * stakeholder -- many to many -- want
-  * stakeholder -- many to many -- need
-  * story -- many to one -- want
-  * story -- many to one -- need
-  * solution -- many to many -- need
-  * want -- many to many -- conflicting want
-  * want -- many to one -- shared want
-  * need -- many to one -- shared need
+  * issue -- belongs to -- domain (many to many)
+  * issue -- relates to -- space (many to many)
+  * issue -- involves -- stakeholder (many to many)
+  * issue -- is addressed by -- solution (many to many)
+  * stakeholder -- has -- story (one to many)
+  * stakeholder -- has -- want (many to many)
+  * stakeholder -- has -- need (many to many)
+  * story -- is composed of -- want (many to one)
+  * story -- is composed of -- need (many to one)
+  * solution -- is of -- solution type (many to many)
+  * solution -- covers -- need (many to many)
+  * solution -- belongs to -- domain (many to many)
+  * solution -- relates to -- space (many to many)
+  * want -- takes part in -- conflicting want (many to many)
+  * want -- is grouped as -- shared want (many to one)
+  * need -- is grouped as -- shared need (many to one)
 
 ## methodology in brief
 * gather possible stakeholders

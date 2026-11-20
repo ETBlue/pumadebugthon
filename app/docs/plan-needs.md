@@ -8,6 +8,8 @@
 
 **Tech stack:** Python 3 standard library (`python3 -I`), `unittest`; Vite + React 19 + TypeScript + Vitest in `app/`.
 
+**Status (2026-11-21):** all tasks are done and pushed. ETBlue checked the pages (N7) and said OK on 2026-11-18. After the plan, ETBlue changed the list filters: decision 223 removed the 解法 filter, decision 224 made 解法涵蓋 one toggle (`uncovered=1`, not `covered=yes|no`), and decision 225 added group picks to 空間類型 and 領域. `app/docs/design.md` is the current record; this plan is not updated.
+
 **Before this plan:** `main` is at da11835 (header order 議題 | 利害關係人 | 空間 | 領域 | 解法類型 | 解法, decision 191). The design session with ETBlue was on 2026-11-18.
 
 ## Decisions (ETBlue, 2026-11-18)

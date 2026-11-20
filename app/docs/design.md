@@ -2083,6 +2083,7 @@ Open notes from the Part 3 check of `app/docs/plan-types-ui.md` (2026-11-03). Pa
 | N4 X- dates | The 更新日期 of a cross-issue solution does not change when the 領域 of one of its member solutions changes. The `domains` and `candidates` fields are added in `build_json.py` `main()`, so they are not part of the `update_dates.py` fingerprints. |
 | N5 Flat export | The flat data files (decision 141) do not have the 領域 list, the 解法類型 list or the candidate pairs yet. |
 | N6 Page wait | `#/domains` still waits for the issue files (decision 160). `usedDomains` in `index.json` (decision 175) would be enough. |
+| N7 Need pages | Decisions 198–222 and the parts of 225 marked 「chosen during the build, not by ETBlue」 were made during the 需求 build (2026-11-18). ETBlue checked the pages and said OK, but did not review each choice. The new texts in `app/src/i18n/zh-TW.ts` for the need list and need page (for example 「透過跨議題的共同需求涵蓋的解法」 and 「看需求 #2 N07 的頁面」) are not reviewed one by one either. |
 
 Older open items in the analysis are in `analysis/docs/types-research.md` (the 【待查】 rows, for example 都市計畫).
 
